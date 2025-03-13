@@ -521,15 +521,17 @@ export const reset_password = async (req, res) => {
         await sendMailNotification({
             email: userFound.email,
             username: userFound.username,
-            subject: 'Password Reset Successful',
+            subject: "🚨 Password Reset Successful",
             text: `Hi ${userFound.username},\n\nYour password of Account ${userFound.email} has been successfully reset.\n\n
             Please check again, if the password change was not done by you, please go to the report a compromised account section at this link.
             \n\nThank you.`,
-            html: `<p>Hi ${userFound.username},</p>
-                <p>Your password for the account <b>${userFound.email}</b> has been successfully reset.</p>
-                <p>If this password change was not done by you, please <a href="http://localhost:4000/api/auth/report/compromised?token=${token1}" target="_blank">click here</a> to report your account as compromised.</p>
-                <p>Thank you.</p>
+            html: `
+                <p>Hi <strong>${userFound.username}</strong>,</p>
+                <p>Your password for the account <strong>${userFound.email}</strong> has been <span style="color: #d35400;"><b>successfully reset</b></span>.</p>
+                <p>If you did not request this change, please <a href="http://localhost:4000/api/auth/report/compromised?token=${token1}" target="_blank" style="color: #e74c3c; font-weight: bold;">click here</a> to report your account as compromised.</p>
+                <p style="color: #7f8c8d; font-size: 14px;">This is an automated email. Please do not reply.</p>
             `,
+            notification_importance_level: 'very high'
         });
 
         // res.clearCookie('resetPasswordToken');

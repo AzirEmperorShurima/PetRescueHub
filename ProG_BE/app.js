@@ -5,7 +5,7 @@ import authRouter from './src/router/Auth.routes.js';
 import { connectToDatabase } from './mongoConfig.js';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-import 'ProG_BE/src/Jobs/Delete_not_Activate_Account_BullMQ.js'
+// import 'ProG_BE/src/Jobs/Delete_not_Activate_Account_BullMQ.js'
 
 const app = express();
 connectToDatabase()

@@ -127,10 +127,10 @@ import { MAINDB_MONGODB_DBNAME, MAINDB_MONGODB_URL } from "../../config.js";
 
 const redisClient = createClient({
     username: 'default',
-    password: '9iZloBkSwehDUtYjKYRXMqcjOThdLl2N',
+    password: 'kt5KADZ2SRklsGTSPFO1xryLWeJGnp39',
     socket: {
-        host: 'redis-12493.c275.us-east-1-4.ec2.redns.redis-cloud.com',
-        port: 12493
+        host: 'redis-12406.c62.us-east-1-4.ec2.redns.redis-cloud.com',
+        port: 12406
     }
 });
 
