@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            margin: 20px;
+        }
+
+        .main-content {
+            flex: 70%;
+        }
+
+        .sidebar {
+            flex: 30%;
+            padding-left: 20px;
+        }
+
+        .sidebar .article {
+            margin-bottom: 20px;
+        }
+
+        .article img {
+            width: 100%;
+            height: auto;
+        }
+
+        .article-title {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .source {
+            color: red;
+            font-weight: bold;
+        }
+
+        .related-articles .article {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .related-articles .article img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="main-content">
+            <div class="article">
+                <img src="https://baogiaothong.mediacdn.vn/upload/3-2022/images/2022-07-25/2-1658733315-112-width740height515.jpg" alt="Main Article Image">
+                <h1>Trình Chính phủ phương án tăng lương tối thiểu vùng từ 1-7-2024</h1>
+            </div>
+        </div>
+        <div class="sidebar">
+            <div class="related-articles">
+                <div class="article">
+                        <img src="https://baogiaothong.mediacdn.vn/upload/3-2022/images/2022-07-25/2-1658733315-112-width740height515.jpg"
+                            width="50px" height="50px" alt="">
+                    <div>
+                    
+                        <div class="article-title">Công tác nhân sự của Đảng: Vun gốc để tránh lụi cành</div>
+                        
+                        <div class="source">tin tức</div>
+                    </div>
+                </div>
+                <div class="article">
+                        <img src="https://baogiaothong.mediacdn.vn/upload/3-2022/images/2022-07-25/2-1658733315-112-width740height515.jpg"
+                            width="50px" height="50px" alt="">
+                    <div>
+                        <div class="article-title">Sinh sản thành công 10 cá thể cây vằn trong môi trường nuôi nhốt
+                        </div>
+                        <div class="source">Vietnam+</div>
+                    </div>
+                </div>
+                <div class="article">
+                        <img src="https://baogiaothong.mediacdn.vn/upload/3-2022/images/2022-07-25/2-1658733315-112-width740height515.jpg"
+                            width="50px" height="50px" alt="">
+                    <div>
+                        <div class="article-title">Bến Tre: Tổ bảo vệ an ninh trật tự cơ sở sẽ được nhận mức hỗ trợ bao
+                            nhiêu?</div>
+                        <div class="source">PHÁP LUẬT</div>
+                    </div>
+                </div>
+                <div class="article">
+                        <img src="https://baogiaothong.mediacdn.vn/upload/3-2022/images/2022-07-25/2-1658733315-112-width740height515.jpg"
+                            width="50px" height="50px" alt="">
+                    <div>
+                        <div class="article-title">TTXVN khen thưởng học sinh đạt thành tích xuất sắc năm học 2023-2024
+                        </div>
+                        <div class="source">Vietnam+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
