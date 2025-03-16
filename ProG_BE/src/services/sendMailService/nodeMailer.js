@@ -127,10 +127,10 @@ export const sendMailService = async (_mail) => {
         If you don't verify OTP, your inActivate account will be deleted after 7 days.\n\nThank you.\n
         Best Regards,\n`,
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;>
                 <h2 style="color: #2c3e50; text-align: center;">Your OTP Code</h2>
                 <p>Hello <strong>${_mail.username}</strong>,</p>
-                <p style="font-size: 18px;">Your OTP code is: <strong style="color: #e74c3c; font-size: 24px;">${_mail.otp}</strong></p>
+                <p style="font-size: 18px;"> 🔐 Your OTP code is: <strong style="color: #e74c3c; font-size: 24px;">${_mail.otp}</strong></p>
                 <p>This OTP will expire in <strong>15 minutes</strong>.</p>
                 <p>If you don't verify OTP, your inactive account will be deleted after 7 days.</p>
                 <hr style="border: none; border-top: 1px solid #eee;">
@@ -151,7 +151,7 @@ export const sendMailForgotPassword = async (_mail) => {
                 <h2 style="color: #3498db; text-align: center;">Forgot Password Request</h2>
                 <p>Hello <strong>${_mail.username}</strong>,</p>
                 <p>You have requested to reset your password. Use the OTP code below:</p>
-                <p style="font-size: 18px;">Your OTP code is: <strong style="color: #e74c3c; font-size: 24px;">${_mail.otp}</strong></p>
+                <p style="font-size: 18px;"> 🚀 Your OTP code is: <strong style="color: #e74c3c; font-size: 24px;">${_mail.otp}</strong></p>
                 <p>This OTP will expire in <strong>15 minutes</strong>.</p>
                 <p>If you did not request this, please ignore this email.</p>
                 <hr style="border: none; border-top: 1px solid #eee;">
@@ -163,7 +163,6 @@ export const sendMailForgotPassword = async (_mail) => {
 
 // Gửi thông báo chung
 export const sendMailNotification = async (_mail) => {
-    const importanceLevel = _mail.notification_importance_level || "normal";
     return sendMail({
         email: _mail.email,
         subject: _mail.subject,
@@ -178,9 +177,5 @@ export const sendMailNotification = async (_mail) => {
                 <p style="text-align: center; color: #7f8c8d;">Best Regards,<br><strong>Your Company</strong></p>
             </div>
         `,
-        headers: {
-            "X-Priority": importanceLevel === "very high" ? "1" : "3",  // 1 = Highest, 3 = Normal
-            "Importance": importanceLevel === "very high" ? "high" : "normal",
-        }
     });
 };

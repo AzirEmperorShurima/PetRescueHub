@@ -285,9 +285,12 @@ export const Exist_User_Checking = async (req, res, next) => {
 
         if (user) {
             // Lưu vào Redis nếu tìm thấy
-            await redisClient.setEx(user.username, 3600, JSON.stringify(user));
-            await redisClient.setEx(user.email, 3600, JSON.stringify(user));
-
+            try {
+                await redisClient.setEx(user.username, 3600, JSON.stringify(user));
+                await redisClient.setEx(user.email, 3600, JSON.stringify(user));
+            } catch (cacheError) {
+                console.error("Redis caching error:", cacheError);
+            }
             if (req.path === "/signup") {
                 return res.status(StatusCodes.CONFLICT).json({
                     message: "Username or email already exists. Please choose a different one.",

@@ -6,11 +6,10 @@ const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/projectG"
 const seedDatabase = async () => {
     try {
 
-        const roles = ["admin", "user", "moderator"];
+        const roles = ["admin", "user", "volunteer"];
         const existingRoles = await models_list.Role.find();
         if (existingRoles.length === 0) {
             await models_list.Role.insertMany(roles.map((name) => ({ name })));
-            console.log("Default roles added.");
         }
     } catch (err) {
         console.error("Error seeding database:", err);

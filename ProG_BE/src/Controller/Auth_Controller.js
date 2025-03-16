@@ -27,7 +27,7 @@ export const Signup_Handler = async (req, res) => {
         const saveUser = await CreateUser.save();
         console.log('User Created Successfully', saveUser);
         const redisKey = `otp:${saveUser._id}`
-        const generateOTP = otpGenerator
+        const generateOTP = otpGenerator()
         console.log("OPT Generated :", generateOTP);
         console.log("Redis Key:", redisKey);
         await redisClient.set(redisKey, generateOTP, 'EX', 60 * 15)
@@ -521,9 +521,9 @@ export const reset_password = async (req, res) => {
         await sendMailNotification({
             email: userFound.email,
             username: userFound.username,
-            subject: "🚨 Password Reset Successful",
+            subject: "🚨 Password Reset Successful 🚨",
             text: `Hi ${userFound.username},\n\nYour password of Account ${userFound.email} has been successfully reset.\n\n
-            Please check again, if the password change was not done by you, please go to the report a compromised account section at this link.
+            Please check again, if the password change was not done by you, please go to the report a compromised account section at this link.🫣
             \n\nThank you.`,
             html: `
                 <p>Hi <strong>${userFound.username}</strong>,</p>
@@ -531,7 +531,6 @@ export const reset_password = async (req, res) => {
                 <p>If you did not request this change, please <a href="http://localhost:4000/api/auth/report/compromised?token=${token1}" target="_blank" style="color: #e74c3c; font-weight: bold;">click here</a> to report your account as compromised.</p>
                 <p style="color: #7f8c8d; font-size: 14px;">This is an automated email. Please do not reply.</p>
             `,
-            notification_importance_level: 'very high'
         });
 
         // res.clearCookie('resetPasswordToken');
