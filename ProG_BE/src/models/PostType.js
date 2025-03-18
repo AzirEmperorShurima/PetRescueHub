@@ -12,13 +12,13 @@ const PostTypeSchema = new mongoose.Schema({
 });
 
 
-async function canUserPost(user, postTypeName) {
-    const postType = await PostTypeSchema.findOne({ name: postTypeName });
+// async function canUserPost(user, postTypeName) {
+//     const postType = await PostTypeSchema.findOne({ name: postTypeName });
 
-    if (!postType || !postType.permissions.canPost) {
-        throw new Error(`Bạn không có quyền đăng bài thuộc loại ${postTypeName}`);
-    }
+//     if (!postType || !postType.permissions.canPost) {
+//         throw new Error(`Bạn không có quyền đăng bài thuộc loại ${postTypeName}`);
+//     }
 
-    return true;
-}
+//     return true;
+// }
 export default mongoose.model("PostType", PostTypeSchema);

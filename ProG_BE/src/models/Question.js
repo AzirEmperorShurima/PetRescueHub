@@ -31,21 +31,21 @@ async function getReactions(questionId) {
     return question.reactions;
 }
 // Middleware kiểm tra quyền trước khi đăng câu hỏi
-QuestionSchema.pre("save", async function (next) {
-    const userPermissions = await UserPermissions.findOne({ user: this.author });
+// QuestionSchema.pre("save", async function (next) {
+//     const userPermissions = await UserPermissions.findOne({ user: this.author });
 
-    if (!userPermissions) {
-        throw new Error("Không tìm thấy quyền của người dùng!");
-    }
+//     if (!userPermissions) {
+//         throw new Error("Không tìm thấy quyền của người dùng!");
+//     }
 
-    if (userPermissions.isBanned) {
-        throw new Error("Bạn đã bị cấm hoạt động!");
-    }
+//     if (userPermissions.isBanned) {
+//         throw new Error("Bạn đã bị cấm hoạt động!");
+//     }
 
-    if (!userPermissions.canPostQuestion) {
-        throw new Error("Bạn không có quyền đăng câu hỏi!");
-    }
+//     if (!userPermissions.canPostQuestion) {
+//         throw new Error("Bạn không có quyền đăng câu hỏi!");
+//     }
 
-    next();
-});
+//     next();
+// });
 export default mongoose.model("Question", QuestionSchema);

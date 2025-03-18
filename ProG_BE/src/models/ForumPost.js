@@ -43,21 +43,21 @@ async function getReactions(postId) {
 }
 
 // Middleware kiểm tra quyền trước khi đăng bài
-ForumPostSchema.pre("save", async function (next) {
-    const userPermissions = await UserPermissions.findOne({ user: this.author });
+// ForumPostSchema.pre("save", async function (next) {
+//     const userPermissions = await UserPermissions.findOne({ user: this.author });
 
-    if (!userPermissions) {
-        throw new Error("Không tìm thấy quyền của người dùng!");
-    }
+//     if (!userPermissions) {
+//         throw new Error("Không tìm thấy quyền của người dùng!");
+//     }
 
-    if (userPermissions.isBanned) {
-        throw new Error("Bạn đã bị cấm hoạt động!");
-    }
+//     if (userPermissions.isBanned) {
+//         throw new Error("Bạn đã bị cấm hoạt động!");
+//     }
 
-    if (!userPermissions.canPostForum) {
-        throw new Error("Bạn không có quyền đăng bài trên diễn đàn!");
-    }
+//     if (!userPermissions.canPostForum) {
+//         throw new Error("Bạn không có quyền đăng bài trên diễn đàn!");
+//     }
 
-    next();
-});
+//     next();
+// });
 export default mongoose.model("ForumPost", ForumPostSchema);

@@ -42,21 +42,21 @@ CommentSchema.post("remove", async function (doc) {
     }
 });
 
-CommentSchema.pre("save", async function (next) {
-    const userPermissions = await UserPermissions.findOne({ user: this.author });
+// CommentSchema.pre("save", async function (next) {
+//     const userPermissions = await UserPermissions.findOne({ user: this.author });
 
-    if (!userPermissions) {
-        throw new Error("Không tìm thấy quyền của người dùng!");
-    }
+//     if (!userPermissions) {
+//         throw new Error("Không tìm thấy quyền của người dùng!");
+//     }
 
-    if (userPermissions.isBanned) {
-        throw new Error("Bạn đã bị cấm hoạt động!");
-    }
+//     if (userPermissions.isBanned) {
+//         throw new Error("Bạn đã bị cấm hoạt động!");
+//     }
 
-    if (!userPermissions.canComment) {
-        throw new Error("Bạn không có quyền bình luận!");
-    }
+//     if (!userPermissions.canComment) {
+//         throw new Error("Bạn không có quyền bình luận!");
+//     }
 
-    next();
-});
+//     next();
+// });
 export default mongoose.model("Comment", CommentSchema);
