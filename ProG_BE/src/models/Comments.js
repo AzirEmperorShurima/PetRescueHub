@@ -8,8 +8,7 @@ const CommentSchema = new mongoose.Schema({
         refPath: "postType",
         required: true
     },
-    // postType: { type: mongoose.Schema.Types.ObjectId, ref: "PostType", required: true },
-    postType: { type: String, enum: ["Question", "ForumPost"], required: true },
+    postType: { type: String, enum: ["ForumPost", "Question"], required: true }, // Hỗ trợ nhiều loại post
     parentComment: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
     replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     reactions: {
@@ -19,19 +18,22 @@ const CommentSchema = new mongoose.Schema({
         sad: { type: Number, default: 0 },
         angry: { type: Number, default: 0 }
     },
-    reactionDetails: [{ type: mongoose.Schema.Types.ObjectId, ref: "Reaction" }],
     depth: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now }
 });
+
+// 🔥 Middleware: Khi thêm comment, tự động cập nhật `replies` của comment cha
 CommentSchema.post("save", async function (doc) {
     if (doc.parentComment) {
         await mongoose.model("Comment").findByIdAndUpdate(
             doc.parentComment,
-            { $push: { replies: doc._id } },
+            { $addToSet: { replies: doc._id } }, // Tránh trùng lặp
             { new: true, useFindAndModify: false }
         );
     }
 });
+
+// 🔥 Middleware: Khi xóa comment, tự động xóa reaction liên quan và cập nhật `replies`
 CommentSchema.post("remove", async function (doc) {
     if (doc.parentComment) {
         await mongoose.model("Comment").findByIdAndUpdate(
@@ -40,23 +42,12 @@ CommentSchema.post("remove", async function (doc) {
             { new: true }
         );
     }
+    await mongoose.model("Reaction").deleteMany({ comment: doc._id });
 });
 
-// CommentSchema.pre("save", async function (next) {
-//     const userPermissions = await UserPermissions.findOne({ user: this.author });
+// 🔥 Index để tối ưu truy vấn
+CommentSchema.index({ postId: 1 });
+CommentSchema.index({ parentComment: 1 });
+CommentSchema.index({ author: 1 });
 
-//     if (!userPermissions) {
-//         throw new Error("Không tìm thấy quyền của người dùng!");
-//     }
-
-//     if (userPermissions.isBanned) {
-//         throw new Error("Bạn đã bị cấm hoạt động!");
-//     }
-
-//     if (!userPermissions.canComment) {
-//         throw new Error("Bạn không có quyền bình luận!");
-//     }
-
-//     next();
-// });
 export default mongoose.model("Comment", CommentSchema);

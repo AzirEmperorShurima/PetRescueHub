@@ -5,6 +5,7 @@ import authRouter from './src/router/Auth.routes.js';
 import { connectToDatabase } from './mongoConfig.js';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
+import forumRoutes from './src/router/Forum.routes.js';
 // import 'ProG_BE/src/Jobs/Delete_not_Activate_Account_BullMQ.js'
 
 const app = express();
@@ -25,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/api/auth', authRouter);
-
+app.use('/api/forum', forumRoutes)
 app.use('/api/*', (req, res) => {
     res.status(404).json({
         status: 'error',

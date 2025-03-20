@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import models_list from "./src/models/modelsExport.js";
 
 // export const mongoClient = new mongoose.connect("mongodb://localhost:27017/projectG",{})
-const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/projectG"
+const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/PetRescueHub";
 const seedDatabase = async () => {
     try {
 
@@ -21,8 +21,9 @@ const initializeCollections = async () => {
     try {
         for (const [modelName, model] of Object.entries(models_list)) {
             await model.init();
-            console.log(`${modelName} collection initialized.`);
+
         }
+        console.log(`all collection of PetRescueHub initialized.`);
     } catch (err) {
         console.error("Error initializing collections:", err);
     }

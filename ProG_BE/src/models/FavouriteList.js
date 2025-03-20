@@ -8,7 +8,7 @@ const FavoriteListSchema = new mongoose.Schema({
         {
             postId: { type: mongoose.Schema.Types.ObjectId, required: true },
             // postType: { type: mongoose.Schema.Types.ObjectId, ref: "PostType", required: true },
-            postType: { type: String, enum: ["Question", "ForumPost"], required: true },
+            // postType: { type: String, enum: ["Question", "ForumPost"], required: true },
             addedAt: { type: Date, default: Date.now },
             importantLevel: { type: Number, min: 1, max: 5, default: 3 }
         }

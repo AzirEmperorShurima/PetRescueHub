@@ -104,22 +104,6 @@ export const loginHandler = async (req, res) => {
     }
 };
 
-// export const logoutHandler = async (req, res) => {
-//     const token = req.cookies.token;
-//     if (!token) return res.status(StatusCodes.UNAUTHORIZED).json({ message: '' })
-//     try {
-//         const userDecoded = jwt.verify(token, SECRET_KEY);
-//         // await user.updateOne({
-//         //     $pull: { tokens: { token: token } },
-//         // });
-//         const User = await user.findById(decoded.id, { password: 0 });
-//         if (!User) return res.status(404).json({ message: "No user found" });
-//         await User.findByIdAndUpdate(userDecoded.id, { tokens: [] });
-
-//     } catch (error) {
-
-//     }
-// }
 export const logoutHandler = async (req, res) => {
     const token = req.cookies.token;
 
@@ -130,10 +114,7 @@ export const logoutHandler = async (req, res) => {
     }
 
     try {
-        // Xác thực và giải mã token
         const userDecoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        // Tìm người dùng theo ID từ token
         const _user = await user.findById(userDecoded.id);
 
         if (!_user) {
@@ -141,8 +122,6 @@ export const logoutHandler = async (req, res) => {
                 .status(StatusCodes.NOT_FOUND)
                 .json({ message: "User not found." });
         }
-
-        // Xóa token trong danh sách tokens của người dùng
         _user.tokens = _user.tokens.filter(t => t.token !== token);
         await _user.save();
 
@@ -173,21 +152,6 @@ export const refreshToken = async (req, res) => {
     }
 }
 
-// export const manageTokens = async (user) => {
-//     let tokensArray = user.tokens || []
-//     console.log(tokensArray);
-//     if (tokensArray.length) {
-//         tokensArray = tokensArray.filter(token => {
-//             const timeDiff = (Date.now() - parseInt(token.signedAt)) / 1000;
-//             if (timeDiff < 86400) {
-//                 return token;
-//             }
-//         });
-//     }
-//     await user.findByIdAndUpdate(user.id, {
-//         tokens: [...tokensArray, { token, signedAt: Date.now().toString() }],
-//     });
-// }
 export const manageTokens = async (_user, token, type) => {
     try {
         let tokensArray = _user.tokens || [];
@@ -208,41 +172,7 @@ export const manageTokens = async (_user, token, type) => {
     }
 };
 
-// export const getProfile = async (req, res) => {
-//     console.log(req.cookies);
-//     try {
-//         const user_Cookies = req.cookies.token
-//         if (!user_Cookies) return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized - No token Provided' })
 
-//         const decodedUser = jwt.verify(user_Cookies, SECRET_KEY)
-//         console.log(decodedUser);
-//         const userID_Decoded = decodedUser.id
-//         // const foundUser = await user.findById(decoded.id).populate('roles', 'name');
-//         const foundUser = await user.findOne({
-//             $or: [
-//                 { _id: userID_Decoded },  // Tìm theo _id nếu 'id' là ObjectId
-//                 { id: userID_Decoded }    // Tìm theo 'id' nếu 'id' là chuỗi UUID
-//             ]
-//         }).populate('roles', 'name');
-//         if (!foundUser) {
-//             return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
-//         }
-//         const userProfile = {
-//             username: foundUser.username,
-//             email: foundUser.email,
-//             roles: foundUser.roles.map((role) => role.name),
-//             isActive: foundUser.isActive,
-//             tokens: foundUser.tokens.length,
-//             password: '**********',
-//             createdAt: foundUser.createdAt,
-//             updatedAt: foundUser.updatedAt,
-//         };
-//         return res.status(StatusCodes.OK).json({ message: 'User profile fetched successfully', userProfile });
-//     } catch (error) {
-//         console.error("Error fetching user profile:", error);
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error', error: error.message });
-//     }
-// }
 export const getProfile = async (req, res) => {
     console.log(req.cookies);
 
@@ -305,33 +235,6 @@ export const getProfile = async (req, res) => {
     }
 };
 
-
-// export const verified_OTP = async (req, res) => {
-//     const cookies = req.cookies.token
-//     const otp = req.body.otp
-//     if (!cookies) return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Verify OTP failed, Unauthorized' })
-//     if (!otp) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Verify OTP failed, OTP is required' })
-//     try {
-//         const decodedUser = jwt.verify(cookies, SECRET_KEY)
-//         const UserID = decodedUser.id
-//         const redisFound = await redisClient.get(`otp:${UserID}`)
-
-//         if (redisFound) {
-//             const jsonParseUser = JSON.parse(redisFound)
-//             if (jsonParseUser.otp === otp) {
-//                 const userFound = await user.findById(UserID)
-//                 userFound.isActive = true
-//                 await userFound.save()
-//                 await redisClient.del(`otp:${UserID}`);
-//                 return res.status(StatusCodes.OK).json({ message: 'Verify OTP successful, User is activated' })
-//             }
-//             return res.status(StatusCodes.FORBIDDEN).json({ message: 'Verify OTP failed, Invalid OTP' })
-//         } return res.status(StatusCodes.FORBIDDEN).json({ message: 'Verify OTP failed, OTP expired or invalid' });
-//     } catch (err) {
-//         console.error("Verify OTP Error:", error);
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Verify OTP failed, Internal Server Error' });
-//     }
-// }
 export const verified_OTP = async (req, res) => {
     const cookies = req.cookies.token;
     const otp = req.body.otp;
