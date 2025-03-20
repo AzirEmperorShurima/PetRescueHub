@@ -246,10 +246,69 @@ import Role from "../models/Role.js";
 //         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" });
 //     }
 // };
+// export const Exist_User_Checking = async (req, res, next) => {
+//     const { username, email } = req.body;
+
+//     // Kiểm tra yêu cầu username và email
+//     if (!username) {
+//         return res.status(StatusCodes.BAD_REQUEST).json({ message: "Username is required" });
+//     }
+//     if (!email) {
+//         return res.status(StatusCodes.BAD_REQUEST).json({ message: "Email is required" });
+//     }
+
+//     try {
+//         // Kiểm tra Redis trước
+//         const cachedUsername = await redisClient.get(username);
+//         const cachedEmail = await redisClient.get(email);
+
+//         if (cachedUsername) {
+//             const exists = JSON.parse(cachedUsername);
+//             if (exists && req.path === "/signup") {
+//                 return res.status(StatusCodes.CONFLICT).json({
+//                     message: `Username ${exists} already exists in cache. Please choose a different one.`,
+//                 });
+//             }
+//         }
+
+//         if (cachedEmail) {
+//             const exists = JSON.parse(cachedEmail);
+//             if (exists && req.path === "/signup") {
+//                 return res.status(StatusCodes.CONFLICT).json({
+//                     message: `Email ${exists} already exists in cache. Please choose a different one.`,
+//                 });
+//             }
+//         }
+
+
+//         const user = await User.findOne({ $or: [{ username }, { email }] });
+
+//         if (user) {
+//             // Lưu vào Redis nếu tìm thấy
+//             try {
+//                 await redisClient.setEx(user.username, 3600, JSON.stringify(user));
+//                 await redisClient.setEx(user.email, 3600, JSON.stringify(user));
+//             } catch (cacheError) {
+//                 console.error("Redis caching error:", cacheError);
+//             }
+//             if (req.path === "/signup") {
+//                 return res.status(StatusCodes.CONFLICT).json({
+//                     message: "Username or email already exists. Please choose a different one.",
+//                 });
+//             }
+//             return res.status(StatusCodes.OK).json({ user });
+//         }
+
+//         // Tiến hành tiếp nếu không có lỗi
+//         next();
+//     } catch (err) {
+//         console.error("Error in Exist_User_Checking middleware:", err);
+//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" });
+//     }
+// };
 export const Exist_User_Checking = async (req, res, next) => {
     const { username, email } = req.body;
 
-    // Kiểm tra yêu cầu username và email
     if (!username) {
         return res.status(StatusCodes.BAD_REQUEST).json({ message: "Username is required" });
     }
@@ -259,53 +318,49 @@ export const Exist_User_Checking = async (req, res, next) => {
 
     try {
         // Kiểm tra Redis trước
-        const cachedUsername = await redisClient.get(username);
-        const cachedEmail = await redisClient.get(email);
+        console.log("🔍 Checking cache for username and email...");
+        const [cachedUsername, cachedEmail] = await Promise.all([
+            redisClient.get(username),
+            redisClient.get(email),
+        ]);
 
-        if (cachedUsername) {
-            const exists = JSON.parse(cachedUsername);
-            if (exists && req.path === "/signup") {
-                return res.status(StatusCodes.CONFLICT).json({
-                    message: `Username ${exists} already exists in cache. Please choose a different one.`,
-                });
-            }
+        if (cachedUsername || cachedEmail) {
+            console.log("✅ Found in cache");
+            return res.status(StatusCodes.CONFLICT).json({
+                message: "Username or email already exists in cache. Please choose a different one.",
+            });
         }
 
-        if (cachedEmail) {
-            const exists = JSON.parse(cachedEmail);
-            if (exists && req.path === "/signup") {
-                return res.status(StatusCodes.CONFLICT).json({
-                    message: `Email ${exists} already exists in cache. Please choose a different one.`,
-                });
-            }
-        }
-
-
+        // Nếu Redis không có, truy vấn MongoDB
+        console.log("⚠️ Cache miss! Fetching from MongoDB...");
         const user = await User.findOne({ $or: [{ username }, { email }] });
 
         if (user) {
-            // Lưu vào Redis nếu tìm thấy
+            console.log("✅ Found in MongoDB. Caching in Redis...");
             try {
-                await redisClient.setEx(user.username, 3600, JSON.stringify(user));
-                await redisClient.setEx(user.email, 3600, JSON.stringify(user));
+                await redisClient.multi()
+                    .setEx(user.username, 3600, JSON.stringify(user))
+                    .setEx(user.email, 3600, JSON.stringify(user))
+                    .exec();
             } catch (cacheError) {
-                console.error("Redis caching error:", cacheError);
+                console.error("❌ Redis caching error:", cacheError);
             }
-            if (req.path === "/signup") {
-                return res.status(StatusCodes.CONFLICT).json({
-                    message: "Username or email already exists. Please choose a different one.",
-                });
-            }
-            return res.status(StatusCodes.OK).json({ user });
+
+            return res.status(StatusCodes.CONFLICT).json({
+                message: "Username or email already exists. Please choose a different one.",
+            });
         }
 
-        // Tiến hành tiếp nếu không có lỗi
+        console.log("✅ No existing user found. Proceeding to next middleware...");
         next();
     } catch (err) {
-        console.error("Error in Exist_User_Checking middleware:", err);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" });
+        console.error("❌ Error in Exist_User_Checking middleware:", err);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Internal server error",
+        });
     }
 };
+
 
 export const Valid_Roles_Certification = async (req, res, next) => {
     let { roles } = req.body;

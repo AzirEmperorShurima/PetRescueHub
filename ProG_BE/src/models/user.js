@@ -20,9 +20,16 @@ const userSchema = new mongoose.Schema(
             unique: true,
             required: true,
         },
-        // phonenumber: {
-        //     type: String,
-        // },
+        avatar: {
+            type: String,
+            default: null
+        },
+        phonenumber: {
+            type: String,
+        },
+        address: {
+            type: String,
+        },
         password: {
             type: String,
             required: true,

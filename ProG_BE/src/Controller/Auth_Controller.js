@@ -320,9 +320,9 @@ export const forgot_password = async (req, res) => {
 
         console.log('User:', userFound.email);
 
-        const otp = otpGenerator
+        const otp = otpGenerator()
 
-        await redisClient.set(`forgotpassword:${userFound.email}`, otp, 'EX', 60 * 15);
+        await redisClient.setEx(`forgotpassword:${userFound.email}`, otp, 60 * 15);
 
         await sendMailForgotPassword({
             email: userFound.email,

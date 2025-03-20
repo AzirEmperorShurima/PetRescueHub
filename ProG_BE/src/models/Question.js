@@ -9,7 +9,6 @@ const QuestionSchema = new mongoose.Schema(
         imageUrls: [{ type: String }],
         tags: [{ type: String, index: true }], // Index giúp tìm kiếm nhanh hơn
         favoriteCount: { type: Number, default: 0 }, // Tổng số lượt yêu thích
-        views: { type: Number, default: 0 },
         questionStatus: { type: String, enum: ["open", "hidden"], default: "open" },
         createdAt: { type: Date, default: Date.now },
         updatedAt: { type: Date, default: Date.now }

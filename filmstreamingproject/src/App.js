@@ -51,18 +51,18 @@ function App() {
     fetchData();
   }, []);
   const videos = [
-    { id: '1', title: 'Video 1', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '2', title: 'Video 2', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '4', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '5', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '6', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '7', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '8', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '9', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '10', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '11', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '12', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
-    { id: '13', title: 'Video 3', src: 'https://www.youtube.com/watch?v=KObR1fhS7nQ' },
+    { id: '1', title: 'Video 1', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '2', title: 'Video 2', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '4', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '5', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '6', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '7', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '8', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '9', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '10', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '11', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '12', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+    { id: '13', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
 
   ];
   // const location = useLocation();
