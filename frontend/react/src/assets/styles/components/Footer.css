@@ -6,6 +6,13 @@
     background: black;
 }
 
+.new_footer_area {
+    flex-shrink: 0;
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+  }
 
 .new_footer_top {
     padding: 100px 100px 300px;

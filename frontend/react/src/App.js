@@ -11,14 +11,12 @@ import MainLayout from './components/layouts/MainLayout';
 
 
 import Home from './pages/Home/Home';
-// import Forum from './components/features/forum/Forum';
-// import Adoption from './components/features/adoption/Adoption';
-// import Rescue from './components/features/rescue/Rescue';
-import Login from './pages/Auth/Login';
-import Register from './pages/Auth/Register';
-import AdminDashboard from './pages/Dashboard/AdminDashboard';
-import UserDashboard from './pages/Dashboard/UserDashboard';
-import VolunteerDashboard from './pages/Dashboard/VolunteerDashboard';
+
+import Login from './features/Auth/Login';
+import Register from './features/Auth/Register';
+// import AdminDashboard from './pages/Dashboard/AdminDashboard';
+// import UserDashboard from './pages/Dashboard/UserDashboard';
+// import VolunteerDashboard from './pages/Dashboard/VolunteerDashboard';
 
 
 function App() {
@@ -37,8 +35,8 @@ function App() {
             <Route path="/auth/register" element={<Register />} />
             {/* <Route path="/dashboard/admin" element={<AdminDashboard />} />
              */}
-            <Route path="/dashboard/user" element={<UserDashboard />} />
-            <Route path="/dashboard/volunteer" element={<VolunteerDashboard />} />
+            {/* <Route path="/dashboard/user" element={<UserDashboard />} />
+            <Route path="/dashboard/volunteer" element={<VolunteerDashboard />} /> */}
 
           </Routes>
         </MainLayout>

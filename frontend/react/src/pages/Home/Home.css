@@ -1,59 +1,185 @@
-/* src/components/Home.css */
+body {
+  font-family: 'Roboto', sans-serif;
+  color: #333333;
+}
+
+h1, h2, h3 {
+  font-family: 'Montserrat', sans-serif;
+  color: #4b505e;
+  font-weight: 600;
+}
+
+/* Carousel Section */
 .hero-section {
-    background-color: #f8f9fa;
-    padding: 100px 0;
-    margin-bottom: 80px;
+  padding: 0; /* Loại bỏ padding để carousel full-width */
+  margin-bottom: 50px;
+}
+
+.hero-section .carousel-inner {
+  max-height: 500px;
+  overflow: hidden;
+}
+
+.hero-image {
+  height: 500px;
+  object-fit: cover;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  width: 30px;
+  height: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.hero-section:hover .carousel-control-prev,
+.hero-section:hover .carousel-control-next {
+  opacity: 1;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+}
+
+.carousel-caption {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+/* About Section */
+.about-section {
+  padding: 60px 0;
+  background-color: #ffffff;
+}
+
+.about-section p {
+  max-width: 800px;
+  margin: 0 auto 30px;
+}
+
+/* Services Section */
+.services-section {
+  padding: 80px 0;
+  background-color: #f8f9fa;
+}
+
+.service-card {
+  text-align: center;
+  padding: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+}
+
+.service-card i {
+  font-size: 40px;
+  color: #007bff;
+  margin-bottom: 20px;
+}
+
+/* Recent Rescues Section */
+.recent-rescues {
+  padding: 80px 0;
+  background-color: #ffffff;
+}
+
+.rescue-card {
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+.rescue-content {
+  padding: 20px;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 80px 0;
+  background-color: #f8f9fa;
+}
+
+.testimonial-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+/* CTA Section */
+.cta-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  color: #ffffff;
+}
+
+.cta-section .btn-primary {
+  background-color: #ffffff;
+  color: #007bff;
+}
+
+.cta-section .btn-outline-primary {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.cta-section .btn-outline-primary:hover {
+  background-color: #ffffff;
+  color: #007bff;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 30px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-outline-primary {
+  border-color: #007bff;
+  color: #007bff;
+  border-radius: 30px;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-section, .services-section, .recent-rescues, .testimonials-section {
+    padding: 40px 0;
   }
-  
-  .hero-image {
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  .carousel-caption h1 {
+    font-size: 1.5rem;
   }
-  
-  .services-section {
-    padding: 80px 0;
-    background-color: #fff;
+  .carousel-caption p {
+    font-size: 1rem;
   }
-  
-  .service-card {
-    text-align: center;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease;
-  }
-  
-  .service-card:hover {
-    transform: translateY(-5px);
-  }
-  
-  .service-card i {
-    font-size: 40px;
-    color: #007bff;
-    margin-bottom: 20px;
-  }
-  
-  .recent-rescues {
-    padding: 80px 0;
-    background-color: #f8f9fa;
-  }
-  
-  .rescue-card {
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
-  }
-  
-  .rescue-content {
-    padding: 20px;
-  }
-  
-  .btn-primary {
-    padding: 12px 30px;
-    border-radius: 30px;
-  }
-  
-  .btn-outline-primary {
-    border-radius: 30px;
-  }
+}

@@ -1,10 +1,13 @@
 /* src/styles/components/Navigation.css */
+
 /* Container styles */
 .navbar {
   padding: 0;
-  background-color: var(--background-color);
+  background-color: #F5F5F5; /* Nền xám nhạt như ảnh mẫu */
+  border-top: 2px solid #a21725; /* Viền trên màu vàng */
+  border-bottom: 1px solid #D3D3D3; /* Viền dưới màu xám */
   box-shadow: var(--box-shadow-sm);
-  min-height: 80px;
+  min-height: 80px; /* Giảm chiều cao cho phù hợp */
 }
 
 .navbar > .container {
@@ -13,39 +16,21 @@
 }
 
 /* Logo styles */
-@keyframes colorChange {
-  0% {
-    filter: hue-rotate(0deg) brightness(1);
-  }
-  25% {
-    filter: hue-rotate(90deg) brightness(1.1);
-  }
-  50% {
-    filter: hue-rotate(180deg) brightness(1.2);
-  }
-  75% {
-    filter: hue-rotate(270deg) brightness(1.1);
-  }
-  100% {
-    filter: hue-rotate(360deg) brightness(1);
-  }
-}
-
 .navbar-brand {
   padding: 0;
   margin-right: 30px;
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .navbar-brand .logo {
-  height: 200px;
-  width: auto;
-  object-fit: cover;
-  padding: 10px 0;
-  border-radius: 80px;
+  height: 70px;
+  width: auto; /* Đảm bảo logo tròn */
+  object-fit: contain;
   opacity: 0;
   transition: opacity 0.5s ease-in-out, transform 0.3s ease;
   transform: translateY(-20px);
-  animation: colorChange 8s ease-in-out infinite;
 }
 
 .navbar-brand .logo.visible {
@@ -53,59 +38,73 @@
   transform: translateY(0);
 }
 
-/* Tạm dừng animation khi hover */
 .navbar-brand .logo:hover {
-  animation-play-state: paused;
-  transform: scale(1.05);
+  transform: scale(1.05); /* Giữ hiệu ứng phóng to khi hover */
+}
+
+.navbar-brand .logo-text {
+  font-family: 'Montserrat', sans-serif; /* Font giống ảnh mẫu */
+  font-weight: 700; /* Đậm */
+  font-size: 1.8rem; /* Khoảng 24px */
+  margin-left: 0.5rem; /* Khoảng cách giữa icon và chữ */
+}
+
+@media (max-width: 991px) {
+  .navbar-brand .logo {
+    height: 50px;
+  }
+  .navbar-brand .logo-text {
+    font-size: 1.4rem;
+  }
+}
+
+.navbar-brand .pet {
+  color: #000000; /* "Pet" màu đen */
+}
+
+.navbar-brand .rescuehub {
+  color: #E91E63; /* "RescueHub" màu hồng đỏ */
 }
 
 /* Menu styles */
 .navbar-nav {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
+  gap: 2rem; /* Giảm khoảng cách giữa các link cho giống ảnh mẫu */
   margin: 0 auto;
-  height: 100%; /* Đảm bảo chiều cao đồng nhất */
+  height: 100%;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  height: 100%; /* Đảm bảo chiều cao đồng nhất */
+  padding: 8px 0;
 }
 
 .nav-link {
-  color: var(--text-color) !important;
+  color: #000000 !important; /* Màu đen cho các link */
   font-weight: 600;
-  font-size: 1.2rem;
-  padding: 0.3rem !important; /* Tăng padding để tạo khoảng cách đều */
-  text-transform: capitalize;
+  font-size: 0.875rem; /* 14px như ảnh mẫu */
+  padding: 8px 16px !important;
+  text-transform: uppercase; /* In hoa */
   transition: var(--transition-base);
-  white-space: nowrap; /* Ngăn text bị xuống dòng */
+  white-space: nowrap;
   display: flex;
   align-items: center;
-  position: relative; /* Cho hiệu ứng hover */
+  position: relative;
 }
 
-/* Thêm hiệu ứng gạch chân khi hover */
+.nav-link.active {
+  color: #E91E63 !important; /* Màu hồng đỏ cho link đang hoạt động */
+}
+
+/* Xóa hiệu ứng gạch chân khi hover để đơn giản hơn */
 .nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 2px;
-  background-color: var(--primary-color);
-  transition: width 0.3s ease;
-}
-
-.nav-link:hover::after {
-  width: 100%;
+  display: none; /* Không cần hiệu ứng này trong ảnh mẫu */
 }
 
 .nav-link:hover {
-  color: var(--primary-color) !important;
+  color: #E91E63 !important; /* Đổi màu khi hover cho giống active */
 }
 
 /* Button container */
@@ -124,9 +123,9 @@
   padding: 8px 20px;
   border-radius: 5px;
   font-weight: 500;
-  width: 120px; /* Đặt kích thước cố định */
+  width: 120px;
   text-align: center;
-  box-sizing: border-box; /* Đảm bảo border không làm thay đổi kích thước */
+  box-sizing: border-box;
 }
 
 /* Login button */
@@ -158,17 +157,18 @@
   .navbar > .container {
     padding: 0 20px;
   }
-  
+
   .navbar-brand .logo {
-    height: 100px;
+    height: 40px; /* Giảm kích thước logo trên mobile */
+    width: 40px;
   }
-  
+
+  .navbar-brand .logo-text {
+    font-size: 1.2rem; /* Giảm cỡ chữ trên mobile */
+  }
+
   .nav-buttons {
     margin-top: 1rem;
     justify-content: center;
-  }
-  
-  .nav-link {
-    font-size: 1.1rem;
   }
 }
