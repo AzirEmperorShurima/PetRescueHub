@@ -1,0 +1,59 @@
+/* src/components/Home.css */
+.hero-section {
+    background-color: #f8f9fa;
+    padding: 100px 0;
+    margin-bottom: 80px;
+  }
+  
+  .hero-image {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  
+  .services-section {
+    padding: 80px 0;
+    background-color: #fff;
+  }
+  
+  .service-card {
+    text-align: center;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+  }
+  
+  .service-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .service-card i {
+    font-size: 40px;
+    color: #007bff;
+    margin-bottom: 20px;
+  }
+  
+  .recent-rescues {
+    padding: 80px 0;
+    background-color: #f8f9fa;
+  }
+  
+  .rescue-card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+  }
+  
+  .rescue-content {
+    padding: 20px;
+  }
+  
+  .btn-primary {
+    padding: 12px 30px;
+    border-radius: 30px;
+  }
+  
+  .btn-outline-primary {
+    border-radius: 30px;
+  }

@@ -1,0 +1,174 @@
+/* src/styles/components/Navigation.css */
+/* Container styles */
+.navbar {
+  padding: 0;
+  background-color: var(--background-color);
+  box-shadow: var(--box-shadow-sm);
+  min-height: 80px;
+}
+
+.navbar > .container {
+  max-width: 100%;
+  padding: 0 50px;
+}
+
+/* Logo styles */
+@keyframes colorChange {
+  0% {
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  25% {
+    filter: hue-rotate(90deg) brightness(1.1);
+  }
+  50% {
+    filter: hue-rotate(180deg) brightness(1.2);
+  }
+  75% {
+    filter: hue-rotate(270deg) brightness(1.1);
+  }
+  100% {
+    filter: hue-rotate(360deg) brightness(1);
+  }
+}
+
+.navbar-brand {
+  padding: 0;
+  margin-right: 30px;
+}
+
+.navbar-brand .logo {
+  height: 200px;
+  width: auto;
+  object-fit: cover;
+  padding: 10px 0;
+  border-radius: 80px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out, transform 0.3s ease;
+  transform: translateY(-20px);
+  animation: colorChange 8s ease-in-out infinite;
+}
+
+.navbar-brand .logo.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Tạm dừng animation khi hover */
+.navbar-brand .logo:hover {
+  animation-play-state: paused;
+  transform: scale(1.05);
+}
+
+/* Menu styles */
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  margin: 0 auto;
+  height: 100%; /* Đảm bảo chiều cao đồng nhất */
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  height: 100%; /* Đảm bảo chiều cao đồng nhất */
+}
+
+.nav-link {
+  color: var(--text-color) !important;
+  font-weight: 600;
+  font-size: 1.2rem;
+  padding: 0.3rem !important; /* Tăng padding để tạo khoảng cách đều */
+  text-transform: capitalize;
+  transition: var(--transition-base);
+  white-space: nowrap; /* Ngăn text bị xuống dòng */
+  display: flex;
+  align-items: center;
+  position: relative; /* Cho hiệu ứng hover */
+}
+
+/* Thêm hiệu ứng gạch chân khi hover */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link:hover {
+  color: var(--primary-color) !important;
+}
+
+/* Button container */
+.nav-buttons {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-right: 20px;
+}
+
+/* Common button styles */
+.btn-outline-primary,
+.btn-primary {
+  font-size: 0.9rem;
+  padding: 8px 20px;
+  border-radius: 5px;
+  font-weight: 500;
+  width: 120px; /* Đặt kích thước cố định */
+  text-align: center;
+  box-sizing: border-box; /* Đảm bảo border không làm thay đổi kích thước */
+}
+
+/* Login button */
+.btn-outline-primary {
+  border: 2px solid #007bff;
+  color: #007bff;
+  background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Register button */
+.btn-primary {
+  background-color: #007bff;
+  border: 2px solid #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .navbar > .container {
+    padding: 0 20px;
+  }
+  
+  .navbar-brand .logo {
+    height: 100px;
+  }
+  
+  .nav-buttons {
+    margin-top: 1rem;
+    justify-content: center;
+  }
+  
+  .nav-link {
+    font-size: 1.1rem;
+  }
+}
