@@ -87,10 +87,10 @@ const Navigation = () => {
 
           <div className="nav-buttons">
             <Link to="/auth/login" className="btn btn-outline-primary me-2">
-              Đăng nhập
+              {t.login}
             </Link>
             <Link to="/auth/register" className="btn btn-primary">
-              Đăng ký
+              {t.register}
             </Link>
           </div>
         </div>
