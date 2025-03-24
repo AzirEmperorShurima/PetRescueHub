@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from 'uuid';
-import { createHash256, encrypt, MASTER_PRIVARE_KEY } from "../utils/crypto_js.js";
 
 const userSchema = new mongoose.Schema(
     {
@@ -44,7 +43,14 @@ const userSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: false
-        }
+        },
+        volunteerRequestStatus: {
+            type: String,
+            enum: ["pending", "approved", "rejected", "none"],
+            default: "none"
+        },
+        isVIP: { type: Boolean, default: false }, // Trạng thái VIP
+        premiumExpiresAt: { type: Date } // Ngày hết hạn VIP
     },
     {
         timestamps: true,

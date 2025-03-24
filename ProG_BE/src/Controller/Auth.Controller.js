@@ -12,7 +12,6 @@ import { sendMailForgotPassword, sendMailNotification, sendMailService } from '.
 export const Signup_Handler = async (req, res) => {
     try {
         const { username, password, email } = req.body;
-        // Encrypt user information
 
         const CreateUser = new user({ username, password, email });
 
@@ -21,26 +20,29 @@ export const Signup_Handler = async (req, res) => {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Role 'user' not found" });
         }
         CreateUser.roles = [role._id];
+
         const token = await getCookies(CreateUser, res)
 
         CreateUser.tokens = [{ type: "LOGIN-TOKEN", token, signedAt: Date.now().toString(), expiredAt: Date.now().toString() }];
         const saveUser = await CreateUser.save();
         console.log('User Created Successfully', saveUser);
+
         const redisKey = `otp:${saveUser._id}`
         const generateOTP = otpGenerator()
         console.log("OPT Generated :", generateOTP);
         console.log("Redis Key:", redisKey);
-        await redisClient.set(redisKey, generateOTP, 'EX', 60 * 15)
+
+        await redisClient.set(redisKey, generateOTP, { EX: 60 * 15 });
         const temp = await redisClient.get(redisKey)
         console.log("OTP from Redis:", temp);
         await sendMailService({ email: saveUser.email, username: saveUser.username, otp: generateOTP });
 
         return res.status(StatusCodes.CREATED).json({
             message: `User registered successfully. Please verify OTP sent to your email ${saveUser.email}`,
-            UserName: saveUser.username, Email: saveUser.email,
+            userName: saveUser.username, emailmail: saveUser.email,
             createAt: saveUser.createdAt, updatedAt: saveUser.updatedAt,
             isActive: saveUser.isActive,
-            roles: saveUser.roles.map(role => role.name)
+            roles: ["user"]
         })
     } catch (error) {
         console.error("Error in Create User Task:", error);
@@ -56,51 +58,91 @@ export const Signup_Handler = async (req, res) => {
 // thêm xác thực otp lúc login 
 
 
+// export const loginHandler = async (req, res) => {
+//     const username = req.body.username;
+//     const password = req.body.password;
+//     const email = req.body.email;
+
+//     if (!username && !email) {
+//         return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Username or Email is required' });
+//     }
+
+//     if (!password) {
+//         return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Password is required' });
+//     }
+
+//     try {
+//         let userQuery = {};
+//         if (email) {
+//             userQuery.email = email
+//         } else if (username) {
+//             userQuery.username = username
+//         }
+//         console.log(userQuery);
+//         const foundUser = await user.findOne(userQuery).populate("roles");
+//         console.log(foundUser);
+
+//         if (!foundUser) {
+//             return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid Username or Email' });
+//         }
+//         if (foundUser.isActive === false) {
+//             return res.status(StatusCodes.FORBIDDEN).json({ message: 'Login Failed , User is not active' });
+//         }
+
+//         const isPasswordValid = await user.comparePassword(password, foundUser.password);
+//         if (!isPasswordValid) {
+//             return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid Password' });
+//         }
+
+//         // Xử lý cookies và tokens
+//         const newCookies = await getCookies(foundUser, res);
+//         console.log(newCookies.cookie)
+//         const token = await manageTokens(foundUser, newCookies, "LOGIN-TOKEN");
+
+//         return res.status(StatusCodes.OK).json({ message: 'Login Successful', token });
+//     } catch (err) {
+//         console.error("Login error:", err);
+//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error', error: err.message });
+//     }
+// };
 export const loginHandler = async (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
-    const email = req.body.email;
-
-    if (!username && !email) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Username or Email is required' });
-    }
-
-    if (!password) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Password is required' });
-    }
-
     try {
-        let userQuery = {};
-        if (email) {
-            userQuery.email = email
-        } else if (username) {
-            userQuery.username = username
-        }
-        console.log(userQuery);
-        const foundUser = await user.findOne(userQuery).populate("roles");
-        console.log(foundUser);
+        const { username, email, password } = req.body;
 
+        if (!username && !email) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Username or Email is required" });
+        }
+        if (!password) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Password is required" });
+        }
+
+        // Tìm user bằng email hoặc username
+        const foundUser = await user.findOne(email ? { email } : { username }).populate("roles");
         if (!foundUser) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid Username or Email' });
-        }
-        if (foundUser.isActive === false) {
-            return res.status(StatusCodes.FORBIDDEN).json({ message: 'Login Failed , User is not active' });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid Username or Email" });
         }
 
-        const isPasswordValid = await user.comparePassword(password, foundUser.password);
+        if (!foundUser.isActive) {
+            return res.status(StatusCodes.FORBIDDEN).json({ message: "Login Failed, User is not active" });
+        }
+
+        // So sánh password
+        const isPasswordValid = await bcrypt.compare(password, foundUser.password);
         if (!isPasswordValid) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid Password' });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid Password" });
         }
 
-        // Xử lý cookies và tokens
+        // Xử lý cookies
         const newCookies = await getCookies(foundUser, res);
-        console.log(newCookies.cookie)
-        const token = await manageTokens(foundUser, newCookies, "LOGIN-TOKEN");
+        console.log(newCookies.cookie);
 
-        return res.status(StatusCodes.OK).json({ message: 'Login Successful', token });
+        // Gọi `manageTokens` và nhận về token mới
+        const token = await manageTokens(foundUser, newCookies.cookie, "LOGIN-TOKEN");
+
+        return res.status(StatusCodes.OK).json({ message: "Login Successful", token });
     } catch (err) {
         console.error("Login error:", err);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error', error: err.message });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error", error: err.message });
     }
 };
 
@@ -139,33 +181,118 @@ export const logoutHandler = async (req, res) => {
     }
 };
 
+// export const refreshToken = async (req, res) => {
+//     const currentToken = req.cookies.token;
+//     if (!currentToken) return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
+//     try {
+//         const user = jwt.verify(currentToken, SECRET_KEY);
+//         const newToken = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: '1d' });
+//         res.cookie('token', newToken, { expires: new Date(Date.now() + 86400000), httpOnly: true, secure: true });
+//         return res.status(StatusCodes.OK).json({ message: 'Token refreshed successfully' });
+//     } catch (err) {
+//         return res.status(StatusCodes.FORBIDDEN).json({ message: 'Invalid token', error: err.message });
+//     }
+// }
 export const refreshToken = async (req, res) => {
-    const currentToken = req.cookies.token;
-    if (!currentToken) return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
     try {
-        const user = jwt.verify(currentToken, SECRET_KEY);
-        const newToken = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: '1d' });
-        res.cookie('token', newToken, { expires: new Date(Date.now() + 86400000), httpOnly: true, secure: true });
-        return res.status(StatusCodes.OK).json({ message: 'Token refreshed successfully' });
-    } catch (err) {
-        return res.status(StatusCodes.FORBIDDEN).json({ message: 'Invalid token', error: err.message });
-    }
-}
+        // Lấy token từ cookie
+        const currentToken = req.cookies.token;
+        if (!currentToken) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
+        }
 
+        // Giải mã token
+        let decoded;
+        try {
+            decoded = jwt.verify(currentToken, SECRET_KEY);
+        } catch (err) {
+            return res.status(StatusCodes.FORBIDDEN).json({ message: 'Invalid or expired token', error: err.message });
+        }
+
+        // Tìm user và kiểm tra xem token có tồn tại không
+        const foundUser = await user.findById(decoded.id);
+        if (!foundUser) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User not found' });
+        }
+
+        // Kiểm tra xem token có nằm trong danh sách token hợp lệ không
+        const validToken = foundUser.tokens.find(tokenObj => tokenObj.token === currentToken);
+        if (!validToken) {
+            return res.status(StatusCodes.FORBIDDEN).json({ message: 'Token is not valid or has been revoked' });
+        }
+
+        // Xóa token cũ khỏi danh sách
+        foundUser.tokens = foundUser.tokens.filter(tokenObj => tokenObj.token !== currentToken);
+
+        // Tạo token mới
+        const newToken = jwt.sign({ id: foundUser._id }, SECRET_KEY, { expiresIn: '1d' });
+
+        // Lưu token mới vào danh sách token của user
+        foundUser.tokens.push({
+            type: "REFRESH-TOKEN",
+            token: newToken,
+            signedAt: Date.now(),
+            expiredAt: Date.now() + 86400000
+        });
+
+        await foundUser.save(); // Cập nhật user
+
+        // Set lại cookie với token mới
+        res.cookie('token', newToken, {
+            expires: new Date(Date.now() + 86400000),
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Strict'
+        });
+
+        return res.status(StatusCodes.OK).json({ message: 'Token refreshed successfully', token: newToken });
+
+    } catch (err) {
+        console.error("Refresh token error:", err);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error', error: err.message });
+    }
+};
+// export const manageTokens = async (_user, token, type) => {
+//     try {
+//         let tokensArray = _user.tokens || [];
+//         console.log("Existing Tokens:", tokensArray);
+
+//         if (tokensArray.length) {
+//             tokensArray = tokensArray.filter((tokenObj) => {
+//                 const timeDiff = (Date.now() - parseInt(tokenObj.signedAt)) / 1000;
+//                 return timeDiff < 86400;
+//             });
+//         }
+//         tokensArray.push({ type, token, signedAt: Date.now().toString(), expiredAt: (Date.now() + 86400000).toString() });
+//         await user.findByIdAndUpdate(_user._id, { tokens: tokensArray }, { new: true });
+//         console.log("Updated Tokens:", tokensArray);
+//     } catch (error) {
+//         console.error("Error managing tokens:", error);
+//         throw new Error("Unable to manage tokens");
+//     }
+// };
 export const manageTokens = async (_user, token, type) => {
     try {
         let tokensArray = _user.tokens || [];
         console.log("Existing Tokens:", tokensArray);
 
-        if (tokensArray.length) {
-            tokensArray = tokensArray.filter((tokenObj) => {
-                const timeDiff = (Date.now() - parseInt(tokenObj.signedAt)) / 1000;
-                return timeDiff < 86400;
-            });
+        // Lọc các token còn hạn sử dụng (< 24h)
+        const now = Date.now();
+        tokensArray = tokensArray.filter(tokenObj => (now - parseInt(tokenObj.signedAt)) < 86400000);
+
+        // Giới hạn số token hoạt động (tối đa 5)
+        if (tokensArray.length >= 5) {
+            tokensArray.shift(); // Xóa token cũ nhất
         }
-        tokensArray.push({ type, token, signedAt: Date.now().toString(), expiredAt: (Date.now() + 86400000).toString() });
-        await user.findByIdAndUpdate(_user._id, { tokens: tokensArray }, { new: true });
+
+        // Thêm token mới
+        tokensArray.push({ type, token, signedAt: now, expiredAt: now + 86400000 });
+
+        // Cập nhật user với danh sách token mới
+        await user.updateOne({ _id: _user._id }, { $set: { tokens: tokensArray } });
+
         console.log("Updated Tokens:", tokensArray);
+        return token;  // Trả về token để sử dụng trong loginHandler
     } catch (error) {
         console.error("Error managing tokens:", error);
         throw new Error("Unable to manage tokens");
@@ -173,68 +300,122 @@ export const manageTokens = async (_user, token, type) => {
 };
 
 
-export const getProfile = async (req, res) => {
-    console.log(req.cookies);
+// export const getProfile = async (req, res) => {
+//     console.log(req.cookies);
 
+//     try {
+//         const userToken = req.cookies.token;
+//         if (!userToken) {
+//             return res
+//                 .status(StatusCodes.UNAUTHORIZED)
+//                 .json({ message: 'Unauthorized - No token provided' });
+//         }
+
+//         let decodedUser;
+//         try {
+//             decodedUser = jwt.verify(userToken, SECRET_KEY);
+//         } catch (err) {
+//             console.error("Invalid or expired token:", err.message);
+//             return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid or expired token' });
+//         }
+
+//         const userID = decodedUser.id;
+//         const foundUser = await user.findOne({
+//             $or: [
+//                 { _id: userID }, // Tìm bằng ObjectId
+//                 { id: userID }   // Tìm bằng UUID
+//             ]
+//         }).populate('roles', 'name');
+
+//         if (!foundUser) {
+//             return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+//         }
+
+//         // Kiểm tra token có tồn tại trong cơ sở dữ liệu
+//         const tokenExists = foundUser.tokens.some((tokenObj) => tokenObj.token === userToken);
+//         if (!tokenExists) {
+//             return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized - Token mismatch' });
+//         }
+
+//         // Tạo profile trả về
+//         const userProfile = {
+//             username: foundUser.username,
+//             email: foundUser.email, // Cân nhắc loại bỏ hoặc ẩn
+//             roles: foundUser.roles.map((role) => role.name),
+//             isActive: foundUser.isActive,
+//             tokens: foundUser.tokens.length,
+//             password: '**********', // Ẩn mật khẩu
+//             createdAt: foundUser.createdAt,
+//             updatedAt: foundUser.updatedAt,
+//         };
+
+//         return res.status(StatusCodes.OK).json({
+//             message: 'User profile fetched successfully',
+//             userProfile,
+//         });
+//     } catch (error) {
+//         console.error("Error fetching user profile:", error);
+//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//             message: 'Internal Server Error',
+//             error: error.message,
+//         });
+//     }
+// };
+export const getProfile = async (req, res) => {
     try {
-        const userToken = req.cookies.token;
+        const userToken = req.cookies?.token;
         if (!userToken) {
-            return res
-                .status(StatusCodes.UNAUTHORIZED)
-                .json({ message: 'Unauthorized - No token provided' });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - No token provided" });
         }
 
+        // Xác minh token
         let decodedUser;
         try {
             decodedUser = jwt.verify(userToken, SECRET_KEY);
         } catch (err) {
-            console.error("Invalid or expired token:", err.message);
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid or expired token' });
+            console.warn("🚨 Invalid or expired token:", err.message);
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid or expired token" });
         }
 
-        const userID = decodedUser.id;
-        const foundUser = await user.findOne({
-            $or: [
-                { _id: userID }, // Tìm bằng ObjectId
-                { id: userID }   // Tìm bằng UUID
-            ]
-        }).populate('roles', 'name');
+        // Tìm user bằng UUID (id) thay vì _id (ObjectId)
+        const foundUser = await user.findOne({ _id: decodedUser.id }).populate("roles", "name");
 
         if (!foundUser) {
-            return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+            return res.status(StatusCodes.NOT_FOUND).json({ message: "User not found" });
         }
 
-        // Kiểm tra token có tồn tại trong cơ sở dữ liệu
-        const tokenExists = foundUser.tokens.some((tokenObj) => tokenObj.token === userToken);
-        if (!tokenExists) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized - Token mismatch' });
+        // Kiểm tra token có hợp lệ trong danh sách tokens của user
+        const isTokenValid = foundUser.tokens?.some(tokenObj => tokenObj.token === userToken);
+        if (!isTokenValid) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - Token mismatch" });
         }
 
-        // Tạo profile trả về
+        // Trả về thông tin user, ẩn các trường nhạy cảm
         const userProfile = {
+            id: foundUser.id,
             username: foundUser.username,
-            email: foundUser.email, // Cân nhắc loại bỏ hoặc ẩn
-            roles: foundUser.roles.map((role) => role.name),
+            email: "********", // Ẩn email vì lý do bảo mật
+            avatar: foundUser.avatar,
+            phonenumber: foundUser.phonenumber ? "Hidden" : null, // Ẩn số điện thoại
+            address: foundUser.address,
+            roles: foundUser.roles.map(role => role.name),
             isActive: foundUser.isActive,
-            tokens: foundUser.tokens.length,
-            password: '**********', // Ẩn mật khẩu
             createdAt: foundUser.createdAt,
             updatedAt: foundUser.updatedAt,
         };
 
         return res.status(StatusCodes.OK).json({
-            message: 'User profile fetched successfully',
+            message: "User profile fetched successfully",
             userProfile,
         });
+
     } catch (error) {
-        console.error("Error fetching user profile:", error);
+        console.error("❌ Error fetching user profile:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Internal Server Error',
-            error: error.message,
+            message: "Internal Server Error",
         });
     }
 };
-
 export const verified_OTP = async (req, res) => {
     const cookies = req.cookies.token;
     const otp = req.body.otp;
@@ -322,7 +503,7 @@ export const forgot_password = async (req, res) => {
 
         const otp = otpGenerator()
 
-        await redisClient.setEx(`forgotpassword:${userFound.email}`, otp, 60 * 15);
+        await redisClient.setEx(`forgotpassword:${userFound.email}`, 60 * 15, otp);
 
         await sendMailForgotPassword({
             email: userFound.email,

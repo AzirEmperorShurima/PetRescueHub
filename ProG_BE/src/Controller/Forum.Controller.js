@@ -226,6 +226,7 @@ export const removeReaction = async (req, res) => {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
     }
 };
+
 export const getReactionsByPost = async (req, res) => {
     try {
         const { postId } = req.params;
