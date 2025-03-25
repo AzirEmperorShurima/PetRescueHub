@@ -42,8 +42,8 @@ export const acceptApproveVolunteer = async (req, res) => {
         if (!user) return res.status(404).json({ message: "Người dùng không tồn tại!" });
 
         // Kiểm tra xem role "volunteer" đã tồn tại hay chưa
-        const volunteerRole = await Role.findOne({ name: "volunteer" });
-        if (!volunteerRole) return res.status(400).json({ message: "Role 'volunteer' chưa được tạo!" });
+        // const volunteerRole = await Role.findOne({ name: "volunteer" });
+        // if (!volunteerRole) return res.status(400).json({ message: "Role 'volunteer' chưa được tạo!" });
 
         // Kiểm tra nếu user đã có role "volunteer"
         const hasVolunteerRole = user.roles.some(role => role.name === "volunteer");
@@ -109,10 +109,10 @@ export const revokeVolunteerRole = async (req, res) => {
             return res.status(404).json({ message: "User không tồn tại!" });
         }
 
-        const volunteerRole = await Role.findOne({ name: "volunteer" });
-        if (!volunteerRole) {
-            return res.status(400).json({ message: "Role 'volunteer' chưa được tạo!" });
-        }
+        // const volunteerRole = await Role.findOne({ name: "volunteer" });
+        // if (!volunteerRole) {
+        //     return res.status(400).json({ message: "Role 'volunteer' chưa được tạo!" });
+        // }
 
         const hasVolunteerRole = user.roles.includes(volunteerRole._id);
         if (!hasVolunteerRole) {

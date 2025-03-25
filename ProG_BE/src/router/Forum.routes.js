@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createForumPost, updateForumPost } from "../Controller/Forum_Controller.js";
+import { createForumPost, updateForumPost } from "../Controller/Forum.Controller.js";
 
 const forumRoutes = Router()
 

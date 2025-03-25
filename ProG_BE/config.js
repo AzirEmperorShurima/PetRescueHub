@@ -10,3 +10,16 @@ export const MAINDB_MONGODB_DBNAME = 'projectG'
 
 export const TOTP_SECRET_KEY = "XINCJAOBANNHO"
 
+// Momo payment gate config 
+export const MOMO_API = 'https://test-payment.momo.vn/v2/gateway/api/create'
+export const accessKey = 'F8BBA842ECF85'
+export const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz'
+export const orderInfo = 'pay with MoMo'
+export const partnerCode = 'MOMO'
+export const redirectUrl = 'http://localhost:5000/views/home.html'
+export const ipnUrl = 'https://0778-14-178-58-205.ngrok-free.app/callback'
+export const requestType = "payWithMethod";
+
+// Zalo payment gate config
+
+// VnPay payment gate config

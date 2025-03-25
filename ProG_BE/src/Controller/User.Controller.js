@@ -1,12 +1,14 @@
 import Role from "../models/Role";
 import user from "../models/user";
+import { authenticateUser } from "./Forum.Controller";
 
 /**
  * @detail function focus to premium users
  */
 export const buyPremium = async (req, res) => {
     try {
-        const { userId, paymentMethod, duration } = req.body;
+        const userId = authenticateUser(req)
+        const { paymentMethod, duration } = req.body;
         if (!userId || !paymentMethod || duration) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Thiếu thông tin thanh toán!" });
         }
@@ -25,18 +27,21 @@ export const buyPremium = async (req, res) => {
         if (_user.isVIP) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Người dùng đã là VIP!" });
         }
-
+        const paymentOptions = {
+            duration: duration,
+            paymentMethod: paymentMethod
+        }
         // Gọi API cổng thanh toán (ví dụ: Stripe, PayPal, VNPay, MoMo)
-        const paymentResult = await processPayment(user, paymentMethod);
+        const paymentResult = await processPayment(user, paymentOptions);
         if (!paymentResult.success) {
             return res.status(StatusCodes.PAYMENT_REQUIRED).json({ message: "Thanh toán thất bại!", error: paymentResult.error });
         }
 
         // Cập nhật thông tin VIP
-        const vipRole = await Role.findOne({ name: "VIP" });
-        if (!vipRole) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Role 'VIP' chưa được tạo!" });
-        }
+        // const vipRole = await Role.findOne({ name: "VIP" });
+        // if (!vipRole) {
+        //     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Role 'VIP' chưa được tạo!" });
+        // }
 
         _user.isVIP = true;
         _user.premiumExpiresAt = new Date(Date.now() + (duration * 24 * 60 * 60 * 1000)); // VIP 30 ngày
