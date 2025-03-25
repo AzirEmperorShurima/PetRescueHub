@@ -1,0 +1,51 @@
+.event-page {
+    padding: 40px 0;
+    background-color: #fff;
+  }
+  
+  .event-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+  }
+  
+  .event-header .lead {
+    font-size: 1.2rem;
+    color: #666;
+  }
+  
+  .event-content {
+    max-width: 800px;
+  }
+  
+  .event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .event-item {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+  }
+  
+  .event-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .event-item h3 {
+    font-size: 1.5rem;
+    color: #007bff;
+  }
+  
+  .event-item p {
+    margin: 5px 0;
+    color: #555;
+  }
+  
+  .event-item .btn {
+    padding: 8px 16px;
+    font-size: 1rem;
+  }
