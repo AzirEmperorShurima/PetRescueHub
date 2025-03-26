@@ -129,3 +129,8 @@ body {
   padding: var(--spacing-xl) 0; /* Thêm padding để tạo khoảng cách với footer */
   min-height: calc(100vh - var(--header-height) - var(--footer-height)); /* Chiều cao tối thiểu hợp lý */
 }
+
+/* Thêm padding-top cho main-content khi navbar sticky */
+.navbar.sticky + .main-content {
+  padding-top: 100px; /* Bằng với chiều cao của navbar */
+}

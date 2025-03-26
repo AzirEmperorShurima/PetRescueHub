@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom'; // Thêm NavLink
 import '../../assets/styles/components/Navigation.css';
 import logo from '../../assets/images/logo.svg'; // Đảm bảo SVG này khớp với ảnh mẫu
@@ -9,6 +9,8 @@ const Navigation = () => {
   const { language } = useContext(LanguageContext);
   const t = translations[language];
   const [isLogoVisible, setLogoVisible] = useState(false);
+  const [isSticky, setIsSticky] = useState(false);
+  const navRef = useRef(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -18,8 +20,34 @@ const Navigation = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Thêm effect để xử lý sự kiện cuộn
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const navHeight = navRef.current?.offsetHeight || 0;
+      
+      // Khi cuộn xuống quá chiều cao của navbar, thêm class sticky
+      if (scrollPosition > navHeight) {
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
+    };
+
+    // Đăng ký sự kiện cuộn
+    window.addEventListener('scroll', handleScroll);
+    
+    // Cleanup khi component unmount
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-light">
+    <nav 
+      ref={navRef}
+      className={`navbar navbar-expand-lg navbar-light ${isSticky ? 'sticky' : ''}`}
+    >
       <div className="container">
         <Link className="navbar-brand" to="/">
           <img

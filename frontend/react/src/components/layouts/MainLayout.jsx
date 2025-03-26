@@ -14,7 +14,7 @@ const MainLayout = () => {
     <div className={`layout-wrapper ${isAuthPage ? 'auth-page' : ''}`}>
       <TopBar />
       <Navigation />
-      <main className="main-content">
+      <main className="main-content" style={{ marginTop: 0, paddingTop: 0 }}>
         <Outlet />
       </main>
       <Footer />

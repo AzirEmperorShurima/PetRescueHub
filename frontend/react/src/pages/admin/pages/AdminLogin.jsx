@@ -15,6 +15,7 @@ import {
 import { LockOutlined, Email, Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import logo from '../../../assets/images/logo.svg'; // Đảm bảo đường dẫn đúng đến logo
+import { usersMock } from '../../../mocks';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -47,11 +48,14 @@ const AdminLogin = () => {
       // const response = await axios.post('/api/admin/login', formData);
       // localStorage.setItem('adminToken', response.data.token);
 
-      // Giả lập đăng nhập thành công
-      // Thông tin đăng nhập ảo:
-      // Email: admin@example.com
-      // Mật khẩu: admin123
-      if (formData.email === 'admin@example.com' && formData.password === 'admin123') {
+      // Sử dụng dữ liệu giả từ mock
+      const adminUser = usersMock.find(
+        user => user.email === formData.email && 
+                user.password === formData.password && 
+                user.role === 'admin'
+      );
+      
+      if (adminUser) {
         localStorage.setItem('adminToken', 'fake-jwt-token');
         window.location.href = '/admin';
       } else {

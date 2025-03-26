@@ -15,8 +15,14 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 
+// Import mock data
+import { petsMock } from '../../mocks';
+
 // Import các components dùng chung
 import { ContentCard, SearchBar, TagList } from '../../components/common';
+
+// Import CSS
+import './Adopt.css';
 
 const Adopt = () => {
   const [pets, setPets] = useState([]);
@@ -37,33 +43,9 @@ const Adopt = () => {
         // const response = await api.get('/pets');
         // setPets(response.data);
         
-        // Dữ liệu mẫu
+        // Sử dụng dữ liệu từ mock
         setTimeout(() => {
-          setPets([
-            { 
-              id: 1, 
-              name: 'Buddy', 
-              type: 'dog',
-              breed: 'Golden Retriever',
-              age: '2 tuổi', 
-              gender: 'male',
-              description: 'Chó Golden Retriever thân thiện, năng động và rất thích chơi đùa với trẻ em.', 
-              image: 'https://images.pexels.com/photos/825949/pexels-photo-825949.jpeg',
-              tags: ['chó', 'Golden Retriever', 'thân thiện']
-            },
-            { 
-              id: 2, 
-              name: 'Whiskers', 
-              type: 'cat',
-              breed: 'Xiêm',
-              age: '1 tuổi', 
-              gender: 'female',
-              description: 'Mèo Xiêm đáng yêu, điềm tĩnh và rất sạch sẽ.', 
-              image: 'https://images.pexels.com/photos/4587993/pexels-photo-4587993.jpeg',
-              tags: ['mèo', 'Xiêm', 'điềm tĩnh']
-            },
-            // ... thêm dữ liệu mẫu khác
-          ]);
+          setPets(petsMock);
           setLoading(false);
         }, 1000);
       } catch (error) {
@@ -227,7 +209,7 @@ const Adopt = () => {
                   tags={pet.tags}
                   sx={{ height: '100%' }}
                 >
-                  <Box sx={{ mt: 2 }}>
+                  <Box className="pet-details">
                     <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <span style={{ fontWeight: 'bold', marginRight: '8px' }}>Loại:</span> 
                       {pet.type === 'dog' ? 'Chó' : pet.type === 'cat' ? 'Mèo' : 'Khác'}
@@ -243,9 +225,19 @@ const Adopt = () => {
                       {pet.gender === 'male' ? 'Đực' : 'Cái'}
                     </Typography>
                   </Box>
-                  <Box sx={{ mt: 2 }}>
+                  <Box className="pet-action-area">
                     <Link to={`/adopt/${pet.id}`} style={{ textDecoration: 'none' }}>
-                      <Button variant="contained" color="primary" fullWidth>
+                      <Button 
+                        variant="contained" 
+                        color="primary" 
+                        fullWidth
+                        sx={{ 
+                          py: 1.2,
+                          textTransform: 'uppercase',
+                          fontWeight: 500,
+                          letterSpacing: '0.5px'
+                        }}
+                      >
                         Nhận nuôi
                       </Button>
                     </Link>
@@ -268,5 +260,8 @@ const Adopt = () => {
     </Container>
   );
 };
+
+// Xóa component PetCard vì không còn sử dụng nữa
+// Thay vào đó, chúng ta đã sử dụng ContentCard từ components/common
 
 export default Adopt;

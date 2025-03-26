@@ -18,6 +18,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useAuth } from '../../contexts/AuthContext';
+import { questionDetailMock, answersMock } from '../../mocks/questionDetailMock';
 
 // Import các components dùng chung
 import { 
@@ -47,46 +48,13 @@ const QuestionDetail = () => {
         // const response = await api.get(`/forum/questions/${id}`);
         // setQuestion(response.data);
         
-        // Dữ liệu mẫu
+        // Sử dụng dữ liệu giả từ mock
         setTimeout(() => {
-          const mockQuestion = {
-            id: parseInt(id),
-            title: 'Làm thế nào để huấn luyện mèo đi vệ sinh đúng chỗ?',
-            content: 'Mèo nhà mình mới 3 tháng tuổi, làm thế nào để huấn luyện bé đi vệ sinh đúng chỗ?\n\nMình đã thử đặt khay cát ở nhiều vị trí khác nhau nhưng bé vẫn không sử dụng. Mong mọi người chia sẻ kinh nghiệm.',
-            author: 'Trần Thị B',
-            authorAvatar: 'https://i.pravatar.cc/150?img=5',
-            authorId: 'user2',
-            date: '2023-11-09T14:20:00',
-            tags: ['mèo', 'huấn luyện', 'vệ sinh'],
-            solved: false
-          };
-          setQuestion(mockQuestion);
+          setQuestion(questionDetailMock);
           setLikeCount(8);
-          
-          // Mock answers
-          setAnswers([
-            {
-              id: 1,
-              author: 'Nguyễn Văn A',
-              avatar: 'https://i.pravatar.cc/150?img=1',
-              content: 'Bạn nên đặt khay cát ở nơi yên tĩnh, tránh xa khu vực ăn uống của mèo. Mỗi khi thấy mèo có dấu hiệu muốn đi vệ sinh (như đào đào, quay quay), hãy nhẹ nhàng đặt bé vào khay cát.',
-              createdAt: '2023-11-10T08:30:00',
-              userId: 'user1',
-              isAccepted: false
-            },
-            {
-              id: 2,
-              author: 'Lê Văn C',
-              avatar: 'https://i.pravatar.cc/150?img=8',
-              content: 'Mèo thường thích khay cát sạch. Hãy vệ sinh khay cát thường xuyên và sử dụng cát không mùi. Ngoài ra, bạn có thể thử sử dụng phun xịt thu hút mèo đến khay cát.',
-              createdAt: '2023-11-11T14:20:00',
-              userId: 'user3',
-              isAccepted: false
-            }
-          ]);
-          
+          setAnswers(answersMock);
           setLoading(false);
-        }, 1000);
+        }, 500);
       } catch (error) {
         console.error('Error fetching question details:', error);
         setLoading(false);

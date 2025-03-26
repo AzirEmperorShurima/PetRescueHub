@@ -7,12 +7,33 @@
   border-top: 2px solid #a21725; /* Viền trên màu vàng */
   border-bottom: 1px solid #D3D3D3; /* Viền dưới màu xám */
   box-shadow: var(--box-shadow-sm);
-  min-height: 80px; /* Giảm chiều cao cho phù hợp */
+  min-height: 100px; /* Giảm chiều cao cho phù hợp */
+}
+
+/* Thêm class sticky cho navbar */
+.navbar.sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.3s ease-in-out;
+  transition: all 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .navbar > .container {
   max-width: 100%;
-  padding: 0 50px;
+  padding: 0 0 0 50px; /* Chỉ giữ padding bên trái, loại bỏ padding bên phải */
 }
 
 /* Logo styles */
@@ -70,7 +91,7 @@
 .navbar-nav {
   display: flex;
   align-items: center;
-  gap: 2rem; /* Giảm khoảng cách giữa các link cho giống ảnh mẫu */
+  gap: 1.4rem; /* Giảm khoảng cách giữa các link cho giống ảnh mẫu */
   margin: 0 auto;
   height: 100%;
 }
@@ -84,7 +105,7 @@
 .nav-link {
   color: #000000 !important; /* Màu đen cho các link */
   font-weight: 600;
-  font-size: 0.875rem; /* 14px như ảnh mẫu */
+  font-size: 1 rem; /* 14px như ảnh mẫu */
   padding: 8px 16px !important;
   text-transform: uppercase; /* In hoa */
   transition: var(--transition-base);
@@ -113,7 +134,8 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  padding-right: 20px;
+  padding-right: 4px; /* Loại bỏ padding bên phải */
+  margin-right: 0; /* Đảm bảo không có margin bên phải */
 }
 
 /* Common button styles */
@@ -155,7 +177,7 @@
 /* Responsive */
 @media (max-width: 991px) {
   .navbar > .container {
-    padding: 0 20px;
+    padding: 0 0; /* Giảm padding của container để các nút nằm sát cạnh */
   }
 
   .navbar-brand .logo {
@@ -169,6 +191,19 @@
 
   .nav-buttons {
     margin-top: 1rem;
-    justify-content: center;
+    justify-content: flex-end; /* Căn phải thay vì căn giữa */
+    padding-right: 0;
   }
+}
+
+/* Loại bỏ khoảng cách giữa Navigation và Slide */
+.navbar {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Hoặc nếu bạn muốn làm to thanh Navigation */
+.navbar {
+  padding: 15px 0;
+  margin-bottom: 0;
 }

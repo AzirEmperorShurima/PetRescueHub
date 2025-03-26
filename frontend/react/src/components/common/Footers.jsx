@@ -89,7 +89,7 @@ const Footer = ({ darkLight }) => {
                         </div>
                         <div className="col-lg-6 col-sm-5 text-right">
                             <p>
-                                Made with <i className="icon_heart"></i> in <a href="http://vlxx.mobi" target="_blank" rel="noopener noreferrer">CodeLord</a>
+                                Made with <i className="icon_heart"></i> in <a href="" target="_blank" rel="noopener noreferrer">CodeLord</a>
                             </p>
                         </div>
                     </div>
