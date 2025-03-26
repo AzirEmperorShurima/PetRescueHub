@@ -2,11 +2,11 @@ import React from 'react';
 import TopBar from '../common/TopBar';
 import Navigation from '../common/Navigation';
 import Footer from '../common/Footers';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import '../../assets/styles/main.css';
 
 
-const MainLayout = ({ children }) => {
+const MainLayout = () => {
   const location = useLocation();
   const isAuthPage = location.pathname.includes('/auth');
 
@@ -15,7 +15,7 @@ const MainLayout = ({ children }) => {
       <TopBar />
       <Navigation />
       <main className="main-content">
-        {children}
+        <Outlet />
       </main>
       <Footer />
     </div>

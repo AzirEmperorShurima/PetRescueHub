@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom'; // Thêm NavLink
 import '../../assets/styles/components/Navigation.css';
 import logo from '../../assets/images/logo.svg'; // Đảm bảo SVG này khớp với ảnh mẫu
-import { LanguageContext } from '../../context/LanguageContext';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import translations from '../../utils/translations';
 
 const Navigation = () => {
