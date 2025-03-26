@@ -15,6 +15,16 @@ import Donate from '../features/Donate/Donate';
 import Forum from '../features/Forum/Forum';
 import Event from '../features/Event/Event';
 
+// Forum components
+import CreatePost from '../features/Forum/CreatePost';
+import CreateQuestion from '../features/Forum/CreateQuestion';
+import PostDetail from '../features/Forum/PostDetail';
+import QuestionDetail from '../features/Forum/QuestionDetail';
+
+// Event components
+import CreateEvent from '../features/Event/CreateEvent';
+import EventDetail from '../features/Event/EventDetail';
+
 // Admin
 import AdminApp from '../pages/admin';
 
@@ -28,10 +38,23 @@ const AppRoutes = () => [
     <Route index element={<Home />} />
     <Route path="adopt" element={<Adopt />} />
     <Route path="donate" element={<Donate />} />
+    
+    {/* Forum routes */}
     <Route path="forum" element={<Forum />} />
+    <Route path="forum/post/create" element={<CreatePost />} />
+    <Route path="forum/question/create" element={<CreateQuestion />} />
+    <Route path="forum/post/:id" element={<PostDetail />} />
+    <Route path="forum/question/:id" element={<QuestionDetail />} />
+    
+    {/* Event routes */}
     <Route path="event" element={<Event />} />
+    <Route path="event/create" element={<CreateEvent />} />
+    <Route path="event/:id" element={<EventDetail />} />
+    
+    {/* Auth routes */}
     <Route path="auth/login" element={<Login />} />
     <Route path="auth/register" element={<Register />} />
+    
     <Route path="*" element={<Navigate to="/" />} />
   </Route>,
   

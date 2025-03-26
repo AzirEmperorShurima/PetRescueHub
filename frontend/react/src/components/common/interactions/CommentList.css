@@ -1,0 +1,32 @@
+.comment-list {
+  width: 100%;
+  padding: 0;
+}
+
+.comment-item {
+  margin-bottom: 8px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.author-name {
+  font-weight: 600;
+}
+
+.timestamp {
+  color: #6c757d;
+  font-size: 0.75rem;
+}
+
+.comment-content {
+  display: inline;
+  white-space: pre-wrap;
+}
+
+.action-buttons {
+  display: flex;
+}

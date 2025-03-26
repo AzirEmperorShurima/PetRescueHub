@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, Paper, Typography, Box, Card, CardContent, CardHeader } from '@mui/material';
-// import axios from 'axios';
-import { fDateTime } from '../../../utils/format-time'; // Updated import path to .js file
+import { fDateTime } from '../../../utils/format-time';
+// Import mock data
+import { users, pets, volunteers, donations } from '../../../mocks';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -10,28 +11,26 @@ const Dashboard = () => {
     totalVolunteers: 0,
     totalDonations: 0,
     recentActivities: [],
-    donationsCount: 0  // Add this new property to track number of donors
+    donationsCount: 0
   });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Trong thực tế, bạn sẽ gọi API thực sự
-        // const response = await axios.get('/api/admin/dashboard');
-        // setStats(response.data);
-        
-        // Dữ liệu mẫu
+        // Sử dụng mock data thay vì hardcode
+        const recentActivities = [
+          { id: 1, type: 'user_register', user: users[0].name, timestamp: new Date() },
+          { id: 2, type: 'pet_adopted', pet: pets[0].name, user: users[1].name, timestamp: new Date(Date.now() - 86400000) },
+          { id: 3, type: 'donation', amount: donations[0].amount, user: users[2].name, timestamp: new Date(Date.now() - 172800000) },
+        ];
+
         setStats({
-          totalUsers: 120,
-          totalPets: 45,
-          totalVolunteers: 30,
-          totalDonations: 15000000,
-          donationsCount: 25,  // Add this to represent number of donors
-          recentActivities: [
-            { id: 1, type: 'user_register', user: 'Nguyễn Văn A', timestamp: new Date() },
-            { id: 2, type: 'pet_adopted', pet: 'Buddy', user: 'Trần Thị B', timestamp: new Date(Date.now() - 86400000) },
-            { id: 3, type: 'donation', amount: 1000000, user: 'Lê Văn C', timestamp: new Date(Date.now() - 172800000) },
-          ]
+          totalUsers: users.length,
+          totalPets: pets.length,
+          totalVolunteers: volunteers.length,
+          totalDonations: donations.reduce((sum, donation) => sum + donation.amount, 0),
+          donationsCount: donations.length,
+          recentActivities
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -41,6 +40,7 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  // Phần còn lại của component giữ nguyên
   const getActivityText = (activity) => {
     switch (activity.type) {
       case 'user_register':

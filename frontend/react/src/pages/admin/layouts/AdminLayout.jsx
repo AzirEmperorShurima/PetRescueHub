@@ -16,27 +16,37 @@ import {
   Avatar,
   Menu,
   MenuItem,
-  ListItemButton
+  ListItemButton,
+  Badge,
+  Tooltip
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Dashboard as DashboardIcon,
+  Home as DashboardIcon,
   People as PeopleIcon,
   Pets as PetsIcon,
   Event as EventIcon,
   MonetizationOn as DonationIcon,
   Handshake as HandshakeIcon,
   AccountCircle,
-  ChevronLeft as ChevronLeftIcon
+  ChevronLeft as ChevronLeftIcon,
+  Email as EmailIcon,
+  Help as HelpIcon,
+  Settings as SettingsIcon,
+  Lock as LockIcon,
+  ExitToApp as LogoutIcon,
+  Notifications as NotificationsIcon,
+  LocalHospital as RescueIcon // Thêm icon cho cứu hộ
 } from '@mui/icons-material';
 // Import logo
 import logo from '../../../assets/images/logo.svg';
 
-const drawerWidth = 260; // Tăng chiều rộng drawer
+const drawerWidth = 260;
 
 const AdminLayout = () => {
   const [open, setOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -48,8 +58,16 @@ const AdminLayout = () => {
     setAnchorEl(event.currentTarget);
   };
 
+  const handleNotificationMenuOpen = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
+  };
+
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleNotificationMenuClose = () => {
+    setNotificationAnchorEl(null);
   };
 
   const handleProfileClick = () => {
@@ -57,18 +75,49 @@ const AdminLayout = () => {
     navigate('/admin/profile');
   };
 
+  const handleMessagesClick = () => {
+    handleMenuClose();
+    // Điều hướng đến trang tin nhắn
+    navigate('/admin/messages');
+  };
+
+  const handleHelpCenterClick = () => {
+    handleMenuClose();
+    // Mở trung tâm trợ giúp
+    window.open('/admin/help', '_blank');
+  };
+
+  const handleSettingsClick = () => {
+    handleMenuClose();
+    // Điều hướng đến trang cài đặt
+    navigate('/admin/settings');
+  };
+
+  const handleLockScreenClick = () => {
+    handleMenuClose();
+    // Lưu trạng thái đã khóa vào localStorage
+    localStorage.setItem('screenLocked', 'true');
+    // Điều hướng đến trang khóa màn hình
+    navigate('/admin/lock-screen');
+  };
+
   const handleLogout = () => {
+    handleMenuClose();
+    // Xóa token và thông tin người dùng
     localStorage.removeItem('adminToken');
+    // Chuyển hướng về trang đăng nhập
     window.location.href = '/admin/login';
   };
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
+   { text: 'Quản lý cứu hộ', icon: <RescueIcon />, path: '/admin/rescues' },
     { text: 'Quản lý người dùng', icon: <PeopleIcon />, path: '/admin/users' },
     { text: 'Quản lý thú cưng', icon: <PetsIcon />, path: '/admin/pets' },
     { text: 'Quản lý tình nguyện viên', icon: <HandshakeIcon />, path: '/admin/volunteers' },
     { text: 'Quản lý sự kiện', icon: <EventIcon />, path: '/admin/events' },
     { text: 'Quản lý quyên góp', icon: <DonationIcon />, path: '/admin/donations' },
+    
   ];
 
   return (
@@ -108,6 +157,63 @@ const AdminLayout = () => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Pet Rescue Hub - Quản trị viên
           </Typography>
+          
+          {/* Thêm nút thông báo */}
+          <Tooltip title="Thông báo">
+            <IconButton 
+              color="inherit"
+              onClick={handleNotificationMenuOpen}
+              sx={{ mr: 2 }}
+            >
+              <Badge badgeContent={5} color="error">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+          
+          {/* Menu thông báo */}
+          <Menu
+            id="notification-menu"
+            anchorEl={notificationAnchorEl}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(notificationAnchorEl)}
+            onClose={handleNotificationMenuClose}
+            PaperProps={{
+              sx: { width: 320, maxHeight: 400, mt: 1 }
+            }}
+          >
+            <MenuItem onClick={handleNotificationMenuClose}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Thông báo mới</Typography>
+                <Typography variant="body2">Có 3 thú cưng mới cần được giải cứu</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>5 phút trước</Typography>
+              </Box>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleNotificationMenuClose}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Quyên góp mới</Typography>
+                <Typography variant="body2">Nguyễn Văn A vừa quyên góp 500.000đ</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>30 phút trước</Typography>
+              </Box>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleNotificationMenuClose}>
+              <Typography sx={{ textAlign: 'center', color: 'primary.main' }}>
+                Xem tất cả thông báo
+              </Typography>
+            </MenuItem>
+          </Menu>
+          
+          {/* Nút profile */}
           <IconButton
             size="large"
             edge="end"
@@ -119,6 +225,8 @@ const AdminLayout = () => {
           >
             <AccountCircle />
           </IconButton>
+          
+          {/* Menu profile */}
           <Menu
             id="menu-appbar"
             anchorEl={anchorEl}
@@ -133,64 +241,97 @@ const AdminLayout = () => {
             }}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
+            PaperProps={{
+              sx: { 
+                width: 220,
+                mt: 1,
+                '& .MuiMenuItem-root': {
+                  py: 1.5
+                }
+              }
+            }}
           >
-            <MenuItem onClick={handleProfileClick}>Hồ sơ</MenuItem>
-            <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
+            <MenuItem onClick={handleMessagesClick}>
+              <ListItemIcon sx={{ color: '#1976d2' }}>
+                <EmailIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Messages" />
+            </MenuItem>
+            
+            <MenuItem onClick={handleHelpCenterClick}>
+              <ListItemIcon sx={{ color: '#1976d2' }}>
+                <HelpIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Help Center" />
+            </MenuItem>
+            
+            <MenuItem onClick={handleSettingsClick}>
+              <ListItemIcon sx={{ color: '#1976d2' }}>
+                <SettingsIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Settings" />
+            </MenuItem>
+            
+            <Divider />
+            
+            <MenuItem onClick={handleLockScreenClick}>
+              <ListItemIcon sx={{ color: '#1976d2' }}>
+                <LockIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Lock Screen" />
+            </MenuItem>
+            
+            <MenuItem onClick={handleLogout}>
+              <ListItemIcon sx={{ color: '#f44336' }}>
+                <LogoutIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Log out" sx={{ color: '#f44336' }} />
+            </MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
+      
+      {/* Khôi phục lại phần Drawer */}
       <Drawer
         variant="permanent"
         open={open}
         sx={{
-          width: drawerWidth,
+          width: open ? drawerWidth : 64,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-            bgcolor: '#ffffff', // Màu nền trắng
-            boxShadow: '0 0 10px rgba(0,0,0,0.1)', // Thêm shadow nhẹ
-            overflowX: 'hidden', // Tránh scroll ngang
+          whiteSpace: 'nowrap',
+          boxSizing: 'border-box',
+          '& .MuiDrawer-paper': {
+            width: open ? drawerWidth : 64,
+            transition: (theme) => theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            overflowX: 'hidden',
+            backgroundColor: '#f8f9fa',
+            borderRight: '1px solid #e0e0e0',
           },
         }}
       >
-        <Box
+        <Toolbar
           sx={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            bgcolor: '#f8f9fa', // Màu nền nhẹ cho header
-            borderBottom: '1px solid #e0e0e0',
+            justifyContent: open ? 'flex-end' : 'center',
+            px: [1],
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <img 
-              src={logo} 
-              alt="Logo" 
-              style={{ 
-                height: '60px', // Logo to hơn
-                width: 'auto',
-                marginRight: '12px'
-              }} 
-            />
-            <Typography
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{
-                fontWeight: 'bold',
-                fontSize: '1.2rem',
-                color: '#D34F81', // Màu hồng cho text
-              }}
-            >
-              Pet Rescue Hub
-            </Typography>
-          </Box>
+          {open && (
+            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <img src={logo} alt="Logo" style={{ height: 40, marginRight: 10 }} />
+              <Typography variant="h6" sx={{ color: '#D34F81', fontWeight: 600 }}>
+                Pet Rescue Hub
+              </Typography>
+            </Box>
+          )}
           <IconButton onClick={handleDrawerToggle}>
             <ChevronLeftIcon />
           </IconButton>
-        </Box>
+        </Toolbar>
         <Divider />
         <List
           sx={{
@@ -203,7 +344,7 @@ const AdminLayout = () => {
               disablePadding
               sx={{ 
                 display: 'block',
-                mb: 1, // Margin bottom để tạo khoảng cách giữa các mục
+                mb: 2,
               }}
             >
               <ListItemButton
@@ -212,26 +353,40 @@ const AdminLayout = () => {
                 selected={location.pathname === item.path}
                 sx={{
                   minHeight: 48,
-                  px: 2.5,
-                  borderRadius: '8px', // Bo tròn các góc
+                  px: open ? 2.5 : 0, 
+                  justifyContent: open ? 'initial' : 'center',
+                  borderRadius: '8px',
                   '&.Mui-selected': {
-                    bgcolor: 'rgba(211, 79, 129, 0.1)', // Màu hồng nhạt khi được chọn
+                    bgcolor: 'rgba(211, 79, 129, 0.1)',
                     color: '#D34F81',
                     '& .MuiListItemIcon-root': {
                       color: '#D34F81',
                     },
                   },
                   '&:hover': {
-                    bgcolor: 'rgba(211, 79, 129, 0.05)', // Màu hồng rất nhạt khi hover
+                    bgcolor: 'rgba(211, 79, 129, 0.05)',
                   },
+                  ...(open ? {} : { py: 1.5 }),
                 }}
               >
                 <ListItemIcon
                   sx={{
                     minWidth: 0,
-                    mr: 3,
+                    mr: open ? 3 : 'auto',
                     justifyContent: 'center',
                     color: location.pathname === item.path ? '#D34F81' : 'inherit',
+                    fontSize: !open ? '1.5rem' : 'inherit',
+                    '& .MuiSvgIcon-root': {
+                      fontSize: !open ? '1.75rem' : '1.5rem',
+                    },
+                    ...(open ? {} : { 
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '100%',
+                      ml: 0,
+                      mr: 0
+                    }),
                   }}
                 >
                   {item.icon}
@@ -240,6 +395,7 @@ const AdminLayout = () => {
                   primary={item.text} 
                   sx={{ 
                     opacity: open ? 1 : 0,
+                    display: open ? 'block' : 'none',
                     '& .MuiTypography-root': {
                       fontWeight: location.pathname === item.path ? 'bold' : 'normal',
                     }
@@ -250,13 +406,14 @@ const AdminLayout = () => {
           ))}
         </List>
       </Drawer>
+      
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          bgcolor: '#f8f9fa', // Màu nền nhẹ cho content
+          bgcolor: '#f8f9fa',
           minHeight: '100vh',
         }}
       >

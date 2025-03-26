@@ -276,13 +276,36 @@ const VolunteerManagement = () => {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
+          rowsPerPageOptions={[5, 10, 25]}
           component="div"
           count={volunteers.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Rows per page:"
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} of ${count}`}
+          sx={{
+            '.MuiTablePagination-toolbar': {
+              alignItems: 'center',
+              '& > p:first-of-type': {
+                margin: 0,
+              },
+            },
+            '.MuiTablePagination-selectLabel': {
+              margin: 0,
+            },
+            '.MuiTablePagination-displayedRows': {
+              margin: 0,
+            },
+            '.MuiTablePagination-select': {
+              marginRight: 2,
+              marginLeft: 1,
+            },
+            '.MuiTablePagination-actions': {
+              marginLeft: 2,
+            }
+          }}
         />
       </Paper>
 

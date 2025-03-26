@@ -1,35 +1,411 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  Container, 
+  Typography, 
+  Box, 
+  Grid, 
+  Button, 
+  Divider,
+  Pagination,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActions,
+  Chip,
+  Paper,
+  InputBase,
+  IconButton,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import { 
+  Add as AddIcon,
+  Search as SearchIcon,
+  CalendarToday as CalendarIcon,
+  LocationOn as LocationIcon,
+  ArrowForward as ArrowForwardIcon
+} from '@mui/icons-material';
 import './Event.css';
 
+// Import các components dùng chung
+import { ContentCard, TagList } from '../../components/common';
+import { fDate } from '../../utils/format-time';
+
 const Event = () => {
-  const events = [
-    { id: 1, name: 'Ngày nhận nuôi thú cưng', date: '2023-11-15', location: 'Công viên XYZ', description: 'Gặp gỡ và nhận nuôi các thú cưng đáng yêu.' },
-    { id: 2, name: 'Hội thảo chăm sóc thú cưng', date: '2023-12-01', location: 'Trung tâm ABC', description: 'Học cách chăm sóc thú cưng từ các chuyên gia.' },
-  ];
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [featuredEvent, setFeaturedEvent] = useState(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        // Trong thực tế, bạn sẽ gọi API thực sự
+        // const response = await api.get('/events');
+        // setEvents(response.data);
+        
+        // Dữ liệu mẫu
+        setTimeout(() => {
+          const mockEvents = [
+            {
+              id: 1,
+              title: 'Ngày hội nhận nuôi thú cưng lần thứ 5',
+              date: '2023-11-15',
+              location: 'Công viên Lê Văn Tám, Quận 1, TP.HCM',
+              description: 'Gặp gỡ và nhận nuôi các thú cưng đáng yêu từ các trung tâm cứu hộ.',
+              image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+              tags: ['nhận nuôi', 'chó', 'mèo'],
+              isFeatured: true
+            },
+            {
+              id: 2,
+              title: 'Hội thảo chăm sóc thú cưng',
+              date: '2023-12-01',
+              location: 'Trung tâm Hội nghị ABC, Quận 3, TP.HCM',
+              description: 'Học cách chăm sóc thú cưng từ các chuyên gia hàng đầu.',
+              image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+              tags: ['hội thảo', 'chăm sóc']
+            },
+            {
+              id: 3,
+              title: 'Khám sức khỏe miễn phí cho thú cưng',
+              date: '2023-12-15',
+              location: 'Phòng khám thú y XYZ, Quận 7, TP.HCM',
+              description: 'Chương trình khám sức khỏe miễn phí cho thú cưng của bạn.',
+              image: 'https://images.unsplash.com/photo-1527526029430-319f10814151?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+              tags: ['khám sức khỏe', 'miễn phí']
+            },
+            {
+              id: 4,
+              title: 'Cuộc thi thú cưng đáng yêu',
+              date: '2024-01-10',
+              location: 'Sân vận động Phú Thọ, Quận 11, TP.HCM',
+              description: 'Cuộc thi tìm kiếm những thú cưng đáng yêu nhất.',
+              image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+              tags: ['cuộc thi', 'giải thưởng']
+            },
+            {
+              id: 5,
+              title: 'Workshop huấn luyện thú cưng',
+              date: '2024-01-20',
+              location: 'Công viên Gia Định, Quận Gò Vấp, TP.HCM',
+              description: 'Học cách huấn luyện thú cưng với các bài tập cơ bản.',
+              image: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+              tags: ['huấn luyện', 'workshop']
+            },
+            {
+              id: 6,
+              title: 'Triển lãm thú cưng 2024',
+              date: '2024-02-05',
+              location: 'Trung tâm Triển lãm SECC, Quận 7, TP.HCM',
+              description: 'Triển lãm lớn nhất trong năm về thú cưng và các sản phẩm liên quan.',
+              image: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+              tags: ['triển lãm', 'sản phẩm']
+            }
+          ];
+          
+          // Tìm sự kiện nổi bật
+          const featured = mockEvents.find(event => event.isFeatured);
+          if (featured) {
+            setFeaturedEvent(featured);
+            setEvents(mockEvents.filter(event => event.id !== featured.id));
+          } else {
+            setEvents(mockEvents);
+          }
+          
+          setLoading(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const filteredEvents = events.filter(event => 
+    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const handleCreateEvent = () => {
+    navigate('/event/create');
+  };
+
+  // Phân trang
+  const eventsPerPage = 6;
+  const pageCount = Math.ceil(filteredEvents.length / eventsPerPage);
+  const displayedEvents = filteredEvents.slice(
+    (page - 1) * eventsPerPage,
+    page * eventsPerPage
+  );
 
   return (
-    <div className="event-page">
-      <header className="event-header text-center">
-        <h1>Sự kiện</h1>
-        <p className="lead">Tham gia các sự kiện để hỗ trợ và tìm hiểu về cứu hộ thú cưng.</p>
-      </header>
-      <section className="event-content container">
-        <div className="event-list">
-          {events.map((event) => (
-            <div key={event.id} className="event-item">
-              <h3>{event.name}</h3>
-              <p><strong>Ngày:</strong> {event.date}</p>
-              <p><strong>Địa điểm:</strong> {event.location}</p>
-              <p>{event.description}</p>
-              <Link to={`/event/${event.id}/register`} className="btn btn-primary">
-                Đăng ký tham gia
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
+    <Box className="event-page">
+      <Container maxWidth="lg">
+        {/* Header */}
+        <Box textAlign="center" mb={6} className="event-header">
+          <Typography variant="h3" component="h1" className="event-title" gutterBottom>
+            Sự kiện
+          </Typography>
+          <Typography 
+            variant="body1" 
+            className="event-subtitle"
+            sx={{ 
+              maxWidth: '700px', 
+              mx: 'auto',
+              px: { xs: 2, md: 0 }
+            }}
+          >
+            Tham gia các sự kiện về thú cưng để gặp gỡ những người yêu thú cưng khác và học hỏi thêm về cách chăm sóc thú cưng của bạn.
+          </Typography>
+        </Box>
+
+        {/* Search and Create */}
+        <Box 
+          display="flex" 
+          flexDirection={{ xs: 'column', sm: 'row' }} 
+          justifyContent="space-between" 
+          alignItems={{ xs: 'stretch', sm: 'center' }} 
+          mb={4}
+          gap={2}
+        >
+          <Paper
+            component="form"
+            sx={{ 
+              p: '2px 4px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              width: { xs: '100%', sm: '60%' },
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          >
+            <InputBase
+              sx={{ ml: 1, flex: 1 }}
+              placeholder="Tìm kiếm sự kiện..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+            <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+              <SearchIcon />
+            </IconButton>
+          </Paper>
+          
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={handleCreateEvent}
+            className="create-event-btn"
+            sx={{ 
+              height: '48px', 
+              borderRadius: '8px',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+              width: { xs: '100%', sm: 'auto' }
+            }}
+          >
+            Tạo sự kiện mới
+          </Button>
+        </Box>
+
+        {/* Featured Event */}
+        {featuredEvent && (
+          <Box mb={6}>
+            <Typography variant="h5" component="h2" fontWeight="600" mb={3}>
+              Sự kiện nổi bật
+            </Typography>
+            <Card className="featured-event-card">
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <CardMedia
+                    component="img"
+                    height="300"
+                    image={featuredEvent.image}
+                    alt={featuredEvent.title}
+                    className="featured-event-image"
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Box display="flex" flexDirection="column" height="100%" p={3}>
+                    <Box mb={2}>
+                      {featuredEvent.tags.map((tag) => (
+                        <Chip 
+                          key={tag} 
+                          label={tag} 
+                          size="small" 
+                          sx={{ mr: 1, mb: 1, bgcolor: '#e3f2fd' }} 
+                        />
+                      ))}
+                    </Box>
+                    <Typography variant="h4" component="h3" fontWeight="700" mb={2}>
+                      {featuredEvent.title}
+                    </Typography>
+                    <Box display="flex" alignItems="center" mb={2}>
+                      <CalendarIcon fontSize="small" sx={{ color: '#666', mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        {fDate(featuredEvent.date)}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" mb={3}>
+                      <LocationIcon fontSize="small" sx={{ color: '#666', mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        {featuredEvent.location}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body1" mb={3} sx={{ flexGrow: 1 }}>
+                      {featuredEvent.description}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      endIcon={<ArrowForwardIcon />}
+                      component={Link}
+                      to={`/event/${featuredEvent.id}`}
+                      sx={{ 
+                        alignSelf: 'flex-start',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
+                      }}
+                    >
+                      Xem chi tiết
+                    </Button>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Card>
+          </Box>
+        )}
+
+        {/* Events List */}
+        <Box mb={4}>
+          <Typography variant="h5" component="h2" fontWeight="600" mb={3}>
+            Tất cả sự kiện
+          </Typography>
+          {loading ? (
+            <Grid container spacing={3}>
+              {[...Array(3)].map((_, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card className="event-card skeleton">
+                    <Box sx={{ height: 200, bgcolor: '#f0f0f0' }} />
+                    <CardContent>
+                      <Box sx={{ height: 24, width: '80%', bgcolor: '#f0f0f0', mb: 1 }} />
+                      <Box sx={{ height: 16, width: '60%', bgcolor: '#f0f0f0', mb: 2 }} />
+                      <Box sx={{ height: 16, width: '90%', bgcolor: '#f0f0f0', mb: 1 }} />
+                      <Box sx={{ height: 16, width: '80%', bgcolor: '#f0f0f0' }} />
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          ) : displayedEvents.length > 0 ? (
+            <Grid container spacing={3}>
+              {displayedEvents.map((event) => (
+                <Grid item xs={12} sm={6} md={4} key={event.id}>
+                  <Card className="event-card">
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={event.image}
+                      alt={event.title}
+                      className="event-card-media"
+                    />
+                    <CardContent className="event-card-content">
+                      <Box mb={1}>
+                        {event.tags.slice(0, 2).map((tag) => (
+                          <Chip 
+                            key={tag} 
+                            label={tag} 
+                            size="small" 
+                            sx={{ mr: 1, mb: 1, bgcolor: '#e3f2fd' }} 
+                          />
+                        ))}
+                      </Box>
+                      <Typography variant="h6" component="h3" className="event-card-title" gutterBottom>
+                        {event.title}
+                      </Typography>
+                      <Box display="flex" alignItems="center" mb={1}>
+                        <CalendarIcon fontSize="small" sx={{ color: '#666', mr: 1 }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {fDate(event.date)}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" alignItems="center" mb={2}>
+                        <LocationIcon fontSize="small" sx={{ color: '#666', mr: 1 }} />
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          {event.location}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" className="event-card-description">
+                        {event.description}
+                      </Typography>
+                    </CardContent>
+                    <CardActions className="event-card-actions">
+                      <Button 
+                        component={Link} 
+                        to={`/event/${event.id}`}
+                        color="primary"
+                        endIcon={<ArrowForwardIcon />}
+                        className="event-details-btn"
+                      >
+                        Xem chi tiết
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Box textAlign="center" py={5}>
+              <Typography variant="h6" color="textSecondary" gutterBottom>
+                Không tìm thấy sự kiện nào
+              </Typography>
+              <Typography variant="body1" color="textSecondary" mb={3}>
+                Hãy thử tìm kiếm với từ khóa khác hoặc tạo sự kiện mới
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={handleCreateEvent}
+              >
+                Tạo sự kiện mới
+              </Button>
+            </Box>
+          )}
+        </Box>
+
+        {/* Pagination */}
+        {!loading && filteredEvents.length > 0 && (
+          <Box display="flex" justifyContent="center" mt={4}>
+            <Pagination 
+              count={pageCount} 
+              page={page} 
+              onChange={handlePageChange} 
+              color="primary"
+              size={isMobile ? "small" : "medium"}
+            />
+          </Box>
+        )}
+      </Container>
+    </Box>
   );
 };
 

@@ -1,18 +1,31 @@
 import React from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import { Box } from '@mui/material';
+import PropTypes from 'prop-types';
 
-const ImageOptimizer = ({ src, alt, width, height }) => {
+const ImageOptimizer = ({ src, alt, width = '100%', height = 'auto', sx = {} }) => {
   return (
-    <LazyLoadImage
+    <Box
+      component="img"
       src={src}
       alt={alt}
-      width={width}
-      height={height}
-      effect="blur"
-      placeholderSrc={`data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlZWUiLz48L3N2Zz4=`}
+      sx={{
+        width,
+        height,
+        objectFit: 'cover',
+        borderRadius: 1,
+        ...sx
+      }}
+      loading="lazy"
     />
   );
+};
+
+ImageOptimizer.propTypes = {
+  src: PropTypes.string.isRequired,
+  alt: PropTypes.string.isRequired,
+  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  sx: PropTypes.object
 };
 
 export default ImageOptimizer;

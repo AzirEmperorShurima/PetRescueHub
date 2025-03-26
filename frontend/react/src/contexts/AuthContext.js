@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import api from '../services/api';
+import { authService } from '../services';
 
 const AuthContext = createContext(null);
 
@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await api.get('/auth/me');
+          const response = await authService.getCurrentUser();
           setUser(response.data);
         } catch (err) {
           console.error('Failed to load user:', err);
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
-      const response = await api.post('/auth/login', { email, password });
+      const response = await authService.login({ email, password });
       localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
       return response.data;
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setError(null);
-      const response = await api.post('/auth/register', userData);
+      const response = await authService.register(userData);
       localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
       return response.data;
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    authService.logout();
     setUser(null);
   };
 

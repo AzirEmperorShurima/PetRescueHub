@@ -9,6 +9,7 @@ import EventManagement from './pages/EventManagement';
 import DonationManagement from './pages/DonationManagement';
 import AdminProfile from './pages/AdminProfile';
 import AdminLogin from './pages/AdminLogin';
+import RescueManagement from './RescueManagement';
 
 const AdminApp = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -70,6 +71,7 @@ const AdminApp = () => {
           <Route path="volunteers" element={<VolunteerManagement />} />
           <Route path="events" element={<EventManagement />} />
           <Route path="donations" element={<DonationManagement />} />
+          <Route path="rescues" element={<RescueManagement />} /> {/* Thêm route mới */}
           <Route path="profile" element={<AdminProfile />} />
         </Route>
       ) : null}
