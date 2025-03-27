@@ -3,7 +3,7 @@
  */
 
 import axios from 'axios';
-import { accessKey, ipnUrl, MOMO_API, orderInfo, partnerCode, redirectUrl, requestType } from '../../../../config.js';
+import { accessKey, ipnUrl, MOMO_API, orderInfo, partnerCode, redirectUrl, requestType, secretKey } from '../../../../config.js';
 
 export const momoPaymentService = async (req, res) => {
     const amount = req.body.amount;
