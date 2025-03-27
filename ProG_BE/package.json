@@ -5,9 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "nodemon --exec node --env-file=.env --watch index.js",
     "start": "node --env-file=.env --watch index.js",
-    "dev": "nodemon --exec node --env-file=.env --watch index.js"
+    "dev": "node --watch index.js"
   },
   "repository": {
     "type": "git",

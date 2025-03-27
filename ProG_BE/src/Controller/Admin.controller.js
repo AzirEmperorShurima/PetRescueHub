@@ -1,5 +1,7 @@
-import Role from "../models/Role";
-import user from "../models/user";
+import Role from "../models/Role.js";
+import user from "../models/user.js";
+import { createPackage } from "../services/PackageService/PackageService.js";
+import { authenticateUser } from "./Forum.Controller.js";
 
 /**
  * @desc Lấy danh sách người dùng (Chỉ Admin)
@@ -35,21 +37,21 @@ export const deleteUser = async (req, res) => {
 
 export const acceptApproveVolunteer = async (req, res) => {
     try {
-        const { userId } = req.params;
-
+        const decodedUser = authenticateUser(req)
+        const userId = decodedUser.id;
         // Tìm người dùng theo ID
-        const user = await user.findById(userId).populate("roles");
-        if (!user) return res.status(404).json({ message: "Người dùng không tồn tại!" });
+        const _user = await user.findById(userId).populate("roles");
+        if (!_user) return res.status(404).json({ message: "Người dùng không tồn tại!" });
 
-        // Kiểm tra xem role "volunteer" đã tồn tại hay chưa
-        // const volunteerRole = await Role.findOne({ name: "volunteer" });
-        // if (!volunteerRole) return res.status(400).json({ message: "Role 'volunteer' chưa được tạo!" });
+        const volunteerRole = await Role.findOne({ name: "volunteer" }).select("_id");
+        if (!volunteerRole) return res.status(400).json({ message: "Role 'volunteer' chưa được tạo!" });
 
         // Kiểm tra nếu user đã có role "volunteer"
-        const hasVolunteerRole = user.roles.some(role => role.name === "volunteer");
-        if (hasVolunteerRole) {
-            return res.status(400).json({ message: "Người dùng đã là volunteer!" });
-        }
+        // const hasVolunteerRole = _user.roles.some(role => role.name === "volunteer");
+        // if (hasVolunteerRole) {
+        //     return res.status(400).json({ message: "Người dùng đã là volunteer!" });
+        // }
+        _user.roles = [...new Set([...user.roles, volunteerRole._id])];
         /**
          * @desc nếu chưa populate
          */
@@ -58,12 +60,12 @@ export const acceptApproveVolunteer = async (req, res) => {
         // }
 
         // Thêm role "volunteer" cho user
-        user.roles.push(volunteerRole._id);
-        if (!user.isActive) {
-            user.isActive = true; // Kích hoạt tài khoản sau khi duyệt
+        _user.roles.push(volunteerRole._id);
+        if (!_user.isActive) {
+            _user.isActive = true; // Kích hoạt tài khoản sau khi duyệt
         }
-        user.volunteerRequestStatus = "approved";
-        await user.save();
+        _user.volunteerRequestStatus = "approved";
+        await _user.save();
 
         res.json({ message: "Người dùng đã được phê duyệt làm volunteer!" });
     } catch (error) {
@@ -90,10 +92,10 @@ export const rejectVolunteerRequest = async (req, res) => {
         _user.volunteerRequestStatus = "rejected";
         await _user.save();
 
-        return res.status(200).json({ message: "Yêu cầu volunteer đã bị từ chối!" });
+        res.status(200).json({ message: "Yêu cầu volunteer đã bị từ chối!" });
     } catch (error) {
         console.error("Lỗi khi từ chối volunteer:", error);
-        return res.status(500).json({ message: "Lỗi máy chủ!" });
+        res.status(500).json({ message: `Lỗi máy chủ: ${error.message}` });
     }
 };
 
@@ -104,19 +106,15 @@ export const revokeVolunteerRole = async (req, res) => {
     try {
         const { userId } = req.body;
 
-        const _user = await user.findById(userId);
-        if (!_user) {
-            return res.status(404).json({ message: "User không tồn tại!" });
-        }
+        const [_user, volunteerRole] = await Promise.all([
+            user.findById(userId),
+            Role.findOne({ name: "volunteer" }).select("_id")
+        ]);
+        if (!_user) return res.status(404).json({ message: "Người dùng không tồn tại!" });
+        if (!volunteerRole) return res.status(400).json({ message: "Role 'volunteer' chưa được tạo!" });
 
-        // const volunteerRole = await Role.findOne({ name: "volunteer" });
-        // if (!volunteerRole) {
-        //     return res.status(400).json({ message: "Role 'volunteer' chưa được tạo!" });
-        // }
-
-        const hasVolunteerRole = user.roles.includes(volunteerRole._id);
-        if (!hasVolunteerRole) {
-            return res.status(400).json({ message: "Người dùng không có quyền volunteer!" });
+        if (!_user.roles.includes(volunteerRole._id)) {
+            return res.status(400).json({ message: "Người dùng không có volunteer role!" });
         }
 
         _user.roles = _user.roles.filter(role => role.toString() !== volunteerRole._id.toString());
@@ -125,6 +123,34 @@ export const revokeVolunteerRole = async (req, res) => {
         return res.status(200).json({ message: "Quyền volunteer đã bị thu hồi!" });
     } catch (error) {
         console.error("Lỗi khi thu hồi quyền volunteer:", error);
-        return res.status(500).json({ message: "Lỗi máy chủ!" });
+        res.status(500).json({ message: `Lỗi máy chủ: ${error.message}` });
     }
 };
+
+
+
+// add new buy package 
+export const addNewPackage = async (req, res) => {
+    try {
+        const { package_id, name, description, price, duration, currency } = req.body;
+
+        const packageData = {
+            package_id,
+            name,
+            description,
+            price,
+            duration,
+            currency
+        }
+        const result = await createPackage(packageData);
+        if (!result.success) {
+            return res.status(400).json({ message: result.message });
+        }
+        return res.status(200).json({ message: "Thêm mới gói dịch vụ thành công!", package: result.data });
+
+    }
+    catch (error) {
+        console.error("Lỗi khi thêm mới gói dịch vụ:", error);
+        return res.status(500).json({ message: "Lỗi máy chủ!", error: error.message });
+    }
+}

@@ -8,6 +8,8 @@ import Role from "./Role.js";
 import user from "./user.js";
 import UserPermissions from "./UserPermissions.js";
 import PostReaction from "./PostReaction.js";
+import TransactionHistory from "./TransactionHistory.js";
+import Package from "./Package.js";
 
 const models_list = {
     user,
@@ -19,7 +21,9 @@ const models_list = {
     Reaction,
     Report,
     UserPermissions,
-    PostReaction
+    PostReaction,
+    TransactionHistory,
+    Package
 }
 
 export default models_list;
