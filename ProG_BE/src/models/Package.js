@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const PackageSchema = new mongoose.Schema({
     package_id: { type: String, unique: true, required: true }, // PREMIUM_1, VIP_1, DONATE_50,...
