@@ -9,7 +9,6 @@ import {
   Home as HomeIcon,
   People as PeopleIcon,
   LocalHospital as EmergencyIcon,
-  // Thay thế Volunteer bằng VolunteerActivism hoặc Handshake
   Handshake as VolunteerIcon
 } from '@mui/icons-material';
 
@@ -136,7 +135,7 @@ const Home = () => {
               <Col lg={3} md={6} sm={12} key={service.id} className="mb-4">
                 <div className="service-card">
                   <div className="service-content">
-                    // Trong phần services section
+                    {/* // Trong phần services section */}
                     <div className="service-icon">
                       {service.icon === 'pets' && <PetsIcon sx={{ fontSize: 36 }} />}
                       {service.icon === 'handshake' && <VolunteerIcon sx={{ fontSize: 36 }} />}
@@ -240,7 +239,7 @@ const Home = () => {
       </section>
       
       {/* Volunteer Banner */}
-      // Trong phần hero-section hoặc volunteer-banner, tìm và loại bỏ các nút
+      {/* Trong phần hero-section hoặc volunteer-banner, tìm và loại bỏ các nút */}
       <section className="volunteer-banner">
         <Container>
           <h2 className="volunteer-title">Trở thành tình nguyện viên</h2>
