@@ -7,7 +7,7 @@ import Role from '../models/Role.js';
 import { _encrypt } from '../utils/_crypto_.js';
 import { redisClient } from '../Cache/User_Cache.js';
 import { otpGenerator } from '../services/Otp/createOTP.js';
-import { sendMailForgotPassword, sendMailNotification, sendMailService } from '../services/sendMailService/nodeMailer.js';
+import { sendMailForgotPassword, sendMailNotification, sendMailService } from '../services/sendMailService/nodeMailer.service.js';
 
 export const Signup_Handler = async (req, res) => {
     try {

@@ -17,6 +17,15 @@ const userSchema = new mongoose.Schema(
         fullname: {
             type: String,
         },
+        birthdate: {
+            type: Date,
+            default: null
+        },
+        gender: {
+            type: String,
+            enum: ["male", "female", "not provided"],
+            default: "not provided"
+        },
         email: {
             type: String,
             unique: true,
@@ -26,9 +35,9 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: null
         },
-        phonenumber: {
+        phonenumber: [{
             type: String,
-        },
+        }],
         address: {
             type: String,
         },

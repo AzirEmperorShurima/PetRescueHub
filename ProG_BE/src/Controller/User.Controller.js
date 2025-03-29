@@ -1,13 +1,14 @@
 import Role from "../models/Role";
 import user from "../models/user";
-import { authenticateUser } from "./Forum.Controller";
+import { getUserIdFromCookies } from "../services/User/User.service";
+
 
 /**
  * @detail function focus to premium users
  */
 export const buyPremium = async (req, res) => {
     try {
-        const userId = authenticateUser(req)
+        const userId = getUserIdFromCookies(req)
         const { paymentMethod, duration } = req.body;
         if (!userId || !paymentMethod || duration) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Thiếu thông tin thanh toán!" });
@@ -60,5 +61,50 @@ export const buyPremium = async (req, res) => {
             message: "Lỗi khi xử lý thanh toán!",
             error: error.message || "Lỗi không xác định"
         });
+    }
+};
+
+
+
+export const updateUserProfile = async (req, res) => {
+    try {
+        const userId = getUserIdFromCookies(req) // Lấy ID từ middleware xác thực
+        const updateData = req.body;
+
+        const allowedUpdates = new Set(["fullname", "email", "avatar", "phonenumber", "address"]);
+        const updates = Object.keys(updateData)
+            .filter(key => allowedUpdates.has(key) && updateData[key] !== undefined);
+
+        if (updates.length === 0) {
+            return res.status(400).json({ success: false, message: "No valid fields to update!" });
+        }
+
+        // Kiểm tra email trùng lặp (chỉ nếu email khác với hiện tại)
+        if (updateData.email) {
+            const emailExists = await User.exists({ email: updateData.email, id: { $ne: userId } });
+            if (emailExists) {
+                return res.status(400).json({ success: false, message: "Email is already in use!" });
+            }
+        }
+
+        // Chỉ cập nhật nếu có thay đổi
+        const updateFields = Object.fromEntries(
+            updates.map(key => [key, updateData[key]])
+        );
+
+        const user = await User.findOneAndUpdate(
+            { id: userId },
+            { $set: updateFields },
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found!" });
+        }
+
+        return res.status(200).json({ success: true, message: "Profile updated successfully", user });
+    } catch (error) {
+        console.error("Update user profile error:", error);
+        return res.status(500).json({ success: false, message: "An error occurred while updating profile" });
     }
 };

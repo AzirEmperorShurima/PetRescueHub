@@ -3,16 +3,6 @@ import ForumPost from "../models/ForumPost.js";
 import jwt from 'jsonwebtoken';
 import { SECRET_KEY } from '../../config.js';
 
-export const authenticateUser = (req) => {
-    const userCookies = req.cookies.token;
-    if (!userCookies) throw new Error("Unauthorized - No token provided");
-
-    try {
-        return jwt.verify(userCookies, SECRET_KEY);
-    } catch (err) {
-        throw new Error("Invalid or expired token");
-    }
-};
 
 export const getForumPosts = async (req, res) => {
     try {

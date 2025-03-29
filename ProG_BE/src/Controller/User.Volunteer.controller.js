@@ -1,8 +1,9 @@
 import User from "../models/user.js";
+import { getUserIdFromCookies } from "../services/User/User.service.js";
 
 export const requestVolunteer = async (req, res) => {
     try {
-        const userId = req.user.id; // Lấy ID từ token đăng nhập
+        const userId = getUserIdFromCookies(req); // Lấy ID từ token đăng nhập
         const user = await User.findById(userId);
 
         if (!user) return res.status(404).json({ message: "User không tồn tại!" });

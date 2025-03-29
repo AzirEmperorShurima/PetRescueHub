@@ -1,7 +1,8 @@
 import Role from "../models/Role.js";
 import user from "../models/user.js";
 import { createPackage } from "../services/PackageService/PackageService.js";
-import { authenticateUser } from "./Forum.Controller.js";
+import { getUserIdFromCookies } from "../services/User/User.service.js";
+
 
 /**
  * @desc Lấy danh sách người dùng (Chỉ Admin)
@@ -20,8 +21,24 @@ export const getUsers = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
     try {
-        const { id } = req.params;
-        const deletedUser = await user.findByIdAndDelete(id);
+        const { id_delete } = req.body;
+
+        const spy = getUserIdFromCookies(req)
+        if (!spy) {
+            return res.status(403).json({ message: "Bạn không có quyền xóa người dùng!" });
+        }
+        const _user = await user.findById(spy).populate("roles", "name");
+        if (!_user) return res.status(404).json({ message: "Người dùng không tồn tại!" });
+
+        const userRoles = _user.roles.map(role => role.name); // Lấy danh sách tên roles
+        if (!userRoles.includes("admin")) {
+            return res.status(403).json({ message: "Bạn không có quyền xóa người dùng!" });
+        }
+
+        if (spy === id_delete) {  // 🔹 Kiểm tra nếu admin đang xóa chính mình
+            return res.status(400).json({ message: "Bạn không thể tự xóa chính mình!" });
+        }
+        const deletedUser = await user.findByIdAndDelete(id_delete);
 
         if (!deletedUser) return res.status(404).json({ message: "Người dùng không tồn tại!" });
 
@@ -37,10 +54,11 @@ export const deleteUser = async (req, res) => {
 
 export const acceptApproveVolunteer = async (req, res) => {
     try {
-        const decodedUser = authenticateUser(req)
-        const userId = decodedUser.id;
+
+        const userId = getUserIdFromCookies(req);
         // Tìm người dùng theo ID
         const _user = await user.findById(userId).populate("roles");
+
         if (!_user) return res.status(404).json({ message: "Người dùng không tồn tại!" });
 
         const volunteerRole = await Role.findOne({ name: "volunteer" }).select("_id");
@@ -51,7 +69,10 @@ export const acceptApproveVolunteer = async (req, res) => {
         // if (hasVolunteerRole) {
         //     return res.status(400).json({ message: "Người dùng đã là volunteer!" });
         // }
-        _user.roles = [...new Set([...user.roles, volunteerRole._id])];
+        // _user.roles = [...new Set([...user.roles, volunteerRole._id])];
+        if (_user.roles.includes(volunteerRole._id)) {
+            return res.status(400).json({ message: "Người dùng đã là volunteer!" });
+        }
         /**
          * @desc nếu chưa populate
          */
