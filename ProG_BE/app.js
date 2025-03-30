@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import forumRoutes from './src/router/Forum.routes.js';
 import userRoute from './src/router/User.routes.js';
-// import 'ProG_BE/src/Jobs/Delete_not_Activate_Account_BullMQ.js'
+import compression from 'compression';
 
 const app = express();
 connectToDatabase()
@@ -24,7 +24,6 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 app.use('/api/auth', authRouter);
 app.use('/api/forum', forumRoutes)

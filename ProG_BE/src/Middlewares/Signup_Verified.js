@@ -338,10 +338,15 @@ export const Exist_User_Checking = async (req, res, next) => {
         if (user) {
             console.log("✅ Found in MongoDB. Caching in Redis...");
             try {
+                // await redisClient.multi()
+                //     .setEx(user.username, 3600, JSON.stringify(user))
+                //     .setEx(user.email, 3600, JSON.stringify(user))
+                //     .exec();
                 await redisClient.multi()
-                    .setEx(user.username, 3600, JSON.stringify(user))
-                    .setEx(user.email, 3600, JSON.stringify(user))
+                    .setEx(user.username, 3600, "true")
+                    .setEx(user.email, 3600, "true")
                     .exec();
+                console.log("🔄 Cached in Redis successfully!");
             } catch (cacheError) {
                 console.error("❌ Redis caching error:", cacheError);
             }

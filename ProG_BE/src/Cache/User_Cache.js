@@ -133,9 +133,12 @@ const redisClient = createClient({
         port: 12406
     }
 });
-
-redisClient.on('error', err => console.log('Redis Client Error', err));
-
+redisClient.on("connect", () => {
+    console.log("🔗 Kết nối Redis thành công!");
+});
+redisClient.on("error", (err) => {
+    console.error("❌ Redis Error:", err);
+});
 await redisClient.connect();
 
 export { redisClient };

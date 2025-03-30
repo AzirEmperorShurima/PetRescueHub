@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const PetProfileSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
-        dob: { type: Date, required: true, index: true }, // Thêm index để tìm theo tuổi
+        age: { type: Number, index: true, min: 0, default: 0 }, // Thêm index để tìm theo tuổi
 
         breed: { type: String, required: true, trim: true, index: true }, // Thêm index
         breedName: { type: String, required: true, trim: true, index: true }, // Thêm index
@@ -15,9 +15,9 @@ const PetProfileSchema = new mongoose.Schema(
             default: "unknown",
             index: true // Thêm index để lọc nhanh hơn
         },
-
-        weight: { type: Number, required: true, min: 0 },
-        height: { type: Number, required: true, min: 0 },
+        petDetails: { type: String, required: true },
+        weight: { type: Number, min: 0, default: 0 },
+        height: { type: Number, min: 0, default: 0 },
 
         reproductiveStatus: {
             type: String,
@@ -57,11 +57,8 @@ const PetProfileSchema = new mongoose.Schema(
         },
 
         avatar: { type: String, default: null },
-        microchipId: { type: String, unique: true, sparse: true, index: true }, // Thêm index duy nhất
-        petAlbum: [{ type: String }],
-
-        createdAt: { type: Date, default: Date.now, index: true }, // Thêm index để phân trang nhanh hơn
-        updatedAt: { type: Date, default: Date.now }
+        microchipId: { type: String, unique: true, index: { unique: true, sparse: true } },
+        petAlbum: [{ type: String }], // Danh sách ảnh thú cưng
     },
     { timestamps: true }
 );
