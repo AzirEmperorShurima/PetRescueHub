@@ -33,6 +33,29 @@ const Home = () => {
   const navigate = useNavigate();
   const slideInterval = useRef(null);
   
+  // Add functions to handle slide navigation
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    // Reset the interval when manually changing slides
+    if (slideInterval.current) {
+      clearInterval(slideInterval.current);
+      slideInterval.current = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+      }, 5000);
+    }
+  };
+  
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1));
+    // Reset the interval when manually changing slides
+    if (slideInterval.current) {
+      clearInterval(slideInterval.current);
+      slideInterval.current = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+      }, 5000);
+    }
+  };
+  
   // Auto slide for hero section
   useEffect(() => {
     slideInterval.current = setInterval(() => {
@@ -111,6 +134,20 @@ const Home = () => {
             </div>
           </div>
         ))}
+        
+        {/* Thêm nút điều hướng slide */}
+        <div className="hero-nav-buttons">
+          <button className="hero-nav-button hero-nav-prev" onClick={prevSlide} aria-label="Previous slide">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button className="hero-nav-button hero-nav-next" onClick={nextSlide} aria-label="Next slide">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
       </section>
       
       {/* Floating Rescue Button */}
