@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import AdminLayout from './layouts/AdminLayout';
+import AdminLayout from '../../components/layouts/AdminLayout';
 import Dashboard from './pages/Dashboard';
 import UserManagement from './pages/UserManagement';
 import PetManagement from './pages/PetManagement';
@@ -9,7 +9,7 @@ import EventManagement from './pages/EventManagement';
 import DonationManagement from './pages/DonationManagement';
 import AdminProfile from './pages/AdminProfile';
 import AdminLogin from './pages/AdminLogin';
-import RescueManagement from './RescueManagement';
+import RescueManagement from './pages/RescueManagement';
 
 const AdminApp = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

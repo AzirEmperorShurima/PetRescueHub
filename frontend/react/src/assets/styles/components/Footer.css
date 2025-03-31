@@ -8,8 +8,8 @@
 
 .new_footer_area {
     flex-shrink: 0;
-    background-color: #333;
-    color: white;
+    background-color: #f5f5f5; /* Changed to match navbar background */
+    color: #333;
     padding: 20px 0;
     text-align: center;
   }
@@ -27,34 +27,40 @@
     font-size: 14px;
     font-weight: 300;
     line-height: 20px;
-    color: #7f88a6;
+    color: #D34F81; /* Updated to match primary pink */
     padding: 27px 0px;
 }
+
 .new_footer_top .company_widget p {
     font-size: 16px;
     font-weight: 300;
     line-height: 28px;
-    color: #6a7695;
+    color: #333;
     margin-bottom: 20px;
+    
 }
 .new_footer_top .company_widget .f_subscribe_two .btn_get {
     transition: .3s all;
-    border: 2px pink solid;
+    border: 2px #E91E63 solid;
     margin-top: 20px;
     border-radius: 5px;
     margin-left: 5px;
     font-weight: bold;
-    height: 25px;
-    width: 100px;
+    height: 40px;
+    width: 140px;
+    align-items: center;   
+    justify-content: center;
+    text-align: center;
+    line-height: 1;
 }
 .btn_get_two:hover {
     background: transparent;
-    color: #5e2ced;
+    color: #E91E63; /* Changed from #5e2ced to #E91E63 */
 }
 .btn_get:hover {
     color: #fff;
-    background: #6754e2;
-    border-color: #6754e2;
+    background: #E91E63; /* Changed from #6754e2 to #E91E63 */
+    border-color: #E91E63; /* Changed from #6754e2 to #E91E63 */
     -webkit-box-shadow: none;
     box-shadow: none;
 }
@@ -66,7 +72,7 @@ a:hover, a:focus, .btn:hover, .btn:focus, button:hover, button:focus {
 
 
 .new_footer_top .f_widget.about-widget .f_list li a:hover {
-    color: #5e2ced;
+    color: #E91E63; /* Changed from #5e2ced to #E91E63 */
 }
 .new_footer_top .f_widget.about-widget .f_list li {
     margin-bottom: 11px;
@@ -95,9 +101,9 @@ a:hover, a:focus, .btn:hover, .btn:focus, button:hover, button:focus {
     border-radius: 50%;
     font-size: 14px;
     line-height: 45px;
-    color: #858da8;
+    color: #D34F81; /* Updated to match primary pink */
     display: inline-block;
-    background: #ebeef5;
+    background: rgba(211, 79, 129, 0.1); /* Light pink background */
     text-align: center;
     -webkit-transition: all 0.2s linear;
     -o-transition: all 0.2s linear;
@@ -119,27 +125,27 @@ a:hover, a:focus, .btn:hover, .btn:focus, button:hover, button:focus {
 .btn_get_two {
     -webkit-box-shadow: none;
     box-shadow: none;
-    background: #5e2ced;
-    border-color: #5e2ced;
+    background: #E91E63; /* Changed from #5e2ced to #E91E63 */
+    border-color: #E91E63; /* Changed from #5e2ced to #E91E63 */
     color: #fff;
 }
 
 .btn_get_two:hover {
     background: transparent;
-    color: #5e2ced;
+    color: #E91E63; /* Changed from #5e2ced to #E91E63 */
 }
 
 .new_footer_top .f_social_icon a:hover {
-    background: #5e2ced;
-    border-color: #5e2ced;
-  color:white;
+    background: #E91E63; /* Changed from #5e2ced to #E91E63 */
+    border-color: #E91E63; /* Changed from #5e2ced to #E91E63 */
+    color: white;
 }
 .new_footer_top .f_social_icon a + a {
     margin-left: 4px;
 }
 .new_footer_top .f-title {
     margin-bottom: 30px;
-    color: #263b5e;
+    color: #000000; /* Changed from #263b5e to darker color for better contrast */
 }
 .f_600 {
     font-weight: 600;
@@ -151,7 +157,7 @@ h1, h2, h3, h4, h5, h6 {
     color: #4b505e;
 }
 .new_footer_top .f_widget.about-widget .f_list li a {
-    color: #6a7695;
+    color: #333; /* Changed from #6a7695 to darker color for better contrast */
 }
 
 

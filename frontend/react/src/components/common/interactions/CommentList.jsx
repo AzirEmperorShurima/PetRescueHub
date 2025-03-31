@@ -2,8 +2,7 @@ import React from 'react';
 import { Box, Typography, Avatar, IconButton } from '@mui/material';
 import { ThumbUp, Reply, MoreVert } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-// Thay đổi import từ CSS module sang CSS thông thường
-import './CommentList.css'; // Thay vì import styles from './CommentList.module.css'
+import '../../../assets/styles/components/CommentList.css';
 
 const CommentList = ({ comments, onLike, onReply }) => {
   return (

@@ -1,33 +1,26 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes } from 'react-router-dom';
-import { LanguageProvider } from './contexts/LanguageContext';
-import { AuthProvider } from './contexts/AuthContext';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import AppRoutes from './routes';
+import { LanguageProvider } from './components/contexts/LanguageContext';
+import { AuthProvider } from './components/contexts/AuthContext';
+import { ThemeProvider } from './components/contexts/ThemeContext';
+import { NotificationProvider } from './components/contexts/NotificationContext';
+import AppRoutes from './components/routes';
 
 function App() {
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            {AppRoutes()}
-          </Routes>
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
-        </Router>
-      </AuthProvider>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <Router>
+              <Routes>
+                {AppRoutes()}
+              </Routes>
+            </Router>
+          </NotificationProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

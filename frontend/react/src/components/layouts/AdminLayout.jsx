@@ -39,7 +39,7 @@ import {
   LocalHospital as RescueIcon // Thêm icon cho cứu hộ
 } from '@mui/icons-material';
 // Import logo
-import logo from '../../../assets/images/logo.svg';
+import logo from '../../assets/images/logo.svg';
 
 const drawerWidth = 260;
 

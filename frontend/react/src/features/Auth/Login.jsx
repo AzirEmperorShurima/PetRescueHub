@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import '../../assets/styles/components/auth/Auth.css';
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
-LOGIN.propTypes = {};
-
-function LOGIN(props) {
+// Sửa từ LOGIN thành Login
+function Login(props) {
     useEffect(() => {
         // Có thể thêm logic nếu cần
     }, []);
@@ -131,4 +130,7 @@ function LOGIN(props) {
     );
 }
 
-export default LOGIN;
+// Sửa propTypes
+Login.propTypes = {};
+
+export default Login;

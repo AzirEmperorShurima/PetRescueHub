@@ -85,11 +85,11 @@ const Footer = ({ darkLight }) => {
                 <div className="footer-bottom-container">
                     <div className="row align-items-center">
                         <div className="col-lg-6 col-sm-7">
-                            <p className="mb-0 f_400">© CodeLord Inc.. 2024 All rights reserved.</p>
+                            <p className="mb-0 f_400">© Team C1SE.03 Inc.. 2025 All rights reserved.</p>
                         </div>
                         <div className="col-lg-6 col-sm-5 text-right">
                             <p>
-                                Made with <i className="icon_heart"></i> in <a href="" target="_blank" rel="noopener noreferrer">CodeLord</a>
+                                Made with in Team C1SE.03
                             </p>
                         </div>
                     </div>

@@ -21,6 +21,7 @@ const ForumActions = ({ onCreatePost, onCreateQuestion, onCreateEvent, displaySt
         >
           Tạo bài viết
         </Button>
+
         <Button
           variant="outlined"
           color="primary"
@@ -30,6 +31,7 @@ const ForumActions = ({ onCreatePost, onCreateQuestion, onCreateEvent, displaySt
         >
           Đặt câu hỏi
         </Button>
+        
         <Button
           variant="outlined"
           color="primary"

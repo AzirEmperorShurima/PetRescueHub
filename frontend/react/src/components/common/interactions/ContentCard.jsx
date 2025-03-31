@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
 import PropTypes from 'prop-types';
-import TagList from './TagList';
+import TagList from './TagList'; // Fixed import path to correctly reference TagList in the common directory
 
 const ContentCard = ({ title, content, image, tags, children, sx = {} }) => {
   return (

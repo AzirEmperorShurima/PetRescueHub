@@ -2,31 +2,30 @@ import React from 'react';
 import { Navigate, Route } from 'react-router-dom';
 
 // Layouts
-import MainLayout from '../components/layouts/MainLayout';
+import MainLayout from '../../components/layouts/MainLayout';
 
 // Pages
-import Home from '../pages/Home/Home';
-import Login from '../features/Auth/Login';
-import Register from '../features/Auth/Register';
+import Home from '../../pages/Home/Home';
+import Forum from '../../pages/Forum/Forum';
+import Event from '../../pages/Event/Event';
+import Adopt from '../../pages/Adopt/Adopt';
+import Donate from '../../pages/Donate/Donate';
+// import Donate from '../../pages/PetGuide/PetGuide';
 
-// Features
-import Adopt from '../features/Adopt/Adopt';
-import Donate from '../features/Donate/Donate';
-import Forum from '../features/Forum/Forum';
-import Event from '../features/Event/Event';
-
+import Login from '../../features/Auth/Login';
+import Register from '../../features/Auth/Register';
 // Forum components
-import CreatePost from '../features/Forum/CreatePost';
-import CreateQuestion from '../features/Forum/CreateQuestion';
-import PostDetail from '../features/Forum/PostDetail';
-import QuestionDetail from '../features/Forum/QuestionDetail';
+import CreatePost from '../../features/Forum/CreatePost';
+import CreateQuestion from '../../features/Forum/CreateQuestion';
+import PostDetail from '../../features/Forum/PostDetail';
+import QuestionDetail from '../../features/Forum/QuestionDetail';
 
 // Event components
-import CreateEvent from '../features/Event/CreateEvent';
-import EventDetail from '../features/Event/EventDetail';
+import CreateEvent from '../../features/Event/CreateEvent';
+import EventDetail from '../../features/Event/EventDetail';
 
 // Admin
-import AdminApp from '../pages/admin';
+import AdminApp from '../../pages/admin';
 
 /**
  * Cấu trúc routes chính của ứng dụng

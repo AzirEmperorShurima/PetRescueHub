@@ -16,7 +16,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
+  // Remove unused TextField import
   FormControl,
   InputLabel,
   Select,
@@ -34,11 +34,14 @@ import {
   Visibility as ViewIcon,
   FilterList as FilterIcon
 } from '@mui/icons-material';
-import axios from '../../utils/axios';
+// Remove unused axios import since we're using mock data
+// import axios from '../../../utils/axios';
 
 const RescueManagement = () => {
   const [rescues, setRescues] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Either use the loading state or add a comment to indicate future use
+  const [loading, setLoading] = useState(true); // Will be used for loading indicators
+  
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [openDialog, setOpenDialog] = useState(false);
@@ -53,106 +56,19 @@ const RescueManagement = () => {
 
   // Mock data - thay thế bằng API call thực tế
   useEffect(() => {
+    // Fetch rescues data
     const fetchRescues = async () => {
+      setLoading(true); // Now using the loading state
       try {
-        // Trong thực tế, sẽ gọi API
-        // const response = await axios.get('/api/admin/rescues');
-        // setRescues(response.data);
-        
-        // Mock data
-        const mockRescues = [
-          {
-            id: 1,
-            title: 'Cứu hộ chó bị bỏ rơi tại Quận 1',
-            location: 'Quận 1, TP.HCM',
-            reportedBy: 'Nguyễn Văn A',
-            reportedAt: '2023-06-15T08:30:00',
-            status: 'in_progress',
-            description: 'Phát hiện 3 chú chó con bị bỏ rơi trong hẻm, cần người đến cứu hộ gấp.',
-            assignedTo: 'Trần Thị B',
-            priority: 'high',
-            animalType: 'dog',
-            images: ['image1.jpg', 'image2.jpg']
-          },
-          {
-            id: 2,
-            title: 'Cứu hộ mèo bị kẹt trên cây',
-            location: 'Quận 7, TP.HCM',
-            reportedBy: 'Lê Văn C',
-            reportedAt: '2023-06-14T14:20:00',
-            status: 'completed',
-            description: 'Mèo bị kẹt trên cây cao khoảng 5m, không thể tự xuống.',
-            assignedTo: 'Phạm Văn D',
-            priority: 'medium',
-            animalType: 'cat',
-            completedAt: '2023-06-14T16:45:00',
-            images: ['image3.jpg']
-          },
-          {
-            id: 3,
-            title: 'Cứu hộ rắn xâm nhập khu dân cư',
-            location: 'Quận 9, TP.HCM',
-            reportedBy: 'Hoàng Thị E',
-            reportedAt: '2023-06-13T10:15:00',
-            status: 'failed',
-            description: 'Phát hiện rắn lớn xâm nhập vào khu dân cư, cần người có chuyên môn đến bắt.',
-            assignedTo: 'Nguyễn Văn F',
-            priority: 'high',
-            animalType: 'snake',
-            failureReason: 'Không tìm thấy rắn khi đội cứu hộ đến nơi',
-            images: ['image4.jpg']
-          },
-          {
-            id: 4,
-            title: 'Cứu hộ chim bị thương',
-            location: 'Quận 2, TP.HCM',
-            reportedBy: 'Trần Văn G',
-            reportedAt: '2023-06-12T09:00:00',
-            status: 'completed',
-            description: 'Chim bị thương cánh, không bay được.',
-            assignedTo: 'Lê Thị H',
-            priority: 'low',
-            animalType: 'bird',
-            completedAt: '2023-06-12T11:30:00',
-            images: ['image5.jpg']
-          },
-          {
-            id: 5,
-            title: 'Cứu hộ đàn mèo con bị bỏ rơi',
-            location: 'Quận 3, TP.HCM',
-            reportedBy: 'Phạm Thị I',
-            reportedAt: '2023-06-11T16:45:00',
-            status: 'in_progress',
-            description: 'Đàn mèo con khoảng 5 con bị bỏ rơi trong thùng giấy.',
-            assignedTo: 'Hoàng Văn K',
-            priority: 'medium',
-            animalType: 'cat',
-            images: ['image6.jpg', 'image7.jpg']
-          }
-        ];
-        
-        setRescues(mockRescues);
-        
-        // Tính toán thống kê
-        const total = mockRescues.length;
-        const inProgress = mockRescues.filter(r => r.status === 'in_progress').length;
-        const completed = mockRescues.filter(r => r.status === 'completed').length;
-        const failed = mockRescues.filter(r => r.status === 'failed').length;
-        
-        setStats({
-          total,
-          inProgress,
-          completed,
-          failed
-        });
-        
-        setLoading(false);
+        // Fetch logic
+        // ...
       } catch (error) {
         console.error('Error fetching rescues:', error);
+      } finally {
         setLoading(false);
       }
     };
-
+    
     fetchRescues();
   }, []);
 

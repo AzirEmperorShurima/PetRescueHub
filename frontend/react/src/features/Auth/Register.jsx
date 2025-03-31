@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import '../../assets/styles/components/auth/Auth.css';
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
-Register.propTypes = {};
-
 function Register(props) {
     useEffect(() => {
         // Có thể thêm logic nếu cần
@@ -129,5 +127,25 @@ function Register(props) {
         </div>
     );
 }
+
+// Add proper PropTypes
+Register.propTypes = {
+    onRegisterSuccess: PropTypes.func,
+    onNavigateToLogin: PropTypes.func,
+    initialValues: PropTypes.shape({
+        email: PropTypes.string,
+        password: PropTypes.string
+    })
+};
+
+// Add defaultProps
+Register.defaultProps = {
+    onRegisterSuccess: () => {},
+    onNavigateToLogin: () => {},
+    initialValues: {
+        email: '',
+        password: ''
+    }
+};
 
 export default Register;

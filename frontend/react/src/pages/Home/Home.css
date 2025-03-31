@@ -5,10 +5,12 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', sans-serif;
-  color: #f3a6ee;
-  font-weight: 700;
+.home-page h1, .home-page h2, .home-page h3, .home-page h4, .home-page h5, .home-page h6 {
+  font-family: 'Montserrat', 'DM Sans Variable', sans-serif;
+  color: #D34F81;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 0.8em;
 }
 
 .section-title {

@@ -6,7 +6,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint src/**/*.{js,jsx}",
+    "lint:fix": "eslint --fix src/**/*.{js,jsx}",
+    "format": "prettier --write src/**/*.{js,jsx,css,md,json}"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -16,11 +19,8 @@
     "@mui/material": "^5.17.1",
     "@mui/x-date-pickers": "^7.28.0",
     "axios": "^1.4.0",
-    "bootstrap": "^5.3.3",
-    "country-flag-icons": "^1.5.18",
     "dayjs": "^1.11.13",
     "react": "^18.2.0",
-    "react-bootstrap": "^2.10.9",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.30.0",

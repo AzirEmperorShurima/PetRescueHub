@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { GB, VN } from 'country-flag-icons/react/3x2';
-import { LanguageContext } from '../../contexts/LanguageContext';
+import { LanguageContext } from '../contexts/LanguageContext';
 import translations from '../../utils/translations';
 import '../../assets/styles/components/TopBar.css';
 

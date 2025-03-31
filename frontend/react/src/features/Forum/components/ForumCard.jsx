@@ -29,9 +29,13 @@ const ForumCard = ({
   categories, 
   onToggleLike, 
   onToggleFavorite, 
-  formatDate 
+  formatDate,
+  onClick
 }) => {
   const theme = useTheme();
+  
+  // Sử dụng categories được truyền vào hoặc sử dụng categoryObj từ item
+  const category = item.categoryObj || (categories && categories.find(cat => cat.id === item.category));
   
   const getDetailUrl = () => {
     switch(type) {
@@ -57,8 +61,10 @@ const ForumCard = ({
         '&:hover': {
           transform: 'translateY(-2px)',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)'
-        }
+        },
+        cursor: onClick ? 'pointer' : 'default'
       }}
+      onClick={onClick}
     >
       <CardContent sx={{ p: 3 }}>
         <Box display="flex" alignItems="center" mb={2}>
@@ -91,7 +97,7 @@ const ForumCard = ({
           )}
         </Box>
         
-        <Link to={getDetailUrl()} className="forum-link">
+        <Link to={getDetailUrl()} className="forum-link" onClick={(e) => onClick && e.stopPropagation()}>
           <Typography 
             variant="h6" 
             component="h2" 
@@ -150,17 +156,19 @@ const ForumCard = ({
         )}
         
         <Box mt={2} display="flex" flexWrap="wrap" gap={0.8}>
-          <Chip 
-            size="small" 
-            label={categories.find(cat => cat.id === item.category)?.name || item.category} 
-            className="forum-category-chip"
-            sx={{
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              color: theme.palette.primary.main,
-              fontWeight: 500
-            }}
-          />
-          {item.tags.slice(0, 2).map((tag, index) => (
+          {category && (
+            <Chip 
+              size="small" 
+              label={category.name || 'Unknown Category'} 
+              className="forum-category-chip"
+              sx={{
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                color: theme.palette.primary.main,
+                fontWeight: 500
+              }}
+            />
+          )}
+          {item.tags && item.tags.slice(0, 2).map((tag, index) => (
             <Chip 
               key={index} 
               size="small" 
@@ -170,7 +178,7 @@ const ForumCard = ({
               sx={{ backgroundColor: '#f5f5f5' }}
             />
           ))}
-          {item.tags.length > 2 && (
+          {item.tags && item.tags.length > 2 && (
             <Chip 
               size="small" 
               label={`+${item.tags.length - 2}`} 
@@ -192,7 +200,10 @@ const ForumCard = ({
         <Box display="flex" alignItems="center">
           <IconButton 
             size="small" 
-            onClick={() => onToggleLike(item.id, type)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleLike(item.id, type);
+            }}
             color={item.isLiked ? "primary" : "default"}
             sx={{ 
               transition: 'transform 0.2s',
@@ -211,6 +222,7 @@ const ForumCard = ({
               transition: 'transform 0.2s',
               '&:hover': { transform: 'scale(1.1)' }
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             <CommentIcon fontSize="small" />
           </IconButton>
@@ -224,6 +236,7 @@ const ForumCard = ({
               transition: 'transform 0.2s',
               '&:hover': { transform: 'scale(1.1)' }
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             <VisibilityIcon fontSize="small" />
           </IconButton>
@@ -234,7 +247,10 @@ const ForumCard = ({
         
         <IconButton 
           size="small" 
-          onClick={() => onToggleFavorite(item.id, type)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(item.id, type);
+          }}
           color={item.isFavorited ? "primary" : "default"}
           sx={{ 
             transition: 'transform 0.2s',
@@ -250,6 +266,7 @@ const ForumCard = ({
             transition: 'transform 0.2s',
             '&:hover': { transform: 'scale(1.1)' }
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           <MoreVertIcon fontSize="small" />
         </IconButton>
@@ -261,10 +278,16 @@ const ForumCard = ({
 ForumCard.propTypes = {
   item: PropTypes.object.isRequired,
   type: PropTypes.oneOf(['post', 'question', 'event']).isRequired,
-  categories: PropTypes.array.isRequired,
+  categories: PropTypes.array,
   onToggleLike: PropTypes.func.isRequired,
   onToggleFavorite: PropTypes.func.isRequired,
-  formatDate: PropTypes.func.isRequired
+  formatDate: PropTypes.func.isRequired,
+  onClick: PropTypes.func
+};
+
+ForumCard.defaultProps = {
+  categories: [],
+  onClick: null
 };
 
 export default ForumCard;

@@ -3,22 +3,35 @@ import TopBar from '../common/TopBar';
 import Navigation from '../common/Navigation';
 import Footer from '../common/Footers';
 import { useLocation, Outlet } from 'react-router-dom';
-import '../../assets/styles/main.css';
-
+import { Box } from '@mui/material';
 
 const MainLayout = () => {
   const location = useLocation();
   const isAuthPage = location.pathname.includes('/auth');
 
   return (
-    <div className={`layout-wrapper ${isAuthPage ? 'auth-page' : ''}`}>
+    <Box 
+      className={isAuthPage ? 'auth-page' : ''}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh'
+      }}
+    >
       <TopBar />
       <Navigation />
-      <main className="main-content" style={{ marginTop: 0, paddingTop: 0 }}>
+      <Box 
+        component="main"
+        sx={{ 
+          flex: 1,
+          marginTop: 0, 
+          paddingTop: 0 
+        }}
+      >
         <Outlet />
-      </main>
+      </Box>
       <Footer />
-    </div>
+    </Box>
   );
 };
 
