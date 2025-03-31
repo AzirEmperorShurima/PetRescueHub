@@ -18,17 +18,12 @@ import { heroSlides, services, recentRescues, testimonials, stats } from '../../
 // Import CSS
 import './Home.css';
 
+// Import VolunteerForm component
+import VolunteerForm from '../../components/volunteer/VolunteerForm';
+
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showVolunteerModal, setShowVolunteerModal] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    skills: [],
-    availability: '',
-    message: ''
-  });
   
   const navigate = useNavigate();
   const slideInterval = useRef(null);
@@ -69,47 +64,12 @@ const Home = () => {
     };
   }, []);
   
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-  
-  // Handle checkbox changes for skills
-  const handleSkillChange = (e) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setFormData({
-        ...formData,
-        skills: [...formData.skills, value]
-      });
-    } else {
-      setFormData({
-        ...formData,
-        skills: formData.skills.filter(skill => skill !== value)
-      });
-    }
-  };
-  
   // Handle volunteer form submission
-  const handleVolunteerSubmit = (e) => {
-    e.preventDefault();
+  const handleVolunteerSubmit = (formData) => {
     // In a real application, you would send this data to your backend
     console.log('Volunteer form submitted:', formData);
     alert('Cảm ơn bạn đã đăng ký làm tình nguyện viên! Chúng tôi sẽ liên hệ với bạn sớm.');
     setShowVolunteerModal(false);
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      skills: [],
-      availability: '',
-      message: ''
-    });
   };
   
   return (
@@ -276,7 +236,6 @@ const Home = () => {
       </section>
       
       {/* Volunteer Banner */}
-      {/* Trong phần hero-section hoặc volunteer-banner, tìm và loại bỏ các nút */}
       <section className="volunteer-banner">
         <Container>
           <h2 className="volunteer-title">Trở thành tình nguyện viên</h2>
@@ -293,146 +252,12 @@ const Home = () => {
         </Container>
       </section>
       
-      {/* Volunteer Modal */}
-      <div className={`volunteer-modal ${showVolunteerModal ? 'active' : ''}`}>
-        <div className="volunteer-modal-content">
-          <div 
-            className="volunteer-modal-close"
-            onClick={() => setShowVolunteerModal(false)}
-          >
-            &times;
-          </div>
-          <h3 className="volunteer-form-title">Đăng ký làm tình nguyện viên</h3>
-          <form onSubmit={handleVolunteerSubmit}>
-            <div className="form-group">
-              <label className="form-label">Họ và tên</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Email</label>
-              <input 
-                type="email" 
-                className="form-control" 
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Số điện thoại</label>
-              <input 
-                type="tel" 
-                className="form-control" 
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Kỹ năng</label>
-              <div>
-                <div className="form-check">
-                  <input 
-                    type="checkbox" 
-                    className="form-check-input" 
-                    id="skill1"
-                    value="chăm sóc thú cưng"
-                    onChange={handleSkillChange}
-                    checked={formData.skills.includes('chăm sóc thú cưng')}
-                  />
-                  <label className="form-check-label" htmlFor="skill1">Chăm sóc thú cưng</label>
-                </div>
-                <div className="form-check">
-                  <input 
-                    type="checkbox" 
-                    className="form-check-input" 
-                    id="skill2"
-                    value="y tế"
-                    onChange={handleSkillChange}
-                    checked={formData.skills.includes('y tế')}
-                  />
-                  <label className="form-check-label" htmlFor="skill2">Y tế</label>
-                </div>
-                <div className="form-check">
-                  <input 
-                    type="checkbox" 
-                    className="form-check-input" 
-                    id="skill3"
-                    value="lái xe"
-                    onChange={handleSkillChange}
-                    checked={formData.skills.includes('lái xe')}
-                  />
-                  <label className="form-check-label" htmlFor="skill3">Lái xe</label>
-                </div>
-                <div className="form-check">
-                  <input 
-                    type="checkbox" 
-                    className="form-check-input" 
-                    id="skill4"
-                    value="truyền thông"
-                    onChange={handleSkillChange}
-                    checked={formData.skills.includes('truyền thông')}
-                  />
-                  <label className="form-check-label" htmlFor="skill4">Truyền thông</label>
-                </div>
-                <div className="form-check">
-                  <input 
-                    type="checkbox" 
-                    className="form-check-input" 
-                    id="skill5"
-                    value="tổ chức sự kiện"
-                    onChange={handleSkillChange}
-                    checked={formData.skills.includes('tổ chức sự kiện')}
-                  />
-                  <label className="form-check-label" htmlFor="skill5">Tổ chức sự kiện</label>
-                </div>
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Thời gian có thể tham gia</label>
-              <select 
-                className="form-select" 
-                name="availability"
-                value={formData.availability}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Chọn thời gian</option>
-                <option value="Cuối tuần">Cuối tuần</option>
-                <option value="Buổi tối các ngày trong tuần">Buổi tối các ngày trong tuần</option>
-                <option value="Linh hoạt">Linh hoạt</option>
-                <option value="Toàn thời gian">Toàn thời gian</option>
-              </select>
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Lời nhắn</label>
-              <textarea 
-                className="form-control" 
-                rows="4"
-                name="message"
-                value={formData.message}
-                onChange={handleInputChange}
-              ></textarea>
-            </div>
-            
-            <button type="submit" className="form-submit">Đăng ký</button>
-          </form>
-        </div>
-      </div>
+      {/* Sử dụng component VolunteerForm */}
+      <VolunteerForm 
+        isOpen={showVolunteerModal} 
+        onClose={() => setShowVolunteerModal(false)} 
+        onSubmit={handleVolunteerSubmit}
+      />
       
       {/* Footer is in the Layout component */}
     </div>
