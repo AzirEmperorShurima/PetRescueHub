@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import '../../assets/styles/animations.css';
 import { 
   Container, 
   Typography, 
@@ -22,6 +23,11 @@ const Adopt = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   
+  useEffect(() => {
+    // Cuộn lên đầu trang khi chuyển trang
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  
   // Sử dụng custom hook
   const {
     pets,
@@ -42,7 +48,7 @@ const Adopt = () => {
   return (
     <Box className="adopt-page">
       <Container maxWidth="lg">
-        <Box className="adopt-header" textAlign="center" mb={4}>
+        <Box className="adopt-header animate-fadeIn" textAlign="center" mb={4}>
           <Typography variant="h3" component="h1" gutterBottom>
             Nhận nuôi thú cưng
           </Typography>

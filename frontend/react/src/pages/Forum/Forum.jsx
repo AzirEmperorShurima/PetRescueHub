@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../../assets/styles/animations.css';
 import { 
   Container, 
   Typography, 
@@ -30,6 +31,11 @@ const Forum = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  useEffect(() => {
+    // Cuộn lên đầu trang khi chuyển trang
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
   
   // Sử dụng custom hook
   const {
@@ -72,7 +78,7 @@ const Forum = () => {
   return (
     <Box className="forum-page">
       <Container maxWidth="lg">
-        <Box className="forum-header" textAlign="center" mb={4}>
+        <Box className="forum-header animate-fadeIn" textAlign="center" mb={4}>
           <Typography variant="h3" component="h1" gutterBottom>
             Diễn đàn thú cưng
           </Typography>
@@ -84,7 +90,7 @@ const Forum = () => {
         <Grid container spacing={3}>
           {/* Sidebar */}
           <Grid item xs={12} md={3}>
-            <Paper elevation={1} className="forum-sidebar">
+            <Paper elevation={1} className="forum-sidebar animate-slideInLeft">
               <Box p={2}>
                 <Typography variant="h6" gutterBottom>
                   Danh mục

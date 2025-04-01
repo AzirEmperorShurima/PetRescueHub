@@ -17,6 +17,7 @@ import { heroSlides, services, recentRescues, testimonials, stats } from '../../
 
 // Import CSS
 import './Home.css';
+import '../../assets/styles/animations.css';
 
 // Import VolunteerForm component
 import VolunteerForm from '../../components/volunteer/VolunteerForm';
@@ -57,6 +58,9 @@ const Home = () => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
     
+    // Cuộn lên đầu trang khi chuyển trang
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     return () => {
       if (slideInterval.current) {
         clearInterval(slideInterval.current);
@@ -75,7 +79,7 @@ const Home = () => {
   return (
     <div className="home-page">
       {/* Hero Section */}
-      <section className="hero-section">
+      <section className="hero-section animate-fadeIn">
         {heroSlides.map((slide, index) => (
           <div 
             key={slide.id}

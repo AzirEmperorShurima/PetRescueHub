@@ -37,6 +37,7 @@ body {
   margin-bottom: 3rem;
   font-size: 2.5rem;
   text-align: center;
+  animation: fadeIn 0.8s ease-in-out;
 }
 
 .section-title::after {
@@ -49,6 +50,23 @@ body {
   height: 4px;
   background: var(--primary-gradient);
   border-radius: 2px;
+  animation: expandWidth 1s ease-in-out forwards;
+}
+
+/* Loại bỏ gạch dưới cho tiêu đề Dịch vụ của chúng tôi, Đánh giá từ cộng đồng và Cứu hộ gần đây */
+.services-section .section-title::after,
+.testimonials-section .section-title::after,
+.recent-rescues .section-title::after {
+  display: none;
+}
+
+@keyframes expandWidth {
+  from {
+    width: 0;
+  }
+  to {
+    width: 80px;
+  }
 }
 
 .section-subtitle {
@@ -98,6 +116,7 @@ body {
 .hero-content {
   max-width: 800px;
   color: var(--white);
+  animation: slideUp 0.8s ease-in-out;
   z-index: 2;
 }
 
@@ -257,6 +276,7 @@ body {
   background-color: var(--light-bg);
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 .services-section::before, .testimonials-section::before {
@@ -284,22 +304,28 @@ body {
 
 .service-content {
   padding: 30px;
-  text-align: center;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  text-align: center;
+  align-items: center;
 }
 
 .service-title {
   font-size: 1.5rem;
   margin-bottom: 15px;
   color: var(--dark-bg);
+  text-align: center;
 }
 
 .service-description {
   color: var(--text-light);
   margin-bottom: 25px;
   flex-grow: 1;
+  text-align: center;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Common Link Button Styles */
@@ -353,6 +379,7 @@ body {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  text-align: center;
 }
 
 .rescue-date {
@@ -365,12 +392,14 @@ body {
   font-size: 1.3rem;
   margin-bottom: 15px;
   color: var(--dark-bg);
+  text-align: center;
 }
 
 .rescue-description {
   color: var(--text-light);
   margin-bottom: 20px;
   flex-grow: 1;
+  text-align: center;
 }
 
 .rescue-link {
@@ -444,11 +473,13 @@ body {
   font-style: italic;
   position: relative;
   z-index: 1;
+  text-align: center;
 }
 
 .testimonial-author {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-top: auto;
 }
 

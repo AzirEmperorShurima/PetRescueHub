@@ -88,7 +88,7 @@ const Footer = ({ darkLight }) => {
                                     <li>
                                         <a href="mailto:petrescuehubsupport@gmail.com">
                                             <FaEnvelope className="contact-icon" /> 
-                                            <span>petrescuehubsupport@gmail.com</span>
+                                            <span>petrescuehub@gmail.com</span>
                                         </a>
                                     </li>
                                     <li>
