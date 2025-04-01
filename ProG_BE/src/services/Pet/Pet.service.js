@@ -118,3 +118,22 @@ export const getPetsByOwner = async (ownerId, ownerId, page = 1, limit = 10) => 
         .limit(limit)
         .lean();
 };
+
+/**
+ * 📑 Filter pet profiles based on given criteria
+ * @param {Object} filter - Object chứa các tiêu chí filter: { breed, breedName, age, gender }
+ * @param {Number} skip - Số lượng bản ghi cần bỏ qua (phân trang)
+ * @param {Number} limit - Số lượng bản ghi cần lấy (phân trang)
+ * @returns {Promise<Array>} - Danh sách pet phù hợp với tiêu chí
+ */
+export const filterPetProfiles = async (filter, skip , limit) => {
+    const pets = await PetProfile.find(filter)
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean(); // Sắp xếp theo ngày tạo, mới nhất trước
+    const total = await PetProfile.countDocuments(filter);
+    return {
+        success: true, data: pets, total: total, skip: skip, limit: limit
+    }
+}

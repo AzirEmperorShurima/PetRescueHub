@@ -10,4 +10,5 @@ forumRoutes.get('/', (req, res) => {
 
 forumRoutes.post('/newPost', createForumPost);
 forumRoutes.put('/updatePost/:id', updateForumPost);
+
 export default forumRoutes

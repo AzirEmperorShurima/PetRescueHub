@@ -8,53 +8,178 @@ import { _encrypt } from '../utils/_crypto_.js';
 import { redisClient } from '../Cache/User_Cache.js';
 import { otpGenerator } from '../services/Otp/createOTP.js';
 import { sendMailForgotPassword, sendMailNotification, sendMailService } from '../services/sendMailService/nodeMailer.service.js';
+// import moment from 'moment/moment.js';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';  // Import plugin UTC
+import timezone from 'dayjs/plugin/timezone.js'; // Import plugin Timezone
+
+// Extend dayjs with plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+// export const Signup_Handler = async (req, res) => {
+//     try {
+//         const { username, password, email } = req.body;
+
+//         const CreateUser = new user({ username, password, email });
+
+//         const role = await Role.findOne({ name: 'user' });
+//         if (!role) {
+//             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Role 'user' not found" });
+//         }
+//         CreateUser.roles = [role._id];
+
+//         const token = await getCookies(CreateUser, res)
+
+//         CreateUser.tokens = [{ type: "LOGIN-TOKEN", token, signedAt: Date.now().toString(), expiredAt: Date.now().toString() }];
+//         const saveUser = await CreateUser.save();
+//         console.log('User Created Successfully', saveUser);
+
+//         const redisKey = `otp:${saveUser._id}`
+//         const generateOTP = otpGenerator()
+//         console.log("OPT Generated :", generateOTP);
+//         console.log("Redis Key:", redisKey);
+
+//         await redisClient.set(redisKey, generateOTP, { EX: 60 * 15 });
+//         const temp = await redisClient.get(redisKey)
+//         console.log("OTP from Redis:", temp);
+//         await sendMailService({ email: saveUser.email, username: saveUser.username, otp: generateOTP });
+
+//         return res.status(StatusCodes.CREATED).json({
+//             message: `User registered successfully. Please verify OTP sent to your email ${saveUser.email}`,
+//             userName: saveUser.username, emailmail: saveUser.email,
+//             createAt: saveUser.createdAt, updatedAt: saveUser.updatedAt,
+//             isActive: saveUser.isActive,
+//             roles: ["user"]
+//         })
+//     } catch (error) {
+//         console.error("Error in Create User Task:", error);
+//         const errorMessage = error.message || "An unknown error occurred";
+//         const errorDetails = error.errors || {};
+//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//             message: 'Error in Create User Task',
+//             error: { message: errorMessage, details: errorDetails }
+//         });
+//     }
+
+// }
+// export const Signup_Handler = async (req, res) => {
+//     try {
+//         const { username, password, email } = req.body;
+
+//         // Kiểm tra role trước, tránh truy vấn dư thừa
+//         const role = await Role.findOne({ name: 'user' });
+//         if (!role) {
+//             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Role 'user' not found" });
+//         }
+
+//         // Tạo user nhưng chưa lưu ngay
+//         const CreateUser = new user({ username, password, email, roles: [role._id] });
+
+//         // Tạo token và lưu vào user
+//         const token = jwt.sign({ id: CreateUser._id }, SECRET_KEY, { expiresIn: '24h' });
+
+//         // Đặt cookies
+//         res.cookie('token', token, { maxAge: 60 * 60 * 24 * 1000, httpOnly: true, secure: true });
+
+//         // Thêm token vào user
+//         CreateUser.tokens = [{ type: "LOGIN-TOKEN", token, signedAt: Date.now().toString(), expiredAt: Date.now().toString() }];
+
+//         // Lưu user vào DB
+//         const saveUser = await CreateUser.save();
+//         console.log('User Created Successfully', saveUser);
+
+//         // Tạo OTP & Redis Key
+//         const redisKey = `otp:${saveUser._id}`;
+//         const generateOTP = otpGenerator();
+//         console.log("OTP Generated:", generateOTP);
+
+//         // Lưu OTP vào Redis (nếu chưa có)
+//         const isExist = await redisClient.get(redisKey);
+//         if (!isExist) {
+//             await redisClient.set(redisKey, generateOTP, { EX: 60 * 15 });
+//         }
+
+//         // Trả về phản hồi ngay lập tức, gửi mail sau
+//         res.status(StatusCodes.CREATED).json({
+//             user: {
+//                 id: saveUser._id,
+//                 username: saveUser.username,
+//                 email: saveUser.email,
+//                 createdAt: dayjs(saveUser.createdAt).tz("Asia/Ho_Chi_Minh").format("DD-MM-YYYY HH:mm:ss (UTC+7)"),
+//                 updatedAt: dayjs(saveUser.updatedAt).tz("Asia/Ho_Chi_Minh").format("DD-MM-YYYY HH:mm:ss (UTC+7)"),
+//                 isActive: saveUser.isActive,
+//                 emailVerified: saveUser.emailVerified || false,
+//                 roles: "user"
+//             }
+//         });
+
+//         // Gửi email bất đồng bộ để tránh chặn quá trình chính
+//         sendMailService({ email: saveUser.email, username: saveUser.username, otp: generateOTP })
+//             .catch(err => console.error("Send mail failed:", err));
+
+//     } catch (error) {
+//         console.error("Error in Create User Task:", error);
+//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//             message: 'Error in Create User Task',
+//             error: { message: error.message || "An unknown error occurred", details: error.errors || {} }
+//         });
+//     }
+// };
 
 export const Signup_Handler = async (req, res) => {
     try {
         const { username, password, email } = req.body;
 
-        const CreateUser = new user({ username, password, email });
-
         const role = await Role.findOne({ name: 'user' });
         if (!role) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Role 'user' not found" });
         }
-        CreateUser.roles = [role._id];
 
-        const token = await getCookies(CreateUser, res)
+        const CreateUser = new user({ username, password, email, roles: [role._id] });
+        const token = jwt.sign({ id: CreateUser._id }, SECRET_KEY, { expiresIn: '24h' });
+
+        res.cookie('token', token, { maxAge: 60 * 60 * 24 * 1000, httpOnly: true, secure: true });
 
         CreateUser.tokens = [{ type: "LOGIN-TOKEN", token, signedAt: Date.now().toString(), expiredAt: Date.now().toString() }];
-        const saveUser = await CreateUser.save();
-        console.log('User Created Successfully', saveUser);
 
-        const redisKey = `otp:${saveUser._id}`
-        const generateOTP = otpGenerator()
-        console.log("OPT Generated :", generateOTP);
-        console.log("Redis Key:", redisKey);
+        // ✅ Trả phản hồi ngay lập tức (không chờ email gửi xong)
+        res.status(StatusCodes.CREATED).json({
+            message: "User registered successfully. Please verify the OTP sent to your email.",
+            user: {
+                id: CreateUser._id,
+                username: CreateUser.username,
+                email: CreateUser.email,
+                createdAt: dayjs().tz("Asia/Ho_Chi_Minh").format("DD-MM-YYYY HH:mm:ss (UTC+7)"),
+                updatedAt: dayjs().tz("Asia/Ho_Chi_Minh").format("DD-MM-YYYY HH:mm:ss (UTC+7)"),
+                isActive: false,
+                emailVerified: isActive,
+                roles: ["user"]
+            }
+        });
 
-        await redisClient.set(redisKey, generateOTP, { EX: 60 * 15 });
-        const temp = await redisClient.get(redisKey)
-        console.log("OTP from Redis:", temp);
-        await sendMailService({ email: saveUser.email, username: saveUser.username, otp: generateOTP });
+        // ✅ Chạy lưu user và gửi OTP song song để tối ưu tốc độ
+        const generateOTP = otpGenerator();
+        const redisKey = `otp:${CreateUser._id}`;
 
-        return res.status(StatusCodes.CREATED).json({
-            message: `User registered successfully. Please verify OTP sent to your email ${saveUser.email}`,
-            userName: saveUser.username, emailmail: saveUser.email,
-            createAt: saveUser.createdAt, updatedAt: saveUser.updatedAt,
-            isActive: saveUser.isActive,
-            roles: ["user"]
-        })
+        Promise.all([
+            CreateUser.save(), // Lưu user vào DB
+            redisClient.set(redisKey, generateOTP, { EX: 60 * 15 }) // Lưu OTP vào Redis
+        ]).then(() => {
+            // ✅ Gửi email OTP sau khi phản hồi API
+            setImmediate(() => {
+                sendMailService({ email, username, otp: generateOTP })
+                    .catch(err => console.error("Send mail failed:", err));
+            });
+        }).catch(err => console.error("Error in background tasks:", err));
+
     } catch (error) {
         console.error("Error in Create User Task:", error);
-        const errorMessage = error.message || "An unknown error occurred";
-        const errorDetails = error.errors || {};
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: 'Error in Create User Task',
-            error: { message: errorMessage, details: errorDetails }
+            error: { message: error.message || "An unknown error occurred", details: error.errors || {} }
         });
     }
-
-}
+};
 // thêm xác thực otp lúc login 
 
 

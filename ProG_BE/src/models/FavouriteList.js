@@ -46,4 +46,4 @@ FavoriteListSchema.pre("remove", async function (next) {
     }
     next();
 });
-export default mongoose.model("FavoriteList", FavoriteListSchema);
+export default mongoose.model("FavouriteList", FavoriteListSchema);

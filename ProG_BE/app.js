@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import forumRoutes from './src/router/Forum.routes.js';
 import userRoute from './src/router/User.routes.js';
-import compression from 'compression';
 
 const app = express();
 connectToDatabase()
