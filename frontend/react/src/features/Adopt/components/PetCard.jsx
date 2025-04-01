@@ -61,13 +61,37 @@ const PetCard = ({ pet, onClick }) => {
         }
       }}
     >
-      <CardMedia
-        component="img"
-        height="200"
-        image={pet.imageUrl}
-        alt={pet.name}
-        sx={{ objectFit: 'cover' }}
-      />
+      <Box sx={{ position: 'relative', paddingTop: '75%', overflow: 'hidden' }}>
+        <CardMedia
+          component="img"
+          image={pet.image || 'https://via.placeholder.com/300x200?text=No+Image'}
+          alt={pet.name}
+          onError={(e) => {
+            e.target.src = 'https://via.placeholder.com/300x200?text=Image+Error';
+          }}
+          sx={{ 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+        {pet.status === 'available' && (
+          <Chip
+            label="Sẵn sàng nhận nuôi"
+            color="success"
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              fontWeight: 'bold'
+            }}
+          />
+        )}
+      </Box>
       
       <CardContent sx={{ flexGrow: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>

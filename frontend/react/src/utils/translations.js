@@ -5,7 +5,7 @@ export const translations = {
     event: 'Sự Kiện',
     adopt: 'Nhận Nuôi',
     donate: 'Quyên Góp',
-    petGuide: 'Tài Liệu',
+    petGuide: 'Cẩm Nang',
     hotline: 'Hotline: 0984268233',
     email: 'Email: petrescuehubsupport@gmail.com',
     search: 'Tìm kiếm',

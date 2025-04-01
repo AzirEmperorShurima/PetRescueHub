@@ -11,6 +11,26 @@
 
 .forum-sidebar {
   height: 100%;
+  position: sticky;
+  top: 80px; /* Điều chỉnh khoảng cách từ top, phù hợp với chiều cao của navbar */
+  max-height: calc(100vh - 100px); /* Chiều cao tối đa của sidebar */
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung sidebar quá dài */
+}
+
+/* Thêm style cho container chứa sidebar và nội dung chính */
+.forum-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.forum-main {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  flex: 1; /* Cho phép phần nội dung chính mở rộng */
+  overflow-y: auto; /* Cho phép cuộn nội dung chính */
 }
 
 .forum-categories {
@@ -135,6 +155,12 @@
 /* Responsive styles */
 @media (max-width: 960px) {
   .forum-sidebar {
+    position: static; /* Trên màn hình nhỏ, không cố định sidebar */
     margin-bottom: 20px;
+    max-height: none;
+  }
+  
+  .forum-container {
+    flex-direction: column; /* Chuyển layout thành dạng cột trên màn hình nhỏ */
   }
 }

@@ -23,7 +23,16 @@ const PetFilters = ({
   onResetFilters 
 }) => {
   return (
-    <Paper elevation={1} sx={{ p: 2 }}>
+    <Paper 
+      elevation={1} 
+      sx={{ 
+        p: 2,
+        position: 'sticky',
+        top: '80px', // Điều chỉnh giá trị này tùy theo chiều cao của navbar
+        maxHeight: 'calc(100vh - 100px)',
+        overflowY: 'auto'
+      }}
+    >
       <Typography variant="h6" gutterBottom>
         Tìm kiếm
       </Typography>
@@ -74,6 +83,7 @@ const PetFilters = ({
             <MenuItem value="young">Trẻ (6 tháng - 2 năm)</MenuItem>
             <MenuItem value="adult">Trưởng thành (2-8 năm)</MenuItem>
             <MenuItem value="senior">Già (8+ năm)</MenuItem>
+            <MenuItem value="senior">Khác </MenuItem>
           </Select>
         </FormControl>
         
