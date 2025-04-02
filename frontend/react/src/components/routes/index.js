@@ -10,7 +10,6 @@ import Forum from '../../pages/Forum/Forum';
 import Event from '../../pages/Event/Event';
 import Adopt from '../../pages/Adopt/Adopt';
 import Donate from '../../pages/Donate/Donate';
-// import Donate from '../../pages/PetGuide/PetGuide';
 
 import Login from '../../features/Auth/Login';
 import Register from '../../features/Auth/Register';
@@ -24,8 +23,15 @@ import QuestionDetail from '../../features/Forum/QuestionDetail';
 import CreateEvent from '../../features/Event/CreateEvent';
 import EventDetail from '../../features/Event/EventDetail';
 
+// User components
+import Profile from '../../pages/Profile/Profile';
+import Terms from '../../pages/Terms/Terms';
+
 // Admin
 import AdminApp from '../../pages/admin';
+
+// Auth
+import ProtectedRoute from './ProtectedRoute';
 
 /**
  * Cấu trúc routes chính của ứng dụng
@@ -38,21 +44,32 @@ const AppRoutes = () => [
     <Route path="adopt" element={<Adopt />} />
     <Route path="donate" element={<Donate />} />
     
-    {/* Forum routes */}
+    {/* Public Forum routes */}
     <Route path="forum" element={<Forum />} />
-    <Route path="forum/post/create" element={<CreatePost />} />
-    <Route path="forum/question/create" element={<CreateQuestion />} />
     <Route path="forum/post/:id" element={<PostDetail />} />
     <Route path="forum/question/:id" element={<QuestionDetail />} />
     
-    {/* Event routes */}
+    {/* Public Event routes */}
     <Route path="event" element={<Event />} />
-    <Route path="event/create" element={<CreateEvent />} />
     <Route path="event/:id" element={<EventDetail />} />
     
     {/* Auth routes */}
     <Route path="auth/login" element={<Login />} />
     <Route path="auth/register" element={<Register />} />
+    <Route path="terms" element={<Terms />} />
+    
+    {/* Protected routes - require authentication */}
+    <Route element={<ProtectedRoute />}>
+      {/* Protected Forum routes */}
+      <Route path="forum/post/create" element={<CreatePost />} />
+      <Route path="forum/question/create" element={<CreateQuestion />} />
+      
+      {/* Protected Event routes */}
+      <Route path="event/create" element={<CreateEvent />} />
+      
+      {/* User routes */}
+      <Route path="profile" element={<Profile />} />
+    </Route>
     
     <Route path="*" element={<Navigate to="/" />} />
   </Route>,

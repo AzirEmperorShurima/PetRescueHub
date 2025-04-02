@@ -3,6 +3,27 @@
   color: #fff;
   padding: 8px 0;
   font-size: 0.9rem;
+  position: fixed; /* Thêm position fixed */
+  top: 0; /* Đặt ở vị trí top 0 */
+  left: 0; /* Đặt ở vị trí left 0 */
+  width: 100%; /* Chiều rộng 100% */
+  z-index: 1000; /* Z-index cao hơn Navigation */
+  height: 40px; /* Chiều cao cố định */
+}
+
+/* Thêm style mới để đảm bảo không ảnh hưởng đến trang auth */
+.auth-page .top-bar {
+  display: none !important;
+}
+
+/* Các style khác giữ nguyên */
+
+@media (max-width: 768px) {
+  .top-bar {
+    display: none; /* Ẩn TopBar trên mobile */
+  }
+  
+  /* Các style khác giữ nguyên */
 }
 
 .top-bar-content {
@@ -17,7 +38,7 @@
 
 .contact-info i {
   margin-right: 5px;
-  color: #3498db;
+  color: #000000;
 }
 
 .top-bar-right {

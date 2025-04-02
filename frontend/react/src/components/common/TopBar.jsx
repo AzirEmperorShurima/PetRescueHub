@@ -4,7 +4,6 @@ import { LanguageContext } from '../contexts/LanguageContext';
 import translations from '../../utils/translations';
 import '../../assets/styles/components/TopBar.css';
 
-
 const TopBar = () => {
   const { language, toggleLanguage } = useContext(LanguageContext);
   const t = translations[language];

@@ -3,7 +3,7 @@ export const usersMock = [
     id: 1,
     name: 'Nguyễn Văn A',
     email: 'user@example.com',
-    password: 'password123', // Trong thực tế, mật khẩu sẽ được mã hóa
+    password: 'userA123', // Trong thực tế, mật khẩu sẽ được mã hóa
     avatar: 'https://i.pravatar.cc/150?img=1',
     role: 'user',
     createdAt: '2023-10-01T08:30:00'
@@ -12,7 +12,7 @@ export const usersMock = [
     id: 2,
     name: 'Trần Thị B',
     email: 'user2@example.com',
-    password: 'password123',
+    password: 'userB123',
     avatar: 'https://i.pravatar.cc/150?img=5',
     role: 'user',
     createdAt: '2023-10-05T10:15:00'

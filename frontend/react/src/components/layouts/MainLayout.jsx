@@ -15,22 +15,23 @@ const MainLayout = () => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '100vh'
+        minHeight: '100vh',
+        paddingTop: isAuthPage ? 0 : '40px' // Thêm padding-top cho non-auth pages
       }}
     >
-      <TopBar />
-      <Navigation />
+      {!isAuthPage && <TopBar />}
+      {!isAuthPage && <Navigation />}
       <Box 
         component="main"
         sx={{ 
           flex: 1,
-          marginTop: 0, 
-          paddingTop: 0 
+          marginTop: isAuthPage ? 0 : '80px', // Không cần margin-top cho trang auth
+          paddingTop: isAuthPage ? 0 : '20px'
         }}
       >
         <Outlet />
       </Box>
-      <Footer />
+      {!isAuthPage && <Footer />}
     </Box>
   );
 };

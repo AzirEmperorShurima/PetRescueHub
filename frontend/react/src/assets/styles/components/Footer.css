@@ -16,14 +16,14 @@
 }
 
 .new_footer_top {
-    padding: 80px 0 300px;
+    padding: 50px 0 300px;
     position: relative;
     overflow-x: hidden;
 }
 
 .footer-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1250px;
     margin: 0 auto;
     padding: 0 15px;
 }

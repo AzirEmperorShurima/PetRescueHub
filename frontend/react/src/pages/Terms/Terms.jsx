@@ -4,7 +4,6 @@ import './Terms.css';
 
 const Terms = () => {
   useEffect(() => {
-    // Cuộn lên đầu trang khi component được mount
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -24,10 +23,7 @@ const Terms = () => {
             1. Giới thiệu
           </Typography>
           <Typography variant="body1" className="section-content">
-            Chào mừng bạn đến với PetRescueHub! Khi bạn sử dụng dịch vụ của chúng tôi, bạn đồng ý tuân theo các điều khoản này. Vui lòng đọc kỹ.
-          </Typography>
-          <Typography variant="body1" className="section-content">
-            PetRescueHub là nền tảng kết nối những người muốn nhận nuôi thú cưng với các trung tâm cứu hộ và những người có thú cưng cần tìm nhà mới. Chúng tôi cung cấp các dịch vụ bao gồm đăng tin nhận nuôi, tìm kiếm thú cưng, tổ chức sự kiện và diễn đàn cộng đồng.
+            PetRescueHub là nền tảng tiên phong trong việc kết nối cộng đồng những người yêu thú cưng tại Việt Nam. Chúng tôi cam kết tạo ra một môi trường an toàn và đáng tin cậy, nơi mỗi thú cưng đều có cơ hội tìm được mái ấm mới và nhận được sự chăm sóc tốt nhất.
           </Typography>
         </Box>
 
@@ -90,10 +86,15 @@ const Terms = () => {
 
         <Box className="terms-section">
           <Typography variant="h5" component="h2" className="section-title">
-            7. Liên hệ
+            7. Liên hệ và Hỗ trợ
           </Typography>
           <Typography variant="body1" className="section-content">
-            Nếu bạn có bất kỳ câu hỏi hoặc quan ngại nào về các Điều khoản này hoặc Dịch vụ của chúng tôi, vui lòng liên hệ với chúng tôi tại support@petrescuehub.com hoặc qua mẫu liên hện trên trang web của chúng tôi.
+            Đội ngũ hỗ trợ của PetRescueHub luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn. Liên hệ với chúng tôi qua:
+            <ul>
+              <li>Email: support@petrescuehub.com</li>
+              <li>Hotline: 1900-xxxx</li>
+              <li>Văn phòng: Tầng 15, Tòa nhà Landmark 81, TP.HCM</li>
+            </ul>
           </Typography>
         </Box>
       </Paper>

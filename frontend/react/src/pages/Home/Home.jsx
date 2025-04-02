@@ -20,7 +20,7 @@ import './Home.css';
 import '../../assets/styles/animations.css';
 
 // Import VolunteerForm component
-import VolunteerForm from '../../components/volunteer/VolunteerForm';
+import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);

@@ -30,7 +30,7 @@ import './Forum.css';
 const Forum = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuth(); // Get user from AuthContext
   
   useEffect(() => {
     // Cuộn lên đầu trang khi chuyển trang
@@ -117,11 +117,11 @@ const Forum = () => {
                   Tạo mới
                 </Typography>
                 <Box className="forum-create-buttons">
+                  {/* Show create post/question buttons only for authenticated users */}
                   <ForumActions 
-                    onCreatePost={handleCreatePost}
-                    onCreateQuestion={handleCreateQuestion}
-                    onCreateEvent={handleCreateEvent}
-                    displayStyle="vertical"
+                    isAuthenticated={!!user} 
+                    onCreatePost={() => navigate('/forum/post/create')}
+                    onCreateQuestion={() => navigate('/forum/question/create')}
                   />
                 </Box>
                 

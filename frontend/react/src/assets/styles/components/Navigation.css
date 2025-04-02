@@ -1,57 +1,49 @@
-/* src/styles/components/Navigation.css */
-
-/* Container styles */
+/* ==================== CONTAINER STYLES ==================== */
 .navbar {
   padding: 0;
-  background-color: #F5F5F5; /* Nền xám nhạt như ảnh mẫu */
-  border-top: 2px solid #a21725; /* Viền trên màu vàng */
-  border-bottom: 1px solid #D3D3D3; /* Viền dưới màu xám */
+  background-color: #F5F5F5;
+  border-top: 2px solid #D34F81;
+  border-bottom: 1px solid #D3D3D3;
   box-shadow: var(--box-shadow-sm);
-  min-height: 100px; /* Giảm chiều cao cho phù hợp */
-}
-
-/* Thêm class sticky cho navbar */
-.navbar.sticky {
+  min-height: 100px;
   position: fixed;
-  top: 0;
+  top: 40px;
   left: 0;
   width: 100%;
-  z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  animation: slideDown 0.3s ease-in-out;
-  transition: all 0.3s ease;
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  z-index: 999;
 }
 
 .navbar > .container {
-  max-width: 100%;
-  padding: 0 0 0 50px; /* Chỉ giữ padding bên trái, loại bỏ padding bên phải */
+  max-width: 1400px; /* Tăng max-width để có thêm không gian */
+  padding: 0 1.9rem; /* Thêm padding để tránh sát cạnh màn hình */
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  gap: 2rem; /* Khoảng cách giữa các phần tử chính */
 }
 
-/* Logo styles */
+/* ==================== LOGO STYLES ==================== */
 .navbar-brand {
   padding: 0;
-  margin-right: 30px;
+  margin: 0;
   display: flex;
   align-items: center;
   height: 100%;
+  min-width: 180px; /* Giảm min-width để logo có thể nằm sát lề hơn */
+  flex-shrink: 0;
+  margin-left: -1rem; /* Đẩy logo sát lề trái */
 }
 
 .navbar-brand .logo {
-  height: 70px;
-  width: auto; /* Đảm bảo logo tròn */
+  height: 100px; /* Tăng kích thước logo */
+  width: auto;
   object-fit: contain;
   opacity: 0;
   transition: opacity 0.5s ease-in-out, transform 0.3s ease;
   transform: translateY(-20px);
+  padding: 0.5rem; /* Giúp logo không quá sát cạnh */
 }
 
 .navbar-brand .logo.visible {
@@ -60,40 +52,35 @@
 }
 
 .navbar-brand .logo:hover {
-  transform: scale(1.05); /* Giữ hiệu ứng phóng to khi hover */
+  transform: scale(1.05);
 }
 
 .navbar-brand .logo-text {
-  font-family: 'Montserrat', sans-serif; /* Font giống ảnh mẫu */
-  font-weight: 700; /* Đậm */
-  font-size: 1.9rem; /* Khoảng 24px */
-  margin-left: 0.5rem; /* Khoảng cách giữa icon và chữ */
-}
-
-@media (max-width: 991px) {
-  .navbar-brand .logo {
-    height: 50px;
-  }
-  .navbar-brand .logo-text {
-    font-size: 1.7rem;
-  }
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-left: 0.5rem;
+  white-space: nowrap;
 }
 
 .navbar-brand .pet {
-  color: #000000; /* "Pet" màu đen */
+  color: #000000;
 }
 
 .navbar-brand .rescuehub {
-  color: #E91E63; /* "RescueHub" màu hồng đỏ */
+  color: #D34F81;
 }
 
-/* Menu styles */
+/* ==================== MENU STYLES ==================== */
 .navbar-nav {
   display: flex;
   align-items: center;
-  gap: 1.4rem; /* Giảm khoảng cách giữa các link cho giống ảnh mẫu */
-  margin: 0 auto;
-  height: 100%;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  flex: 1; /* Cho phép menu chiếm hết không gian còn lại */
+  justify-content: center; /* Căn giữa các menu items */
+  max-width: 800px; /* Giới hạn chiều rộng tối đa của menu */
 }
 
 .nav-item {
@@ -103,107 +90,195 @@
 }
 
 .nav-link {
-  color: #000000 !important; /* Màu đen cho các link */
+  color: #000000;
   font-weight: 600;
-  font-size: 1 rem; /* 14px như ảnh mẫu */
-  padding: 8px 16px !important;
-  text-transform: uppercase; /* In hoa */
-  transition: var(--transition-base);
+  font-size: 1.1rem;
+  padding: 8px 16px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
   white-space: nowrap;
   display: flex;
   align-items: center;
-  position: relative;
 }
 
+/* Loại bỏ phần gạch chân */
+.nav-link::after,
+.nav-link.active::after {
+  display: none;
+}
+
+/* Trang active sẽ có màu hồng - thêm !important để override */
 .nav-link.active {
-  color: #E91E63 !important; /* Màu hồng đỏ cho link đang hoạt động */
+  color: #D34F81 !important;
+  font-weight: 700;
 }
 
-/* Xóa hiệu ứng gạch chân khi hover để đơn giản hơn */
-.nav-link::after {
-  display: none; /* Không cần hiệu ứng này trong ảnh mẫu */
+/* Hiệu ứng hover */
+.nav-link:hover {
+  color: #D34F81;
+  transform: translateY(-2px);
+}
+
+/* Trang hiện tại sẽ có màu hồng */
+.nav-link.active {
+  color: #D34F81;
+  font-weight: 700;
 }
 
 .nav-link:hover {
-  color: #E91E63 !important; /* Đổi màu khi hover cho giống active */
+  transform: translateY(-2px);
 }
 
-/* Button container */
-.nav-buttons {
-  margin-left: auto;
+/* ==================== USER MENU STYLES ==================== */
+.user-menu-container {
   display: flex;
-  gap: 12px;
   align-items: center;
-  padding-right: 4px; /* Loại bỏ padding bên phải */
-  margin-right: 0; /* Đảm bảo không có margin bên phải */
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  margin-right: -1rem; /* Đẩy user menu sát lề phải */
+  gap: 1rem; /* Khoảng cách giữa notification và avatar */
 }
 
-/* Common button styles */
-.btn-outline-primary,
-.btn-primary {
-  font-size: 0.9rem;
-  padding: 8px 20px;
-  border-radius: 5px;
-  font-weight: 500;
-  width: 120px;
-  text-align: center;
-  box-sizing: border-box;
+.user-menu-icons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-/* Login button */
-.btn-outline-primary {
-  border: 2px solid #007bff;
-  color: #007bff;
-  background-color: transparent;
+.notification-button {
+  position: relative;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
-.btn-outline-primary:hover {
-  background-color: #007bff;
-  color: white;
+.notification-button:hover {
+  background-color: rgba(211, 79, 129, 0.1);
 }
 
-/* Register button */
-.btn-primary {
-  background-color: #007bff;
-  border: 2px solid #007bff;
-  color: white;
+.notification-icon {
+  color: #555;
+  font-size: 1.5rem;
 }
 
-.btn-primary:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border-radius: 50%;
 }
 
-/* Responsive */
+/* ==================== RESPONSIVE STYLES ==================== */
 @media (max-width: 991px) {
   .navbar > .container {
-    padding: 0 0; /* Giảm padding của container để các nút nằm sát cạnh */
+    padding: 0 0.5rem;
   }
-
-  .navbar-brand .logo {
-    height: 40px; /* Giảm kích thước logo trên mobile */
-    width: 40px;
+  
+  .navbar-brand {
+    margin-left: 0;
   }
-
-  .navbar-brand .logo-text {
-    font-size: 1.2rem; /* Giảm cỡ chữ trên mobile */
+  
+  .user-menu-container {
+    margin-right: 0;
   }
+  
+  .navbar-toggler {
+    margin-left: 0.5rem;
+  }
+  
+  .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  
+  .navbar-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 100%;
+  }
+}
 
+/* Media query cho màn hình lớn hơn */
+@media (min-width: 1400px) {
+  .navbar > .container {
+    max-width: 1600px; /* Tăng max-width cho màn hình lớn */
+  }
+}
+
+/* ==================== BUTTON STYLES ==================== */
+.nav-buttons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Các nút chia sẻ chung */
+.btn-outline-primary,
+.btn-primary {
+  font-size: 0.9rem; /* Giảm kích thước chữ */
+  padding: 8px 20px; /* Giảm padding */
+  border-radius: 10px;
+  font-weight: 600;
+  min-width: 120px; /* Giảm min-width */
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Nút đăng nhập (outline) */
+.btn-outline-primary {
+  background: white;
+  border: 1.5px solid #D34F81;
+  color: #D34F81;
+  box-shadow: 0 4px 15px rgba(211, 79, 129, 0.2);
+}
+
+/* Nút đăng ký (primary) */
+.btn-primary {
+  background: white;
+  border: 1.5px solid #D34F81;
+  color: #D34F81;
+  box-shadow: 0 4px 15px rgba(211, 79, 129, 0.2);
+}
+
+/* Đồng bộ hiệu ứng hover cho cả 2 nút */
+.btn-outline-primary:hover,
+.btn-primary:hover {
+  background: #E91E63;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(211, 79, 129, 0.25);
+}
+
+/* Hiệu ứng active */
+.btn-primary:active,
+.btn-outline-primary:active {
+  transform: translateY(1px);
+}
+
+/* Responsive adjustments cho nút */
+@media (max-width: 991px) {
   .nav-buttons {
-    margin-top: 1rem;
-    justify-content: flex-end; /* Căn phải thay vì căn giữa */
-    padding-right: 0;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+    margin-top: 12px;
   }
-}
-
-/* Loại bỏ khoảng cách giữa Navigation và Slide */
-.navbar {
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-/* Hoặc nếu bạn muốn làm to thanh Navigation */
-.navbar {
-  padding: 15px 0;
-  margin-bottom: 0;
+  
+  .btn-outline-primary,
+  .btn-primary {
+    width: 100%;
+    padding: 10px 20px;
+  }
 }
