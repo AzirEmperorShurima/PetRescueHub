@@ -499,3 +499,8 @@
     font-size: 0.9rem;
   }
 }
+
+/* Loại bỏ gạch dưới cho các tiêu đề section */
+.no-underline::after {
+  display: none;
+}

@@ -150,7 +150,7 @@ const Event = () => {
         {/* Featured Event */}
         {featuredEvent && (
           <Box mb={6}>
-            <Typography variant="h5" component="h2" gutterBottom className="section-title">
+            <Typography variant="h5" component="h2" gutterBottom className="section-title no-underline">
               Sự kiện nổi bật
             </Typography>
             <Card className="featured-event-card">
@@ -234,7 +234,7 @@ const Event = () => {
 
         {/* Event List */}
         <Box mb={4}>
-          <Typography variant="h5" component="h2" gutterBottom className="section-title">
+          <Typography variant="h5" component="h2" gutterBottom className="section-title no-underline">
             Tất cả sự kiện
           </Typography>
           
