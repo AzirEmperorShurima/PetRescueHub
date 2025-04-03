@@ -1,14 +1,17 @@
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import authRouter from './src/router/Auth.routes.js';
-import { connectToDatabase } from './mongoConfig.js';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
+import { connectToDatabase } from './mongoConfig.js';
+import authRouter from './src/router/Auth.routes.js';
 import forumRoutes from './src/router/Forum.routes.js';
 import userRoute from './src/router/User.routes.js';
+import petRoute from './src/router/Pet.routes.js';
 
 const app = express();
+
 connectToDatabase()
 app.set("env", "development");
 app.set("port", process.env.PORT || 4000)
@@ -17,6 +20,12 @@ app.set('json spaces', 4);
 app.set('case sensitive routing', true) // phân biệt Api và api
 app.set('strict routing', true) // phân biệt /user và /user/
 
+// app.use(express.static('public')) // thư mục chứa file tĩnh (image, video, ...)
+app.use(cors({
+    // origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    // credentials: true,
+    // methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}))
 app.use(compression())
 app.use(cookieParser())
 app.use(helmet());
@@ -26,7 +35,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRouter);
 app.use('/api/forum', forumRoutes)
-app.use('/api/actor', userRoute)
+app.use('/api/user', userRoute)
+app.use('/api/pet', petRoute)
 app.use('/api/*', (req, res) => {
     res.status(404).json({
         status: 'error',

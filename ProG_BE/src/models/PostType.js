@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const PostTypeSchema = new mongoose.Schema({
-    name: { type: String, enum: ["Question", "ForumPost"], required: true, unique: true },
+    name: { type: String, enum: ["Question", "ForumPost",], required: true, unique: true },
     description: { type: String }, // Mô tả loại bài viết
     permissions: {
         canPost: { type: Boolean, default: true }, // Cho phép đăng bài hay không

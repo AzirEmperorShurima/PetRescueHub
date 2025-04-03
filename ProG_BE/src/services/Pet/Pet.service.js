@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 
 // Hàm tiện ích kiểm tra pet tồn tại
-const getPetOrThrow = async (petId) => {
+export const getPetOrThrow = async (petId) => {
     const pet = await PetProfile.findById(petId);
     if (!pet) throw new Error("Thú cưng không tồn tại!");
     return pet;
@@ -126,7 +126,7 @@ export const getPetsByOwner = async (ownerId, ownerId, page = 1, limit = 10) => 
  * @param {Number} limit - Số lượng bản ghi cần lấy (phân trang)
  * @returns {Promise<Array>} - Danh sách pet phù hợp với tiêu chí
  */
-export const filterPetProfiles = async (filter, skip , limit) => {
+export const filterPetProfiles = async (filter, skip, limit) => {
     const pets = await PetProfile.find(filter)
         .skip(skip)
         .limit(limit)

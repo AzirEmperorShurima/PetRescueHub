@@ -95,25 +95,5 @@ ForumPostSchema.pre("findOneAndUpdate", function (next) {
     next();
 });
 
-// 🔥 Middleware kiểm tra quyền trước khi đăng bài
-// ForumPostSchema.pre("save", async function (next) {
-//     try {
-//         const userPermissions = await mongoose.model("UserPermissions").findOne({ user: this.author });
-
-//         if (!userPermissions) {
-//             throw new Error("Không tìm thấy quyền của người dùng!");
-//         }
-//         if (userPermissions.isBanned) {
-//             throw new Error("Bạn đã bị cấm hoạt động!");
-//         }
-//         if (!userPermissions.canPostForum) {
-//             throw new Error("Bạn không có quyền đăng bài trên diễn đàn!");
-//         }
-
-//         next();
-//     } catch (error) {
-//         next(error);
-//     }
-// });
 
 export default mongoose.model("ForumPost", ForumPostSchema);
