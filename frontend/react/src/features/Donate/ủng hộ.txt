@@ -1,0 +1,7 @@
+<Box className="bank-detail-item content-field">
+  <Typography variant="body1" className="bank-detail-label">Nội dung:</Typography>
+  <Typography variant="body1" className="bank-detail-value">{accountDetails.content}</Typography>
+  <IconButton size="small" onClick={() => handleCopy(accountDetails.content)}>
+    <ContentCopyIcon fontSize="small" />
+  </IconButton>
+</Box>

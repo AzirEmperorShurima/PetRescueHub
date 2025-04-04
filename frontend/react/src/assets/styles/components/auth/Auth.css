@@ -1,167 +1,218 @@
-.login-form-container {
-  max-width: 380px;
-  background: linear-gradient(0deg, rgb(255, 255, 255) 0%, rgb(244, 247, 251) 100%);
-  border-radius: 40px;
-  padding: 25px 35px;
-  border: 5px solid rgb(255, 255, 255);
-  box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 30px 30px -20px;
-  margin: 20px auto;
-  transition: .3s all;
+/* Import phông chữ từ Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+/* Auth Container */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  font-family: 'Poppins', sans-serif; /* Phông chữ chính cho container */
+  position: relative;
+  overflow: hidden;
 }
 
-.heading {
+/* Thêm overlay hình ảnh nền mờ */
+.auth-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('https://images.unsplash.com/photo-1543466835-00a7907e9de1');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.05;
+  z-index: 0;
+}
+
+.auth-wrapper {
+  width: 100%;
+  max-width: 450px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Các phần CSS khác giữ nguyên */
+
+/* Pet Rescue Appeal - Cập nhật để hiển thị hình ảnh chú chó */
+.pet-rescue-appeal {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
   text-align: center;
-  font-weight: 900;
-  font-size: 30px;
-  color: rgb(16, 137, 211);
 }
 
-.form {
-  margin-top: 20px;
+.pet-images-carousel {
+  position: relative;
+  height: 200px;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.form-group {
-  margin-bottom: 15px;
+/* Sử dụng hình ảnh chú chó bị bỏ rơi */
+.pet-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 1.5s ease-in-out;
 }
 
-.form label {
-  display: block;
-  text-align: left;
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: #333;
+.pet-rescue-message {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #555;
+  font-style: italic;
+  margin-top: 0.8rem;
+  line-height: 1.5;
+  letter-spacing: 0.2px;
+  background-color: rgba(233, 30, 99, 0.05);
+  padding: 0.8rem;
+  border-radius: 8px;
+  border-left: 3px solid #E91E63;
 }
 
-.input {
-  width: 100%; /* Giữ 100% để đồng nhất */
-  background: white;
-  border: none;
-  padding: 15px 20px;
+/* Thêm hiệu ứng hover cho hình ảnh */
+.pet-images-carousel:hover .pet-image {
+  transform: scale(1.05);
+  transition: transform 0.5s ease;
+}
+
+/* Thêm nút kêu gọi hành động */
+.rescue-cta {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #E91E63;
+  color: white;
   border-radius: 20px;
-  margin-top: 15px;
-  box-shadow: #cff0ff 0px 10px 10px -5px;
-  border-inline: 2px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(233, 30, 99, 0.3);
 }
 
-.input::-moz-placeholder {
-  color: rgb(170, 170, 170);
+.rescue-cta:hover {
+  background-color: #C2185B;
+  transform: translateY(-2px);
 }
 
-.input::placeholder {
-  color: rgb(170, 170, 170);
+.auth-card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  width: 100%;
+  overflow: hidden;
 }
 
-.input:focus {
-  outline: none;
-  border-inline: 2px solid #12B1D1;
+/* Auth Header */
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
-.password-container {
+.auth-logo {
+  height: 60px;
+  margin-bottom: 1.5rem;
+}
+
+.text-logo {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #E91E63;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.text-logo::before {
+  content: "🐾";
+  margin-right: 8px;
+  font-size: 1.8rem;
+}
+
+.auth-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.auth-subtitle {
+  color: #666;
+  font-size: 0.95rem;
+  font-weight: 300;
+}
+
+/* Form Styles */
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #444;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+/* Auth Button */
+.auth-button {
+  width: 100%;
+  padding: 0.9rem;
+  background: linear-gradient(135deg, #E91E63 0%, #FF9800 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
 }
 
-.showpass-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
+/* Social Login */
+.social-button {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.2px;
 }
 
-.forgot-password {
-  display: block;
-  margin: 10px 0;
-  text-align: right;
-}
-
-.forgot-password a {
-  font-size: 15px;
-  color: #0099ff;
-  text-decoration: none;
-}
-
-.login-button {
-  display: block;
-  width: 100%;
-  font-weight: bold;
-  background: linear-gradient(45deg, rgb(16, 137, 211) 0%, rgb(18, 177, 209) 100%);
-  color: white;
-  padding: 15px;
-  margin: 20px auto;
-  border-radius: 20px;
-  box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 20px 10px -15px;
-  border: none;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-}
-
-.login-button:hover {
-  transform: scale(1.03);
-  box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 23px 10px -20px;
-}
-
-.login-button:active {
-  transform: scale(0.95);
-  box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 15px 10px -10px;
-}
-
-.login-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.social-account-container {
-  margin-top: 25px;
-}
-
-.social-account-container .title {
-  display: block;
-  text-align: center;
-  font-size: 10px;
-  color: rgb(170, 170, 170);
-}
-
-.social-account-container .social-accounts {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 5px;
-}
-
-.social-account-container .social-accounts .social-button {
-  background: linear-gradient(45deg, rgb(0, 0, 0) 0%, rgb(112, 112, 112) 100%);
-  border: 5px solid white;
-  padding: 5px;
-  border-radius: 50%;
-  width: 40px;
-  display: grid;
-  place-content: center;
-  box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 12px 10px -8px;
-  transition: all 0.2s ease-in-out;
-}
-
-.social-account-container .social-accounts .social-button .svg {
-  fill: white;
-  margin: auto;
-}
-
-.social-account-container .social-accounts .social-button:hover {
-  transform: scale(1.2);
-}
-
-.social-account-container .social-accounts .social-button:active {
-  transform: scale(0.9);
-}
-
-.agreement {
-  display: block;
-  text-align: center;
-  margin-top: 15px;
-}
-
-.agreement a {
-  text-decoration: none;
-  color: #0099ff;
-  font-size: 9px;
+/* Pet Rescue Appeal */
+.pet-rescue-message {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #666;
+  font-style: italic;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+  letter-spacing: 0.2px;
 }
