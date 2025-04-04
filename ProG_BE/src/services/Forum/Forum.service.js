@@ -1,4 +1,7 @@
-import ForumPost from "../../models/ForumPost";
+import { CommentModel } from "../../models/CommentsSchema";
+import FavouriteList from "../../models/FavouriteList";
+import Reaction from "../../models/ReactionSchema";
+import PostModel from "../../models/PostSchema";
 
 /**
  * 📥 Lấy danh sách bài viết trong diễn đàn
@@ -97,15 +100,6 @@ export const createPost = async (title, content, tags, imgUrl, userId, postType 
  */
 export const updatePost = async (postId, userId, updateData) => {
     try {
-        // Chỉ lấy các trường hợp lệ
-        // const allowedFields = ["title", "content", "tags", "imgUrl", "postStatus"];
-        // const updateFields = Object.keys(updateData).reduce((acc, key) => {
-        //     if (allowedFields.includes(key)) {
-        //         acc[key] = typeof updateData[key] === "string" ? updateData[key].trim() : updateData[key];
-        //     }
-        //     return acc;
-        // }, {});
-
         if (Object.keys(updateData).length === 0) {
             return { success: false, message: "Không có dữ liệu hợp lệ để cập nhật" };
         }
@@ -134,30 +128,83 @@ export const updatePost = async (postId, userId, updateData) => {
  */
 export const deletePost = async (postId, userId) => {
     try {
-        // Tìm bài viết trước khi xóa
-        const post = await PostModel.findOne({ _id: postId, author: userId });
+        // Kết hợp findOneAndDelete với lean() để tối ưu hiệu suất
+        const post = await PostModel.findOneAndDelete(
+            { _id: postId, author: userId },
+            { lean: true }
+        ).exec();
 
         if (!post) {
             return { success: false, message: "Không có quyền xóa hoặc bài viết không tồn tại" };
         }
 
-        // Xóa tất cả bình luận liên quan đến bài viết
-        await Comment.deleteMany({ postId });
-
-        // Xóa tất cả reactions liên quan đến bài viết
-        await Reaction.deleteMany({ targetId: postId });
-
-        // Xóa bài viết khỏi danh sách yêu thích
-        await FavouriteList.updateMany(
-            { "items.postId": postId },
-            { $pull: { items: { postId } } }
-        );
-
-        // Xóa bài viết
-        await PostModel.findByIdAndDelete(postId);
+        // Thực hiện các thao tác xóa song song với error handling riêng
+        await Promise.all([
+            CommentModel.deleteMany({ postId }).exec().catch(err => {
+                console.error('Error deleting comments:', err.message);
+                throw err; // Có thể bỏ throw nếu muốn tiếp tục dù lỗi
+            }),
+            Reaction.deleteMany({ targetId: postId }).exec().catch(err => {
+                console.error('Error deleting reactions:', err.message);
+                throw err;
+            }),
+            FavouriteList.updateMany(
+                { "items.postId": postId },
+                { $pull: { items: { postId } } }
+            ).exec().catch(err => {
+                console.error('Error updating favourites:', err.message);
+                throw err;
+            })
+        ]);
 
         return { success: true, message: "Xóa bài viết thành công!" };
     } catch (error) {
-        return { success: false, message: "Lỗi server khi xóa bài viết", error };
+        console.error('Delete post error:', { postId, error: error.message });
+        return {
+            success: false,
+            message: error.message || "Lỗi server khi xóa bài viết",
+            error: error.message
+        };
     }
 };
+
+// export const deletePost = async (postId, userId) => {
+//     const session = await PostModel.startSession();
+//     session.startTransaction();
+
+//     try {
+//         // Sử dụng findOneAndDelete thay vì find + delete riêng lẻ
+//         const deletedPost = await PostModel.findOneAndDelete(
+//             { _id: postId, author: userId },
+//             { session }
+//         );
+
+//         if (!deletedPost) {
+//             throw new Error("Không có quyền xóa hoặc bài viết không tồn tại");
+//         }
+
+//         // Thực hiện các thao tác xóa song song
+//         await Promise.all([
+//             CommentModel.deleteMany({ postId }).session(session),
+//             Reaction.deleteMany({ targetId: postId }).session(session),
+//             FavouriteList.updateMany(
+//                 { "items.postId": postId },
+//                 { $pull: { items: { postId } } }
+//             ).session(session)
+//         ]);
+
+//         await session.commitTransaction();
+//         return { success: true, message: "Xóa bài viết thành công!" };
+//     } catch (error) {
+//         await session.abortTransaction();
+//         console.error('Delete post error:', error);
+
+//         return {
+//             success: false,
+//             message: error.message || "Lỗi server khi xóa bài viết",
+//             error: process.env.NODE_ENV === 'development' ? error : undefined
+//         };
+//     } finally {
+//         session.endSession();
+//     }
+// };

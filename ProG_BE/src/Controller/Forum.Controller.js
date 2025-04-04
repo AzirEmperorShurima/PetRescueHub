@@ -1,7 +1,12 @@
 import { StatusCodes } from "http-status-codes";
 import ForumPost from "../models/ForumPost.js";
 import * as forumService from "../services/Forum/Forum.service.js";
+import * as commentService from "../services/Comments/Comments.service.js"
+import * as reactionService from "../services/Reaction/Reaction.service.js";
 import { getUserIdFromCookies } from "../services/User/User.service.js";
+import { CommentModel } from "../models/CommentsSchema.js";
+import Reaction from "../models/ReactionSchema.js";
+
 
 export const getForumPosts = async (req, res) => {
     const requestOptions = {
@@ -132,7 +137,7 @@ export const createNewForumPost = async (req, res) => {
 
 export const addComment = async (req, res) => {
     try {
-        const { postId, content, parentComment } = req.body;
+        const { postId, content } = req.body;
         const userId = getUserIdFromCookies(req);
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành đ��ng này" });
@@ -144,16 +149,10 @@ export const addComment = async (req, res) => {
         if (!content) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Nội dung không được để trống" });
         }
-        const newComment = new Comment({
-            content,
-            author: userId,
-            postId,
-            postType: "ForumPost",
-            parentComment,
-            depth: parentComment ? 1 : 0
-        });
-
-        await newComment.save();
+        const newComment = await commentService.addCommentService(postId, content, userId);
+        if (!newComment.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: newComment.message });
+        }
         res.status(StatusCodes.CREATED).json({ message: "Đã thêm comment", comment: newComment });
     } catch (error) {
         console.error(error);
@@ -161,11 +160,41 @@ export const addComment = async (req, res) => {
     }
 };
 
+export const replyComment = async (req, res) => {
+    try {
+        const { postId, content, parentComment } = req.body;
+        const userId = getUserIdFromCookies(req);
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành đ��ng này" });
+        }
+        const parent_commment = await CommentModel.findById(parentComment);
+        if (!parent_commment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Parent Comment Does Not Exist" });
+
+        // Kiểm tra bài viết có tồn tại không
+        const post = await ForumPost.findById(postId);
+        if (!post) return res.status(StatusCodes.NOT_FOUND).json({ message: "Bài viết không tồn tại" });
+        if (!content) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Nội dung không được để trống" });
+        }
+        const newRepliesComment = await commentService.replyCommentService(postId, content, userId, parentComment);
+        if (!newRepliesComment.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: newRepliesComment.message });
+        }
+        res.status(StatusCodes.CREATED).json({ message: "Đã thêm comment", comment: newRepliesComment });
+    } catch (error) {
+        console.error(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
+
+    }
+}
 export const getCommentsByPost = async (req, res) => {
     try {
         const { postId } = req.params;
-        const comments = await Comment.find({ postId }).populate("author", "username");
-        res.status(StatusCodes.OK).json(comments);
+        const listComments = await commentService.getCommentsByPostIdService(postId);
+        if (!listComments.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: listComments.message });
+        }
+        res.status(StatusCodes.OK).json(listComments.data);
     } catch (error) {
         console.error(error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
@@ -175,17 +204,20 @@ export const getCommentsByPost = async (req, res) => {
 export const deleteComment = async (req, res) => {
     try {
         const { commentId } = req.params;
-        const decodedUser = authenticateUser(req);
-        const userId = decodedUser.id;
-
-        const comment = await Comment.findById(commentId);
+        const userId = getUserIdFromCookies(req);
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
+        const comment = await CommentModel.findById(commentId);
         if (!comment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment không tồn tại" });
 
         if (comment.author.toString() !== userId) {
             return res.status(StatusCodes.FORBIDDEN).json({ message: "Không có quyền xóa comment này" });
         }
-
-        await comment.remove();
+        const deleteComment = await commentService.deleteCommentService(commentId, userId);
+        if (!deleteComment.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: deleteComment.message });
+        }
         res.status(StatusCodes.OK).json({ message: "Đã xóa comment" });
     } catch (error) {
         console.error(error);
@@ -193,26 +225,62 @@ export const deleteComment = async (req, res) => {
     }
 };
 
-export const replyToComment = async (req, res) => {
+
+// 📌 Cập nhật nội dung comment (chỉ tác giả mới sửa được)
+export const updateComment = async (req, res) => {
     try {
-        const { commentId, content } = req.body;
-        const decodedUser = authenticateUser(req);
-        const userId = decodedUser.id;
+        const { commentId } = req.params;
+        const { content } = req.body;
+        const userId = getUserIdFromCookies(req);
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
+        if (!content) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Nội dung không được để trống" });
+        }
 
-        const parentComment = await Comment.findById(commentId);
-        if (!parentComment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment cha không tồn tại" });
+        const comment = await CommentModel.findById(commentId);
+        if (!comment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment không tồn tại" });
 
-        const newReply = new Comment({
-            content,
-            author: userId,
-            postId: parentComment.postId,
-            postType: parentComment.postType,
-            parentComment: commentId,
-            depth: parentComment.depth + 1
-        });
+        if (comment.author.toString() !== userId) {
+            return res.status(StatusCodes.FORBIDDEN).json({ message: "Không có quyền chỉnh sửa comment này" });
+        }
+        const updatedComment = await commentService.updateCommentService(commentId, userId, content);
+        if (!updatedComment.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: updatedComment.message });
+        }
+        res.status(StatusCodes.OK).json({ message: "Đã cập nhật comment", comment: updatedComment.comment });
+    } catch (error) {
+        console.error(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
+    }
+};
+export const handlerPostReaction = async (req, res) => {
+    try {
+        const { targetId, reactionTypes, rawTypes } = req.body;
+        const userId = getUserIdFromCookies(req);
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
+        if (!reactionTypes) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Type không được để trống" });
+        }
+        if (!targetId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "PostId không được để trống" });
+        }
 
-        await newReply.save();
-        res.status(StatusCodes.CREATED).json({ message: "Đã thêm trả lời", reply: newReply });
+        // Kiểm tra bài viết có tồn tại không
+        const target = await reactionService.getTargetType(targetId, rawTypes || "Post");
+        if (!target) {
+            return res.status(StatusCodes.NOT_FOUND).json({ message: "Bài viết không tồn tại" });
+        }
+        const targetType = target.targetType;
+
+        const newReaction = await reactionService.addOrUpdateReaction(userId, targetType, targetId, reactionTypes);
+        if (!newReaction) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi trong quá trình thêm reaction" });
+        }
+        res.status(StatusCodes.CREATED).json({ message: "Đã thêm reaction", reaction: newReaction });
     } catch (error) {
         console.error(error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
@@ -220,26 +288,31 @@ export const replyToComment = async (req, res) => {
 };
 
 
-export const addReaction = async (req, res) => {
+export const handlerCommentReaction = async (req, res) => {
     try {
-        const { postId, type } = req.body;
-        const decodedUser = authenticateUser(req);
-        const userId = decodedUser.id;
-
-        // Kiểm tra bài viết có tồn tại không
-        const post = await ForumPost.findById(postId);
-        if (!post) return res.status(StatusCodes.NOT_FOUND).json({ message: "Bài viết không tồn tại" });
-
-        const existingReaction = await PostReaction.findOne({ user: userId, postId });
-
-        if (existingReaction) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Bạn đã thả reaction trước đó" });
+        const { targetId, reactionTypes } = req.body;
+        const userId = getUserIdFromCookies(req);
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
+        if (!reactionTypes) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "ReactionType không được để trống" });
+        }
+        if (!targetId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Comment id không được để trống" });
         }
 
-        const newReaction = new PostReaction({ user: userId, postId, type });
-        await newReaction.save();
+        // Kiểm tra bài viết có tồn tại không
+        const targetComments = await CommentModel.findById(targetId);
+        if (!targetComments) {
+            return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment không tồn tại" });
+        }
 
-        res.status(StatusCodes.CREATED).json({ message: "Đã thả reaction", reaction: newReaction });
+        const newReaction = await reactionService.addOrUpdateCommentReaction(userId, targetId, reactionTypes);
+        if (!newReaction) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi trong quá trình thêm reaction" });
+        }
+        res.status(StatusCodes.CREATED).json({ message: "Đã thêm reaction", reaction: newReaction });
     } catch (error) {
         console.error(error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
@@ -249,11 +322,16 @@ export const addReaction = async (req, res) => {
 export const removeReaction = async (req, res) => {
     try {
         const { postId } = req.body;
-        const decodedUser = authenticateUser(req);
-        const userId = decodedUser.id;
+        const userId = getUserIdFromCookies(req);
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
+        if (!postId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "PostId không được để trống" });
+        }
 
-        const reaction = await PostReaction.findOne({ user: userId, postId });
-        if (!reaction) return res.status(StatusCodes.NOT_FOUND).json({ message: "Bạn chưa thả reaction nào" });
+        const reaction = await reactionService.removeReaction(userId, postId);
+        if (!reaction) return res.status(StatusCodes.NOT_FOUND).json({ status: false, message: "Bạn chưa thả reaction nào" });
 
         await reaction.remove();
         res.status(StatusCodes.OK).json({ message: "Đã gỡ reaction" });
@@ -265,43 +343,26 @@ export const removeReaction = async (req, res) => {
 
 export const getReactionsByPost = async (req, res) => {
     try {
-        const { postId } = req.params;
-        const reactions = await PostReaction.find({ postId });
-
-        const reactionCount = reactions.reduce((acc, curr) => {
-            acc[curr.type] = (acc[curr.type] || 0) + 1;
-            return acc;
-        }, {});
-
-        res.status(StatusCodes.OK).json(reactionCount);
-    } catch (error) {
-        console.error(error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
-    }
-};
-
-// 📌 Cập nhật nội dung comment (chỉ tác giả mới sửa được)
-export const updateComment = async (req, res) => {
-    try {
-        const { commentId } = req.params;
-        const { content } = req.body;
-        const decodedUser = authenticateUser(req);
-        const userId = decodedUser.id;
-
-        const comment = await Comment.findById(commentId);
-        if (!comment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment không tồn tại" });
-
-        if (comment.author.toString() !== userId) {
-            return res.status(StatusCodes.FORBIDDEN).json({ message: "Không có quyền chỉnh sửa comment này" });
+        const { postId, targetId } = req.params;
+        if (!postId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "PostId không được để trống" });
         }
+        if (!targetId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "TargetId không được để trống" });
+        }
+        const reactionCount = await reactionService.getReactionsService({ targetType: "Post", targetId: targetId });
+        if (!reactionCount || Object.keys(reactionCount).length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({ message: "Không có reaction nào" });
+        }
+        res.status(StatusCodes.OK).json({
+            message: "Lấy thông tin reaction thành công",
+            reactionCount: reactionCount,
+        });
 
-        comment.content = content;
-        comment.editedAt = new Date(); // Lưu thời gian chỉnh sửa
-        await comment.save();
-
-        res.status(StatusCodes.OK).json({ message: "Đã cập nhật comment", comment });
     } catch (error) {
         console.error(error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
     }
 };
+
+
