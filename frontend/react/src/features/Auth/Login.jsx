@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
-import { FaGoogle, FaApple, FaTwitter } from 'react-icons/fa';
+import { FaGoogle, FaApple, FaXTwitter } from 'react-icons/fa6';
 import { Link, useNavigate } from 'react-router-dom';
 import '../../assets/styles/components/auth/Auth.css';
 import petLogo from '../../assets/images/logo.svg';
@@ -20,12 +20,9 @@ function Login() {
   const [showAlreadyLoggedIn, setShowAlreadyLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Cuộn lên đầu trang khi component được mount
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Kiểm tra nếu người dùng đã đăng nhập
     if (user && user.id) {
-      console.log("User already logged in, showing option to continue or logout:", user);
+      console.log("User already logged in:", user);
       setShowAlreadyLoggedIn(true);
     }
   }, [user]);
@@ -86,7 +83,6 @@ function Login() {
     setShowAlreadyLoggedIn(false);
   };
 
-  // Hiển thị thông báo nếu người dùng đã đăng nhập
   if (showAlreadyLoggedIn) {
     return (
       <div className="login-form-container">
@@ -94,24 +90,16 @@ function Login() {
           <img src={petLogo} alt="PetRescueHub Logo" />
           <h2>PetRescueHub</h2>
         </div>
-
         <div className="auth-form-section">
           <div className="heading">Bạn đã đăng nhập</div>
           <div className="auth-subtitle">
             Bạn đã đăng nhập với tài khoản <strong>{user.email}</strong>
           </div>
-
           <div className="already-logged-in-options">
-            <button
-              className="btn btn-primary"
-              onClick={handleContinueWithCurrentUser}
-            >
+            <button className="btn btn-primary" onClick={handleContinueWithCurrentUser}>
               Tiếp tục với tài khoản hiện tại
             </button>
-            <button
-              className="btn btn-outline-danger"
-              onClick={handleLogoutAndContinue}
-            >
+            <button className="btn btn-outline-danger" onClick={handleLogoutAndContinue}>
               Đăng xuất và đăng nhập với tài khoản khác
             </button>
           </div>
@@ -120,20 +108,16 @@ function Login() {
     );
   }
 
-  // Form đăng nhập bình thường
   return (
     <div className="login-form-container">
       <div className="auth-logo">
         <img src={petLogo} alt="PetRescueHub Logo" />
         <h2>PetRescueHub</h2>
       </div>
-
       <div className="auth-form-section">
         <div className="heading">Đăng nhập</div>
         <div className="auth-subtitle">Chào mừng bạn trở lại với PetRescueHub</div>
-
         {error && <div className="error-message">{error}</div>}
-
         <form className="form" onSubmit={handleSubmitForm}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -150,25 +134,28 @@ function Login() {
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-group password-group">
             <label htmlFor="password">Mật khẩu</label>
-            <div className="password-container">
+            <div className="password-input-wrapper">
               <input
                 required
                 className="input"
                 value={password}
                 onChange={handleChangePassword}
-                type={showPass ? "text" : "password"}
+                type={showPass ? 'text' : 'password'}
                 name="password"
                 id="password"
-                placeholder="Nhập mật khẩu của bạn"
+                placeholder="Mật khẩu"
+                autoComplete="current-password"
               />
-              <div 
+              <button 
+                type="button"
                 onClick={handleShowPass}
-                className="showpass-icon"
+                className="toggle-password-btn"
+                aria-label={showPass ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
               >
                 {showPass ? <AiFillEyeInvisible /> : <AiFillEye />}
-              </div>
+              </button>
             </div>
           </div>
 
@@ -187,11 +174,7 @@ function Login() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="login-button"
-            disabled={isLoading}
-          >
+          <button type="submit" className="login-button" disabled={isLoading}>
             {isLoading ? "Đang xử lý..." : "Đăng nhập"}
           </button>
         </form>
@@ -206,7 +189,7 @@ function Login() {
               <FaApple className="svg" />
             </button>
             <button className="social-button twitter" onClick={handleLoginTwitter}>
-              <FaTwitter className="svg" />
+              <FaXTwitter className="svg" />
             </button>
           </div>
         </div>
@@ -216,10 +199,19 @@ function Login() {
         </div>
       </div>
       <div className="auth-image-container">
-        <img src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1586&q=80" alt="Happy dog" className="auth-image" />
+        <img
+          src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1586&q=80"
+          alt="Happy dog"
+          className="auth-image"
+        />
         <div className="auth-quote">
-          <p>Mỗi ngày, hàng nghìn thú cưng cũng như chủ nhân đã tìm thấy nhau qua ứng dụng của chúng tôi. Những ánh mắt hạnh phúc đó chính là động lực để chúng tôi tiếp tục phát triển.</p>
-          <div className="auth-quote-author">Tìm hiểu thêm tại thế giới thú cưng của chúng tôi</div>
+          <p>
+            Mỗi ngày, hàng nghìn thú cưng cũng như chủ nhân đã tìm thấy nhau qua ứng dụng của chúng tôi.
+            Những ánh mắt hạnh phúc đó chính là động lực để chúng tôi tiếp tục phát triển.
+          </p>
+          <div className="auth-quote-author">
+            Tìm hiểu thêm tại thế giới thú cưng của chúng tôi
+          </div>
         </div>
       </div>
     </div>

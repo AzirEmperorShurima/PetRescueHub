@@ -53,12 +53,25 @@
   position: relative;
 }
 
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%; /* Thêm vị trí top 50% */
+  transform: translateY(-50%); /* Thêm transform để căn giữa theo chiều dọc */
+  color: #999;
+  font-size: 0.9rem;
+  z-index: 1;
+  opacity: 0.5;
+}
+
 .search-input {
-  padding: 5px 10px;
+  padding: 5px 10px 5px 30px; /* Giữ nguyên padding */
   border: none;
   border-radius: 4px;
   margin-right: 5px;
   font-size: 0.9rem;
+  height: 28px; /* Thêm chiều cao cố định */
+  line-height: 28px; /* Thêm line-height bằng với height */
 }
 
 .btn-icon {

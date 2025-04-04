@@ -19,6 +19,7 @@ const TopBar = () => {
           
           <div className="top-bar-right">
             <div className="search-container">
+              <i className="fas fa-search search-icon"></i>
               <input type="text" className="search-input" placeholder={t.search} />
               <button className="btn-icon">
                 <i className="fas fa-search"></i>

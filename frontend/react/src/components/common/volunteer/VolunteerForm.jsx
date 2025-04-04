@@ -167,18 +167,6 @@ const VolunteerForm = ({ isOpen, onClose, onSubmit }) => {
             </Select>
           </FormControl>
           
-          {/* Phần message */}
-          <FormControl>
-            <FormLabel className="message-label">Lời nhắn</FormLabel>
-            <Textarea
-              className="message-textarea"
-              name="message"
-              value={formData.message}
-              onChange={handleInputChange}
-              placeholder="Chia sẻ lý do bạn muốn trở thành tình nguyện viên..."
-            />
-          </FormControl>
-          
           <FormControl mb={6}>
             <FormLabel className="form-label">Kỹ năng</FormLabel>
             <Box className="skills-container">
@@ -200,19 +188,18 @@ const VolunteerForm = ({ isOpen, onClose, onSubmit }) => {
             </Box>
           </FormControl>
           
-          <FormControl mb={6}>
-            <FormLabel htmlFor="message" className="form-label">Lời nhắn (tùy chọn)</FormLabel>
+          {/* Phần message */}
+          <FormControl>
+            <FormLabel className="message-label">Lời nhắn</FormLabel>
             <Textarea
-              id="message"
+              className="message-textarea"
               name="message"
               value={formData.message}
               onChange={handleInputChange}
               placeholder="Chia sẻ lý do bạn muốn trở thành tình nguyện viên..."
-              size="md"
-              className="form-control"
             />
           </FormControl>
-          
+
           <FormControl mb={6} isRequired>
             <Checkbox
               id="terms"
