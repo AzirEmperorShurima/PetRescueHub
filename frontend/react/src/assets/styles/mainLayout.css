@@ -52,6 +52,8 @@
   --z-index-header: 800;
 }
 
+@import './variables.css';
+
 /* Reset and base styles */
 * {
   margin: 0;
@@ -60,11 +62,11 @@
 }
 
 body {
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--text-color);
-  background-color: var(--background-color);
+  background-color: var(--bg-white);
 }
 
 /* Utility classes */
@@ -79,58 +81,65 @@ body {
 .btn {
   display: inline-block;
   padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  transition: var(--transition-base);
-  font-weight: var(--font-weight-normal);
+  border-radius: var(--radius-sm);
+  transition: var(--transition-standard);
+  font-weight: 500;
   text-align: center;
   cursor: pointer;
-  border: var(--border-width) solid transparent;
+  border: 1px solid transparent;
 }
 
-.btn-primary {
+.btn--primary {
   background-color: var(--primary-color);
-  color: var(--background-color);
+  color: var(--bg-white);
 }
 
-.btn-secondary {
+.btn--secondary {
   background-color: var(--secondary-color);
-  color: var(--background-color);
+  color: var(--bg-white);
 }
 
 /* Layout styles */
 .layout-wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Chiều cao tối thiểu là 100% viewport */
+  min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .main-content {
-  flex: 1 0 auto; /* Cho phép content mở rộng nhưng không co lại */
-  min-height: var(--min-content-height);
+  flex: 1 0 auto;
+  min-height: var(--content-min-height);
   padding: var(--spacing-lg) 0;
   position: relative;
   z-index: 1;
 }
 
-/* Cập nhật CSS cho footer */
+/* Footer styles */
 .new_footer_area {
-  flex-shrink: 0; /* Ngăn footer co lại */
+  flex-shrink: 0;
   position: relative;
   z-index: 0;
-  margin-top: auto; /* Đẩy footer xuống dưới cùng */
+  margin-top: auto;
 }
 
-/* Thêm CSS cho các trang auth */
+/* Auth container */
 .auth-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl) 0; /* Thêm padding để tạo khoảng cách với footer */
-  min-height: calc(100vh - var(--header-height) - var(--footer-height)); /* Chiều cao tối thiểu hợp lý */
+  padding: var(--spacing-xl) 0;
+  min-height: var(--content-min-height);
 }
 
-/* Thêm padding-top cho main-content khi navbar sticky */
+/* Navbar sticky adjustment */
 .navbar.sticky + .main-content {
-  padding-top: 100px; /* Bằng với chiều cao của navbar */
+  padding-top: 100px;
+}
+
+/* Media queries */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1400px;
+  }
 }

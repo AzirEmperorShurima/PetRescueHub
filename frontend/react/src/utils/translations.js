@@ -25,7 +25,7 @@ export const translations = {
     search: 'Search...',                 
     contact: 'Contact',
     login: 'Login',
-    register: 'Register'
+    register: 'Sign up'
   }
 };
 

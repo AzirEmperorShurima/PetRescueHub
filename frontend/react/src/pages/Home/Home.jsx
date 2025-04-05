@@ -16,6 +16,7 @@ import './Home.css';
 import '../../assets/styles/animations.css';
 import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
 import vetIcon from '../../assets/images/vet.svg';
+import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -235,9 +236,13 @@ const Home = () => {
         </Container>
       </section>
 
+      {/* Render VolunteerBannerSlider component */}
+      <VolunteerBannerSlider />
+
       {/* Volunteer Banner */}
       <section className="volunteer-banner">
-        <Container>
+        <div className="overlay"></div>
+        <div className="volunteer-content">
           <h2 className="volunteer-title">Trở thành tình nguyện viên</h2>
           <p className="volunteer-description">
             Tham gia cùng chúng tôi trong hành trình cứu trợ và bảo vệ thú cưng. Mỗi sự giúp đỡ đều ý nghĩa.
@@ -245,7 +250,7 @@ const Home = () => {
           <Button className="volunteer-btn" onClick={() => setShowVolunteerModal(true)}>
             Đăng ký ngay
           </Button>
-        </Container>
+        </div>
       </section>
 
       <VolunteerForm isOpen={showVolunteerModal} onClose={() => setShowVolunteerModal(false)} onSubmit={handleVolunteerSubmit} />
