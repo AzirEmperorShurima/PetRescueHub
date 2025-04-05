@@ -152,7 +152,7 @@ export const Signup_Handler = async (req, res) => {
                 createdAt: dayjs().tz("Asia/Ho_Chi_Minh").format("DD-MM-YYYY HH:mm:ss (UTC+7)"),
                 updatedAt: dayjs().tz("Asia/Ho_Chi_Minh").format("DD-MM-YYYY HH:mm:ss (UTC+7)"),
                 isActive: false,
-                emailVerified: isActive,
+                emailVerified: CreateUser.isActive,
                 roles: ["user"]
             }
         });
@@ -252,17 +252,18 @@ export const loginHandler = async (req, res) => {
         }
 
         // So sánh password
-        const isPasswordValid = await bcrypt.compare(password, foundUser.password);
+        const isPasswordValid = await user.comparePassword(password, foundUser.password);
         if (!isPasswordValid) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid Password" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid Password' });
         }
+
 
         // Xử lý cookies
         const newCookies = await getCookies(foundUser, res);
         console.log(newCookies.cookie);
 
         // Gọi `manageTokens` và nhận về token mới
-        const token = await manageTokens(foundUser, newCookies.cookie, "LOGIN-TOKEN");
+        const token = await manageTokens(foundUser, newCookies, "LOGIN-TOKEN");
 
         return res.status(StatusCodes.OK).json({ message: "Login Successful", token });
     } catch (err) {

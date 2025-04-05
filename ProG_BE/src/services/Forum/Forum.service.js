@@ -1,7 +1,8 @@
-import { CommentModel } from "../../models/CommentsSchema";
-import FavouriteList from "../../models/FavouriteList";
-import Reaction from "../../models/ReactionSchema";
-import PostModel from "../../models/PostSchema";
+import { CommentModel } from "../../models/CommentsSchema.js";
+import FavouriteList from "../../models/FavouriteList.js";
+import Reaction from "../../models/ReactionSchema.js";
+import { PostModel } from "../../models/PostSchema.js";
+import mongoose from "mongoose";
 
 /**
  * 📥 Lấy danh sách bài viết trong diễn đàn
@@ -13,22 +14,183 @@ import PostModel from "../../models/PostSchema";
  * @param {String} queryParams.postType - Lọc theo loại bài viết (tùy chọn)
  * @returns {Promise<Object>} - Danh sách bài viết
  */
-export const getListForumPosts = async ({ page = 1, limit = 10, tag, search, postType, sort }) => {
-    try {
-        const filter = {};
-        if (tag) filter.tags = tag;
-        if (search) filter.$text = { $search: search }; // Sử dụng index text để tìm kiếm tối ưu hơn
-        if (postType) filter.postType = postType; // Lọc theo loại bài viết nếu có
+// export const getListForumPosts = async ({ page = 1, limit = 10, tag, search, postType, sort }) => {
+//     try {
+//         const filter = {
+//             postStatus: "public"
+//         };
+//         if (tag) filter.tags = { $in: [tag] };
+//         if (search) filter.$text = { $search: search }; // Sử dụng index text để tìm kiếm tối ưu hơn
+//         if (postType) filter.postType = postType; // Lọc theo loại bài viết nếu có
 
-        const posts = await PostModel.find(filter)
-            .populate("author", "username")
-            .sort(sort)
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit))
-            .lean();
+//         const posts = await PostModel.find(filter)
+//             .populate("author", "username")
+//             .select("-__v")
+//             .sort(sort)
+//             .skip((page - 1) * limit)
+//             .limit(parseInt(limit))
+//             .lean();
+
+//         return { success: true, data: posts };
+//     } catch (error) {
+//         return { success: false, message: "Lỗi server khi lấy danh sách bài viết", error };
+//     }
+// };
+export const getListForumPosts = async ({ page = 1, limit = 10, tag, search, postType, sort, userId }) => {
+    try {
+        const filter = {
+            $or: [
+                { postStatus: "public" },
+                ...(userId ? [{ author: new mongoose.Types.ObjectId(userId) }] : [])
+            ]
+        };
+
+        if (tag) filter.tags = { $in: [tag] };
+        if (search) filter.$text = { $search: search };
+        if (postType) filter.postType = postType;
+
+        const postsPipeline = [
+            { $match: filter },
+            { $sort: sort },
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+            // Lookup thông tin author
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "author",
+                    foreignField: "_id",
+                    as: "author",
+                    pipeline: [
+                        { $project: { username: 1, avatar: 1 } }
+                    ]
+                }
+            },
+            { $unwind: "$author" },
+            // Lookup bình luận mới nhất
+            {
+                $lookup: {
+                    from: "comments",
+                    localField: "_id",
+                    foreignField: "post",
+                    as: "comments",
+                    pipeline: [
+                        { $match: { parentComment: null } }, // Chỉ lấy comment cấp 1
+                        { $sort: { createdAt: -1 } },
+                        { $limit: 1 },
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "author",
+                                foreignField: "_id",
+                                as: "author",
+                                pipeline: [{ $project: { username: 1 } }]
+                            }
+                        },
+                        { $unwind: "$author" },
+                        {
+                            $project: {
+                                content: 1,
+                                author: "$author.username",
+                                createdAt: 1,
+                                replyCount: { $size: "$replies" }
+                            }
+                        }
+                    ]
+                }
+            },
+            // Lookup trạng thái favorite của user
+            {
+                $lookup: {
+                    from: "favouritelists",
+                    let: { postId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$user", userId ? new mongoose.Types.ObjectId(userId) : null] },
+                                        { $in: ["$$postId", "$items.postId"] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "userFavorite"
+                }
+            },
+            // Lookup reactions
+            {
+                $lookup: {
+                    from: "reactions",
+                    localField: "_id",
+                    foreignField: "targetId",
+                    as: "reactions",
+                    pipeline: [
+                        { $match: { targetType: "Post" } },
+                        { $group: { _id: "$reactionType", count: { $sum: 1 } } }
+                    ]
+                }
+            },
+            {
+                $lookup: {
+                    from: "comments",
+                    localField: "_id",
+                    foreignField: "post",
+                    as: "allComments"
+                }
+            },
+            {
+                $addFields: {
+                    commentCount: { $size: "$allComments" }
+                }
+            },
+            {
+                $project: {
+                    allComments: 0, // Ẩn mảng allComments để giảm tải dữ liệu
+                    // Các trường khác giữ nguyên
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    content: { $substr: ["$content", 0, 200] },
+                    author: {
+                        id: "$author._id",
+                        username: "$author.username",
+                        avatar: { $ifNull: ["$author.avatar", "default-avatar-url"] }
+                    },
+                    tags: 1,
+                    imgUrl: 1,
+                    commentCount: 1,
+                    favoriteCount: 1,
+                    postStatus: 1,
+                    postType: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    commentPreview: { $arrayElemAt: ["$comments", 0] },
+                    isLiked: { $gt: [{ $size: "$userFavorite" }, 0] },
+                    reactions: {
+                        $arrayToObject: {
+                            $map: {
+                                input: "$reactions",
+                                as: "reaction",
+                                in: { k: "$$reaction._id", v: "$$reaction.count" }
+                            }
+                        }
+                    },
+                    ...(postType === "Question" && { questionDetails: 1 }),
+                    ...(postType === "FindLostPetPost" && { lostPetInfo: 1 }),
+                    ...(postType === "EventPost" && { eventDate: 1 })
+                }
+            }
+        ];
+
+        const posts = await PostModel.aggregate(postsPipeline).exec();
 
         return { success: true, data: posts };
     } catch (error) {
+        console.error(error);
         return { success: false, message: "Lỗi server khi lấy danh sách bài viết", error };
     }
 };
@@ -72,21 +234,26 @@ export const createPost = async (title, content, tags, imgUrl, userId, postType 
         if (!title?.trim() || !content?.trim() || !userId) {
             return { success: false, message: "Thiếu thông tin cần thiết" };
         }
-
+        console.log("Creating post with data:", { title, content, tags, imgUrl, userId, postType }); // Debug log
+        console.log(PostModel); // Debug log
+        const normalizedTags = Array.isArray(tags) ? tags : tags ? [tags] : [];
+        const normalizedImgUrl = Array.isArray(imgUrl) ? imgUrl : imgUrl ? [imgUrl] : [];
+        console.log("Normalized tags and imgUrl:", { normalizedTags, normalizedImgUrl }); // Debug log
         const newPost = new PostModel({
             title: title.trim(),
             content: content.trim(),
-            author: userId,
-            tags: tags || [],
-            imgUrl: imgUrl || [],
+            author: new mongoose.Types.ObjectId(userId),
+            tags: normalizedTags,
+            imgUrl: normalizedImgUrl,
             postType,
-            postStatus: "open",
+            postStatus: "public",
         });
-
+        console.log("New post data:", newPost); // Debug log
         await newPost.save();
         return { success: true, message: "Đăng bài thành công!", post: newPost };
     } catch (error) {
-        return { success: false, message: "Lỗi server khi đăng bài", error };
+        console.error("❌ Lỗi khi tạo bài viết:", error);
+        return { success: false, message: "Lỗi service server khi đăng bài", error };
     }
 };
 
@@ -106,7 +273,7 @@ export const updatePost = async (postId, userId, updateData) => {
 
         const post = await PostModel.findOneAndUpdate(
             { _id: postId, author: userId },
-            updateFields,
+            updateData,
             { new: true, runValidators: true }
         );
 
@@ -115,6 +282,7 @@ export const updatePost = async (postId, userId, updateData) => {
         }
         return { success: true, message: "Cập nhật thành công", post };
     } catch (error) {
+        console.error("❌ Lỗi khi cập nhật bài viết:", error);
         return { success: false, message: "Lỗi server khi cập nhật bài viết", error };
     }
 };

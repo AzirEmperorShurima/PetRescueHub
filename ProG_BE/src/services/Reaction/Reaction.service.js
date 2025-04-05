@@ -1,4 +1,4 @@
-import Reaction from "../../models/ReactionSchema";
+import Reaction from "../../models/ReactionSchema.js";
 
 /**
  * 📥 check loại post

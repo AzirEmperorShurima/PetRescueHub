@@ -436,3 +436,15 @@ export const petFilters = async (req, res) => {
         return res.status(500).json({ message: "System error!", error: error.message });
     }
 }
+
+export const getAllPets = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const pets = await petService.getAllPets(skip, limit);
+        return res.status(200).json({ message: "Get all pets successful!", pets });
+    } catch (error) {
+        return res.status(500).json({ message: "System error!", error: error.message });
+    }
+}

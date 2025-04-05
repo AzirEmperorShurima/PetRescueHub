@@ -5,7 +5,10 @@ import {
     uploadPetCertificate,
     updatePetProfile,
     deletePet,
-    getPetsByOwner
+    getPetsByOwner,
+    petFilters,
+    getPetDetails,
+    getAllPets
 } from "../Controller/Pet.Controller.js";
 
 const petRoute = Router()
@@ -24,8 +27,8 @@ petRoute.put("/portfolio/update/:petId", updatePetProfile);
 petRoute.delete("/portfolio/delete/:petId", deletePet);
 
 // 📌 Upload files (Avatar & Certificate)
-petRoute.post("/portfolio/upload-avatar/:petId", upload.single("avatar"), uploadPetAvatar);
-petRoute.post("/portfolio/upload-certificate/:petId", upload.single("certificate"), uploadPetCertificate);
+// petRoute.post("/portfolio/upload-avatar/:petId", upload.single("avatar"), uploadPetAvatar);
+// petRoute.post("/portfolio/upload-certificate/:petId", upload.single("certificate"), uploadPetCertificate);
 
 // 📌 Lọc pet theo các tiêu chí (breed, age, gender,...)
 petRoute.get("/portfolio/filter", petFilters);
@@ -34,7 +37,7 @@ petRoute.get("/portfolio/filter", petFilters);
 petRoute.get("/portfolio/owner/:ownerId", getPetsByOwner);
 
 // 📌 Lấy thông tin pet theo ID
-petRoute.get("/portfolio/:petId", getPetById);
+petRoute.get("/portfolio/:petId", getPetDetails);
 
 // 📌 Lấy tất cả pet (có thể phân trang)
 petRoute.get("/portfolio/all", getAllPets);

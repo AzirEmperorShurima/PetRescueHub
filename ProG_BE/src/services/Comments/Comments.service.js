@@ -6,6 +6,9 @@
  * @returns {Promise<Object>} - Kết quả tạo comment
  */
 
+import { CommentModel } from "../../models/CommentsSchema.js";
+import { ForumPost } from "../../models/PostSchema.js";
+
 export const addCommentService = async (postId, content, userId) => {
     try {
         // Kiểm tra bài viết có tồn tại không

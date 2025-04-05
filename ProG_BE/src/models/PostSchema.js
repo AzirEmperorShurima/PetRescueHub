@@ -37,23 +37,23 @@ PostSchema.index({ createdAt: -1 });
 PostSchema.index({ updatedAt: -1 });
 
 // Định nghĩa model chính
-const PostModel = mongoose.model("Post", PostSchema);
+export const PostModel = mongoose.model("Post", PostSchema);
 
 // Định nghĩa các mô hình con với `discriminator`
-const ForumPost = PostModel.discriminator("ForumPost", new mongoose.Schema({}));
-const Question = PostModel.discriminator(
+export const ForumPost = PostModel.discriminator("ForumPost", new mongoose.Schema({}));
+export const Question = PostModel.discriminator(
     "Question",
     new mongoose.Schema({
         questionDetails: { type: String }
     })
 );
-const FindLostPetPost = PostModel.discriminator(
+export const FindLostPetPost = PostModel.discriminator(
     "FindLostPetPost",
     new mongoose.Schema({
         lostPetInfo: { type: String }
     })
 );
-const EventPost = PostModel.discriminator(
+export const EventPost = PostModel.discriminator(
     "EventPost",
     new mongoose.Schema({
         eventDate: { type: Date }

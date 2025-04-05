@@ -24,13 +24,13 @@ forumRoutes.get('/', (req, res) => {
 });
 
 // Post-related routes
-forumRoutes.get('/posts', getForumPosts);                  
+forumRoutes.get('/posts', getForumPosts);
 forumRoutes.get('/posts/:Post_id', getPostById);
-forumRoutes.post('/posts/new', createNewForumPost);         
-forumRoutes.put('/posts/:post_id', updateForumPost);        
+forumRoutes.post('/posts/new', createNewForumPost);
+forumRoutes.put('/posts/:post_id', updateForumPost);
 
 // Comment-related routes
-forumRoutes.post('/comments', addComment);                  // Thêm comment mới
+forumRoutes.post('/comments/new', addComment);                  // Thêm comment mới
 forumRoutes.post('/comments/reply', replyComment);          // Trả lời comment
 forumRoutes.get('/comments/:postId', getCommentsByPost);    // Lấy danh sách comment theo post
 forumRoutes.delete('/comments/:commentId', deleteComment);  // Xóa comment

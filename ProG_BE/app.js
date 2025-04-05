@@ -9,13 +9,14 @@ import authRouter from './src/router/Auth.routes.js';
 import forumRoutes from './src/router/Forum.routes.js';
 import userRoute from './src/router/User.routes.js';
 import petRoute from './src/router/Pet.routes.js';
+import { apiLimiter } from './src/Middlewares/ExpressRateLimit.js';
 
 const app = express();
 
 connectToDatabase()
 app.set("env", "development");
 app.set("port", process.env.PORT || 4000)
-app.set('trust proxy', true)
+// app.set('trust proxy', true)
 app.set('json spaces', 4);
 app.set('case sensitive routing', true) // phân biệt Api và api
 app.set('strict routing', true) // phân biệt /user và /user/
@@ -32,6 +33,7 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(apiLimiter);
 
 app.use('/api/auth', authRouter);
 app.use('/api/forum', forumRoutes)

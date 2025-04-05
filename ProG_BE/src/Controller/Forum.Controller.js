@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import ForumPost from "../models/ForumPost.js";
+import { ForumPost, PostModel } from "../models/PostSchema.js";
 import * as forumService from "../services/Forum/Forum.service.js";
 import * as commentService from "../services/Comments/Comments.service.js"
 import * as reactionService from "../services/Reaction/Reaction.service.js";
@@ -8,21 +8,89 @@ import { CommentModel } from "../models/CommentsSchema.js";
 import Reaction from "../models/ReactionSchema.js";
 
 
-export const getForumPosts = async (req, res) => {
-    const requestOptions = {
-        page: req.query.page,
-        limit: req.query.limit,
-        sort: req.query.sort || { createdAt: -1 },
-        search: req.query.search || "",
-        tag: req.query.tag || "",
-        postType: req.query.postType || ""
-    }
-    const result = await forumService.getListForumPosts(requestOptions);
+// export const getForumPosts = async (req, res) => {
+//     const requestOptions = {
+//         page: req.query.page,
+//         limit: req.query.limit,
+//         sort: req.query.sort || { createdAt: -1 },
+//         search: req.query.search || "",
+//         tag: req.query.tag || "",
+//         postType: req.query.postType || ""
+//     }
+//     const result = await forumService.getListForumPosts(requestOptions);
 
-    if (result.success) {
-        return res.status(StatusCodes.OK).json(result.data);
-    } else {
-        return res.status(500).json({ message: result.message });
+//     if (result.success) {
+//         const posts = result.data;
+//         const totalPosts = await PostModel.countDocuments(requestOptions); // Lấy tổng số bài viết
+
+//         const totalPages = Math.ceil(totalPosts / requestOptions.limit); // Tính tổng số trang
+
+//         return res.status(200).json({
+//             success: true,
+//             data: posts,
+//             pagination: {
+//                 currentPage: requestOptions.page,
+//                 totalPages: totalPages,
+//                 totalPosts: totalPosts
+//             }
+//         });
+//     } else {
+//         return res.status(500).json({ success: false, message: result.message });
+//     }
+// };
+export const getForumPosts = async (req, res) => {
+    try {
+        const userId = getUserIdFromCookies(req); // Lấy userId từ cookies
+
+        const requestOptions = {
+            page: parseInt(req.query.page) || 1,
+            limit: parseInt(req.query.limit) || 10,
+            sort: req.query.sort ? JSON.parse(req.query.sort) : { createdAt: -1 },
+            search: req.query.search || "",
+            tag: req.query.tag || "",
+            postType: req.query.postType || "ForumPost",
+            userId
+        };
+
+        const result = await forumService.getListForumPosts(requestOptions);
+
+        if (!result.success) {
+            return res.status(500).json({ success: false, message: result.message });
+        }
+
+        const posts = result.data;
+        const filter = {
+            ...(requestOptions.tag && { tags: requestOptions.tag }),
+            ...(requestOptions.search && { $text: { $search: requestOptions.search } }),
+            ...(requestOptions.postType && { postType: requestOptions.postType }),
+            $or: [
+                { postStatus: "public" },
+                ...(userId ? [{ author: userId }] : [])
+            ]
+        };
+
+        const totalPosts = await PostModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalPosts / requestOptions.limit);
+
+        return res.status(200).json({
+            success: true,
+            data: posts,
+            pagination: {
+                currentPage: requestOptions.page,
+                totalPages,
+                totalPosts,
+                limit: requestOptions.limit,
+                hasNext: requestOptions.page < totalPages,
+                hasPrev: requestOptions.page > 1
+            },
+            metadata: {
+                timestamp: new Date().toISOString(),
+                postType: requestOptions.postType
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Lỗi server khi lấy danh sách bài viết" });
     }
 };
 
@@ -61,19 +129,34 @@ export const updateForumPost = async (req, res) => {
         if (content && content.trim() !== postFound.content) {
             updateData.content = content.trim();
         }
-        if (tags && JSON.stringify(tags) !== JSON.stringify(postFound.tags)) {
-            updateData.tags = tags;
+
+        // Xử lý tags: so sánh mảng bất kể thứ tự
+        const inputTags = Array.isArray(tags) ? tags : (tags ? [tags] : []);
+        const sortedInputTags = [...inputTags].sort();
+        const sortedPostTags = [...postFound.tags].sort();
+        if (tags && JSON.stringify(sortedInputTags) !== JSON.stringify(sortedPostTags)) {
+            updateData.tags = inputTags;
         }
-        if (imgUrl && JSON.stringify(imgUrl) !== JSON.stringify(postFound.imgUrl)) {
-            updateData.imgUrl = imgUrl;
+
+        // Xử lý imgUrl
+        const inputImgUrl = Array.isArray(imgUrl) ? imgUrl : (imgUrl ? [imgUrl] : []);
+        const sortedInputImgUrl = [...inputImgUrl].sort();
+        const sortedPostImgUrl = [...postFound.imgUrl].sort();
+        if (imgUrl && JSON.stringify(sortedInputImgUrl) !== JSON.stringify(sortedPostImgUrl)) {
+            updateData.imgUrl = inputImgUrl;
         }
+
         if (postStatus && postStatus !== postFound.postStatus) {
             updateData.postStatus = postStatus;
         }
 
-        // Nếu không có thay đổi nào, trả về thông báo
+        // Nếu không có thay đổi nào, trả về response với bài viết hiện tại
         if (Object.keys(updateData).length === 0) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Không có thay đổi nào để cập nhật" });
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                message: "Không có thay đổi nào được thực hiện",
+                post: postFound
+            });
         }
         const result = await forumService.updatePost(
             req.params.post_id,
@@ -86,7 +169,7 @@ export const updateForumPost = async (req, res) => {
         }
         return res.status(403).json({ message: result.message });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Lỗi server khi cập nhật bài viết" });
     }
 };
