@@ -89,6 +89,7 @@
   }
   
   .footer-description {
+    font-weight: 500;
     color: var(--color-muted);
     margin: 20px auto 20px 20px;
     line-height: 1.6;

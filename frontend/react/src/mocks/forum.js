@@ -58,6 +58,126 @@ export const forumPosts = [
     isFavorited: false,
     isLiked: false,
     image: 'https://images.pexels.com/photos/1904105/pexels-photo-1904105.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  },
+  {
+    id: 4,
+    title: 'Kinh nghiệm chăm sóc chó Golden Retriever',
+    content: 'Chia sẻ kinh nghiệm chăm sóc chó Golden Retriever từ khi còn nhỏ...',
+    author: {
+      id: 1,
+      name: 'Nguyễn Văn A',
+      avatar: 'https://i.pravatar.cc/150?img=1'
+    },
+    category: 'dog',
+    tags: ['golden retriever', 'chăm sóc', 'kinh nghiệm'],
+    createdAt: '2023-10-15T08:30:00',
+    updatedAt: '2023-10-15T08:30:00',
+    likes: 24,
+    comments: 8,
+    views: 156,
+    isFavorited: false,
+    isLiked: true,
+    image: 'https://images.pexels.com/photos/2253275/pexels-photo-2253275.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  },
+  {
+    id: 5,
+    title: 'Cách huấn luyện mèo đi vệ sinh đúng chỗ',
+    content: 'Hướng dẫn chi tiết cách huấn luyện mèo đi vệ sinh đúng chỗ từ khi còn nhỏ...',
+    author: {
+      id: 2,
+      name: 'Trần Thị B',
+      avatar: 'https://i.pravatar.cc/150?img=5'
+    },
+    category: 'cat',
+    tags: ['mèo', 'huấn luyện', 'vệ sinh'],
+    createdAt: '2023-10-14T10:15:00',
+    updatedAt: '2023-10-14T10:15:00',
+    likes: 18,
+    comments: 12,
+    views: 203,
+    isFavorited: true,
+    isLiked: false,
+    image: 'https://images.pexels.com/photos/1741205/pexels-photo-1741205.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  },
+  {
+    id: 6,
+    title: 'Chia sẻ kinh nghiệm cứu hộ chó mèo bị bỏ rơi',
+    content: 'Những kinh nghiệm quý báu khi cứu hộ chó mèo bị bỏ rơi trên đường...',
+    author: {
+      id: 3,
+      name: 'Lê Văn C',
+      avatar: 'https://i.pravatar.cc/150?img=8'
+    },
+    category: 'rescue',
+    tags: ['cứu hộ', 'bỏ rơi', 'kinh nghiệm'],
+    createdAt: '2023-10-13T14:45:00',
+    updatedAt: '2023-10-13T14:45:00',
+    likes: 35,
+    comments: 15,
+    views: 278,
+    isFavorited: false,
+    isLiked: false,
+    image: 'https://images.pexels.com/photos/1904105/pexels-photo-1904105.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  },
+  {
+    id: 7,
+    title: 'Kinh nghiệm chăm sóc chó Golden Retriever',
+    content: 'Chia sẻ kinh nghiệm chăm sóc chó Golden Retriever từ khi còn nhỏ...',
+    author: {
+      id: 1,
+      name: 'Nguyễn Văn A',
+      avatar: 'https://i.pravatar.cc/150?img=1'
+    },
+    category: 'dog',
+    tags: ['golden retriever', 'chăm sóc', 'kinh nghiệm'],
+    createdAt: '2023-10-15T08:30:00',
+    updatedAt: '2023-10-15T08:30:00',
+    likes: 24,
+    comments: 8,
+    views: 156,
+    isFavorited: false,
+    isLiked: true,
+    image: 'https://images.pexels.com/photos/2253275/pexels-photo-2253275.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  },
+  {
+    id: 8,
+    title: 'Cách huấn luyện mèo đi vệ sinh đúng chỗ',
+    content: 'Hướng dẫn chi tiết cách huấn luyện mèo đi vệ sinh đúng chỗ từ khi còn nhỏ...',
+    author: {
+      id: 2,
+      name: 'Trần Thị B',
+      avatar: 'https://i.pravatar.cc/150?img=5'
+    },
+    category: 'cat',
+    tags: ['mèo', 'huấn luyện', 'vệ sinh'],
+    createdAt: '2023-10-14T10:15:00',
+    updatedAt: '2023-10-14T10:15:00',
+    likes: 18,
+    comments: 12,
+    views: 203,
+    isFavorited: true,
+    isLiked: false,
+    image: 'https://images.pexels.com/photos/1741205/pexels-photo-1741205.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  },
+  {
+    id: 9,
+    title: 'Chia sẻ kinh nghiệm cứu hộ chó mèo bị bỏ rơi',
+    content: 'Những kinh nghiệm quý báu khi cứu hộ chó mèo bị bỏ rơi trên đường...',
+    author: {
+      id: 3,
+      name: 'Lê Văn C',
+      avatar: 'https://i.pravatar.cc/150?img=8'
+    },
+    category: 'rescue',
+    tags: ['cứu hộ', 'bỏ rơi', 'kinh nghiệm'],
+    createdAt: '2023-10-13T14:45:00',
+    updatedAt: '2023-10-13T14:45:00',
+    likes: 35,
+    comments: 15,
+    views: 278,
+    isFavorited: false,
+    isLiked: false,
+    image: 'https://images.pexels.com/photos/1904105/pexels-photo-1904105.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
   }
 ];
 

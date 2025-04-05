@@ -1,7 +1,7 @@
 /* ==================== CONTAINER STYLES ==================== */
 .navbar {
   padding: 0;
-  background-color: #F5F5F5;
+  background-color: white;
   border-top: 2px solid #D34F81;
   border-bottom: 1px solid #D3D3D3;
   box-shadow: var(--box-shadow-sm);

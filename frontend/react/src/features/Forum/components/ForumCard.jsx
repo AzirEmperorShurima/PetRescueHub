@@ -53,17 +53,17 @@ const ForumCard = ({
   return (
     <Card 
       className="forum-card"
-      sx={{
-        borderRadius: '12px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        overflow: 'hidden',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)'
-        },
-        cursor: onClick ? 'pointer' : 'default'
-      }}
+      // sx={{
+      //   borderRadius: '12px',
+      //   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+      //   transition: 'transform 0.2s, box-shadow 0.2s',
+      //   overflow: 'hidden',
+      //   '&:hover': {
+      //     transform: 'translateY(-2px)',
+      //     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)'
+      //   },
+      //   cursor: onClick ? 'pointer' : 'default'
+      // }}
       onClick={onClick}
     >
       <CardContent sx={{ p: 3 }}>
