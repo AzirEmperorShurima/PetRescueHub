@@ -7,12 +7,12 @@
  */
 
 import { CommentModel } from "../../models/CommentsSchema.js";
-import { ForumPost } from "../../models/PostSchema.js";
-
+import { ForumPost, PostModel } from "../../models/PostSchema.js";
+import mongoose from "mongoose";
 export const addCommentService = async (postId, content, userId) => {
     try {
         // Kiểm tra bài viết có tồn tại không
-        const post = await ForumPost.findById(postId);
+        const post = await PostModel.findById(postId);
         if (!post) {
             return { success: false, message: 'Bài viết không tồn tại' };
         }
@@ -22,7 +22,6 @@ export const addCommentService = async (postId, content, userId) => {
             content,
             author: userId,
             post: postId,
-            postType: 'ForumPost',
         });
 
         // Lưu comment vào DB
@@ -139,20 +138,191 @@ export const updateCommentService = async (commentId, userId, content) => {
 };
 
 /**
- * 📄 Lấy tất cả comment theo post ID
- * @param {String} postId - ID bài viết
- * @returns {Promise<Object>} - Danh sách comment
+ * 📄 Lấy danh sách comment theo post ID với phân trang
+ * @param {Object} options - Tùy chọn
+ * @param {String} options.postId - ID bài viết
+ * @param {Number} options.page - Trang hiện tại (mặc định: 1)
+ * @param {Number} options.limit - Số comment mỗi trang (mặc định: 10)
+ * @returns {Promise<Object>} - Danh sách comment và thông tin phân trang
  */
-export const getCommentsByPostIdService = async (postId) => {
-    try {
-        const comments = await CommentModel.find({ post: postId })
-            .populate('author', 'username avatar')
-            .populate('replies')
-            .sort({ createdAt: 1 }); // hoặc -1 nếu muốn mới nhất trước
+// export const getCommentsByPostIdService = async (postId) => {
+//     try {
+//         const comments = await CommentModel.find({ post: postId })
+//             .populate('author', 'username avatar')
+//             .populate('replies')
+//             .sort({ createdAt: 1 })
+//             .lean()
 
-        return { success: true, comments };
+//         return { success: true, data: comments };
+//     } catch (error) {
+//         console.error(error);
+//         return { success: false, message: 'Lỗi server khi lấy danh sách comment' };
+//     }
+// };
+
+export const getCommentsByPostIdService = async ({ postId, page = 1, limit = 10 }) => {
+    try {
+        // Pipeline aggregation để lấy comment cấp 1 và tối ưu hóa
+        const commentsPipeline = [
+            // Lọc comment thuộc bài post và là comment cấp 1 (không có parent)
+            { $match: { post: new mongoose.Types.ObjectId(postId), parentComment: null } },
+            // Sắp xếp theo createdAt (mới nhất trước hoặc cũ nhất trước tùy yêu cầu)
+            { $sort: { createdAt: -1 } },
+            // Phân trang
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+            // Lookup thông tin author
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'author',
+                    foreignField: '_id',
+                    as: 'author',
+                    pipeline: [
+                        { $project: { username: 1, avatar: 1 } },
+                    ],
+                },
+            },
+            { $unwind: '$author' },
+            // Đếm số lượng replies cho mỗi comment
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'parentComment',
+                    as: 'replies',
+                    pipeline: [
+                        { $project: { _id: 1 } }, // Chỉ lấy ID để đếm
+                    ],
+                },
+            },
+            // Dự án dữ liệu trả về
+            {
+                $project: {
+                    content: 1,
+                    author: {
+                        id: '$author._id',
+                        username: '$author.username',
+                        avatar: { $ifNull: ['$author.avatar', 'default-avatar-url'] },
+                    },
+                    post: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    replyCount: { $size: '$replies' }, // Số lượng reply
+                },
+            },
+        ];
+
+        // Thực thi aggregation và đếm tổng số comment cấp 1
+        const [comments, totalRootComments] = await Promise.all([
+            CommentModel.aggregate(commentsPipeline).exec(),
+            CommentModel.countDocuments({
+                post: new mongoose.Types.ObjectId(postId),
+                parentComment: null,
+            }),
+        ]);
+
+        const totalPages = Math.ceil(totalRootComments / limit);
+
+        return {
+            success: true,
+            data: comments,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalRootComments,
+                limit,
+                hasNext: page < totalPages && comments.length === limit,
+                hasPrev: page > 1,
+            },
+        };
     } catch (error) {
-        console.error(error);
+        console.error('Error in getCommentsByPostIdService:', error);
         return { success: false, message: 'Lỗi server khi lấy danh sách comment' };
+    }
+};
+/**
+ * 📄 Lấy danh sách reply comments của một comment cha cụ thể
+ * @param {Object} options - Tùy chọn
+ * @param {String} options.parentCommentId - ID của comment cha
+ * @param {Number} options.page - Trang hiện tại (mặc định: 1)
+ * @param {Number} options.limit - Số reply mỗi trang (mặc định: 10)
+ * @returns {Promise<Object>} - Danh sách reply comments và thông tin phân trang
+ */
+export const getRepliesByParentService = async ({ parentCommentId, page = 1, limit = 10 }) => {
+    try {
+        const repliesPipeline = [
+            {
+                $match: {
+                    parentComment: new mongoose.Types.ObjectId(parentCommentId),
+                },
+            },
+            { $sort: { createdAt: -1 } },
+            // Phân trang
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'author',
+                    foreignField: '_id',
+                    as: 'author',
+                    pipeline: [
+                        { $project: { username: 1, avatar: 1 } },
+                    ],
+                },
+            },
+            { $unwind: '$author' },
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'parentComment',
+                    as: 'replies',
+                    pipeline: [
+                        { $project: { _id: 1 } }, 
+                    ],
+                },
+            },
+            {
+                $project: {
+                    content: 1,
+                    author: {
+                        id: '$author._id',
+                        username: '$author.username',
+                        avatar: { $ifNull: ['$author.avatar', 'default-avatar-url'] },
+                    },
+                    post: 1,
+                    parentComment: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    replyCount: { $size: '$replies' },
+                },
+            },
+        ];
+        const [replies, totalReplies] = await Promise.all([
+            CommentModel.aggregate(repliesPipeline).exec(),
+            CommentModel.countDocuments({
+                parentComment: new mongoose.Types.ObjectId(parentCommentId),
+            }),
+        ]);
+
+        const totalPages = Math.ceil(totalReplies / limit);
+
+        return {
+            success: true,
+            data: replies,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalReplies,
+                limit,
+                hasNext: page < totalPages && replies.length === limit,
+                hasPrev: page > 1,
+            },
+        };
+    } catch (error) {
+        console.error('Error in getRepliesByParentService:', error);
+        return { success: false, message: 'Lỗi server khi lấy danh sách reply comments' };
     }
 };

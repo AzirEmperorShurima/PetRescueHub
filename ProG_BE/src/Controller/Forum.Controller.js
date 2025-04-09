@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { ForumPost, PostModel } from "../models/PostSchema.js";
+import PostSchema, { ForumPost, PostModel } from "../models/PostSchema.js";
 import * as forumService from "../services/Forum/Forum.service.js";
 import * as commentService from "../services/Comments/Comments.service.js"
 import * as reactionService from "../services/Reaction/Reaction.service.js";
@@ -38,61 +38,98 @@ import Reaction from "../models/ReactionSchema.js";
 //         return res.status(500).json({ success: false, message: result.message });
 //     }
 // };
+// export const getForumPosts = async (req, res) => {
+//     try {
+//         const userId = getUserIdFromCookies(req); // Lấy userId từ cookies
+
+//         const requestOptions = {
+//             page: parseInt(req.query.page) || 1,
+//             limit: parseInt(req.query.limit) || 10,
+//             sort: req.query.sort ? JSON.parse(req.query.sort) : { createdAt: -1 },
+//             search: req.query.search || "",
+//             tag: req.query.tag || "",
+//             postType: req.query.postType || "",
+//             userId
+//         };
+
+//         const result = await forumService.getRefreshedListForumPosts(requestOptions);
+
+//         if (!result.success) {
+//             return res.status(500).json({ success: false, message: result.message });
+//         }
+
+//         const posts = result.data;
+//         const filter = {
+//             ...(requestOptions.tag && { tags: requestOptions.tag }),
+//             ...(requestOptions.search && { $text: { $search: requestOptions.search } }),
+//             ...(requestOptions.postType && { postType: requestOptions.postType }),
+//             $or: [
+//                 { postStatus: "public" },
+//                 ...(userId ? [{ author: userId }] : [])
+//             ]
+//         };
+
+//         const totalPosts = await PostModel.countDocuments(filter);
+//         const totalPages = Math.ceil(totalPosts / requestOptions.limit);
+
+//         return res.status(200).json({
+//             success: true,
+//             data: posts,
+//             pagination: {
+//                 currentPage: requestOptions.page,
+//                 totalPages,
+//                 totalPosts,
+//                 limit: requestOptions.limit,
+//                 hasNext: requestOptions.page < totalPages,
+//                 hasPrev: requestOptions.page > 1
+//             },
+//             metadata: {
+//                 timestamp: new Date().toISOString(),
+//                 postType: requestOptions.postType
+//             }
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json({ success: false, message: "Lỗi server khi lấy danh sách bài viết" });
+//     }
+// };
+
 export const getForumPosts = async (req, res) => {
     try {
-        const userId = getUserIdFromCookies(req); // Lấy userId từ cookies
+        const userId = getUserIdFromCookies(req);
 
         const requestOptions = {
-            page: parseInt(req.query.page) || 1,
             limit: parseInt(req.query.limit) || 10,
-            sort: req.query.sort ? JSON.parse(req.query.sort) : { createdAt: -1 },
+            cursor: req.query.cursor || null,
             search: req.query.search || "",
             tag: req.query.tag || "",
-            postType: req.query.postType || "ForumPost",
+            postType: req.query.postType || "",
+            excludeIds: req.query.excludeIds ? JSON.parse(req.query.excludeIds) : [],
             userId
         };
 
-        const result = await forumService.getListForumPosts(requestOptions);
+        const result = await forumService.getRefreshedListForumPosts(requestOptions);
 
         if (!result.success) {
             return res.status(500).json({ success: false, message: result.message });
         }
 
-        const posts = result.data;
-        const filter = {
-            ...(requestOptions.tag && { tags: requestOptions.tag }),
-            ...(requestOptions.search && { $text: { $search: requestOptions.search } }),
-            ...(requestOptions.postType && { postType: requestOptions.postType }),
-            $or: [
-                { postStatus: "public" },
-                ...(userId ? [{ author: userId }] : [])
-            ]
-        };
-
-        const totalPosts = await PostModel.countDocuments(filter);
-        const totalPages = Math.ceil(totalPosts / requestOptions.limit);
-
         return res.status(200).json({
             success: true,
-            data: posts,
+            data: result.data,
             pagination: {
-                currentPage: requestOptions.page,
-                totalPages,
-                totalPosts,
+                totalPosts: result.totalPosts,
                 limit: requestOptions.limit,
-                hasNext: requestOptions.page < totalPages,
-                hasPrev: requestOptions.page > 1
-            },
-            metadata: {
-                timestamp: new Date().toISOString(),
-                postType: requestOptions.postType
+                nextCursor: result.nextCursor,
+                hasNext: result.hasNext
             }
         });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ success: false, message: "Lỗi server khi lấy danh sách bài viết" });
+        console.error("Error in getRefreshedForumPosts:", error);
+        return res.status(500).json({ success: false, message: "Lỗi server khi làm mới danh sách bài viết" });
     }
 };
+
 
 export const getPostById = async (req, res) => {
     const result = await forumService.getPostById(req.params.Post_id);
@@ -176,7 +213,7 @@ export const updateForumPost = async (req, res) => {
 
 export const createNewForumPost = async (req, res) => {
     try {
-        const { title, content, tags, imgUrl } = req.body;
+        const { title, content, tags, imgUrl, postType } = req.body;
 
         const userId = getUserIdFromCookies(req);
 
@@ -193,7 +230,8 @@ export const createNewForumPost = async (req, res) => {
             content,
             tags,
             imgUrl,
-            userId
+            userId,
+            postType
         );
 
         if (result.success) {
@@ -223,11 +261,11 @@ export const addComment = async (req, res) => {
         const { postId, content } = req.body;
         const userId = getUserIdFromCookies(req);
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành đ��ng này" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "UnAuthorize" });
         }
 
         // Kiểm tra bài viết có tồn tại không
-        const post = await ForumPost.findById(postId);
+        const post = await PostModel.findById(postId);
         if (!post) return res.status(StatusCodes.NOT_FOUND).json({ message: "Bài viết không tồn tại" });
         if (!content) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Nội dung không được để trống" });
@@ -248,7 +286,7 @@ export const replyComment = async (req, res) => {
         const { postId, content, parentComment } = req.body;
         const userId = getUserIdFromCookies(req);
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành đ��ng này" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
         const parent_commment = await CommentModel.findById(parentComment);
         if (!parent_commment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Parent Comment Does Not Exist" });
@@ -270,17 +308,87 @@ export const replyComment = async (req, res) => {
 
     }
 }
+// export const getCommentsByPost = async (req, res) => {
+//     try {
+//         const { postId } = req.params;
+//         const listComments = await commentService.getCommentsByPostIdService(postId);
+//         if (!listComments.success) {
+//             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: "GET comment by Post id failed", message: listComments.message });
+//         }
+//         return res.status(StatusCodes.OK).json({ status: "GET comment Successfully", commentsData: listComments.data });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
+//     }
+// };
+
 export const getCommentsByPost = async (req, res) => {
     try {
         const { postId } = req.params;
-        const listComments = await commentService.getCommentsByPostIdService(postId);
-        if (!listComments.success) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: listComments.message });
+        const { page = 1, limit = 10 } = req.query; // Thêm phân trang từ query
+
+        const result = await commentService.getCommentsByPostIdService({
+            postId,
+            page: parseInt(page),
+            limit: parseInt(limit),
+        });
+
+        if (!result.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                status: 'error',
+                message: result.message,
+            });
         }
-        res.status(StatusCodes.OK).json(listComments.data);
+
+        return res.status(StatusCodes.OK).json({
+            status: 'success',
+            data: result.data,
+            pagination: result.pagination,
+            metadata: {
+                timestamp: new Date().toISOString(),
+            },
+        });
     } catch (error) {
-        console.error(error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
+        console.error('Error in getCommentsByPost:', error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'error',
+            message: 'Lỗi server khi lấy danh sách comment',
+        });
+    }
+};
+
+export const getRepliesByParent = async (req, res) => {
+    try {
+        const { commentId } = req.params; // Lấy commentId thay vì postId
+        const { page = 1, limit = 10 } = req.query;
+
+        const result = await commentService.getRepliesByParentService({
+            parentCommentId: commentId,
+            page: parseInt(page),
+            limit: parseInt(limit),
+        });
+
+        if (!result.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                status: 'error',
+                message: result.message,
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            status: 'success',
+            data: result.data,
+            pagination: result.pagination,
+            metadata: {
+                timestamp: new Date().toISOString(),
+            },
+        });
+    } catch (error) {
+        console.error('Error in getRepliesByParent:', error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: 'error',
+            message: 'Lỗi server khi lấy danh sách reply comments',
+        });
     }
 };
 

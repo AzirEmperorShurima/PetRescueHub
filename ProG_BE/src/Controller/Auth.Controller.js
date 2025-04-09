@@ -260,7 +260,7 @@ export const loginHandler = async (req, res) => {
 
         // Xử lý cookies
         const newCookies = await getCookies(foundUser, res);
-        console.log(newCookies.cookie);
+        console.log(newCookies);
 
         // Gọi `manageTokens` và nhận về token mới
         const token = await manageTokens(foundUser, newCookies, "LOGIN-TOKEN");

@@ -14,34 +14,12 @@ import mongoose from "mongoose";
  * @param {String} queryParams.postType - Lọc theo loại bài viết (tùy chọn)
  * @returns {Promise<Object>} - Danh sách bài viết
  */
-// export const getListForumPosts = async ({ page = 1, limit = 10, tag, search, postType, sort }) => {
-//     try {
-//         const filter = {
-//             postStatus: "public"
-//         };
-//         if (tag) filter.tags = { $in: [tag] };
-//         if (search) filter.$text = { $search: search }; // Sử dụng index text để tìm kiếm tối ưu hơn
-//         if (postType) filter.postType = postType; // Lọc theo loại bài viết nếu có
-
-//         const posts = await PostModel.find(filter)
-//             .populate("author", "username")
-//             .select("-__v")
-//             .sort(sort)
-//             .skip((page - 1) * limit)
-//             .limit(parseInt(limit))
-//             .lean();
-
-//         return { success: true, data: posts };
-//     } catch (error) {
-//         return { success: false, message: "Lỗi server khi lấy danh sách bài viết", error };
-//     }
-// };
 export const getListForumPosts = async ({ page = 1, limit = 10, tag, search, postType, sort, userId }) => {
     try {
         const filter = {
             $or: [
                 { postStatus: "public" },
-                ...(userId ? [{ author: new mongoose.Types.ObjectId(userId) }] : [])
+                ...(userId ? [{ author: new mongoose.Types.ObjectId(String(userId)) }] : [])
             ]
         };
 
@@ -208,7 +186,7 @@ export const getPostById = async (id) => {
 
         const post = await PostModel.findById(id)
             .populate("author", "username")
-            .lean(); // Tăng tốc truy vấn
+            .lean();
 
         if (!post) return { success: false, message: "Bài viết không tồn tại" };
 
@@ -376,3 +354,310 @@ export const deletePost = async (postId, userId) => {
 //         session.endSession();
 //     }
 // };
+
+// export const getRefreshedListForumPosts = async ({
+//     page = 1,
+//     limit = 10,
+//     tag,
+//     search,
+//     postType,
+//     excludeIds = [],
+//     userId
+// }) => {
+//     try {
+//         // Điều kiện lọc cơ bản
+//         const filter = {
+//             $or: [
+//                 { postStatus: "public" },
+//                 ...(userId ? [{ author: new mongoose.Types.ObjectId(String(userId)) }] : [])
+//             ],
+//             ...(excludeIds.length > 0 && { _id: { $nin: excludeIds.map(id => new mongoose.Types.ObjectId(id)) } })
+//         };
+
+//         if (tag) filter.tags = { $in: [tag] };
+//         if (search) filter.$text = { $search: search };
+//         if (postType) filter.postType = postType;
+
+//         // Pipeline xử lý danh sách bài viết
+//         const postsPipeline = [
+//             { $match: filter },
+//             // Tính điểm ưu tiên (score) dựa trên createdAt, commentCount, favoriteCount và ngẫu nhiên
+//             {
+//                 $addFields: {
+//                     score: {
+//                         $add: [
+//                             // Độ mới (createdAt): Chuyển sang timestamp và nhân với trọng số
+//                             { $multiply: [{ $toLong: "$createdAt" }, 0.00005] }, // Trọng số thấp để không lấn át
+//                             // Số lượt comment: Nhân với trọng số để ưu tiên tương tác
+//                             { $multiply: ["$commentCount", 5] },
+//                             // Số lượt yêu thích: Nhân với trọng số cao hơn để ưu tiên bài được thích
+//                             { $multiply: ["$favoriteCount", 8] },
+//                             // Yếu tố ngẫu nhiên: Thêm sự đa dạng
+//                             { $multiply: [{ $rand: {} }, 15] }
+//                         ]
+//                     }
+//                 }
+//             },
+//             // Sắp xếp theo score giảm dần
+//             { $sort: { score: -1 } },
+//             // Phân trang
+//             { $skip: (page - 1) * limit },
+//             { $limit: limit },
+//             // Lookup thông tin author
+//             {
+//                 $lookup: {
+//                     from: "users",
+//                     localField: "author",
+//                     foreignField: "_id",
+//                     as: "author",
+//                     pipeline: [{ $project: { username: 1, avatar: 1 } }]
+//                 }
+//             },
+//             { $unwind: "$author" },
+//             // Lấy comment preview
+//             {
+//                 $lookup: {
+//                     from: "comments",
+//                     localField: "_id",
+//                     foreignField: "post",
+//                     as: "comments",
+//                     pipeline: [
+//                         { $match: { parentComment: null } },
+//                         { $sort: { createdAt: -1 } },
+//                         { $limit: 1 },
+//                         {
+//                             $lookup: {
+//                                 from: "users",
+//                                 localField: "author",
+//                                 foreignField: "_id",
+//                                 as: "author",
+//                                 pipeline: [{ $project: { username: 1 } }]
+//                             }
+//                         },
+//                         { $unwind: "$author" },
+//                         { $project: { content: 1, author: "$author.username", createdAt: 1 } }
+//                     ]
+//                 }
+//             },
+//             // Kiểm tra favorite
+//             {
+//                 $lookup: {
+//                     from: "favouritelists",
+//                     let: { postId: "$_id" },
+//                     pipeline: [
+//                         {
+//                             $match: {
+//                                 $expr: {
+//                                     $and: [
+//                                         { $eq: ["$user", userId ? new mongoose.Types.ObjectId(userId) : null] },
+//                                         { $in: ["$$postId", "$items.postId"] }
+//                                     ]
+//                                 }
+//                             }
+//                         }
+//                     ],
+//                     as: "userFavorite"
+//                 }
+//             },
+//             // Đếm tổng comment
+//             {
+//                 $lookup: {
+//                     from: "comments",
+//                     localField: "_id",
+//                     foreignField: "post",
+//                     as: "allComments"
+//                 }
+//             },
+//             // Dự án dữ liệu trả về
+//             {
+//                 $project: {
+//                     title: 1,
+//                     content: { $substr: ["$content", 0, 200] },
+//                     author: {
+//                         id: "$author._id",
+//                         username: "$author.username",
+//                         avatar: { $ifNull: ["$author.avatar", "default-avatar-url"] }
+//                     },
+//                     tags: 1,
+//                     imgUrl: 1,
+//                     commentCount: { $size: "$allComments" },
+//                     favoriteCount: 1,
+//                     postStatus: 1,
+//                     postType: 1,
+//                     createdAt: 1,
+//                     commentPreview: { $arrayElemAt: ["$comments", 0] },
+//                     isLiked: { $gt: [{ $size: "$userFavorite" }, 0] },
+//                     score: 1, // Giữ lại score để debug nếu cần
+//                     ...(postType === "Question" && { questionDetails: 1 }),
+//                     ...(postType === "FindLostPetPost" && { lostPetInfo: 1 }),
+//                     ...(postType === "EventPost" && { eventDate: 1 })
+//                 }
+//             }
+//         ];
+
+//         // Thực thi aggregation và đếm tổng số bài viết
+//         const [posts, totalPosts] = await Promise.all([
+//             PostModel.aggregate(postsPipeline).exec(),
+//             PostModel.countDocuments(filter)
+//         ]);
+
+//         return { success: true, data: posts, totalPosts };
+//     } catch (error) {
+//         console.error("Error in getRefreshedListForumPosts:", error);
+//         return { success: false, message: "Lỗi server khi lấy danh sách bài ngẫu nhiên", error };
+//     }
+// };
+
+export const getRefreshedListForumPosts = async ({
+    limit = 10,
+    cursor = null, // Giá trị score cuối cùng từ lần tải trước
+    tag,
+    search,
+    postType,
+    excludeIds = [],
+    userId
+}) => {
+    try {
+        // Điều kiện lọc cơ bản
+        const filter = {
+            $or: [
+                { postStatus: "public" },
+                ...(userId ? [{ author: new mongoose.Types.ObjectId(userId) }] : [])
+            ],
+            ...(excludeIds.length > 0 && { _id: { $nin: excludeIds.map(id => new mongoose.Types.ObjectId(id)) } })
+        };
+
+        if (tag) filter.tags = { $in: [tag] };
+        if (search) filter.$text = { $search: search };
+        if (postType) filter.postType = postType;
+        if (cursor) filter.score = { $lt: parseFloat(cursor) }; // Lấy các bài có score nhỏ hơn cursor
+
+        // Pipeline xử lý danh sách bài viết
+        const postsPipeline = [
+            { $match: filter },
+            // Tính điểm ưu tiên (score)
+            {
+                $addFields: {
+                    score: {
+                        $add: [
+                            { $multiply: [{ $toLong: "$createdAt" }, 0.00005] },
+                            { $multiply: ["$commentCount", 5] },
+                            { $multiply: ["$favoriteCount", 8] },
+                            { $multiply: [{ $rand: {} }, 15] }
+                        ]
+                    }
+                }
+            },
+            { $sort: { score: -1 } }, // Sắp xếp theo score giảm dần
+            { $limit: limit }, // Giới hạn số bài trả về
+            // Lookup thông tin author
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "author",
+                    foreignField: "_id",
+                    as: "author",
+                    pipeline: [{ $project: { username: 1, avatar: 1 } }]
+                }
+            },
+            { $unwind: "$author" },
+            // Lấy comment preview
+            {
+                $lookup: {
+                    from: "comments",
+                    localField: "_id",
+                    foreignField: "post",
+                    as: "comments",
+                    pipeline: [
+                        { $match: { parentComment: null } },
+                        { $sort: { createdAt: -1 } },
+                        { $limit: 1 },
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "author",
+                                foreignField: "_id",
+                                as: "author",
+                                pipeline: [{ $project: { username: 1 } }]
+                            }
+                        },
+                        { $unwind: "$author" },
+                        { $project: { content: 1, author: "$author.username", createdAt: 1 } }
+                    ]
+                }
+            },
+            // Kiểm tra favorite
+            {
+                $lookup: {
+                    from: "favouritelists",
+                    let: { postId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$user", userId ? new mongoose.Types.ObjectId(userId) : null] },
+                                        { $in: ["$$postId", "$items.postId"] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "userFavorite"
+                }
+            },
+            // Đếm tổng comment
+            {
+                $lookup: {
+                    from: "comments",
+                    localField: "_id",
+                    foreignField: "post",
+                    as: "allComments"
+                }
+            },
+            // Dự án dữ liệu trả về
+            {
+                $project: {
+                    title: 1,
+                    content: { $substr: ["$content", 0, 200] },
+                    author: {
+                        id: "$author._id",
+                        username: "$author.username",
+                        avatar: { $ifNull: ["$author.avatar", "default-avatar-url"] }
+                    },
+                    tags: 1,
+                    imgUrl: 1,
+                    commentCount: { $size: "$allComments" },
+                    favoriteCount: 1,
+                    postStatus: 1,
+                    postType: 1,
+                    createdAt: 1,
+                    commentPreview: { $arrayElemAt: ["$comments", 0] },
+                    isLiked: { $gt: [{ $size: "$userFavorite" }, 0] },
+                    score: 1, // Trả về score để dùng làm cursor
+                    ...(postType === "Question" && { questionDetails: 1 }),
+                    ...(postType === "FindLostPetPost" && { lostPetInfo: 1 }),
+                    ...(postType === "EventPost" && { eventDate: 1 })
+                }
+            }
+        ];
+
+        // Thực thi aggregation và đếm tổng số bài viết
+        const posts = await PostModel.aggregate(postsPipeline).exec();
+        const totalPosts = await PostModel.countDocuments(filter);
+
+        // Lấy cursor tiếp theo (score của bài cuối cùng)
+        const nextCursor = posts.length > 0 ? posts[posts.length - 1].score : null;
+
+        return {
+            success: true,
+            data: posts,
+            totalPosts,
+            nextCursor,
+            hasNext: posts.length === limit // Nếu trả về đủ limit bài, có thể còn dữ liệu
+        };
+    } catch (error) {
+        console.error("Error in getRefreshedListForumPosts:", error);
+        return { success: false, message: "Lỗi server khi lấy danh sách bài ngẫu nhiên", error };
+    }
+};

@@ -23,7 +23,7 @@ PostSchema.pre("findOneAndUpdate", function (next) {
 });
 
 // Middleware xóa liên quan khi xóa bài viết
-PostSchema.pre("remove", async function (next) {
+PostSchema.pre("deleteOne", async function (next) {
     await mongoose.model("Comment").deleteMany({ post: this._id });
     await mongoose.model("FavouriteList").deleteMany({ post: this._id });
     next();
@@ -31,7 +31,7 @@ PostSchema.pre("remove", async function (next) {
 
 // Tạo index để tối ưu tìm kiếm và truy vấn
 PostSchema.index({ title: "text", content: "text" });
-PostSchema.index({ tags: 1 });
+// PostSchema.index({ tags: 1 });
 PostSchema.index({ author: 1 });
 PostSchema.index({ createdAt: -1 });
 PostSchema.index({ updatedAt: -1 });

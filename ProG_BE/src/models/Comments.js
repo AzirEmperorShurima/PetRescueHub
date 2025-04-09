@@ -34,7 +34,7 @@ CommentSchema.post("save", async function (doc) {
 });
 
 // 🔥 Middleware: Khi xóa comment, tự động xóa reaction liên quan và cập nhật `replies`
-CommentSchema.post("remove", async function (doc) {
+CommentSchema.post("deleteOne", async function (doc) {
     if (doc.parentComment) {
         await mongoose.model("Comment").findByIdAndUpdate(
             doc.parentComment,

@@ -24,8 +24,8 @@ forumRoutes.get('/', (req, res) => {
 });
 
 // Post-related routes
-forumRoutes.get('/posts', getForumPosts);
-forumRoutes.get('/posts/:Post_id', getPostById);
+forumRoutes.get('/GET/posts', getForumPosts);
+forumRoutes.get('/GET/posts/:Post_id', getPostById);
 forumRoutes.post('/posts/new', createNewForumPost);
 forumRoutes.put('/posts/:post_id', updateForumPost);
 
@@ -35,7 +35,7 @@ forumRoutes.post('/comments/reply', replyComment);          // Trả lời comme
 forumRoutes.get('/comments/:postId', getCommentsByPost);    // Lấy danh sách comment theo post
 forumRoutes.delete('/comments/:commentId', deleteComment);  // Xóa comment
 forumRoutes.put('/comments/:commentId', updateComment);     // Cập nhật comment
-
+forumRoutes.get('/comments/:postId/:commentId', getCommentsByPost); // Lấy danh sách comment theo post và comment
 // Reaction-related routes
 forumRoutes.post('/reactions/post', handlerPostReaction);          // Thêm/sửa reaction cho post
 forumRoutes.post('/reactions/comment', handlerCommentReaction);    // Thêm/sửa reaction cho comment
