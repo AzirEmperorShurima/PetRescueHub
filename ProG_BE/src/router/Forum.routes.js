@@ -12,7 +12,8 @@ import {
     handlerPostReaction,
     handlerCommentReaction,
     removeReaction,
-    getReactionsByPost
+    getReactionsByPost,
+    getRepliesByParent
 } from "../Controller/Forum.Controller.js";
 
 const forumRoutes = Router();
@@ -30,12 +31,13 @@ forumRoutes.post('/posts/new', createNewForumPost);
 forumRoutes.put('/posts/:post_id', updateForumPost);
 
 // Comment-related routes
-forumRoutes.post('/comments/new', addComment);                  // Thêm comment mới
+forumRoutes.post('/comments/new', addComment);              // Thêm comment mới
 forumRoutes.post('/comments/reply', replyComment);          // Trả lời comment
 forumRoutes.get('/comments/:postId', getCommentsByPost);    // Lấy danh sách comment theo post
 forumRoutes.delete('/comments/:commentId', deleteComment);  // Xóa comment
 forumRoutes.put('/comments/:commentId', updateComment);     // Cập nhật comment
-forumRoutes.get('/comments/:postId/:commentId', getCommentsByPost); // Lấy danh sách comment theo post và comment
+forumRoutes.get('/comments/GET-ReplyComments/:commentId', getRepliesByParent); // Lấy danh sách comment reply của 1 comment id
+
 // Reaction-related routes
 forumRoutes.post('/reactions/post', handlerPostReaction);          // Thêm/sửa reaction cho post
 forumRoutes.post('/reactions/comment', handlerCommentReaction);    // Thêm/sửa reaction cho comment

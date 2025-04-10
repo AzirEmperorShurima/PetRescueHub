@@ -292,7 +292,7 @@ export const replyComment = async (req, res) => {
         if (!parent_commment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Parent Comment Does Not Exist" });
 
         // Kiểm tra bài viết có tồn tại không
-        const post = await ForumPost.findById(postId);
+        const post = await PostModel.findById(postId);
         if (!post) return res.status(StatusCodes.NOT_FOUND).json({ message: "Bài viết không tồn tại" });
         if (!content) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Nội dung không được để trống" });
@@ -322,6 +322,7 @@ export const replyComment = async (req, res) => {
 //     }
 // };
 
+// lấy danh sách comment(đã phân trang) của 1 bài post 
 export const getCommentsByPost = async (req, res) => {
     try {
         const { postId } = req.params;
@@ -357,6 +358,7 @@ export const getCommentsByPost = async (req, res) => {
     }
 };
 
+// Lấy danh sách reply comments theo commentId của comment cha
 export const getRepliesByParent = async (req, res) => {
     try {
         const { commentId } = req.params; // Lấy commentId thay vì postId
@@ -368,10 +370,10 @@ export const getRepliesByParent = async (req, res) => {
             limit: parseInt(limit),
         });
 
-        if (!result.success) {
+        if (!result || !result.success) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 status: 'error',
-                message: result.message,
+                message: result?.message || "Lỗi server khi lấy danh sách reply comments",
             });
         }
 
@@ -397,10 +399,10 @@ export const deleteComment = async (req, res) => {
         const { commentId } = req.params;
         const userId = getUserIdFromCookies(req);
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
         }
         const comment = await CommentModel.findById(commentId);
-        if (!comment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment không tồn tại" });
+        if (!comment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment does not exists" });
 
         if (comment.author.toString() !== userId) {
             return res.status(StatusCodes.FORBIDDEN).json({ message: "Không có quyền xóa comment này" });

@@ -9,6 +9,7 @@
 import { CommentModel } from "../../models/CommentsSchema.js";
 import { ForumPost, PostModel } from "../../models/PostSchema.js";
 import mongoose from "mongoose";
+import Reaction from "../../models/ReactionSchema.js";
 export const addCommentService = async (postId, content, userId) => {
     try {
         // Kiểm tra bài viết có tồn tại không
@@ -45,32 +46,21 @@ export const addCommentService = async (postId, content, userId) => {
  */
 export const replyCommentService = async (postId, content, userId, parentComment) => {
     try {
-        // Kiểm tra bài viết có tồn tại không
-        const post = await ForumPost.findById(postId);
+        const post = await PostModel.findById(postId);
         if (!post) {
             return { success: false, message: 'Bài viết không tồn tại' };
         }
-
-        // Kiểm tra comment cha có tồn tại không
         const parent = await CommentModel.findById(parentComment);
         if (!parent) {
             return { success: false, message: 'Comment cha không tồn tại' };
         }
-
-        // Tạo comment mới (reply)
         const newComment = new CommentModel({
             content,
             author: userId,
             post: postId,
-            postType: 'ForumPost',
             parentComment,
-            depth: 1
         });
-
-        // Lưu reply vào DB
         await newComment.save();
-
-        // Cập nhật comment cha để thêm reply vào
         await CommentModel.findByIdAndUpdate(parentComment, {
             $push: { replies: newComment._id }
         });
@@ -89,9 +79,61 @@ export const replyCommentService = async (postId, content, userId, parentComment
  * @param {String} userId - ID người yêu cầu xoá (kiểm tra quyền)
  * @returns {Promise<Object>} - Kết quả xoá comment
  */
+// export const deleteCommentService = async (commentId, userId) => {
+//     try {
+//         const comment = await CommentModel.findById(commentId).lean();
+//         if (!comment) {
+//             return { success: false, message: 'Comment không tồn tại' };
+//         }
+//         if (comment.author.toString() !== userId) {
+//             return { success: false, message: 'Không có quyền xoá comment này' };
+//         }
+
+//         if (comment.isDeleted) {
+//             return { success: false, message: 'Comment đã bị xóa trước đó' };
+//         }
+
+//         const updateResult = await CommentModel.updateOne(
+//             { _id: commentId },
+//             { isDeleted: true, deletedAt: new Date() }
+//         );
+
+//         const updatePostCommentCount = await PostModel.findByIdAndUpdate(
+//             comment.post,
+//             { $inc: { commentCount: -1 } },
+//             { new: true }
+//         )
+//         const deleteReactionsResult = await Reaction.deleteMany(
+//             { targetType: 'Comment', targetId: commentId }
+//         );
+//         if (updateResult.modifiedCount === 0) {
+//             throw new Error('Không thể đánh dấu xóa comment');
+//         }
+//         if (updatePostCommentCount.modifiedCount === 0) {
+//             throw new Error('Không thể cập nhật số lượng comment trong bài viết');
+//         }
+
+//         return {
+//             success: true,
+//             message: 'Xóa comment thành công',
+//             data: {
+//                 deletedCommentId: commentId,
+//                 deletedReactionsCount: deleteReactionsResult.deletedCount,
+//             },
+//         };
+//     } catch (error) {
+//         console.error(error);
+//         return { success: false, message: 'Lỗi server khi xoá comment' };
+//     }
+// };
+
 export const deleteCommentService = async (commentId, userId) => {
     try {
-        const comment = await CommentModel.findById(commentId);
+        // Chỉ lấy những field cần thiết
+        const comment = await CommentModel.findById(commentId)
+            .select('author isDeleted post')
+            .exec();
+
         if (!comment) {
             return { success: false, message: 'Comment không tồn tại' };
         }
@@ -100,14 +142,53 @@ export const deleteCommentService = async (commentId, userId) => {
             return { success: false, message: 'Không có quyền xoá comment này' };
         }
 
-        await comment.remove(); // middleware sẽ tự xoá khỏi replies của parent (nếu có)
+        if (comment.isDeleted) {
+            return { success: false, message: 'Comment đã bị xóa trước đó' };
+        }
 
-        return { success: true, message: 'Xoá comment thành công' };
+        // Thực hiện song song
+        const [updateResult, updatePost, deleteReactions] = await Promise.all([
+            CommentModel.updateOne(
+                { _id: commentId },
+                { isDeleted: true, deletedAt: new Date() }
+            ),
+            PostModel.findByIdAndUpdate(
+                comment.post,
+                { $inc: { commentCount: -1 } },
+                { new: true }
+            ),
+            Reaction.deleteMany({
+                targetType: 'Comment',
+                targetId: commentId,
+            }),
+        ]);
+
+        // Check riêng từng lỗi để báo lỗi rõ ràng hơn
+        if (updateResult.modifiedCount === 0) {
+            return { success: false, message: 'Không thể đánh dấu xóa comment' };
+        }
+
+        if (!updatePost) {
+            return { success: false, message: 'Không thể cập nhật số lượng comment trong bài viết' };
+        }
+
+        return {
+            success: true,
+            message: 'Xóa comment thành công',
+            data: {
+                deletedCommentId: commentId,
+                deletedReactionsCount: deleteReactions.deletedCount,
+            },
+        };
     } catch (error) {
-        console.error(error);
-        return { success: false, message: 'Lỗi server khi xoá comment' };
+        console.error('[deleteCommentService]', error);
+        return {
+            success: false,
+            message: 'Lỗi server khi xoá comment',
+        };
     }
 };
+
 
 /**
  * 📝 Cập nhật nội dung comment
@@ -160,18 +241,91 @@ export const updateCommentService = async (commentId, userId, content) => {
 //     }
 // };
 
+// export const getCommentsByPostIdService = async ({ postId, page = 1, limit = 10 }) => {
+//     try {
+//         const commentsPipeline = [
+//             { $match: { post: new mongoose.Types.ObjectId(postId), parentComment: null } },
+//             { $sort: { createdAt: -1 } },
+//             { $skip: (page - 1) * limit },
+//             { $limit: limit },
+//             {
+//                 $lookup: {
+//                     from: 'users',
+//                     localField: 'author',
+//                     foreignField: '_id',
+//                     as: 'author',
+//                     pipeline: [
+//                         { $project: { username: 1, avatar: 1 } },
+//                     ],
+//                 },
+//             },
+//             { $unwind: '$author' },
+//             {
+//                 $lookup: {
+//                     from: 'comments',
+//                     localField: '_id',
+//                     foreignField: 'parentComment',
+//                     as: 'replies',
+//                     pipeline: [
+//                         { $project: { _id: 1 } },
+//                     ],
+//                 },
+//             },
+//             {
+//                 $project: {
+//                     content: 1,
+//                     author: {
+//                         id: '$author._id',
+//                         username: '$author.username',
+//                         avatar: { $ifNull: ['$author.avatar', 'default-avatar-url'] },
+//                     },
+//                     post: 1,
+//                     createdAt: 1,
+//                     updatedAt: 1,
+//                     replyCount: { $size: '$replies' },
+//                 },
+//             },
+//         ];
+//         const [comments, totalRootComments] = await Promise.all([
+//             CommentModel.aggregate(commentsPipeline).exec(),
+//             CommentModel.countDocuments({
+//                 post: new mongoose.Types.ObjectId(postId),
+//                 parentComment: null,
+//             }),
+//         ]);
+
+//         const totalPages = Math.ceil(totalRootComments / limit);
+
+//         return {
+//             success: true,
+//             data: comments,
+//             pagination: {
+//                 currentPage: page,
+//                 totalPages,
+//                 totalRootComments,
+//                 limit,
+//                 hasNext: page < totalPages && comments.length === limit,
+//                 hasPrev: page > 1,
+//             },
+//         };
+//     } catch (error) {
+//         console.error('Error in getCommentsByPostIdService:', error);
+//         return { success: false, message: 'Lỗi server khi lấy danh sách comment' };
+//     }
+// };
 export const getCommentsByPostIdService = async ({ postId, page = 1, limit = 10 }) => {
     try {
-        // Pipeline aggregation để lấy comment cấp 1 và tối ưu hóa
         const commentsPipeline = [
-            // Lọc comment thuộc bài post và là comment cấp 1 (không có parent)
-            { $match: { post: new mongoose.Types.ObjectId(postId), parentComment: null } },
-            // Sắp xếp theo createdAt (mới nhất trước hoặc cũ nhất trước tùy yêu cầu)
+            {
+                $match: {
+                    post: new mongoose.Types.ObjectId(postId),
+                    parentComment: null,
+                    isDeleted: false, // Lọc bỏ comment đã xóa
+                },
+            },
             { $sort: { createdAt: -1 } },
-            // Phân trang
             { $skip: (page - 1) * limit },
             { $limit: limit },
-            // Lookup thông tin author
             {
                 $lookup: {
                     from: 'users',
@@ -184,7 +338,6 @@ export const getCommentsByPostIdService = async ({ postId, page = 1, limit = 10 
                 },
             },
             { $unwind: '$author' },
-            // Đếm số lượng replies cho mỗi comment
             {
                 $lookup: {
                     from: 'comments',
@@ -192,11 +345,11 @@ export const getCommentsByPostIdService = async ({ postId, page = 1, limit = 10 
                     foreignField: 'parentComment',
                     as: 'replies',
                     pipeline: [
-                        { $project: { _id: 1 } }, // Chỉ lấy ID để đếm
+                        { $match: { isDeleted: false } }, // Chỉ đếm replies chưa xóa
+                        { $project: { _id: 1 } },
                     ],
                 },
             },
-            // Dự án dữ liệu trả về
             {
                 $project: {
                     content: 1,
@@ -208,17 +361,19 @@ export const getCommentsByPostIdService = async ({ postId, page = 1, limit = 10 
                     post: 1,
                     createdAt: 1,
                     updatedAt: 1,
-                    replyCount: { $size: '$replies' }, // Số lượng reply
+                    replyCount: { $size: '$replies' },
+                    reactions: 1, // Thêm thông tin reactions
+                    isDeleted: 1, // Thêm trạng thái xóa (dù đã lọc, nhưng để tương thích)
                 },
             },
         ];
 
-        // Thực thi aggregation và đếm tổng số comment cấp 1
         const [comments, totalRootComments] = await Promise.all([
             CommentModel.aggregate(commentsPipeline).exec(),
             CommentModel.countDocuments({
                 post: new mongoose.Types.ObjectId(postId),
                 parentComment: null,
+                isDeleted: false, // Chỉ đếm comment chưa xóa
             }),
         ]);
 
@@ -237,7 +392,12 @@ export const getCommentsByPostIdService = async ({ postId, page = 1, limit = 10 
             },
         };
     } catch (error) {
-        console.error('Error in getCommentsByPostIdService:', error);
+        console.error('Error in getCommentsByPostIdService:', {
+            postId,
+            page,
+            limit,
+            error: error.message,
+        });
         return { success: false, message: 'Lỗi server khi lấy danh sách comment' };
     }
 };
@@ -249,16 +409,194 @@ export const getCommentsByPostIdService = async ({ postId, page = 1, limit = 10 
  * @param {Number} options.limit - Số reply mỗi trang (mặc định: 10)
  * @returns {Promise<Object>} - Danh sách reply comments và thông tin phân trang
  */
+// export const getRepliesByParentService = async ({ parentCommentId, page = 1, limit = 10 }) => {
+//     try {
+//         const repliesPipeline = [
+//             {
+//                 $match: {
+//                     parentComment: new mongoose.Types.ObjectId(parentCommentId),
+//                 },
+//             },
+//             { $sort: { createdAt: -1 } },
+//             { $skip: (page - 1) * limit },
+//             { $limit: limit },
+//             {
+//                 $lookup: {
+//                     from: 'users',
+//                     localField: 'author',
+//                     foreignField: '_id',
+//                     as: 'author',
+//                     pipeline: [
+//                         { $project: { username: 1, avatar: 1 } },
+//                     ],
+//                 },
+//             },
+//             { $unwind: '$author' },
+//             {
+//                 $lookup: {
+//                     from: 'comments',
+//                     localField: '_id',
+//                     foreignField: 'parentComment',
+//                     as: 'replies',
+//                     pipeline: [
+//                         { $project: { _id: 1 } },
+//                     ],
+//                 },
+//             },
+//             {
+//                 $project: {
+//                     content: 1,
+//                     author: {
+//                         id: '$author._id',
+//                         username: '$author.username',
+//                         avatar: { $ifNull: ['$author.avatar', 'default-avatar-url'] },
+//                     },
+//                     post: 1,
+//                     parentComment: 1,
+//                     createdAt: 1,
+//                     updatedAt: 1,
+//                     replyCount: { $size: '$replies' },
+//                 },
+//             },
+//         ];
+//         const [replies, totalReplies] = await Promise.all([
+//             CommentModel.aggregate(repliesPipeline).exec(),
+//             CommentModel.countDocuments({
+//                 parentComment: new mongoose.Types.ObjectId(parentCommentId),
+//             }),
+//         ]);
+
+//         const totalPages = Math.ceil(totalReplies / limit);
+
+//         return {
+//             success: true,
+//             data: replies,
+//             pagination: {
+//                 currentPage: page,
+//                 totalPages,
+//                 totalReplies,
+//                 limit,
+//                 hasNext: page < totalPages && replies.length === limit,
+//                 hasPrev: page > 1,
+//             },
+//         };
+//     } catch (error) {
+//         console.error('Error in getRepliesByParentService:', error);
+//         return { success: false, message: 'Lỗi server khi lấy danh sách reply comments' };
+//     }
+// };
+/**
+ * 📄 Lấy danh sách reply comments của một comment cha cụ thể
+ * @param {Object} options - Tùy chọn
+ * @param {String} options.parentCommentId - ID của comment cha
+ * @param {Number} options.page - Trang hiện tại (mặc định: 1)
+ * @param {Number} options.limit - Số reply mỗi trang (mặc định: 10)
+ * @returns {Promise<Object>} - Danh sách reply comments và thông tin phân trang
+ */
+// export const getRepliesByParentService = async ({ parentCommentId, page = 1, limit = 10 }) => {
+//     try {
+//         const repliesPipeline = [
+//             {
+//                 $match: {
+//                     parentComment: new mongoose.Types.ObjectId(parentCommentId),
+//                 },
+//             },
+//             { $sort: { createdAt: -1 } },
+//             { $skip: (page - 1) * limit },
+//             { $limit: limit },
+//             {
+//                 $lookup: {
+//                     from: 'users',
+//                     localField: 'author',
+//                     foreignField: '_id',
+//                     as: 'author',
+//                     pipeline: [{ $project: { username: 1, avatar: 1 } }],
+//                 },
+//             },
+//             { $unwind: '$author' },
+//             {
+//                 $lookup: {
+//                     from: 'comments',
+//                     localField: 'parentComment',
+//                     foreignField: '_id',
+//                     as: 'parentInfo',
+//                     pipeline: [
+//                         { $project: { content: 1, isDeleted: 1, author: 1 } },
+//                     ],
+//                 },
+//             },
+//             { $unwind: '$parentInfo' },
+//             {
+//                 $lookup: {
+//                     from: 'comments',
+//                     localField: '_id',
+//                     foreignField: 'parentComment',
+//                     as: 'replies',
+//                     pipeline: [{ $project: { _id: 1 } }],
+//                 },
+//             },
+//             {
+//                 $project: {
+//                     content: 1,
+//                     author: {
+//                         id: '$author._id',
+//                         username: '$author.username',
+//                         avatar: { $ifNull: ['$author.avatar', 'default-avatar-url'] },
+//                     },
+//                     post: 1,
+//                     parentComment: 1,
+//                     createdAt: 1,
+//                     updatedAt: 1,
+//                     replyCount: { $size: '$replies' },
+//                     parentDeleted: '$parentInfo.isDeleted', // Trạng thái xóa của parent
+//                     parentContent: {
+//                         $cond: {
+//                             if: '$parentInfo.isDeleted',
+//                             then: '[Đã bị xóa]',
+//                             else: '$parentInfo.content',
+//                         },
+//                     },
+//                 },
+//             },
+//         ];
+
+//         const [replies, totalReplies] = await Promise.all([
+//             CommentModel.aggregate(repliesPipeline).exec(),
+//             CommentModel.countDocuments({
+//                 parentComment: new mongoose.Types.ObjectId(parentCommentId),
+//             }),
+//         ]);
+
+//         const totalPages = Math.ceil(totalReplies / limit);
+
+//         return {
+//             success: true,
+//             data: replies,
+//             pagination: {
+//                 currentPage: page,
+//                 totalPages,
+//                 totalReplies,
+//                 limit,
+//                 hasNext: page < totalPages && replies.length === limit,
+//                 hasPrev: page > 1,
+//             },
+//         };
+//     } catch (error) {
+//         console.error('Error in getRepliesByParentService:', error);
+//         return { success: false, message: 'Lỗi server khi lấy danh sách reply comments' };
+//     }
+// };
+
 export const getRepliesByParentService = async ({ parentCommentId, page = 1, limit = 10 }) => {
     try {
         const repliesPipeline = [
             {
                 $match: {
                     parentComment: new mongoose.Types.ObjectId(parentCommentId),
+                    isDeleted: false, // Lọc bỏ reply đã xóa
                 },
             },
             { $sort: { createdAt: -1 } },
-            // Phân trang
             { $skip: (page - 1) * limit },
             { $limit: limit },
             {
@@ -267,12 +605,22 @@ export const getRepliesByParentService = async ({ parentCommentId, page = 1, lim
                     localField: 'author',
                     foreignField: '_id',
                     as: 'author',
-                    pipeline: [
-                        { $project: { username: 1, avatar: 1 } },
-                    ],
+                    pipeline: [{ $project: { username: 1, avatar: 1 } }],
                 },
             },
             { $unwind: '$author' },
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: 'parentComment',
+                    foreignField: '_id',
+                    as: 'parentInfo',
+                    pipeline: [
+                        { $project: { content: 1, isDeleted: 1, author: 1 } },
+                    ],
+                },
+            },
+            { $unwind: '$parentInfo' },
             {
                 $lookup: {
                     from: 'comments',
@@ -280,7 +628,8 @@ export const getRepliesByParentService = async ({ parentCommentId, page = 1, lim
                     foreignField: 'parentComment',
                     as: 'replies',
                     pipeline: [
-                        { $project: { _id: 1 } }, 
+                        { $match: { isDeleted: false } }, // Chỉ đếm reply con chưa xóa
+                        { $project: { _id: 1 } },
                     ],
                 },
             },
@@ -297,13 +646,24 @@ export const getRepliesByParentService = async ({ parentCommentId, page = 1, lim
                     createdAt: 1,
                     updatedAt: 1,
                     replyCount: { $size: '$replies' },
+                    reactions: 1, // Thêm thông tin reactions
+                    parentDeleted: '$parentInfo.isDeleted',
+                    parentContent: {
+                        $cond: {
+                            if: '$parentInfo.isDeleted',
+                            then: '[Đã bị xóa]',
+                            else: '$parentInfo.content',
+                        },
+                    },
                 },
             },
         ];
+
         const [replies, totalReplies] = await Promise.all([
             CommentModel.aggregate(repliesPipeline).exec(),
             CommentModel.countDocuments({
                 parentComment: new mongoose.Types.ObjectId(parentCommentId),
+                isDeleted: false, // Chỉ đếm reply chưa xóa
             }),
         ]);
 
@@ -322,7 +682,12 @@ export const getRepliesByParentService = async ({ parentCommentId, page = 1, lim
             },
         };
     } catch (error) {
-        console.error('Error in getRepliesByParentService:', error);
+        console.error('Error in getRepliesByParentService:', {
+            parentCommentId,
+            page,
+            limit,
+            error: error.message,
+        });
         return { success: false, message: 'Lỗi server khi lấy danh sách reply comments' };
     }
 };
