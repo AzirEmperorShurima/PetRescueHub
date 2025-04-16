@@ -37,9 +37,18 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(email, password);
       
       if (response && response.user) {
-        authService.setUserSession(response.user, response.token, rememberMe);
-        setUser(response.user);
-        return response.user;
+        // Tìm thông tin đầy đủ của user từ mock data
+        const { usersMock } = require('../../mocks/authMock');
+        const fullUserData = usersMock.find(u => u.id === response.user.id);
+        
+        // Sử dụng thông tin đầy đủ nếu có, nếu không thì dùng thông tin cơ bản
+        const userData = fullUserData || response.user;
+        
+        console.log('Đăng nhập với thông tin đầy đủ:', userData);
+        
+        authService.setUserSession(userData, response.token, rememberMe);
+        setUser(userData);
+        return userData;
       } else {
         throw new Error('Invalid login response');
       }

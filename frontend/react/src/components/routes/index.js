@@ -31,7 +31,8 @@ import Terms from '../../pages/Terms/Terms';
 import AdminApp from '../../pages/admin';
 
 // Auth
-import ProtectedRoute from './ProtectedRoute';
+// Update import path
+import ProtectedRoute from '../guards/ProtectedRoute';
 
 /**
  * Cấu trúc routes chính của ứng dụng

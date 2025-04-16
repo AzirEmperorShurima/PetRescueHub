@@ -71,11 +71,15 @@ const login = async (email, password) => {
     // Tạo bản sao của user và loại bỏ password
     const { password: _, ...userWithoutPassword } = user;
     
+    // Đảm bảo trả về thông tin đầy đủ của người dùng
+    console.log("Đã tìm thấy thông tin người dùng:", userWithoutPassword);
+    
     return {
       user: userWithoutPassword,
       token: 'fake-jwt-token'
     };
   } else {
+    console.error("Không tìm thấy người dùng với email và password đã cung cấp");
     throw new Error('Invalid email or password');
   }
 };

@@ -17,6 +17,8 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource-variable/dm-sans": "^5.0.7",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",
     "@mui/x-date-pickers": "^7.28.0",
@@ -30,6 +32,7 @@
     "react-bootstrap": "^2.10.9",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
+    "react-intersection-observer": "^9.16.0",
     "react-router-dom": "^6.30.0",
     "react-scripts": "5.0.1",
     "react-toastify": "^11.0.5"

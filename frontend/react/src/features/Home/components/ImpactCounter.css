@@ -1,0 +1,182 @@
+/* Impact Counter Section */
+.impact-counter-section {
+  padding: 100px 0;
+  background-color: var(--bg-white);
+  position: relative;
+  overflow: hidden;
+}
+
+.impact-counter-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('https://images.unsplash.com/photo-1583337130417-0d9d8a9a8a6c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.03;
+  z-index: 0;
+}
+
+.impact-counter-container {
+  position: relative;
+  z-index: 1;
+  margin-top: 2rem;
+}
+
+.impact-counter-card {
+  padding: 2rem;
+  border-radius: var(--radius-lg) !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+  background-color: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  min-height: 280px; /* Đảm bảo chiều cao đồng nhất */
+}
+
+.impact-counter-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.counter-icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+  position: relative; /* Thêm position relative */
+  z-index: 1; /* Đảm bảo z-index cho container */
+}
+
+/* Thêm hiệu ứng border gradient xoay */
+.counter-icon-container::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(233, 30, 99, 0.7),    /* #E91E63 với độ trong suốt */
+    rgba(255, 152, 0, 0.7),    /* #FF9800 với độ trong suốt */
+    rgba(211, 79, 129, 0.7),   /* #D34F81 - màu brand-primary */
+    rgba(52, 152, 219, 0.7),   /* #3498db - màu brand-secondary */
+    rgba(233, 30, 99, 0.7)     /* #E91E63 với độ trong suốt */
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Hiển thị và xoay border khi hover */
+.impact-counter-card:hover .counter-icon-container::before {
+  opacity: 1;
+  animation: spin-border 4s linear infinite;
+}
+
+/* Thêm animation xoay */
+@keyframes spin-border {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Thêm lớp nền trắng bên trong để tạo hiệu ứng border */
+.counter-icon-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: inherit;
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.impact-counter-card:hover .counter-icon-container {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.counter-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.counter-value {
+  font-size: 3rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.counter-label {
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+  color: var(--text-dark);
+  min-height: 3rem; /* Đảm bảo chiều cao đồng nhất cho label */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.counter-description {
+  color: var(--text-light);
+  line-height: 1.6 !important;
+  min-height: 4.8rem; /* Đảm bảo chiều cao đồng nhất cho mô tả */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Animation for counter */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.counter-animated {
+  animation: countUp 1s ease forwards;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .counter-value {
+    font-size: 2.5rem !important;
+  }
+  
+  .counter-label {
+    font-size: 1rem !important;
+  }
+  
+  .impact-counter-card {
+    padding: 1.5rem;
+    min-height: 250px;
+  }
+}

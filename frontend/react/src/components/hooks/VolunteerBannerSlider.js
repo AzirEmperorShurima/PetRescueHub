@@ -1,13 +1,5 @@
 import { useEffect, useState } from 'react';
-
-// Mảng chứa các ảnh đẹp về tình nguyện viên với thú cưng
-const volunteerImages = [
-  'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?q=80&w=2000&auto=format', // Người với mèo
-  'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?q=80&w=2000&auto=format', // Người với chó
-  'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=2000&auto=format', // Tình nguyện viên tại trung tâm cứu hộ
-  'https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=2000&auto=format', // Nhóm tình nguyện viên
-  'https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?q=80&w=2000&auto=format', // Chăm sóc thú cưng
-];
+import { volunteerImages } from '../../config/LinkImage.config';
 
 const VolunteerBannerSlider = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

@@ -12,11 +12,18 @@ import {
   Handshake as VolunteerIcon
 } from '@mui/icons-material';
 import { heroSlides, services, recentRescues, testimonials, stats } from '../../mocks';
+import vetIcon from '../../assets/images/vet.svg';
 import './Home.css';
 import '../../assets/styles/animations.css';
+
+import AboutSection from '../../features/Home/components/AboutSection';
+import FeatureSection from '../../features/Home/components/FeatureSection';
+import ImpactCounter from '../../features/Home/components/ImpactCounter';
 import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
-import vetIcon from '../../assets/images/vet.svg';
 import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider';
+import VolunteerRegistrationButton from '../../components/button/VolunteerRegistrationButton';
+
+
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -122,6 +129,9 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Sử dụng component AboutSection mới */}
+      <AboutSection />
+
       {/* Floating Rescue Button */}
       <div className="floating-rescue-btn" ref={rescueBtnRef} onClick={() => navigate('/rescue')}>
         <span className="floating-rescue-text">Báo cáo cứu hộ</span>
@@ -135,7 +145,7 @@ const Home = () => {
       </div>
 
       {/* Services Section */}
-      <section className="services-section">
+      {/* <section className="services-section">
         <Container>
           <h2 className="section-title">Dịch vụ của chúng tôi</h2>
           <p className="section-subtitle">Chúng tôi cung cấp nhiều dịch vụ để giúp đỡ thú cưng và kết nối với gia đình yêu thương</p>
@@ -159,7 +169,13 @@ const Home = () => {
             ))}
           </Row>
         </Container>
-      </section>
+      </section> */}
+
+      {/* Sử dụng component FeatureSection */}
+      <FeatureSection />
+
+      {/* Sử dụng component ImpactCounter */}
+      <ImpactCounter />
 
       {/* Recent Rescues Section */}
       <section className="recent-rescues">
@@ -247,9 +263,7 @@ const Home = () => {
           <p className="volunteer-description">
             Tham gia cùng chúng tôi trong hành trình cứu trợ và bảo vệ thú cưng. Mỗi sự giúp đỡ đều ý nghĩa.
           </p>
-          <Button className="volunteer-btn" onClick={() => setShowVolunteerModal(true)}>
-            Đăng ký ngay
-          </Button>
+          <VolunteerRegistrationButton onClick={() => setShowVolunteerModal(true)} />
         </div>
       </section>
 
