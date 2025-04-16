@@ -9,12 +9,11 @@ import {
     getCommentsByPost,
     deleteComment,
     updateComment,
-    handlerPostReaction,
-    handlerCommentReaction,
-    removeReaction,
+    handlerReaction,
     getReactionsByPost,
     getRepliesByParent
 } from "../Controller/Forum.Controller.js";
+import { checkPostType } from "../Middlewares/checkPostType.js";
 
 const forumRoutes = Router();
 
@@ -27,7 +26,7 @@ forumRoutes.get('/', (req, res) => {
 // Post-related routes
 forumRoutes.get('/GET/posts', getForumPosts);
 forumRoutes.get('/GET/posts/:Post_id', getPostById);
-forumRoutes.post('/posts/new', createNewForumPost);
+forumRoutes.post('/posts/new', [checkPostType], createNewForumPost);
 forumRoutes.put('/posts/:post_id', updateForumPost);
 
 // Comment-related routes
@@ -39,9 +38,7 @@ forumRoutes.put('/comments/:commentId', updateComment);     // Cập nhật comm
 forumRoutes.get('/comments/GET-ReplyComments/:commentId', getRepliesByParent); // Lấy danh sách comment reply của 1 comment id
 
 // Reaction-related routes
-forumRoutes.post('/reactions/post', handlerPostReaction);          // Thêm/sửa reaction cho post
-forumRoutes.post('/reactions/comment', handlerCommentReaction);    // Thêm/sửa reaction cho comment
-forumRoutes.delete('/reactions', removeReaction);                  // Xóa reaction
+forumRoutes.post('/reactions/post', handlerReaction);          // Thêm/sửa reaction cho post   // Thêm/sửa reaction cho comment              // Xóa reaction
 forumRoutes.get('/reactions/:postId/:targetId', getReactionsByPost); // Lấy thông tin reactions
 
 export default forumRoutes;

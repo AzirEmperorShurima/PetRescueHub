@@ -9,7 +9,6 @@ export const createPackage = async (packageData) => {
         if (!packageData) {
             return { success: false, message: 'Dữ liệu package không được để trống!' };
         }
-        // Kiểm tra xem package_id đã tồn tại chưa
         const existingPackage = await Package.findOne({ package_id: packageData.package_id });
         if (existingPackage) {
             return { success: false, message: 'Gói đã tồn tại!' };

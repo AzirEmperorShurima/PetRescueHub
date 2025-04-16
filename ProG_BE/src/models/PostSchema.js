@@ -44,7 +44,7 @@ PostSchema.pre("deleteOne", async function (next) {
         ]);
         next();
     } catch (error) {
-        next(error); // Truyền lỗi nếu có
+        next(error);
     }
 });
 
@@ -54,10 +54,7 @@ PostSchema.index({ author: 1 });
 PostSchema.index({ createdAt: -1 });
 PostSchema.index({ updatedAt: -1 });
 
-// Định nghĩa model chính
 export const PostModel = mongoose.model("Post", PostSchema);
-
-// Định nghĩa các mô hình con với `discriminator`
 export const ForumPost = PostModel.discriminator("ForumPost", new mongoose.Schema({}));
 export const Question = PostModel.discriminator(
     "Question",
@@ -74,11 +71,13 @@ export const FindLostPetPost = PostModel.discriminator(
 export const EventPost = PostModel.discriminator(
     "EventPost",
     new mongoose.Schema({
-        eventDate: { type: Date }
+        eventStartDate: { type: Date },
+        eventEndDate: { type: Date },
+        eventLongitude: { type: String }, //kinh độ
+        eventLatitude: { type: String }, //vĩ độ
+        eventLocation: { type: String },
     })
 );
-
-// Xuất default toàn bộ model chính và các mô hình con
 export default {
     PostModel,
     ForumPost,

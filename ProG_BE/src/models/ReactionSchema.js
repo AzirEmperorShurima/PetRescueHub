@@ -8,7 +8,8 @@ const ReactionSchema = new mongoose.Schema(
             enum: ['like', 'love', 'haha', 'wow', 'sad', 'angry'],
             required: true,
         },
-        targetType: { type: String, enum: ["Post", "Comment"], required: true },
+        // targetType: { type: String, enum: ["Post", "Comment"], required: true },
+        targetType: { type: String, required: true },
         targetId: { type: mongoose.Schema.Types.ObjectId, required: true }
     },
     { timestamps: true }

@@ -448,86 +448,36 @@ export const updateComment = async (req, res) => {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
     }
 };
-export const handlerPostReaction = async (req, res) => {
+
+export const handlerReaction = async (req, res) => {
     try {
-        const { targetId, reactionTypes, rawTypes } = req.body;
+        const { targetId, reactionType, targetType } = req.body;
         const userId = getUserIdFromCookies(req);
+
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Bạn cần đăng nhập để thực hiện hành động này' });
         }
-        if (!reactionTypes) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Type không được để trống" });
+        if (!reactionType) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Loại reaction không được để trống' });
         }
         if (!targetId) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "PostId không được để trống" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Target ID không được để trống' });
         }
 
-        // Kiểm tra bài viết có tồn tại không
-        const target = await reactionService.getTargetType(targetId, rawTypes || "Post");
-        if (!target) {
-            return res.status(StatusCodes.NOT_FOUND).json({ message: "Bài viết không tồn tại" });
+        const validTargetTypes = Object.keys(PostModel.discriminators || {}).concat(['Post', 'Comment']);
+        if (!validTargetTypes.includes(targetType)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: `Target type không hợp lệ, phải là một trong: ${validTargetTypes.join(', ')}` });
         }
-        const targetType = target.targetType;
+        const validReactionTypes = Reaction.schema.paths.reactionType.enumValues;
+        if (!validReactionTypes.includes(reactionType)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: `Loại reaction không hợp lệ, phải là một trong: ${validReactionTypes.join(', ')}` });
+        }
 
-        const newReaction = await reactionService.addOrUpdateReaction(userId, targetType, targetId, reactionTypes);
+        const newReaction = await reactionService.addOrUpdateReaction(userId, targetType, targetId, reactionType);
         if (!newReaction) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi trong quá trình thêm reaction" });
         }
         res.status(StatusCodes.CREATED).json({ message: "Đã thêm reaction", reaction: newReaction });
-    } catch (error) {
-        console.error(error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
-    }
-};
-
-
-export const handlerCommentReaction = async (req, res) => {
-    try {
-        const { targetId, reactionTypes } = req.body;
-        const userId = getUserIdFromCookies(req);
-        if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
-        }
-        if (!reactionTypes) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "ReactionType không được để trống" });
-        }
-        if (!targetId) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Comment id không được để trống" });
-        }
-
-        // Kiểm tra bài viết có tồn tại không
-        const targetComments = await CommentModel.findById(targetId);
-        if (!targetComments) {
-            return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment không tồn tại" });
-        }
-
-        const newReaction = await reactionService.addOrUpdateCommentReaction(userId, targetId, reactionTypes);
-        if (!newReaction) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi trong quá trình thêm reaction" });
-        }
-        res.status(StatusCodes.CREATED).json({ message: "Đã thêm reaction", reaction: newReaction });
-    } catch (error) {
-        console.error(error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
-    }
-};
-
-export const removeReaction = async (req, res) => {
-    try {
-        const { postId } = req.body;
-        const userId = getUserIdFromCookies(req);
-        if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
-        }
-        if (!postId) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "PostId không được để trống" });
-        }
-
-        const reaction = await reactionService.removeReaction(userId, postId);
-        if (!reaction) return res.status(StatusCodes.NOT_FOUND).json({ status: false, message: "Bạn chưa thả reaction nào" });
-
-        await reaction.remove();
-        res.status(StatusCodes.OK).json({ message: "Đã gỡ reaction" });
     } catch (error) {
         console.error(error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
@@ -559,3 +509,39 @@ export const getReactionsByPost = async (req, res) => {
 };
 
 
+/**
+* 📄 Lấy danh sách bài viết mà user đã reaction hoặc comment
+* @param { Object } req - Request từ client
+* @param { Object } res - Response trả về
+*/
+export const getUserInteractedPosts = async (req, res) => {
+    try {
+        const userId = getUserIdFromCookies(req);
+        const { page = 1, limit = 10 } = req.query;
+
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Bạn cần đăng nhập để thực hiện hành động này' });
+        }
+
+        const result = await reactionService.getUserInteractedPosts({
+            userId,
+            page: parseInt(page),
+            limit: parseInt(limit),
+        });
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            data: result.posts,
+            pagination: result.pagination,
+            message: 'Danh sách bài viết đã tương tác',
+        });
+    } catch (error) {
+        console.error('Error in getUserInteractedPosts:', {
+            userId: getUserIdFromCookies(req),
+            page: req.query.page,
+            limit: req.query.limit,
+            error: error.message,
+        });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi server khi lấy danh sách bài viết' });
+    }
+};

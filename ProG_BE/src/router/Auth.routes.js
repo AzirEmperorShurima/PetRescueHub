@@ -29,11 +29,12 @@ authRouter.get('/', (req, res) => {
 // Authentication routes
 authRouter.post('/access/login', loginHandler);
 authRouter.post('/logout', logoutHandler);
-authRouter.post('/sign/signup', [Exist_User_Checking, Valid_Roles_Certification], Signup_Handler);
+// authRouter.post('/sign/signup', [Exist_User_Checking, Valid_Roles_Certification], Signup_Handler);
+authRouter.post('/sign/signup', [Exist_User_Checking], Signup_Handler);
 authRouter.post('/re-sign/refresh-token', refreshToken);
 
 // User profile route
-authRouter.get('get/profile', getProfile);
+authRouter.get('/get/profile', getProfile);
 
 // Password Recovery
 authRouter.post('/password/forgot-password', [verified_Is_Email_Valid], forgot_password);
@@ -46,26 +47,38 @@ authRouter.post('/password/verify-otp-forgot-password', [verified_Is_Email_Valid
 authRouter.post('/protect/report-compromised', report_compromised_account);
 
 authRouter.get('/events', (req, res) => {
+    // Thiết lập header cho SSE
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
-    // res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.flushHeaders();
 
-    // Gửi kết nối thành công
+
+    console.log('SSE client connected:', req.ip);
     res.write('data: Connection established\n\n');
 
-    // Gửi dữ liệu định kỳ ( mỗi 5 giây)
+    // Gửi dữ liệu mỗi 5 giây
     const interval = setInterval(() => {
         const message = { time: new Date().toISOString() };
+        console.log('Sending SSE message:', message);
         res.write(`data: ${JSON.stringify(message)}\n\n`);
+        res.flush();
     }, 5000);
 
+    // Xử lý khi client ngắt kết nối
     req.on('close', () => {
         clearInterval(interval);
-        console.log('SSE client disconnected');
+        console.log('SSE client disconnected:', req.ip);
+        res.end();
+    });
+
+    // Xử lý lỗi
+    res.on('error', (err) => {
+        console.error('SSE error:', err);
+        clearInterval(interval);
+        res.end();
     });
 });
-
-
 
 export default authRouter;

@@ -39,22 +39,6 @@ export const createPetProfile = async (ownerId, petData) => {
     }
 };
 
-
-/**
- * 🔄 Chuyển đổi chủ sở hữu thú cưng
- */
-// export const transferPetOwnership = async (petId, newOwnerId) => {
-//     const pet = await PetProfile.findById(petId);
-//     if (!pet) throw new Error("Thú cưng không tồn tại!");
-
-//     const newOwner = await User.findById(newOwnerId);
-//     if (!newOwner) throw new Error("Người nhận không tồn tại!");
-
-//     pet.ownerId = newOwnerId;
-//     return await pet.save();
-// };
-
-
 /**
  * 📥 Upload avatar thú cưng
  * @param {String} petId - ID của thú cưng

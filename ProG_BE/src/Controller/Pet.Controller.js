@@ -54,12 +54,12 @@ export const createPet = async (req, res) => {
             name: req.body.name,
             dob: req.body.petDob || null,
             breed: req.body.breed,
-            breedName: req.body.breedName || null, // Nếu không có breedName thì để null
+            breedName: req.body.breedName || null,
             age: req.body.age || 0,
             details: req.body.details,
             gender: req.body.gender || "unknown",
             weight: req.body.weight || 0,
-            avatar: req.body.avatar || null,  // Nếu không có avatar thì để null
+            avatar: req.body.avatar || null,
             microchipId: req.body.microchipId || null,
             healthRecords: req.body.healthRecords || [],
             certifications: req.body.certifications || [],
@@ -116,42 +116,7 @@ export const uploadPetCertificate = async (req, res) => {
 /**
  * 📑 Cập nhật thông tin thú cưng
  */
-// export const updatePetProfile = async (req, res) => {
-//     try {
-//         const petId = req.params
-//         if (!petId) return res.status(400).json({ message: "Thiếu ID thú cưng!" });
-//         const ownerId = getUserIdFromCookies(req);
-//         if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
 
-//         await checkOwnership(petId, ownerId); // Kiểm tra quyền
-//         const { name, age, breed, breedName, gender, petDetails, weight, height, reproductiveStatus,
-//             vaccinationStatus, certifications, avatar, microchipId, petAlbum } = req.body;
-//         const petUpdateData = {
-//             ...(name && { name }),
-//             ...(typeof age !== 'undefined' && { age }),
-//             ...(breed && { breed }),
-//             ...(breedName && { breedName }),
-//             ...(gender && { gender }),
-//             ...(petDetails && { petDetails }),
-//             ...(typeof weight !== 'undefined' && { weight }),
-//             ...(typeof height !== 'undefined' && { height }),
-//             ...(reproductiveStatus && { reproductiveStatus }),
-//             ...(vaccinationStatus && { vaccinationStatus }),
-//             ...(certifications && { certifications }),
-//             ...(avatar && { avatar }),
-//             ...(microchipId && { microchipId }),
-//             ...(petAlbum && { petAlbum }),
-//         };
-
-
-//         const updatedPet = await petService.updatePetProfile(petId, petUpdateData);
-
-//         if (!updatedPet) return res.status(404).json({ message: "Không tìm thấy thú cưng!" });
-//         return res.status(200).json({ message: "Cập nhật thành công!", pet: updatedPet });
-//     } catch (error) {
-//         return res.status(500).json({ message: "Lỗi hệ thống!", error: error.message });
-//     }
-// };
 export const updatePetProfile = async (req, res) => {
     try {
         const { petId } = req.params;

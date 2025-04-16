@@ -6,7 +6,7 @@ const CommentSchema = new mongoose.Schema(
         post: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true },
         content: { type: String, required: true, trim: true },
         imgUrl: [{ type: String }],
-        parentComment: { type: mongoose.Schema.Types.ObjectId, ref: "Comment", default: null }, // Hỗ trợ comment lồng nhau
+        parentComment: { type: mongoose.Schema.Types.ObjectId, ref: "Comment", default: null },
         replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
         isDeleted: { type: Boolean, default: false },
         createdAt: { type: Date, default: Date.now },

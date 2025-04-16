@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from 'uuid';
+import { avatarConfig } from "../../config.js";
 
 const userSchema = new mongoose.Schema(
     {
@@ -33,7 +34,15 @@ const userSchema = new mongoose.Schema(
         },
         avatar: {
             type: String,
-            default: null
+            default: function () {
+                if (this.gender === "male") {
+                    return avatarConfig.defaultAvatars.male
+                } else if (this.gender === "female") {
+                    return avatarConfig.defaultAvatars.female
+                } else {
+                    return avatarConfig.defaultAvatars.neutral
+                }
+            }
         },
         phonenumber: [{
             type: String,
@@ -69,32 +78,13 @@ const userSchema = new mongoose.Schema(
         versionKey: false,
     }
 );
+
 userSchema.pre("validate", async function (next) {
     const user = this;
 
-    // Kiểm tra nếu `id` chưa tồn tại
-    // if (!user.id) {
-    //     let prefix = "us"; // Mặc định là `user`
-
-    //     // Xác định prefix theo role
-    //     if (user.roles && user.roles.length > 0) {
-    //         const roleName = user.roles[0].name; // Giả sử `roles` chứa object với key `name`
-    //         if (roleName === "admin") prefix = "ad";
-    //     }
-
-    //     // Tạo hash ngẫu nhiên
-    //     const timestamp = Date.now().toString(36); // Chuyển timestamp sang base 36
-    //     const hash = crypto.randomBytes(4).toString("hex"); // 8 ký tự hex
-    //     user.id = `${prefix}-${timestamp}-${hash}`;
-
-    // }
     if (!user.id) {
         user.id = uuidv4();
     }
-    // const encryptedUserName = createHash256(user.username, MASTER_PRIVARE_KEY);
-    // const encryptedEmail =  createHash256(user.email, MASTER_PRIVARE_KEY);
-    // user.username = encryptedUserName;
-    // user.email = encryptedEmail;
 
     next();
 });
@@ -119,12 +109,12 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.comparePassword = async function (password) {
-    if (!password) throw new Error('Password is missing, cannot compare!');
+    if (!password) throw new Error('Mật khẩu bị thiếu, không thể so sánh!');
     try {
         return await bcrypt.compare(password, this.password);
     } catch (error) {
-        console.error('Error while comparing password!', error.message);
-        throw new Error('Error while comparing password');
+        console.error('Lỗi khi so sánh mật khẩu!', error.message);
+        throw new Error('Lỗi khi so sánh mật khẩu');
     }
 };
 

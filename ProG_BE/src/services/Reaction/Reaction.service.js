@@ -1,26 +1,6 @@
+import mongoose from "mongoose";
 import Reaction from "../../models/ReactionSchema.js";
-
-/**
- * 📥 check loại post
- * @param {String} targetId - Id đối tượng
- * @param {String} rawTargetTypes - Loại post (Post, Comment, Question, ForumPost)
- * @returns {Promise<Object>} - Đối tượng chứa loại post và thông tin bài viết
- * @returns {null} - Nếu Không tìm thấy bài viết hoặc loại post không hợp lệ
- */
-export const getTargetType = async (targetId, rawTargetTypes) => {
-    const targetTypes = rawTargetTypes.toString().trim().toLowerCase()
-
-    const validTypes = ["post", "comment", "question", "forumpost"];
-    if (!validTypes.includes(targetTypes)) {
-        throw new BadRequestError("Loại đối tượng không hợp lệ");
-    }
-
-    let target = await mongoose.model(targetTypes).findById(targetId);
-    if (target) {
-        return { targetType: targetTypes, target };
-    }
-    return null;
-};
+import { PostModel } from "../../models/PostSchema.js";
 
 /**
  * 📥 Thêm hoặc cập nhật reaction cho bài viết hoặc comment
@@ -30,100 +10,69 @@ export const getTargetType = async (targetId, rawTargetTypes) => {
  * @param {String} reactionType - Loại reaction (like, love, haha, wow, sad, angry)
  * @returns {Promise<Object>}- Thông tin reaction đã tạo/cập nhật
  */
-
-export const addOrUpdateReaction = async ({ userId, targetType, targetId, reactionType }) => {
-
-    // if (!["Post", "Question", "ForumPost", "Comment"].includes(targetType)) {
-    //     throw new BadRequestError("Loại đối tượng không hợp lệ");
-    // }
-    if (!mongoose.Types.ObjectId.isValid(targetId)) {
-        throw new BadRequestError("ID đối tượng không hợp lệ");
-    }
-
-    const Model = mongoose.model(targetType); // Sử dụng targetType động
-    const target = await Model.findById(targetId);
-    if (!target) {
-        throw new NotFoundError(`${targetType} không tồn tại`);
-    }
-
-    const existed = await Reaction.findOne({ authReaction: userId, targetType, targetId });
-
-    if (existed) {
-        if (existed.reactionType === reactionType) {
-            return { exist: true, status: "no change" };
-        }
-
-        // Nếu khác → xoá reaction cũ, thêm cái mới để middleware xử lý cập nhật count
-        await existed.remove();
-    }
-
-    const newReaction = await Reaction.create({
-        authReaction: userId,
-        targetType,
-        targetId,
-        reactionType,
-    });
-
-    return { reaction: newReaction, status: "Success" };
+export const modelsMap = {
+    Post: PostModel,
+    Comment: mongoose.model('Comment'),
+    ...PostModel.discriminators,
 };
-
-
-
 /**
- * 📥 Thêm hoặc cập nhật reaction cho bài viết hoặc comment
- * @param {String} userId - ID người dùng
- * @param {String} targetId - ID đối tượng cần thả reaction
- * @param {String} reactionType - Loại reaction (like, love, haha, wow, sad, angry)
+ * Thêm hoặc cập nhật reaction cho bài viết hoặc comment
+ * @param {Object} params - Thông tin reaction
+ * @param {String} params.userId - ID người dùng
+ * @param {String} params.targetType - Loại đối tượng (Post, Comment, hoặc các discriminator)
+ * @param {String} params.targetId - ID đối tượng cần thả reaction
+ * @param {String} params.reactionType - Loại reaction (like, love, haha, wow, sad, angry)
  * @returns {Promise<Object>} - Thông tin reaction đã tạo/cập nhật
  */
+export const addOrUpdateReaction = async ({ userId, targetType, targetId, reactionType }) => {
 
-export const addOrUpdateCommentReaction = async ({ userId, targetId, reactionType }) => {
-
-    if (!mongoose.Types.ObjectId.isValid(targetId)) {
-        throw new BadRequestError("ID đối tượng không hợp lệ");
-    }
-
-    const existed = await Reaction.findOne({ authReaction: userId, targetType: "Comment", targetId: commentId });
-    if (existed) {
-        if (existed.reactionType === reactionType) {
-            return { exist: true, status: "no change" };
+    try {
+        if (!mongoose.Types.ObjectId.isValid(targetId) || !mongoose.Types.ObjectId.isValid(userId)) {
+            throw new BadRequestError('ID người dùng hoặc target không hợp lệ');
         }
-        // Nếu có reaction khác, xoá và thêm mới
-        await existed.remove();
+        const validTargetTypes = Object.keys(modelsMap);
+        if (!validTargetTypes.includes(targetType)) {
+            throw new BadRequestError(`Target type không hợp lệ, phải là một trong: ${validTargetTypes.join(', ')}`);
+        }
+        const validReactionTypes = Reaction.schema.paths.reactionType.enumValues;
+        if (!validReactionTypes.includes(reactionType)) {
+            throw new BadRequestError(`Loại reaction không hợp lệ, phải là một trong: ${validReactionTypes.join(', ')}`);
+        }
+        const Model = modelsMap[targetType];
+        const target = await Model.findById(targetId)
+        if (!target) {
+            throw new NotFoundError(`${targetType} không tồn tại`);
+        }
+        if (target.isDeleted) {
+            throw new BadRequestError(`${targetType} đã bị xóa, không thể thêm reaction`);
+        }
+        const existingReaction = await Reaction.findOne({
+            authReaction: new mongoose.Types.ObjectId(userId),
+            targetType,
+            targetId,
+        })
+
+        let reaction;
+        if (existingReaction) {
+            if (existingReaction.reactionType === reactionType) {
+                return { success: true, isNew: false, reaction: existingReaction, message: 'Reaction không thay đổi' };
+            }
+        }
+        reaction = await Reaction.create(
+            [{
+                authReaction: new mongoose.Types.ObjectId(userId),
+                targetType,
+                targetId,
+                reactionType,
+            }]
+        );
+
+        return { success: true, isNew: !existingReaction, reaction: reaction[0], message: 'Reaction đã được xử lý' };
+    } catch (error) {
+        throw error;
     }
-
-    const newReaction = await Reaction.create({
-        authReaction: userId,
-        targetType: "Comment",
-        targetId: targetId,
-        reactionType,
-    });
-
-    // Cập nhật số lượng reaction cho comment
-    await CommentModel.findByIdAndUpdate(commentId, {
-        $inc: { [`reactions.${reactionType}`]: 1 }
-    });
-    return newReaction;
 };
-/**
- * ❌ Gỡ reaction khỏi bài viết hoặc comment
- * @param {String} userId - ID người dùng
- * @param {String} targetType - Loại đối tượng (Post hoặc Comment)
- * @param {String} targetId - ID đối tượng
- * @returns {Promise<Object>} - Kết quả xóa reaction
- */
-export const removeReaction = async ({ userId, targetId }) => {
-    if (!mongoose.Types.ObjectId.isValid(targetId)) {
-        throw new BadRequestError("ID đối tượng không hợp lệ");
-    }
-    const existed = await Reaction.findOne({ authReaction: userId, targetType, targetId });
 
-    if (!existed) {
-        return { success: false, message: "Bạn chưa thả reaction nào" };
-    }
-    await existed.remove(); // Middleware tự cập nhật count 
-    return { success: true, message: "Đã gỡ reaction thành công" };
-};
 /**
  * 📊 Lấy danh sách reaction theo bài viết hoặc comment
  * @param {String} targetType - Loại đối tượng (Post hoặc Comment)
