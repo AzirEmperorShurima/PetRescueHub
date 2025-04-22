@@ -1,25 +1,25 @@
 import React from 'react';
-import { 
-  Card, 
-  CardMedia, 
-  CardContent, 
-  Typography, 
-  Box, 
-  Chip, 
-  Button, 
-  CardActions 
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+  Chip,
+  Button,
+  CardActions
 } from '@mui/material';
-import { 
-  Pets as PetsIcon, 
-  Cake as CakeIcon, 
-  Male as MaleIcon, 
-  Female as FemaleIcon 
+import {
+  Pets as PetsIcon,
+  Cake as CakeIcon,
+  Male as MaleIcon,
+  Female as FemaleIcon
 } from '@mui/icons-material';
 
 const PetCard = ({ pet, onClick }) => {
   // Xác định icon giới tính
   const GenderIcon = pet.gender === 'male' ? MaleIcon : FemaleIcon;
-  
+
   // Xác định màu sắc cho trạng thái
   const getStatusColor = (status) => {
     switch (status) {
@@ -33,7 +33,7 @@ const PetCard = ({ pet, onClick }) => {
         return 'default';
     }
   };
-  
+
   // Chuyển đổi trạng thái sang tiếng Việt
   const getStatusText = (status) => {
     switch (status) {
@@ -48,11 +48,16 @@ const PetCard = ({ pet, onClick }) => {
     }
   };
 
+  // Xử lý lỗi tải ảnh
+  const handleImageError = (e) => {
+    e.target.src = 'https://via.placeholder.com/300x200?text=Image+Error';
+  };
+
   return (
-    <Card 
-      sx={{ 
-        height: '100%', 
-        display: 'flex', 
+    <Card
+      sx={{
+        height: '100%',
+        display: 'flex',
         flexDirection: 'column',
         transition: 'transform 0.3s, box-shadow 0.3s',
         '&:hover': {
@@ -66,10 +71,8 @@ const PetCard = ({ pet, onClick }) => {
           component="img"
           image={pet.image || 'https://via.placeholder.com/300x200?text=No+Image'}
           alt={pet.name}
-          onError={(e) => {
-            e.target.src = 'https://via.placeholder.com/300x200?text=Image+Error';
-          }}
-          sx={{ 
+          onError={handleImageError}
+          sx={{
             position: 'absolute',
             top: 0,
             left: 0,
@@ -78,70 +81,67 @@ const PetCard = ({ pet, onClick }) => {
             objectFit: 'cover'
           }}
         />
-        {pet.status === 'available' && (
-          <Chip
-            label="Sẵn sàng nhận nuôi"
-            color="success"
-            size="small"
-            sx={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              fontWeight: 'bold'
-            }}
-          />
-        )}
+        <Chip
+          label={getStatusText(pet.status)}
+          color={getStatusColor(pet.status)}
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 1
+          }}
+        />
       </Box>
-      
+
       <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Typography variant="h6" component="div">
-            {pet.name}
-          </Typography>
-          <Chip 
-            label={getStatusText(pet.status)} 
-            color={getStatusColor(pet.status)} 
-            size="small" 
-          />
-        </Box>
-        
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          {pet.breed}
+        <Typography variant="h6" component="h2" gutterBottom>
+          {pet.name}
         </Typography>
-        
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
-          <Chip 
-            icon={<PetsIcon />} 
-            label={pet.type === 'dog' ? 'Chó' : pet.type === 'cat' ? 'Mèo' : pet.type} 
-            size="small" 
-            variant="outlined" 
-          />
-          <Chip 
-            icon={<CakeIcon />} 
-            label={pet.age} 
-            size="small" 
-            variant="outlined" 
-          />
-          <Chip 
-            icon={<GenderIcon />} 
-            label={pet.gender === 'male' ? 'Đực' : 'Cái'} 
-            size="small" 
-            variant="outlined" 
-          />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <GenderIcon fontSize="small" color={pet.gender === 'male' ? 'primary' : 'secondary'} />
+          <Typography variant="body2" sx={{ ml: 1 }}>
+            {pet.gender === 'male' ? 'Đực' : 'Cái'}
+          </Typography>
         </Box>
-        
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, display: '-webkit-box', overflow: 'hidden', textOverflow: 'ellipsis', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <CakeIcon fontSize="small" />
+          <Typography variant="body2" sx={{ ml: 1 }}>
+            {pet.age}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <PetsIcon fontSize="small" />
+          <Typography variant="body2" sx={{ ml: 1 }}>
+            {pet.breed}
+          </Typography>
+        </Box>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mt: 2,
+            display: '-webkit-box',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical'
+          }}
+        >
           {pet.description}
         </Typography>
       </CardContent>
-      
+
       <CardActions>
-        <Button 
-          size="small" 
-          color="primary" 
-          onClick={onClick}
-          fullWidth
+        <Button
+          size="small"
           variant="contained"
+          fullWidth
+          onClick={() => onClick(pet)}
         >
           Xem chi tiết
         </Button>

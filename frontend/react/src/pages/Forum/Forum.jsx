@@ -32,26 +32,18 @@ const Forum = () => {
   const navigate = useNavigate();
   const { user } = useAuth(); // Get user from AuthContext
   
-  useEffect(() => {
-    // Cuộn lên đầu trang khi chuyển trang
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-  
   // Sử dụng custom hook
   const {
     loading,
     tabValue,
-    posts,
-    questions,
-    events,
-    filteredPosts,
-    filteredQuestions,
-    filteredEvents,
-    forumCategories,
     searchTerm,
     filterAnchorEl,
     sortBy,
     categoryFilter,
+    categories,
+    posts,
+    questions,
+    events,
     handleTabChange,
     handleSearchChange,
     handleFilterClick,
@@ -63,6 +55,12 @@ const Forum = () => {
     formatDate
   } = useForum();
 
+  // Đảm bảo các biến không bị undefined trước khi sử dụng
+  const safeCategories = categories || [];
+  const safePosts = posts || [];
+  const safeQuestions = questions || [];
+  const safeEvents = events || [];
+
   const handleCreatePost = () => {
     navigate('/forum/post/create');
   };
@@ -71,6 +69,7 @@ const Forum = () => {
     navigate('/forum/question/create');
   };
 
+  // Thêm hàm xử lý sự kiện tạo event
   const handleCreateEvent = () => {
     navigate('/forum/event/create');
   };
@@ -96,7 +95,7 @@ const Forum = () => {
                   Danh mục
                 </Typography>
                 <Box className="forum-categories">
-                  {forumCategories.map((category) => (
+                  {safeCategories.map((category) => (
                     <Button
                       key={category.id}
                       fullWidth
@@ -122,6 +121,7 @@ const Forum = () => {
                     isAuthenticated={!!user} 
                     onCreatePost={() => navigate('/forum/post/create')}
                     onCreateQuestion={() => navigate('/forum/question/create')}
+                    onCreateEvent={() => navigate('/event/create')}
                   />
                 </Box>
                 
@@ -132,13 +132,13 @@ const Forum = () => {
                 </Typography>
                 <Box className="forum-stats">
                   <Typography variant="body2">
-                    <strong>Bài viết:</strong> {posts.length}
+                    <strong>Bài viết:</strong> {safePosts.length}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Câu hỏi:</strong> {questions.length}
+                    <strong>Câu hỏi:</strong> {safeQuestions.length}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Sự kiện:</strong> {events.length}
+                    <strong>Sự kiện:</strong> {safeEvents.length}
                   </Typography>
                   <Typography variant="body2">
                     <strong>Thành viên tích cực:</strong> 125
@@ -162,16 +162,16 @@ const Forum = () => {
                 onCategoryChange={handleCategoryChange}
                 sortBy={sortBy}
                 categoryFilter={categoryFilter}
-                categories={forumCategories}
+                categories={safeCategories}
                 displayStyle="horizontal"
               />
               
               {/* Tabs */}
               <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
                 <Tabs value={tabValue} onChange={handleTabChange} aria-label="forum tabs">
-                  <Tab label={`Bài viết (${filteredPosts.length})`} />
-                  <Tab label={`Câu hỏi (${filteredQuestions.length})`} />
-                  <Tab label={`Sự kiện (${filteredEvents.length})`} />
+                  <Tab label={`Bài viết (${safePosts.length})`} />
+                  <Tab label={`Câu hỏi (${safeQuestions.length})`} />
+                  <Tab label={`Sự kiện (${safeEvents.length})`} />
                 </Tabs>
               </Box>
               
@@ -183,13 +183,13 @@ const Forum = () => {
                   {/* Tab 0: Posts */}
                   {tabValue === 0 && (
                     <Box className="forum-posts">
-                      {filteredPosts.length > 0 ? (
-                        filteredPosts.map((post) => (
+                      {safePosts.length > 0 ? (
+                        safePosts.map((post) => (
                           <ForumCard
                             key={post.id}
                             item={post}
                             type="post"
-                            categories={forumCategories}
+                            categories={safeCategories}
                             onToggleLike={() => handleToggleLike(post.id, 'post')}
                             onToggleFavorite={() => handleToggleFavorite(post.id, 'post')}
                             formatDate={formatDate}
@@ -207,12 +207,13 @@ const Forum = () => {
                   {/* Tab 1: Questions */}
                   {tabValue === 1 && (
                     <Box className="forum-questions">
-                      {filteredQuestions.length > 0 ? (
-                        filteredQuestions.map((question) => (
+                      {safeQuestions.length > 0 ? (
+                        safeQuestions.map((question) => (
                           <ForumCard
                             key={question.id}
                             item={question}
                             type="question"
+                            categories={safeCategories}
                             onToggleLike={() => handleToggleLike(question.id, 'question')}
                             onToggleFavorite={() => handleToggleFavorite(question.id, 'question')}
                             formatDate={formatDate}
@@ -230,12 +231,13 @@ const Forum = () => {
                   {/* Tab 2: Events */}
                   {tabValue === 2 && (
                     <Box className="forum-events">
-                      {filteredEvents.length > 0 ? (
-                        filteredEvents.map((event) => (
+                      {safeEvents.length > 0 ? (
+                        safeEvents.map((event) => (
                           <ForumCard
                             key={event.id}
                             item={event}
                             type="event"
+                            categories={safeCategories}
                             onToggleLike={() => handleToggleLike(event.id, 'event')}
                             onToggleFavorite={() => handleToggleFavorite(event.id, 'event')}
                             formatDate={formatDate}

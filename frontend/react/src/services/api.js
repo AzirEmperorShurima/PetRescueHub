@@ -1,43 +1,44 @@
-// Sử dụng instance đã cấu hình từ utils/axios.js
-import api from '../utils/axios';
+import axios from '../utils/axios';
 
-// Các dịch vụ API cụ thể
-const authService = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (userData) => api.post('/auth/register', userData),
-  logout: () => {
-    localStorage.removeItem('token');
-    return Promise.resolve();
+// Tạo service API tập trung
+const createApiService = (endpoint) => {
+  return {
+    getAll: (params = {}) => axios.get(`/${endpoint}`, { params }),
+    getById: (id, params = {}) => axios.get(`/${endpoint}/${id}`, { params }),
+    create: (data) => axios.post(`/${endpoint}`, data),
+    update: (id, data) => axios.put(`/${endpoint}/${id}`, data),
+    delete: (id) => axios.delete(`/${endpoint}/${id}`),
+    // Các phương thức tùy chỉnh có thể được thêm vào đây
+  };
+};
+
+// Tạo các service cho từng entity
+const api = {
+  auth: {
+    login: (credentials) => axios.post('/auth/login', credentials),
+    register: (userData) => axios.post('/auth/register', userData),
+    verify: () => axios.get('/auth/verify'),
+    forgotPassword: (email) => axios.post('/auth/forgot-password', { email }),
+    resetPassword: (token, password) => axios.post('/auth/reset-password', { token, password }),
   },
-  getCurrentUser: () => api.get('/auth/me'),
-};
-
-const userService = {
-  getAll: () => api.get('/users'),
-  getById: (id) => api.get(`/users/${id}`),
-  update: (id, data) => api.put(`/users/${id}`, data),
-  delete: (id) => api.delete(`/users/${id}`),
-};
-
-const petService = {
-  getAll: () => api.get('/pets'),
-  getById: (id) => api.get(`/pets/${id}`),
-  create: (data) => api.post('/pets', data),
-  update: (id, data) => api.put(`/pets/${id}`, data),
-  delete: (id) => api.delete(`/pets/${id}`),
-  uploadImage: (id, file, onUploadProgress) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    return api.upload(`/pets/${id}/image`, formData, onUploadProgress);
+  users: createApiService('users'),
+  pets: createApiService('pets'),
+  volunteers: {
+    ...createApiService('volunteers'),
+    receiveRescueRequest: (data) => axios.post('/volunteers/receive-rescue-request', data),
+    manageRescueOperations: (data) => axios.post('/volunteers/manage-rescue-operations', data),
   },
+  donations: createApiService('donations'),
+  events: createApiService('events'),
+  rescues: createApiService('rescues'),
+  forum: {
+    posts: createApiService('forum/posts'),
+    questions: createApiService('forum/questions'),
+    comments: createApiService('forum/comments'),
+    categories: createApiService('forum/categories'),
+    tags: createApiService('forum/tags'),
+  },
+  // Thêm các service khác khi cần
 };
 
-// Xuất các dịch vụ
-export {
-  authService,
-  userService,
-  petService,
-};
-
-// Xuất API instance mặc định
 export default api;

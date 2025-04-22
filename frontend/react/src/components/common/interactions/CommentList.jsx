@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Avatar, IconButton } from '@mui/material';
 import { ThumbUp, Reply, MoreVert } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import '../../../assets/styles/components/CommentList.css';
+import './CommentList.css';
 
 const CommentList = ({ comments, onLike, onReply }) => {
   return (

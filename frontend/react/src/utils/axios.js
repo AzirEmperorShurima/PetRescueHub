@@ -11,23 +11,38 @@ const axiosInstance = axios.create({
   timeout: 15000, // 15 giây timeout
 });
 
+// Biến để kiểm soát quá trình refresh token
+let isRefreshing = false;
+let failedQueue = [];
+
+// Hàm xử lý hàng đợi các request bị lỗi trong quá trình refresh token
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
 // Request interceptor - thêm token xác thực vào header
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Ưu tiên token admin nếu đang ở trang admin
     const isAdminPage = window.location.pathname.includes('/admin');
-    const token = isAdminPage 
-      ? localStorage.getItem('adminToken') 
+    const token = isAdminPage
+      ? localStorage.getItem('adminToken')
       : localStorage.getItem('token');
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor - xử lý lỗi và refresh token
@@ -35,36 +50,108 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
-    // Xử lý lỗi 401 Unauthorized
+
+    // Kiểm tra lỗi 401 và đảm bảo chưa thử refresh token
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      // Kiểm tra nếu đang ở trang admin
-      const isAdminPage = window.location.pathname.includes('/admin');
-      
-      if (isAdminPage) {
-        // Đối với admin, chuyển hướng đến trang đăng nhập admin
-        localStorage.removeItem('adminToken');
-        window.location.href = '/admin/login';
-      } else {
-        // Đối với người dùng thông thường
-        localStorage.removeItem('token');
-        window.location.href = '/auth/login';
+      if (isRefreshing) {
+        // Nếu đang trong quá trình refresh token, thêm request vào hàng đợi
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = 'Bearer ' + token;
+            return axiosInstance(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
       }
-      
-      return Promise.reject(error);
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const isAdminPage = window.location.pathname.includes('/admin');
+      const refreshToken = isAdminPage
+        ? localStorage.getItem('adminRefreshToken')
+        : localStorage.getItem('refreshToken');
+
+      if (!refreshToken) {
+        // Không có refresh token, chuyển hướng đến trang đăng nhập
+        if (isAdminPage) {
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminRefreshToken');
+          window.location.href = '/admin/login';
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/auth/login';
+        }
+        return Promise.reject(error);
+      }
+
+      try {
+        // Gọi API refresh token
+        const response = await axios.post(`${API_URL}/auth/refresh-token`, {
+          refreshToken,
+        });
+
+        const { token: newToken, refreshToken: newRefreshToken } = response.data;
+
+        // Lưu token mới
+        if (isAdminPage) {
+          localStorage.setItem('adminToken', newToken);
+          localStorage.setItem('adminRefreshToken', newRefreshToken);
+        } else {
+          localStorage.setItem('token', newToken);
+          localStorage.setItem('refreshToken', newRefreshToken);
+        }
+
+        axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
+        originalRequest.headers.Authorization = 'Bearer ' + newToken;
+
+        processQueue(null, newToken);
+
+        return axiosInstance(originalRequest);
+      } catch (err) {
+        processQueue(err, null);
+
+        // Refresh token thất bại, chuyển hướng đến trang đăng nhập
+        if (isAdminPage) {
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminRefreshToken');
+          window.location.href = '/admin/login';
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/auth/login';
+        }
+
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
     }
-    
+
     // Xử lý lỗi mạng
     if (!error.response) {
-      console.error('Network Error:', error);
+      console.error('Lỗi mạng:', error);
       return Promise.reject({
         ...error,
-        message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.'
+        message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.',
       });
     }
-    
+
+    // Xử lý các lỗi khác
+    if (error.response.status === 404) {
+      console.error('Không tìm thấy tài nguyên:', error.config.url);
+    } else if (error.response.status === 500) {
+      console.error('Lỗi máy chủ:', error.response.data);
+    } else if (error.code === 'ECONNABORTED') {
+      console.error('Yêu cầu quá thời gian');
+    } else {
+      console.error('Lỗi API:', error);
+    }
+
     return Promise.reject(error);
   }
 );
@@ -75,7 +162,7 @@ const api = {
   post: (url, data = {}, config = {}) => axiosInstance.post(url, data, config),
   put: (url, data = {}, config = {}) => axiosInstance.put(url, data, config),
   delete: (url, config = {}) => axiosInstance.delete(url, config),
-  
+
   // Phương thức tải file
   upload: (url, formData, onUploadProgress) => {
     return axiosInstance.post(url, formData, {
@@ -85,21 +172,23 @@ const api = {
       onUploadProgress,
     });
   },
-  
+
   // Phương thức tải xuống file
   download: (url, filename) => {
-    return axiosInstance.get(url, {
-      responseType: 'blob',
-    }).then(response => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    });
-  }
+    return axiosInstance
+      .get(url, {
+        responseType: 'blob',
+      })
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      });
+  },
 };
 
 export { axiosInstance };

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import authService from '../../services/auth.service';
 
 const AuthContext = createContext();
@@ -7,31 +7,31 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Kiểm tra người dùng đã đăng nhập chưa khi component được mount
-    const checkLoggedIn = () => {
-      try {
-        const currentUser = authService.getUserSession();
-        console.log("AuthContext - Current user from session:", currentUser);
-        
-        // Chỉ set user nếu có dữ liệu hợp lệ
-        if (currentUser && currentUser.id) {
-          setUser(currentUser);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error checking authentication:', error);
+  // Hàm checkLoggedIn tách riêng để rõ ràng hơn
+  const checkLoggedIn = useCallback(() => {
+    try {
+      const currentUser = authService.getUserSession();
+      console.log("AuthContext - Current user from session:", currentUser);
+      
+      // Chỉ set user nếu có dữ liệu hợp lệ
+      if (currentUser && currentUser.id) {
+        setUser(currentUser);
+      } else {
         setUser(null);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    checkLoggedIn();
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const login = async (email, password, rememberMe = true) => {
+  useEffect(() => {
+    checkLoggedIn();
+  }, [checkLoggedIn]);
+
+  const login = useCallback(async (email, password, rememberMe = true) => {
     try {
       setLoading(true);
       const response = await authService.login(email, password);
@@ -58,9 +58,9 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const register = async (userData) => {
+  const register = useCallback(async (userData) => {
     try {
       setLoading(true);
       const response = await authService.register(userData);
@@ -78,14 +78,14 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     authService.removeUserSession();
     setUser(null);
-  };
+  }, []);
 
-  const updateUser = (updatedUserData) => {
+  const updateUser = useCallback((updatedUserData) => {
     if (user && user.id) {
       const updatedUser = { ...user, ...updatedUserData };
       authService.setUserSession(updatedUser, authService.getToken());
@@ -93,10 +93,20 @@ export const AuthProvider = ({ children }) => {
       return updatedUser;
     }
     return null;
-  };
+  }, [user]);
+
+  // Sử dụng useMemo để ghi nhớ giá trị context
+  const contextValue = useMemo(() => ({
+    user,
+    loading,
+    login,
+    register,
+    logout,
+    updateUser
+  }), [user, loading, login, register, logout, updateUser]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

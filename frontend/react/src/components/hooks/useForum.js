@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { forumPosts, forumQuestions, forumEvents, forumCategories } from '../../mocks';
+import {
+  forumPosts,
+  forumQuestions,
+  forumEvents,
+  forumCategories
+} from '../../mocks/forum'; // Đảm bảo đường dẫn import chính xác
 
 export const useForum = () => {
   const [loading, setLoading] = useState(true);
@@ -7,153 +12,146 @@ export const useForum = () => {
   const [posts, setPosts] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [events, setEvents] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const [sortBy, setSortBy] = useState('newest');
-  const [categoryFilter, setCategoryFilter] = useState('all');
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+
+  // 1. Fetch data once
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Trong thực tế, bạn sẽ gọi API thực sự
-        // const postsResponse = await api.get('/forum/posts');
-        // const questionsResponse = await api.get('/forum/questions');
-        // const eventsResponse = await api.get('/forum/events');
-        
-        // Sử dụng mock data
+        // mock API calls
         setPosts(forumPosts);
         setQuestions(forumQuestions);
         setEvents(forumEvents);
-      } catch (error) {
-        console.error('Error fetching forum data:', error);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    
     fetchData();
   }, []);
 
-  const handleTabChange = useCallback((event, newValue) => {
-    setTabValue(newValue);
-  }, []);
+  // 2. Handlers (memoized)
+  const handleTabChange = useCallback((_, newVal) => setTabValue(newVal), []);
+  const handleSearchChange = useCallback(e => setSearchTerm(e.target.value), []);
 
-  const handleSearchChange = useCallback((event) => {
-    setSearchTerm(event.target.value);
-  }, []);
+  const handleFilterClick = useCallback(e => setFilterAnchorEl(e.currentTarget), []);
+  const handleFilterClose = useCallback(() => setFilterAnchorEl(null), []);
 
-  const handleFilterClick = useCallback((event) => {
-    setFilterAnchorEl(event.currentTarget);
-  }, []);
-
-  const handleFilterClose = useCallback(() => {
+  const handleSortChange = useCallback((option) => {
+    setSortBy(option);
     setFilterAnchorEl(null);
   }, []);
 
-  const handleSortChange = useCallback((sortOption) => {
-    setSortBy(sortOption);
-    setFilterAnchorEl(null); // Sử dụng setter trực tiếp thay vì gọi handleFilterClose
-  }, []);
-
-  const handleCategoryChange = useCallback((category) => {
-    setCategoryFilter(category);
-    setFilterAnchorEl(null); // Sử dụng setter trực tiếp thay vì gọi handleFilterClose
+  const handleCategoryChange = useCallback((cat) => {
+    setCategoryFilter(cat);
+    setFilterAnchorEl(null);
   }, []);
 
   const handleToggleLike = useCallback((id, type) => {
-    // Trong thực tế, bạn sẽ gọi API để like/unlike
-    if (type === 'post') {
-      setPosts(prevPosts => prevPosts.map(post => 
-        post.id === id ? { ...post, isLiked: !post.isLiked, likes: post.isLiked ? post.likes - 1 : post.likes + 1 } : post
+    const toggle = (arr, setter) =>
+      setter(arr.map(item =>
+        item.id === id
+          ? { 
+              ...item,
+              isLiked: !item.isLiked,
+              likes: item.isLiked ? item.likes - 1 : item.likes + 1
+            }
+          : item
       ));
-    } else if (type === 'question') {
-      setQuestions(prevQuestions => prevQuestions.map(question => 
-        question.id === id ? { ...question, isLiked: !question.isLiked, likes: question.isLiked ? question.likes - 1 : question.likes + 1 } : question
-      ));
-    } else if (type === 'event') {
-      setEvents(prevEvents => prevEvents.map(event => 
-        event.id === id ? { ...event, isLiked: !event.isLiked, likes: event.isLiked ? event.likes - 1 : event.likes + 1 } : event
-      ));
-    }
-  }, []);
+    if (type === 'post') toggle(posts, setPosts);
+    if (type === 'question') toggle(questions, setQuestions);
+    if (type === 'event') toggle(events, setEvents);
+  }, [posts, questions, events]);
 
   const handleToggleFavorite = useCallback((id, type) => {
-    // Trong thực tế, bạn sẽ gọi API để favorite/unfavorite
-    if (type === 'post') {
-      setPosts(prevPosts => prevPosts.map(post => 
-        post.id === id ? { ...post, isFavorited: !post.isFavorited } : post
+    const toggle = (arr, setter) =>
+      setter(arr.map(item =>
+        item.id === id
+          ? { ...item, isFavorited: !item.isFavorited }
+          : item
       ));
-    } else if (type === 'question') {
-      setQuestions(prevQuestions => prevQuestions.map(question => 
-        question.id === id ? { ...question, isFavorited: !question.isFavorited } : question
-      ));
-    } else if (type === 'event') {
-      setEvents(prevEvents => prevEvents.map(event => 
-        event.id === id ? { ...event, isFavorited: !event.isFavorited } : event
-      ));
-    }
-  }, []);
+    if (type === 'post') toggle(posts, setPosts);
+    if (type === 'question') toggle(questions, setQuestions);
+    if (type === 'event') toggle(events, setEvents);
+  }, [posts, questions, events]);
 
-  // Lọc và sắp xếp dữ liệu
-  const filterAndSortData = useCallback((data) => {
-    if (!Array.isArray(data)) return [];
-    
-    // Lọc theo từ khóa tìm kiếm
-    let filteredData = data.filter(item => 
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      item.content.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    
-    // Lọc theo danh mục
+  // 3. Filter & sort chung (memoized)
+  const filterAndSort = useCallback((items, dateKey = 'createdAt') => {
+    let result = [...items];
+
+    // search
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(i =>
+        i.title.toLowerCase().includes(term) ||
+        (i.content || i.description).toLowerCase().includes(term)
+      );
+    }
+
+    // category
     if (categoryFilter !== 'all') {
-      filteredData = filteredData.filter(item => item.category === categoryFilter);
+      result = result.filter(i => i.category === categoryFilter);
     }
-    
-    // Sắp xếp
-    if (sortBy === 'newest') {
-      filteredData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (sortBy === 'oldest') {
-      filteredData.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    } else if (sortBy === 'mostLiked') {
-      filteredData.sort((a, b) => b.likes - a.likes);
-    } else if (sortBy === 'mostCommented') {
-      filteredData.sort((a, b) => b.comments - a.comments);
-    } else if (sortBy === 'mostViewed') {
-      filteredData.sort((a, b) => b.views - a.views);
-    }
-    
-    // Thêm thông tin category vào mỗi item
-    return filteredData.map(item => ({
+
+    // sort
+    result.sort((a, b) => {
+      if (sortBy === 'newest')   return new Date(b[dateKey]) - new Date(a[dateKey]);
+      if (sortBy === 'oldest')   return new Date(a[dateKey]) - new Date(b[dateKey]);
+      if (sortBy === 'mostLiked') return (b.likes || 0) - (a.likes || 0);
+      if (sortBy === 'mostCommented') return (b.comments || 0) - (a.comments || 0);
+      if (sortBy === 'mostViewed') return (b.views || 0) - (a.views || 0);
+      if (sortBy === 'popular') {
+        const popA = (a.likes||0) + (a.comments||0) + (a.attendees||0);
+        const popB = (b.likes||0) + (b.comments||0) + (b.attendees||0);
+        return popB - popA;
+      }
+      return 0;
+    });
+
+    // attach categoryObj
+    return result.map(item => ({
       ...item,
-      categoryObj: forumCategories.find(cat => cat.id === item.category) || { name: 'Unknown' }
+      categoryObj:
+        forumCategories.find(c => c.id === item.category) || { name: 'Unknown' }
     }));
   }, [searchTerm, categoryFilter, sortBy]);
 
-  const filteredPosts = useMemo(() => filterAndSortData(posts), [filterAndSortData, posts]);
-  const filteredQuestions = useMemo(() => filterAndSortData(questions), [filterAndSortData, questions]);
-  const filteredEvents = useMemo(() => filterAndSortData(events), [filterAndSortData, events]);
+  // 4. Memo kết quả
+  const filteredPosts = useMemo(() => filterAndSort(posts), [filterAndSort, posts]);
+  const filteredQuestions = useMemo(() => filterAndSort(questions), [filterAndSort, questions]);
+  const filteredEvents = useMemo(() => filterAndSort(events, 'date'), [filterAndSort, events]);
 
-  // Format date
-  const formatDate = useCallback((dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  }, []);
+  // 5. Format date
+  const formatDate = useCallback(d =>
+    new Date(d).toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  , []);
 
   return {
     loading,
     tabValue,
-    posts,
-    questions,
-    events,
     searchTerm,
     filterAnchorEl,
     sortBy,
     categoryFilter,
-    filteredPosts,
-    filteredQuestions,
-    filteredEvents,
-    forumCategories, // Đảm bảo forumCategories được trả về từ hook
+    categories: forumCategories, // Chỉ export một biến để tránh nhầm lẫn
+    // Xóa dòng forumCategories để tránh trùng lặp
+    
+    // outputs
+    posts: filteredPosts,
+    questions: filteredQuestions,
+    events: filteredEvents,
+
+    // actions
     handleTabChange,
     handleSearchChange,
     handleFilterClick,

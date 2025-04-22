@@ -7,6 +7,7 @@ import {
   Button
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import LazyImage from '../../../components/common/LazyImage';
 
 const AnimalShowcase = ({ rescueImages, currentImageIndex, setCurrentImageIndex }) => {
   return (
@@ -17,8 +18,16 @@ const AnimalShowcase = ({ rescueImages, currentImageIndex, setCurrentImageIndex 
             <Box 
               key={index}
               className={`animal-image ${index === currentImageIndex ? 'active' : ''}`}
-              style={{ backgroundImage: `url(${img})` }}
+              sx={{ position: 'relative', height: '400px' }}
             >
+              <LazyImage
+                src={img}
+                alt={`Animal rescue image ${index + 1}`}
+                effect="fade"
+                height="100%"
+                width="100%"
+                sx={{ objectFit: 'cover' }}
+              />
               <Box className="animal-image-overlay">
                 <Typography variant="h5" className="animal-image-caption">
                   {index === 0 ? "Mỗi sinh mạng đều đáng quý" : 
@@ -37,8 +46,6 @@ const AnimalShowcase = ({ rescueImages, currentImageIndex, setCurrentImageIndex 
             </Box>
           ))}
         </Box>
-        
-        
       </CardContent>
       <Box className="donation-quote-wrapper">
           <Typography 
