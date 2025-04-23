@@ -10,8 +10,7 @@
     "eject": "react-scripts eject",
     "lint": "eslint src/**/*.{js,jsx}",
     "lint:fix": "eslint --fix src/**/*.{js,jsx}",
-    "format": "prettier --write src/**/*.{js,jsx,css,md,json}",
-    "analyze": "source-map-explorer 'build/static/js/*.js'"
+    "format": "prettier --write src/**/*.{js,jsx,css,md,json}"
   },
   "repository": {
     "type": "git",
@@ -20,27 +19,33 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^2.10.7",
-    "@mui/material": "^5.17.1",
-    "@mui/icons-material": "^5.17.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource-variable/dm-sans": "^5.0.7",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "^5.17.1",
+    "@mui/x-date-pickers": "^7.28.0",
+    "axios": "^1.4.0",
+    "bootstrap": "^5.3.3",
+    "country-flag-icons": "^1.5.18",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "framer-motion": "^6.5.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
-    "country-flag-icons": "^1.5.18",
-    "axios": "^1.4.0",
-    "framer-motion": "^7.10.3",
     "react-intersection-observer": "^9.16.0",
     "react-router-dom": "^6.30.0",
+    "react-scripts": "5.0.1",
     "react-toastify": "^11.0.5"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.3.3",
-    "source-map-explorer": "^2.5.3"
+    "prettier": "^3.3.3"
   },
   "eslintConfig": {
     "extends": [

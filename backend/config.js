@@ -1,5 +1,4 @@
 // require('dotenv').config({ path: './.env' })
-
 export const SECRET_KEY = process.env.JWT_SECRET
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "tranvantri35247@gmail.com";
 export const ADMIN_EMAIL_APP_PASSWORD = process.env.ADMIN_EMAIL_APP_PASSWORD || ""
@@ -10,6 +9,65 @@ export const MAINDB_MONGODB_DBNAME = 'projectG'
 
 export const TOTP_SECRET_KEY = "XINCJAOBANNHO"
 
+export const COOKIE_PATHS = {
+    ACCESS_TOKEN: {
+        CookieName: 'ACCESS-TOKEN',
+        Path: '/'
+    },
+    REGISTER_VERIFY: {
+        CookieName: 'REGISTER_VERIFY',
+        Path: '/api/auth/sign'
+    },
+    FORGOT_PASSWORD: {
+        CookieName: 'FORGOT_PASSWORD',
+        Path: '/api/auth/password'
+    },
+    FORGOT_PASSWORD_VERIFIED: {
+        CookieName: 'FORGOT_PASSWORD_VERIFIED',
+        Path: '/api/auth/password'
+    },
+    ACCEPT_RESET_PASSWORD: {
+        CookieName: 'ACCEPT_RESET_PASSWORD',
+        Path: '/api/auth/password'
+    },
+}
+export const TOKEN_TYPE = {
+    ACCESS_TOKEN: {
+        name: 'ACCESS-TOKEN',
+        expiresIn: '24h',
+        maxAge: 1000 * 60 * 60 * 24, // 24h
+    },
+    REGISTER_VERIFY: {
+        name: 'REGISTER_VERIFY',
+        expiresIn: '15m',
+        maxAge: 1000 * 60 * 15, // 15m
+    },
+    FORGOT_PASSWORD: {
+        name: 'FORGOT_PASSWORD',
+        expiresIn: '15m',
+        maxAge: 1000 * 60 * 15, // 15m
+    },
+    FORGOT_PASSWORD_VERIFIED: {
+        name: 'FORGOT_PASSWORD_VERIFIED',
+        expiresIn: '15m',
+        maxAge: 1000 * 60 * 15, // 15m
+    },
+    ACCEPT_RESET_PASSWORD: {
+        name: 'ACCEPT_RESET_PASSWORD',
+        expiresIn: '15m',
+        maxAge: 1000 * 60 * 15, // 15m
+    },
+    REPORT_COMPROMISED: {
+        name: 'REPORT_COMPROMISED',
+        expiresIn: '15m',
+        maxAge: 1000 * 60 * 60 * 24, // 15m
+    },
+    EMAIL_VERIFY: {
+        name: 'EMAIL_VERIFY',
+        expiresIn: '15m',
+        maxAge: 1000 * 60 * 15, // 15m
+    },
+}
 // Momo payment gate config 
 export const MOMO_API = 'https://test-payment.momo.vn/v2/gateway/api/create'
 export const accessKey = 'F8BBA842ECF85'

@@ -1,3 +1,9 @@
+
+import { CommentModel } from "../../models/CommentsSchema.js";
+import { PostModel } from "../../models/PostSchema.js";
+import mongoose from "mongoose";
+import Reaction from "../../models/ReactionSchema.js";
+
 /**
  * 📥 Thêm comment vào bài viết
  * @param {String} postId - ID bài viết
@@ -6,10 +12,6 @@
  * @returns {Promise<Object>} - Kết quả tạo comment
  */
 
-import { CommentModel } from "../../models/CommentsSchema.js";
-import { PostModel } from "../../models/PostSchema.js";
-import mongoose from "mongoose";
-import Reaction from "../../models/ReactionSchema.js";
 export const addCommentService = async (postId, content, userId) => {
     try {
         // Kiểm tra bài viết có tồn tại không

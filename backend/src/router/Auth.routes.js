@@ -29,12 +29,12 @@ authRouter.get('/', (req, res) => {
 // Authentication routes
 authRouter.post('/access/login', loginHandler);
 authRouter.post('/logout', logoutHandler);
-// authRouter.post('/sign/signup', [Exist_User_Checking, Valid_Roles_Certification], Signup_Handler);
+
 authRouter.post('/sign/signup', [Exist_User_Checking], Signup_Handler);
 authRouter.post('/re-sign/refresh-token', refreshToken);
 
 // User profile route
-authRouter.get('/get/profile', getProfile);
+authRouter.get('/get/profile/:targetUser?', getProfile);
 
 // Password Recovery
 authRouter.post('/password/forgot-password', [verified_Is_Email_Valid], forgot_password);

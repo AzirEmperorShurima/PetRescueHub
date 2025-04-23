@@ -109,7 +109,7 @@ const ForumCard = ({
             sx={{ 
               width: '100%', 
               borderRadius: 1,
-              maxHeight: 300,
+              maxHeight: 450,
               objectFit: 'cover',
               mb: 2
             }}

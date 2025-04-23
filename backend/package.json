@@ -1,6 +1,7 @@
 {
-  "name": "petrescuehub_be",
+  "name": "prog_be",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -10,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AzirEmperorShurima/PetRescueHub.git"
+    "url": "git+https://github.com/AzirEmperorShurima/video_Stream_ProG.git"
   },
   "keywords": [],
   "author": "Trần Văn Trí Code Lỏ",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/AzirEmperorShurima/PetRescueHub/issues"
+    "url": "https://github.com/AzirEmperorShurima/video_Stream_ProG/issues"
   },
-  "homepage": "https://github.com/AzirEmperorShurima/PetRescueHub.git",
+  "homepage": "https://github.com/AzirEmperorShurima/video_Stream_ProG#readme",
   "dependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
     "@vitejs/plugin-vue-jsx": "^4.1.2",

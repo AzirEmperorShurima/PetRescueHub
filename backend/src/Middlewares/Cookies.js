@@ -3,38 +3,26 @@ import { SECRET_KEY } from "../../config.js"
 import { StatusCodes } from "http-status-codes";
 
 
-export const getCookies = async (User, res) => {
-    const id = User._id;
+export const getCookies = async (userPayLoad, path = '/', cookieName = 'Anonymous', maxAge, expiresIn = '24h', res) => {
     try {
-        const token = jwt.sign({ id }, SECRET_KEY, { expiresIn: '24h' });
-        res.cookie('token', token, { maxAge: 60 * 60 * 24 * 1000, httpOnly: true, secure: true });
-        return token;
+        const token = jwt.sign(userPayLoad, SECRET_KEY, { expiresIn });
+
+        res.cookie(cookieName, token, {
+            maxAge: maxAge || 1000 * 60 * 60 * 24,
+            httpOnly: true,
+            // secure: process.env.NODE_ENV === "production",
+            secure: true,
+            sameSite: 'Strict',
+            path: path,
+        });
+
+        return token
     } catch (err) {
         console.error("Create Cookies Error:", err);
         throw new Error("Failed to create cookies");
     }
 };
 
-// export const getCookies = async (User, res) => {
-//     const id = User._id;
-//     try {
-//         const token = jwt.sign({ id }, SECRET_KEY, { expiresIn: '24h' });
-
-//         // Xóa các token đã hết hạn trước khi thêm token mới
-//         const now = new Date();
-//         User.tokens = User.tokens.filter(t => t.expiresAt > now);
-
-//         // Thêm token mới
-//         User.tokens.push({ token, expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000) });
-//         await User.save();
-
-//         res.cookie('token', token, { maxAge: 60 * 60 * 24 * 1000, httpOnly: true, secure: true });
-//         return token;
-//     } catch (err) {
-//         console.error("Create Cookies Error:", err);
-//         throw new Error("Failed to create cookies");
-//     }
-// };
 
 
 export const verifyCookies = async (req, res, next) => {
@@ -53,26 +41,6 @@ export const verifyCookies = async (req, res, next) => {
 };
 
 
-// export const logoutCookies = async (req, res) => {
-//     const token = req.cookies.token;
-//     if (!token) {
-//         return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
-//     }
-
-//     try {
-//         const decoded = jwt.verify(token, SECRET_KEY);
-//         const user = await user.findById(decoded.id);
-//         if (user) {
-//             user.tokens = [];
-//             await user.save();
-//         }
-//         res.clearCookie('token');
-//         return res.status(StatusCodes.OK).json({ message: "Logged out successfully" });
-//     } catch (err) {
-//         console.error("Logout error:", err.message);
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Logout failed", error: err.message });
-//     }
-// };
 export const logoutCookies = async (req, res) => {
     const token = req.cookies.token;
     if (!token) {
