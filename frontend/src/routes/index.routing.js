@@ -31,13 +31,12 @@ const EventDetail = lazy(() => import("../features/Event/EventDetail"));
 
 const Adopt = lazy(() => import("../pages/Adopt/Adopt"));
 
+
 const Donate = lazy(() => import("../pages/Donate/Donate"));
-
-
+const PetGuide = lazy(() => import("../pages/PetGuide/PetGuide"));
 
 const Profile = lazy(() => import("../pages/Profile/Profile"));
 
-const PetGuide = lazy(() => import("../pages/PetGuide/PetGuide"));
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 
 const AdminApp = lazy(() => import("../pages/admin/AdminApp"));
@@ -72,8 +71,10 @@ const AppRoutes = () => (
           <Route path="forgot-password" element={<ForgotPassword />} />
         </Route>
         <Route path="terms" element={<Terms />} />
+
         {/* Pet Guide */}
-        {/* <Route path="pet-guide" element={<PetGuide />} /> */}
+        <Route path="petguide" element={<PetGuide />} />
+
         {/* Các route bảo vệ */}
         <Route element={<ProtectedRoute />}>
           <Route path="forum/post/create" element={<CreatePost />} />

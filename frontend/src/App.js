@@ -5,7 +5,7 @@ import { AuthProvider } from './components/contexts/AuthContext';
 import { ThemeProvider } from './components/contexts/ThemeContext';
 import { NotificationProvider } from './components/contexts/NotificationContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import AppRoutes from './routes/index.js';
+import AppRoutes from './routes/index.routing.js';
 
 function App() {
   return (
