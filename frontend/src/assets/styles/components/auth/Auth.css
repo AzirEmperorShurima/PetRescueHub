@@ -34,6 +34,8 @@ input[type="password"]::-ms-reveal {
 /* ============================= */
 /*        Container & Logo       */
 /* ============================= */
+
+/* Đăng nhập - Login Container */
 .login-form-container {
   max-width: 800px;
   background: linear-gradient(0deg, var(--input-bg) 0%, rgb(244, 247, 251) 100%);
@@ -47,6 +49,22 @@ input[type="password"]::-ms-reveal {
   flex-wrap: wrap;
 }
 
+/* Đăng ký - Register Container */
+.register-form-container {
+  transform: translateY(-45px);
+  max-width: 1000px; /* Larger max-width for register form */
+  background: linear-gradient(0deg, var(--input-bg) 0%, rgb(244, 247, 251) 100%);
+  border-radius: 40px;
+  padding: 30px 40px;
+  border: 5px solid var(--input-bg);
+  box-shadow: var(--shadow);
+  margin: 40px auto;
+  transition: 0.3s all;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Common logo styling */
 .auth-logo {
   width: 100%;
   display: flex;
@@ -69,12 +87,21 @@ input[type="password"]::-ms-reveal {
 /* ============================= */
 /*         Form Section          */
 /* ============================= */
-.auth-form-section {
+
+/* Common form section styling */
+.auth-form-section,
+.login-form-section,
+.register-form-section {
   flex: 1;
   min-width: 320px;
   padding-right: 30px;
   display: flex;
   flex-direction: column;
+}
+
+/* Register form section specific */
+.register-form-section {
+  min-width: 350px; /* Slightly wider for register form */
 }
 
 .heading {
@@ -286,7 +313,9 @@ input[type="password"]::-ms-reveal {
 /* ============================= */
 /*       Image & Quote Block     */
 /* ============================= */
-.auth-image-container {
+
+/* Login image container */
+.login-image-container {
   flex: 1;
   min-width: 320px;
   margin-top: 0;
@@ -298,7 +327,7 @@ input[type="password"]::-ms-reveal {
   border: 5px solid #fff;
 }
 
-.auth-image {
+.login-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -306,10 +335,36 @@ input[type="password"]::-ms-reveal {
   transition: transform 0.5s;
 }
 
-.auth-image:hover {
+.login-image:hover {
   transform: scale(1.05);
 }
 
+/* Register image container */
+.register-image-container {
+  flex: 1;
+  min-width: 320px;
+  margin-top: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  height: 500px; /* Taller for register page */
+  box-shadow: var(--box-shadow-img);
+  border: 5px solid #fff;
+}
+
+.register-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px;
+  transition: transform 0.5s;
+}
+
+.register-image:hover {
+  transform: scale(1.05);
+}
+
+/* Common quote styling */
 .auth-quote {
   position: absolute;
   bottom: 0;
@@ -381,46 +436,161 @@ input[type="password"]::-ms-reveal {
 /*         Responsive            */
 /* ============================= */
 @media (max-width: 768px) {
-  .login-form-container {
+  .login-form-container,
+  .register-form-container {
     flex-direction: column;
     max-width: 95%;
     padding: 30px;
   }
-  .auth-form-section {
+  
+  .auth-form-section,
+  .login-form-section,
+  .register-form-section {
     padding-right: 0;
     margin-bottom: 30px;
   }
-  .auth-image-container {
+  
+  .login-image-container,
+  .register-image-container {
     height: 350px;
     width: 100%;
   }
+  
   .auth-logo img {
     height: 50px;
   }
+  
   .auth-logo h2 {
     font-size: 28px;
   }
 }
 
 @media (max-width: 480px) {
-  .login-form-container {
+  .login-form-container,
+  .register-form-container {
     padding: 20px;
     max-width: 100%;
     margin: 10px;
     border-radius: 20px;
   }
+  
   .heading {
     font-size: 24px;
   }
+  
   .form-options {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
+  
   .forgot-password {
     align-self: flex-end;
   }
-  .auth-image-container {
+  
+  .login-image-container,
+  .register-image-container {
+    height: 200px;
+  }
+}
+
+/* ============================= */
+/*     Forgot Password Page      */
+/* ============================= */
+
+/* Forgot Password Container */
+.forgot-password-form-container {
+  max-width: 800px;
+  background: linear-gradient(0deg, var(--input-bg) 0%, rgb(244, 247, 251) 100%);
+  border-radius: 40px;
+  padding: 30px 40px;
+  border: 5px solid var(--input-bg);
+  box-shadow: var(--shadow);
+  margin: 40px auto;
+  transition: 0.3s all;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Forgot Password Form Section */
+.forgot-password-form-section {
+  flex: 1;
+  min-width: 320px;
+  padding-right: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Forgot Password Image Container */
+.forgot-password-image-container {
+  flex: 1;
+  min-width: 320px;
+  margin-top: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  height: 400px; /* Slightly shorter than login */
+  box-shadow: var(--box-shadow-img);
+  border: 5px solid #fff;
+}
+
+.forgot-password-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px;
+  transition: transform 0.5s;
+}
+
+.forgot-password-image:hover {
+  transform: scale(1.05);
+}
+
+/* Success Message Styling */
+.success-message {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+  border-left: 4px solid #2e7d32;
+}
+
+.success-message p {
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Responsive adjustments for forgot password */
+@media (max-width: 768px) {
+  .forgot-password-form-container {
+    flex-direction: column;
+    max-width: 95%;
+    padding: 30px;
+  }
+  
+  .forgot-password-form-section {
+    padding-right: 0;
+    margin-bottom: 30px;
+  }
+  
+  .forgot-password-image-container {
+    height: 350px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .forgot-password-form-container {
+    padding: 20px;
+    max-width: 100%;
+    margin: 10px;
+    border-radius: 20px;
+  }
+  
+  .forgot-password-image-container {
     height: 200px;
   }
 }

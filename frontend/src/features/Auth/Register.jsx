@@ -11,6 +11,7 @@ function Register() {
   const navigate = useNavigate();
   const { register, logout, user } = useAuth();
   const { showNotification } = useNotification();
+  const [username, setUsername] = useState(""); // Added username state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -26,6 +27,11 @@ function Register() {
       setShowAlreadyLoggedIn(true);
     }
   }, [user]);
+
+  const handleChangeUsername = (e) => { // Added username handler
+    setUsername(e.target.value);
+    setError("");
+  };
 
   const handleChangEmail = (e) => {
     setEmail(e.target.value);
@@ -69,7 +75,8 @@ function Register() {
     setError("");
 
     try {
-      await register(email, password);
+      // Updated to include username in registration
+      await register(username, email, password);
       showNotification('Đăng ký thành công!', 'success');
       navigate('/');
     } catch (error) {
@@ -117,19 +124,35 @@ function Register() {
   }
 
   return (
-    <div className="login-form-container">
+    <div className="register-form-container">
       <div className="auth-logo">
         <img src={petLogo} alt="PetRescueHub Logo" />
         <h2>PetRescueHub</h2>
       </div>
 
-      <div className="auth-form-section">
+      <div className="register-form-section">
         <div className="heading">Đăng ký</div>
         <div className="auth-subtitle">Chào mừng bạn đến với PetRescueHub</div>
 
         {error && <div className="error-message">{error}</div>}
 
         <form className="form" onSubmit={handleSubmitForm}>
+          {/* Added username field as the first input */}
+          <div className="form-group">
+            <label htmlFor="username">Tên người dùng</label>
+            <input
+              required
+              className="input"
+              value={username}
+              onChange={handleChangeUsername}
+              type="text"
+              name="username"
+              id="username"
+              placeholder="Nhập tên người dùng của bạn"
+              autoComplete="username"
+            />
+          </div>
+
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -141,7 +164,7 @@ function Register() {
               name="email"
               id="email"
               placeholder="Nhập địa chỉ email của bạn"
-              autoComplete="username"
+              autoComplete="email"
             />
           </div>
 
@@ -205,23 +228,19 @@ function Register() {
         </div>
 
         <div className="login-link">
-          Bạn đã có tài khoản? <Link to="/auth/login">Đăng nhập</Link>
+          Đã có tài khoản? <Link to="/auth/login">Đăng nhập</Link>
         </div>
       </div>
 
-      <div className="auth-image-container">
+      <div className="register-image-container">
         <img
-          src="https://images.unsplash.com/photo-1592664858934-40ca080ab56b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt="animal protection"
-          className="auth-image"
+          src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+          alt="Pet Rescue"
+          className="register-image"
         />
         <div className="auth-quote">
-          <p>
-            Mỗi ngày, hàng nghìn thú cưng như chú chó này đang cần sự giúp đỡ. Đăng ký để cùng chúng tôi mang lại hy vọng cho những sinh mạng nhỏ bé.
-          </p>
-          <div className="auth-quote-author">
-            Tìm hiểu thêm tại thế giới thú cưng của chúng tôi
-          </div>
+          <p>"Cứu một sinh mạng là anh hùng, cứu hàng triệu sinh mạng là nhà cứu trợ."</p>
+          <div className="auth-quote-author">- PetRescueHub</div>
         </div>
       </div>
     </div>

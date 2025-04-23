@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, Route } from 'react-router-dom';
 
 // Layouts
-import MainLayout from '../../components/layouts/MainLayout';
+import MainLayout from '../layouts/MainLayout';
 
 // Pages
 import Home from '../../pages/Home/Home';
@@ -13,7 +13,9 @@ import Donate from '../../pages/Donate/Donate';
 
 import Login from '../../features/Auth/Login';
 import Register from '../../features/Auth/Register';
-// Forum components
+import ForgotPassword from '../../ForgotPassword.jsx';
+
+// Forum componentsimport
 import CreatePost from '../../features/Forum/CreatePost';
 import CreateQuestion from '../../features/Forum/CreateQuestion';
 import PostDetail from '../../features/Forum/PostDetail';
@@ -57,6 +59,7 @@ const AppRoutes = () => [
     {/* Auth routes */}
     <Route path="auth/login" element={<Login />} />
     <Route path="auth/register" element={<Register />} />
+    <Route path="auth/forgot-password" element={<ForgotPassword />} />
     <Route path="terms" element={<Terms />} />
     
     {/* Protected routes - require authentication */}

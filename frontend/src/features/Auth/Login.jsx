@@ -4,6 +4,7 @@ import { FaGoogle, FaApple, FaXTwitter } from 'react-icons/fa6';
 import { Link, useNavigate } from 'react-router-dom';
 import '../../assets/styles/components/auth/Auth.css';
 import petLogo from '../../assets/images/logo.svg';
+import ForgotPassword from './ForgotPassword.jsx';
 import { useAuth } from '../../components/contexts/AuthContext.jsx';
 import { useNotification } from '../../components/contexts/NotificationContext';
 
@@ -85,7 +86,7 @@ function Login() {
 
   if (showAlreadyLoggedIn) {
     return (
-      <div className="login-form-container">
+      <div className="auth-form-container">
         <div className="auth-logo">
           <img src={petLogo} alt="PetRescueHub Logo" />
           <h2>PetRescueHub</h2>
@@ -114,9 +115,9 @@ function Login() {
         <img src={petLogo} alt="PetRescueHub Logo" />
         <h2>PetRescueHub</h2>
       </div>
-      <div className="auth-form-section">
+      <div className="login-form-section">
         <div className="heading">Đăng nhập</div>
-        <div className="auth-subtitle">Chào mừng bạn trở lại với PetRescueHub</div>
+        <div className="auth-subtitle">Chào mừng trở lại với PetRescueHub</div>
         {error && <div className="error-message">{error}</div>}
         <form className="form" onSubmit={handleSubmitForm}>
           <div className="form-group">
@@ -198,11 +199,11 @@ function Login() {
           Bạn chưa có tài khoản? <Link to="/auth/register">Đăng ký ngay</Link>
         </div>
       </div>
-      <div className="auth-image-container">
+      <div className="login-image-container">
         <img
-          src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1586&q=80"
-          alt="Happy dog"
-          className="auth-image"
+          src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+          alt="Pet Rescue"
+          className="login-image"
         />
         <div className="auth-quote">
           <p>

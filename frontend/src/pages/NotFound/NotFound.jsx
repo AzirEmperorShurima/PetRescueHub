@@ -1,56 +1,31 @@
 import React from 'react';
-import { Box, Button, Container, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
-import PetsIcon from '@mui/icons-material/Pets';
+import PropTypes from 'prop-types';
 import './NotFound.css';
+NotFound.propTypes = {
 
-const NotFound = () => {
-  return (
-    <Container maxWidth="md" className="not-found-container">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '80vh',
-          textAlign: 'center',
-          py: 5,
-        }}
-      >
-        <PetsIcon sx={{ fontSize: 100, color: 'primary.main', mb: 2 }} />
-        <Typography variant="h1" component="h1" gutterBottom>
-          404
-        </Typography>
-        <Typography variant="h4" component="h2" gutterBottom>
-          Không tìm thấy trang
-        </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 4 }}>
-          Rất tiếc, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Button
-            component={Link}
-            to="/"
-            variant="contained"
-            color="primary"
-            size="large"
-          >
-            Về trang chủ
-          </Button>
-          <Button
-            component={Link}
-            to="/forum"
-            variant="outlined"
-            color="primary"
-            size="large"
-          >
-            Khám phá diễn đàn
-          </Button>
-        </Box>
-      </Box>
-    </Container>
-  );
 };
+
+function NotFound(props) {
+    return (
+        <section className="page_404">
+            <div className="container">
+                <div className="row">
+                    <div className="col-sm-12">
+                        <div className="col-sm-10 col-sm-offset-1 text-center">
+                            <div className="four_zero_four_bg">
+                                <h1 className="text-center">404</h1>
+                            </div>
+                            <div className="contant_box_404">
+                                <h3 className="h2">Look like you're lost</h3>
+                                <p>The page you are looking for not available!</p>
+                                <a href="/" className="link_404">Go to Home</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
 
 export default NotFound;
