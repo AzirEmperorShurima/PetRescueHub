@@ -1,7 +1,7 @@
 {
   "name": "prog_be",
   "version": "1.0.0",
-  "description": "a project video film and streaming build in nodejs and reactjs Vue",
+  "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -13,15 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/AzirEmperorShurima/video_Stream_ProG.git"
   },
-  "keywords": [
-    "video",
-    "stream",
-    "nodejs",
-    "vue",
-    "reactjs",
-    "codelord",
-    "videoStramProG"
-  ],
+  "keywords": [],
   "author": "Trần Văn Trí Code Lỏ",
   "license": "ISC",
   "bugs": {

@@ -1,4 +1,4 @@
-import { PostModel } from "../models/PostSchema";
+import { PostModel } from "../models/PostSchema.js";
 
 export const checkPostType = (req, res, next) => {
     try {

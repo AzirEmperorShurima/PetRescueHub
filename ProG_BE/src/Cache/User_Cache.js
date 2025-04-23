@@ -124,13 +124,14 @@
 import { createClient } from 'redis';
 import { getData_From_MongoDB } from "../Data/fetchData_MongoDB.js";
 import { MAINDB_MONGODB_DBNAME, MAINDB_MONGODB_URL } from "../../config.js";
+import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from '../Config/redis.config.js';
 
 const redisClient = createClient({
-    username: 'default',
-    password: 'kt5KADZ2SRklsGTSPFO1xryLWeJGnp39',
+    username: REDIS_USERNAME,
+    password: REDIS_PASSWORD,
     socket: {
-        host: 'redis-12406.c62.us-east-1-4.ec2.redns.redis-cloud.com',
-        port: 12406
+        host: REDIS_HOST,
+        port: REDIS_PORT
     }
 });
 redisClient.on("connect", () => {

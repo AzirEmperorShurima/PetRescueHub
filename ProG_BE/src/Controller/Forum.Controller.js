@@ -3,7 +3,7 @@ import PostSchema, { ForumPost, PostModel } from "../models/PostSchema.js";
 import * as forumService from "../services/Forum/Forum.service.js";
 import * as commentService from "../services/Comments/Comments.service.js"
 import * as reactionService from "../services/Reaction/Reaction.service.js";
-import { getUserIdFromCookies } from "../services/User/User.service.js";
+import { getUserFieldFromToken} from "../services/User/User.service.js";
 import { CommentModel } from "../models/CommentsSchema.js";
 import Reaction from "../models/ReactionSchema.js";
 

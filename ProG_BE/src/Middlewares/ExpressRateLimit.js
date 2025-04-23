@@ -1,12 +1,16 @@
 import rateLimit from "express-rate-limit";
 import { redisClient } from "../Cache/User_Cache.js";
 import RedisStore from "rate-limit-redis";
-import { getUserIdFromCookies } from "../services/User/User.service.js";
+import { getUserFieldFromToken } from "../services/User/User.service.js";
+import { COOKIE_PATHS } from "../../config.js";
 // Rate limiter cho các API thông thường
 export const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: (req) => {
-        const userId = getUserIdFromCookies(req);
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN, 'token');
+        if (!userId) {
+            console.log('NO') // Giới hạn cho người dùng đã đăng nhập
+        }
         return userId ? 1200 : 200;
     },
     keyGenerator: (req) => {

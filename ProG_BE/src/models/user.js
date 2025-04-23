@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema(
         },
         fullname: {
             type: String,
+            default: "Anonymous"
         },
         birthdate: {
             type: Date,
@@ -61,6 +62,10 @@ const userSchema = new mongoose.Schema(
                 ref: "Role",
             },
         ],
+        isPrivate: {
+            type: Boolean,
+            default: false
+        },
         isActive: {
             type: Boolean,
             default: false

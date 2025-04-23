@@ -1,5 +1,5 @@
 import * as petService from "../services/Pet/Pet.service.js";
-import { getUserIdFromCookies } from "../services/User/User.service.js";
+import { getUserFieldFromToken } from "../services/User/User.service.js";
 import Joi from "joi";
 
 const petUpdateSchema = Joi.object({
