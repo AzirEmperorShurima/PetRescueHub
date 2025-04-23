@@ -1,34 +1,33 @@
-import Comments from "./Comments.js";
-import ForumPost from "./ForumPost.js";
+// This file exports all the models in the project
+// It is used to import all the models in the project
 import Message from "./Message.js";
-import Question from "./Question.js";
-import Reaction from "./CommentReaction.js";
 import Report from "./Report.js";
 import Role from "./Role.js";
 import user from "./user.js";
-import PostReaction from "./PostReaction.js";
 import TransactionHistory from "./TransactionHistory.js";
 import Package from "./Package.js";
 import FavouriteList from "./FavouriteList.js";
-import CommentReaction from "./CommentReaction.js";
 import PetProfile from "./PetProfile.js";
+import  { ForumPost, Question, FindLostPetPost, EventPost, PostModel } from "./PostSchema.js";
+import { CommentModel } from "./CommentsSchema.js";
+import Reaction from "./ReactionSchema.js";
 
 const models_list = {
     user,
     Role,
     Message,
-    Comments,
-    ForumPost,
-    Question,
-    Reaction,
     Report,
     PetProfile,
     FavouriteList,
-    PostReaction,
     TransactionHistory,
-    CommentReaction,
-    Comments,
-    Package
-}
+    Package,
+    PostModel,
+    CommentModel,
+    Reaction,
+    ForumPost,
+    Question,
+    FindLostPetPost,
+    EventPost
+};
 
 export default models_list;

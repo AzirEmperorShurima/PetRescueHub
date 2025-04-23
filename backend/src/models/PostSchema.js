@@ -9,6 +9,18 @@ const PostSchema = new mongoose.Schema(
         imgUrl: [{ type: String }],
         commentCount: { type: Number, default: 0 },
         favoriteCount: { type: Number, default: 0 },
+        reactions: {
+            type: Map,
+            of: Number,
+            default: () => new Map([
+                ['like', 0],
+                ['love', 0],
+                ['haha', 0],
+                ['wow', 0],
+                ['sad', 0],
+                ['angry', 0],
+            ]),
+        },
         postStatus: { type: String, enum: ["public", "private", "hidden"], default: "public" },
         createdAt: { type: Date, default: Date.now },
         updatedAt: { type: Date, default: Date.now }
@@ -23,44 +35,49 @@ PostSchema.pre("findOneAndUpdate", function (next) {
 });
 
 // Middleware xóa liên quan khi xóa bài viết
-PostSchema.pre("remove", async function (next) {
-    await mongoose.model("Comment").deleteMany({ post: this._id });
-    await mongoose.model("FavouriteList").deleteMany({ post: this._id });
-    next();
+PostSchema.pre("deleteOne", async function (next) {
+    try {
+        await Promise.all([
+            mongoose.model("Comment").deleteMany({ post: this._id }),
+            mongoose.model("FavouriteList").deleteMany({ post: this._id }),
+            mongoose.model("Reaction").deleteMany({ targetType: "Post", targetId: this._id })
+        ]);
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
-// Tạo index để tối ưu tìm kiếm và truy vấn
+PostSchema.index({ 'reactions.like': 1 });
 PostSchema.index({ title: "text", content: "text" });
-PostSchema.index({ tags: 1 });
 PostSchema.index({ author: 1 });
 PostSchema.index({ createdAt: -1 });
 PostSchema.index({ updatedAt: -1 });
 
-// Định nghĩa model chính
-const PostModel = mongoose.model("Post", PostSchema);
-
-// Định nghĩa các mô hình con với `discriminator`
-const ForumPost = PostModel.discriminator("ForumPost", new mongoose.Schema({}));
-const Question = PostModel.discriminator(
+export const PostModel = mongoose.model("Post", PostSchema);
+export const ForumPost = PostModel.discriminator("ForumPost", new mongoose.Schema({}));
+export const Question = PostModel.discriminator(
     "Question",
     new mongoose.Schema({
         questionDetails: { type: String }
     })
 );
-const FindLostPetPost = PostModel.discriminator(
+export const FindLostPetPost = PostModel.discriminator(
     "FindLostPetPost",
     new mongoose.Schema({
         lostPetInfo: { type: String }
     })
 );
-const EventPost = PostModel.discriminator(
+export const EventPost = PostModel.discriminator(
     "EventPost",
     new mongoose.Schema({
-        eventDate: { type: Date }
+        eventStartDate: { type: Date },
+        eventEndDate: { type: Date },
+        eventLongitude: { type: String }, //kinh độ
+        eventLatitude: { type: String }, //vĩ độ
+        eventLocation: { type: String },
     })
 );
-
-// Xuất default toàn bộ model chính và các mô hình con
 export default {
     PostModel,
     ForumPost,

@@ -1,6 +1,10 @@
+import jwt from "jsonwebtoken";
+import { SECRET_KEY } from "../../../config.js";
 export const authenticateUser = (req) => {
     const userCookies = req.cookies.token;
-    if (!userCookies) throw new Error("Unauthorized - No token provided");
+    if (!userCookies) {
+        return new Error("No token provided");
+    }
 
     try {
         return jwt.verify(userCookies, SECRET_KEY);

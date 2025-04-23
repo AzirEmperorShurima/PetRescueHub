@@ -1,5 +1,5 @@
-import PetProfile from "../models/PetProfile.js";
-import User from "../models/User.js";
+import PetProfile from "../../models/PetProfile.js";
+import User from "../../models/user.js";
 
 
 // Hàm tiện ích kiểm tra pet tồn tại
@@ -8,6 +8,18 @@ export const getPetOrThrow = async (petId) => {
     if (!pet) throw new Error("Thú cưng không tồn tại!");
     return pet;
 };
+
+export const getAllPets = async (page = 1, limit = 10) => {
+    const pets = await PetProfile.find()
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(); // Sắp xếp theo ngày tạo, mới nhất trước
+    const total = await PetProfile.countDocuments();
+    return {
+        success: true, data: pets, total: total, skip: page, limit: limit
+    }
+}
 /**
  * 🆕 Tạo thú cưng mới
  * @param {String} ownerId - ID của chủ sở hữu
@@ -26,22 +38,6 @@ export const createPetProfile = async (ownerId, petData) => {
         throw new Error(`Lỗi khi tạo hồ sơ thú cưng: ${error.message}`);
     }
 };
-
-
-/**
- * 🔄 Chuyển đổi chủ sở hữu thú cưng
- */
-// export const transferPetOwnership = async (petId, newOwnerId) => {
-//     const pet = await PetProfile.findById(petId);
-//     if (!pet) throw new Error("Thú cưng không tồn tại!");
-
-//     const newOwner = await User.findById(newOwnerId);
-//     if (!newOwner) throw new Error("Người nhận không tồn tại!");
-
-//     pet.ownerId = newOwnerId;
-//     return await pet.save();
-// };
-
 
 /**
  * 📥 Upload avatar thú cưng
@@ -111,7 +107,7 @@ export const deletePet = async (petId) => {
  * @param {String} ownerId - ID của chủ sở hữu
  * @returns {Promise<Array>} - Danh sách thú cưng
  */
-export const getPetsByOwner = async (ownerId, ownerId, page = 1, limit = 10) => {
+export const getPetsByOwner = async (ownerId, page = 1, limit = 10) => {
     return await PetProfile.find({ ownerId })
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)

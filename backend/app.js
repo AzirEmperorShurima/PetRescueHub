@@ -9,13 +9,20 @@ import authRouter from './src/router/Auth.routes.js';
 import forumRoutes from './src/router/Forum.routes.js';
 import userRoute from './src/router/User.routes.js';
 import petRoute from './src/router/Pet.routes.js';
+import { apiLimiter } from './src/Middlewares/ExpressRateLimit.js';
+import { avatarConfig } from './config.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 connectToDatabase()
 app.set("env", "development");
 app.set("port", process.env.PORT || 4000)
-app.set('trust proxy', true)
+// app.set('trust proxy', true)
 app.set('json spaces', 4);
 app.set('case sensitive routing', true) // phân biệt Api và api
 app.set('strict routing', true) // phân biệt /user và /user/
@@ -32,11 +39,28 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(apiLimiter);
 
 app.use('/api/auth', authRouter);
 app.use('/api/forum', forumRoutes)
 app.use('/api/user', userRoute)
 app.use('/api/pet', petRoute)
+
+app.use('/api/root', express.static(path.join(__dirname, 'src/root/image')));
+
+// app.get('/api/avatar', (req, res) => {
+//     const { type } = req.query;
+
+//     if (!['male', 'female', 'neutral'].includes(type)) {
+//         return res.status(400).json({
+//             status: 'error',
+//             message: 'Vui lòng cung cấp type hợp lệ (male, female, neutral)',
+//         });
+//     }
+
+//     const avatarPath = `/api${avatarConfig.defaultAvatars[type]}`;
+//     return res.status(200).json({ avatarUrl: avatarPath });
+// });
 app.use('/api/*', (req, res) => {
     res.status(404).json({
         status: 'error',

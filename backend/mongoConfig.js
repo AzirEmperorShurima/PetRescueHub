@@ -16,24 +16,35 @@ const seedDatabase = async () => {
     }
 };
 
+export const initializeCollections = async (models) => {
+    console.log("🔁 Initializing Mongoose collections...");
+    let initializedCount = 0;
 
-const initializeCollections = async () => {
-    try {
-        for (const [modelName, model] of Object.entries(models_list)) {
-            await model.init();
-
+    for (const [modelName, model] of Object.entries(models)) {
+        try {
+            // Kiểm tra model có phải là Mongoose Model không
+            if (model?.prototype instanceof mongoose.Model) {
+                await model.init();
+                console.log(`✅ Initialized: ${modelName}`);
+                initializedCount++;
+            } else {
+                console.warn(`⚠️ Skipped: ${modelName} is not a valid Mongoose Model`);
+            }
+        } catch (err) {
+            console.error(`❌ Failed to initialize ${modelName}:`, err);
         }
-        console.log(`all collection of PetRescueHub initialized.`);
-    } catch (err) {
-        console.error("Error initializing collections:", err);
     }
+
+    console.log(`🎉 Initialized ${initializedCount} collections of PetRescueHub.`);
 };
+
+
 export const connectToDatabase = async () => {
     try {
         await mongoose.connect(mongoURI, {
         });
         console.log("Connected to MongoDB!");
-        await initializeCollections();
+        await initializeCollections(models_list);
         await seedDatabase();
     } catch (err) {
         console.error("Database connection error:", err);

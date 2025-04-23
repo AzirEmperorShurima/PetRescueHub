@@ -23,3 +23,16 @@ export const requestType = "payWithMethod";
 // Zalo payment gate config
 
 // VnPay payment gate config
+
+
+
+// Avatar config
+// config/avatars.js
+export const Domain = `http://localhost:${process.env.PORT || 4000}`
+export const avatarConfig = {
+    defaultAvatars: {
+        male: process.env.AVATAR_MALE_URL || `${Domain}/api/root/Default_Male_Avatar.jpg`,
+        female: process.env.AVATAR_FEMALE_URL || `${Domain}/api/root/Default_Female_Avatar.jpg`,
+        neutral: process.env.AVATAR_NEUTRAL_URL || `${Domain}/api/root/Default_Avatar_Non_Align.jpg`,
+    },
+}
