@@ -8,7 +8,6 @@ import {
   Event as EventIcon
 } from '@mui/icons-material';
 import './FeatureSection.css';
-import AboutSection from './AboutSection'; // Import component mới
 
 const features = [
   {

@@ -15,7 +15,7 @@
 
 .navbar > .container {
   max-width: 1400px; /* Tăng max-width để có thêm không gian */
-  padding: 0 1.9rem; /* Thêm padding để tránh sát cạnh màn hình */
+  padding: 0 1rem; /* Thêm padding để tránh sát cạnh màn hình */
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -218,7 +218,7 @@
 /* ==================== BUTTON STYLES ==================== */
 .nav-buttons {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   align-items: center;
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import { 
   Pets as PetsIcon, 
   Favorite as FavoriteIcon, 
@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { heroSlides, services, recentRescues, testimonials, stats } from '../../mocks';
 import vetIcon from '../../assets/images/vet.svg';
-import './Home.css';
+import './Home.css'; // Sử dụng file CSS được tối ưu
 import '../../assets/styles/animations.css';
 
 import AboutSection from './components/AboutSection';
@@ -23,8 +23,6 @@ import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider'
 import VolunteerRegistrationButton from '../../components/button/VolunteerRegistrationButton';
 import SuccessStories from './components/SuccessStories';
 import TestimonialsSection from './components/TestimonialsSection';
-
-
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -54,7 +52,7 @@ const Home = () => {
     return () => clearInterval(slideInterval.current);
   }, []);
 
-  // Rescue button drag handlers
+  // Rescue button drag handlers - Tối ưu với throttle để cải thiện hiệu suất
   const handleMouseDown = useCallback((e) => {
     if (rescueBtnRef.current) {
       isDragging.current = true;
@@ -65,11 +63,15 @@ const Home = () => {
 
   const handleMouseMove = useCallback((e) => {
     if (isDragging.current && rescueBtnRef.current) {
-      const x = Math.max(0, Math.min(e.clientX - offset.current.x, window.innerWidth - rescueBtnRef.current.offsetWidth));
-      const y = Math.max(0, Math.min(window.innerHeight - e.clientY - offset.current.y, window.innerHeight - rescueBtnRef.current.offsetHeight));
-      rescueBtnRef.current.style.left = `${x}px`;
-      rescueBtnRef.current.style.bottom = `${y}px`;
-      rescueBtnRef.current.style.right = 'auto';
+      // Thêm request animation frame để tối ưu hiệu suất
+      requestAnimationFrame(() => {
+        if (!isDragging.current) return;
+        const x = Math.max(0, Math.min(e.clientX - offset.current.x, window.innerWidth - rescueBtnRef.current.offsetWidth));
+        const y = Math.max(0, Math.min(window.innerHeight - e.clientY - offset.current.y, window.innerHeight - rescueBtnRef.current.offsetHeight));
+        rescueBtnRef.current.style.left = `${x}px`;
+        rescueBtnRef.current.style.bottom = `${y}px`;
+        rescueBtnRef.current.style.right = 'auto';
+      });
     }
   }, []);
 
@@ -100,29 +102,29 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      {/* Hero Section */}
-      <section className="hero-section animate-fadeIn">
+      {/* Hero Section - Cập nhật class names */}
+      <section className="home-hero-section animate-fadeIn">
         {heroSlides.map((slide, index) => (
           <div
             key={slide.id}
-            className="hero-slide"
+            className="home-hero-slide"
             style={{ backgroundImage: `url(${slide.image})`, display: index === currentSlide ? 'block' : 'none' }}
           >
-            <div className="hero-overlay">
-              <div className="hero-content">
-                <h1 className="hero-title">{slide.title}</h1>
-                <p className="hero-description">{slide.description}</p>
+            <div className="home-hero-overlay">
+              <div className="home-hero-content">
+                <h1 className="home-hero-title">{slide.title}</h1>
+                <p className="home-hero-description">{slide.description}</p>
               </div>
             </div>
           </div>
         ))}
-        <div className="hero-nav-buttons">
-          <button className="hero-nav-button hero-nav-prev" onClick={() => changeSlide('prev')} aria-label="Previous slide">
+        <div className="home-hero-nav-buttons">
+          <button className="home-hero-nav-button hero-nav-prev" onClick={() => changeSlide('prev')} aria-label="Previous slide">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <button className="hero-nav-button hero-nav-next" onClick={() => changeSlide('next')} aria-label="Next slide">
+          <button className="home-hero-nav-button hero-nav-next" onClick={() => changeSlide('next')} aria-label="Next slide">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="9 18 15 12 9 6" />
             </svg>
@@ -130,7 +132,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Sử dụng component AboutSection mới */}
+      {/* About Section */}
       <AboutSection />
 
       {/* Floating Rescue Button */}
@@ -145,57 +147,30 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Services Section */}
-      {/* <section className="services-section">
-        <Container>
-          <h2 className="section-title">Dịch vụ của chúng tôi</h2>
-          <p className="section-subtitle">Chúng tôi cung cấp nhiều dịch vụ để giúp đỡ thú cưng và kết nối với gia đình yêu thương</p>
-          <Row>
-            {services.map((service) => (
-              <Col lg={3} md={6} sm={12} key={service.id} className="mb-4">
-                <div className="service-card">
-                  <div className="service-content">
-                    <div className="service-icon">
-                      {service.icon === 'pets' && <PetsIcon sx={{ fontSize: 36 }} />}
-                      {service.icon === 'handshake' && <VolunteerIcon sx={{ fontSize: 36 }} />}
-                      {service.icon === 'emergency' && <EmergencyIcon sx={{ fontSize: 36 }} />}
-                      {service.icon === 'event' && <EventIcon sx={{ fontSize: 36 }} />}
-                    </div>
-                    <h3 className="service-title">{service.title}</h3>
-                    <p className="service-description">{service.description}</p>
-                    <Link to={service.link} className="service-link">Tìm hiểu thêm</Link>
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-      </section> */}
-
-      {/* Sử dụng component FeatureSection */}
+      {/* Feature Section */}
       <FeatureSection />
 
-      {/* Sử dụng component ImpactCounter */}
+      {/* Impact Counter */}
       <ImpactCounter />
 
-      {/* Recent Rescues Section */}
+      {/* Success Stories */}
       <SuccessStories />
 
-      {/* Stats Section */}
-      <section className="stats-section">
+      {/* Stats Section - Cập nhật class names */}
+      <section className="home-stats-section">
         <Container>
           <Row>
             {stats.map((stat) => (
               <Col md={3} sm={6} key={stat.id}>
-                <div className="stat-item">
-                  <div className="stat-icon">
+                <div className="home-stat-item">
+                  <div className="home-stat-icon">
                     {stat.icon === 'pets' && <PetsIcon sx={{ fontSize: 40 }} />}
                     {stat.icon === 'home' && <HomeIcon sx={{ fontSize: 40 }} />}
                     {stat.icon === 'people' && <PeopleIcon sx={{ fontSize: 40 }} />}
                     {stat.icon === 'event' && <EventIcon sx={{ fontSize: 40 }} />}
                   </div>
-                  <div className="stat-value">{stat.value}+</div>
-                  <div className="stat-label">{stat.label}</div>
+                  <div className="home-stat-value">{stat.value}+</div>
+                  <div className="home-stat-label">{stat.label}</div>
                 </div>
               </Col>
             ))}
@@ -203,21 +178,21 @@ const Home = () => {
         </Container>
       </section>
 
-      {/* Sử dụng component TestimonialsSection */}
+      {/* Testimonials Section */}
       <TestimonialsSection testimonials={testimonials} />
 
-      {/* Render VolunteerBannerSlider component */}
+      {/* Volunteer Banner Slider */}
       <VolunteerBannerSlider />
 
-      {/* Volunteer Banner */}
-      <section className="volunteer-banner">
+      {/* Volunteer Banner - Cập nhật class names */}
+      <section className="home-volunteer-banner">
         <div className="overlay"></div>
-        <div className="volunteer-content">
-          <h2 className="volunteer-title">Trở thành tình nguyện viên</h2>
-          <p className="volunteer-description">
+        <div className="home-volunteer-content">
+          <h2 className="home-volunteer-title">Trở thành tình nguyện viên</h2>
+          <p className="home-volunteer-description">
             Tham gia cùng chúng tôi trong hành trình cứu trợ và bảo vệ thú cưng. Mỗi sự giúp đỡ đều ý nghĩa.
           </p>
-          <VolunteerRegistrationButton onClick={() => setShowVolunteerModal(true)} />
+          <VolunteerRegistrationButton onClick={() => setShowVolunteerModal(true)} className="home-button" />
         </div>
       </section>
 

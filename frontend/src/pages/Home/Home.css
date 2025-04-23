@@ -1,55 +1,44 @@
+@import '../../assets/styles/variables.css';
+
 :root {
   /* Giữ lại các biến có giá trị khác với variables.css */
-  --home-shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.05);
-  --home-shadow-md: 0 15px 35px rgba(0, 0, 0, 0.1);
-  --home-shadow-lg: 0 5px 15px rgba(233, 30, 99, 0.3);
-  --home-transition-standard: all 0.4s ease-in-out; /* Cập nhật thời gian mượt hơn */
+  --home-shadow-sm: 0 10px 30px rgba(0,0,0,0.05);
+  --home-shadow-md: 0 15px 35px rgba(0,0,0,0.1);
+  --home-shadow-lg: 0 5px 15px rgba(233,30,99,0.3);
+  /* Tối ưu transition chỉ target transform & box-shadow */
+  --home-transition-standard: transform var(--transition-duration) var(--transition-timing), box-shadow var(--transition-duration) var(--transition-timing);
 }
-
-/* Import biến CSS từ file chung */
-@import '../../assets/styles/variables.css';
 
 /* Base styles */
 body {
   font-family: 'DM Sans Variable', sans-serif;
-  color: var(--text-color);
+  color: var(--text-color); /* từ variables.css */
   overflow-x: hidden;
 }
 
-/* Typography */
-.home-page h1, .home-page h2, .home-page h3, .home-page h4, .home-page h5, .home-page h6 {
+/* Typography - Thêm prefix "home-" để tránh xung đột */
+.home-page h1, .home-page h2, .home-page h3,
+.home-page h4, .home-page h5, .home-page h6 {
   color: var(--primary-color);
   font-weight: 600;
   line-height: 1.3;
   margin-bottom: 1rem;
 }
 
-.section-title {
+.home-section-title {
   position: relative;
   margin-bottom: 3.5rem;
   font-size: 2.5rem;
   text-align: center;
 }
 
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: var(--primary-gradient);
-  border-radius: 2px;
-}
-
-.services-section .section-title::after,
-.testimonials-section .section-title::after,
-.recent-rescues .section-title::after {
+.home-services-section .home-section-title::after,
+.home-testimonials-section .home-section-title::after,
+.home-recent-rescues .home-section-title::after {
   display: none;
 }
 
-.section-subtitle {
+.home-section-subtitle {
   text-align: center;
   color: var(--text-light);
   margin: 0 auto 3.5rem;
@@ -58,22 +47,26 @@ body {
 }
 
 /* Hero Section */
-.hero-section, .hero-slide {
+.home-hero-section, .home-hero-slide {
   position: relative;
-  height: 80vh;
+  height: 100vh;
   min-height: 600px;
   overflow: hidden;
+  perspective: 100px;
 }
 
-.hero-slide {
+.home-hero-slide {
   background-size: cover;
   background-position: center;
+  transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
-.hero-overlay {
+.home-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,25 +74,25 @@ body {
   padding: 0 20px;
 }
 
-.hero-content {
+.home-hero-content {
   max-width: 800px;
   color: var(--bg-white);
 }
 
-.hero-title {
+.home-hero-title {
   font-size: 3.5rem;
   font-weight: 800;
   margin-bottom: 1.5rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-.hero-description {
+.home-hero-description {
   font-size: 1.5rem;
   margin-bottom: 2rem;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
-.hero-nav-buttons {
+.home-hero-nav-buttons {
   position: absolute;
   top: 50%;
   inset-inline: 0;
@@ -109,35 +102,37 @@ body {
   z-index: 10;
   opacity: 0;
   transform: translateY(-50%);
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s var(--transition-timing);
 }
 
-.hero-section:hover .hero-nav-buttons {
+.home-hero-section:hover .home-hero-nav-buttons {
   opacity: 1;
 }
 
-.hero-nav-button {
+.home-hero-nav-button {
   width: 35px;
   height: 35px;
   border-radius: var(--radius-full);
-  background-color: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--bg-white);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: var(--home-transition-standard);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: var(--home-transition-standard),
+              background-color var(--transition-duration) var(--transition-timing);
+  will-change: transform, box-shadow;
 }
 
-.hero-nav-button:hover {
-  background-color: rgba(255, 255, 255, 0.25);
+.home-hero-nav-button:hover {
+  background-color: rgba(255,255,255,0.25);
   transform: scale(1.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-/* Floating Rescue Button */
+/* Tối ưu Floating Rescue Button */
 .floating-rescue-btn {
   position: fixed;
   bottom: 30px;
@@ -150,25 +145,54 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.4);
+  box-shadow: var(--home-shadow-md);
   cursor: pointer;
-  z-index: 1000;
-  transition: var(--home-transition-standard);
+  z-index: var(--z-modal);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   touch-action: none;
-  will-change: transform;
+  will-change: transform, box-shadow, filter;
+  filter: url(#goo);
+  animation: float 6s ease-in-out infinite;
+}
+
+.floating-rescue-btn:hover {
+  transform: scale(1.15) rotate(8deg);
+  filter: url(#goo) brightness(1.1);
+}
+
+.floating-rescue-btn::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0.4;
+  animation: pulse 3s ease infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.4; }
+  70% { transform: scale(1.8); opacity: 0; }
+  100% { opacity: 0; }
 }
 
 .floating-rescue-btn img {
   width: 45px;
   height: 45px;
   filter: brightness(0) invert(1);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s var(--transition-timing);
 }
 
 .floating-rescue-btn:hover {
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.6);
+  transform: translateY(-5px);
+  box-shadow: var(--home-shadow-lg);
 }
 
 .floating-rescue-btn:hover img {
@@ -187,7 +211,7 @@ body {
   font-size: 14px;
   font-weight: 600;
   opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s var(--transition-timing), transform 0.3s var(--transition-timing);
   white-space: nowrap;
 }
 
@@ -196,10 +220,9 @@ body {
   transform: translateX(-50%) translateY(-5px);
 }
 
+/* Đơn giản hóa icon animation */
 .icon-container {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -211,80 +234,43 @@ body {
   height: 24px;
   color: var(--bg-white);
   opacity: 0;
-  transform: scale(0);
-  transition: all 0.5s ease;
-  will-change: transform, opacity;
+  transition: opacity 0.3s var(--transition-timing), transform 0.3s var(--transition-timing);
 }
 
 .floating-rescue-btn:hover .icon {
   opacity: 1;
-  transform: scale(1);
 }
 
-.icon1 {
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.icon2 {
-  top: 50%;
-  left: -30px;
-  transform: translateY(-50%);
-}
-
-.icon3 {
-  bottom: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.icon4 {
-  top: 50%;
-  right: -30px;
-  transform: translateY(-50%);
-}
-
-.floating-rescue-btn:hover .icon1 {
-  top: -80px;
-}
-
-.floating-rescue-btn:hover .icon2 {
-  left: -80px;
-}
-
-.floating-rescue-btn:hover .icon3 {
-  bottom: -80px;
-}
-
-.floating-rescue-btn:hover .icon4 {
-  right: -80px;
-}
+.icon1 { top: -70px; left: 50%; transform: translateX(-50%); }
+.icon2 { top: 50%; left: -70px; transform: translateY(-50%); }
+.icon3 { bottom: -70px; left: 50%; transform: translateX(-50%); }
+.icon4 { top: 50%; right: -70px; transform: translateY(-50%); }
 
 /* Cards Common */
-.service-card, .rescue-card, .testimonial-card {
+.home-card {
   background: var(--bg-white);
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--home-shadow-sm);
   transition: var(--home-transition-standard);
+  will-change: transform, box-shadow;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.service-card:hover, .rescue-card:hover, .testimonial-card:hover {
+.home-card:hover {
   transform: translateY(-10px);
   box-shadow: var(--home-shadow-md);
 }
 
 /* Services Section */
-.services-section {
+.home-services-section {
   padding: 120px 0;
   background-color: var(--bg-light);
 }
 
-.service-icon {
+.home-service-icon {
   width: 80px;
   height: 80px;
   margin: 0 auto 20px;
@@ -296,28 +282,28 @@ body {
   color: var(--primary-color);
 }
 
-.service-content {
+.home-service-content {
   padding: 30px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  text-align: center;
   align-items: center;
+  text-align: center;
 }
 
-.service-title {
+.home-service-title {
   font-size: 1.5rem;
   margin-bottom: 15px;
   color: var(--text-dark);
 }
 
-.service-description {
+.home-service-description {
   color: var(--text-light);
   margin-bottom: 25px;
   flex-grow: 1;
 }
 
-.service-link, .rescue-link, .volunteer-btn {
+.home-button {
   display: inline-block;
   padding: 12px 30px;
   background: var(--primary-gradient);
@@ -330,309 +316,358 @@ body {
   cursor: pointer;
 }
 
-.service-link:hover, .rescue-link:hover, .volunteer-btn:hover {
+.home-button:hover {
   transform: translateY(-3px);
   box-shadow: var(--home-shadow-lg);
 }
 
-/* Recent Rescues Section */
-.recent-rescues {
-  padding: 120px 0;
-  background-color: var(--bg-white);
-  text-align: center; /* Thêm căn giữa cho toàn bộ section */
-}
-
-.recent-rescues .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Căn giữa các phần tử con */
-  width: 100%;
-}
-
-.recent-rescues .section-title,
-.recent-rescues .section-subtitle {
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-}
-
-.rescue-image {
-  height: 220px;
-  overflow: hidden;
-}
-
-.rescue-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.rescue-card:hover .rescue-image img {
-  transform: scale(1.1);
-}
-
-.rescue-content {
-  padding: 25px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.rescue-date {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-bottom: 10px;
-}
-
-.rescue-title {
-  font-size: 1.3rem;
-  margin-bottom: 15px;
-  color: var(--text-dark);
-}
-
-.rescue-description {
-  color: var(--text-light);
-  margin-bottom: 20px;
-  flex-grow: 1;
-}
-
 /* Stats Section */
-.stats-section {
+.home-stats-section {
   padding: 80px 0;
   background: var(--primary-gradient);
   color: var(--bg-white);
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 0.3s;
 }
 
-.stat-item {
+.home-stat-item {
   text-align: center;
   padding: 20px;
 }
 
-.stat-value {
+.home-stat-value {
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 10px;
 }
 
-.stat-label {
+.home-stat-label {
   font-size: 1.1rem;
   opacity: 0.9;
 }
 
-/* Testimonials Section */
-.testimonials-section {
-  padding: 120px 0;
-  background-color: var(--bg-light);
-  text-align: center; /* Thêm căn giữa cho toàn bộ section */
-}
-
-.testimonials-section .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Căn giữa các phần tử con */
-  width: 100%;
-}
-
-.testimonials-section .section-title,
-.testimonials-section .section-subtitle {
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-}
-
-.testimonial-card {
-  padding: 30px;
-}
-
-.testimonial-content {
-  color: var(--text-light);
-  margin-bottom: 20px;
-  font-style: italic;
-  text-align: center;
-}
-
-.testimonial-author {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.testimonial-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  margin-right: 15px;
-}
-
-.testimonial-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.testimonial-name {
-  font-weight: 600;
-  color: var(--text-dark);
-  margin-bottom: 5px;
-}
-
-.testimonial-rating {
-  color: var(--secondary-color);
-}
-
-/* Volunteer Banner - Optimized for smooth slideshow */
-.volunteer-banner {
-  --current-volunteer-image: url('https://images.unsplash.com/photo-1548681528-6a5c45b66b42?q=80&w=2000&auto=format');
-  --next-volunteer-image: url('https://images.unsplash.com/photo-1576201836106-db1758fd1c97?q=80&w=2000&auto=format');
+/* Volunteer Banner - Tối ưu animation */
+.home-volunteer-banner {
   padding: 100px 0;
   position: relative;
   color: var(--bg-white);
   text-align: center;
   overflow: hidden;
   z-index: 1;
+  opacity: 0;
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 0.5s;
 }
 
-.volunteer-banner::before,
-.volunteer-banner::after {
+.home-volunteer-banner::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  transition: opacity 1.5s ease, transform 10s ease;
-}
-
-.volunteer-banner::before {
   background-image: var(--current-volunteer-image);
   filter: brightness(0.8) contrast(1.1);
-  transform: scale(1.05);
-  z-index: -2;
-  opacity: 1;
-  animation: slowZoom 15s infinite alternate;
+  z-index: -2; 
+  animation: optimizedZoom 20s ease infinite alternate;
 }
 
-.volunteer-banner::after {
-  background-image: var(--next-volunteer-image);
-  filter: brightness(0.8) contrast(1.1);
-  transform: scale(1.05);
-  z-index: -2;
-  opacity: 0;
-  animation: slowZoom 15s infinite alternate;
-  animation-delay: 7.5s; /* Half of the animation duration */
+@keyframes optimizedZoom { 
+  from { transform: scale(1.05); } 
+  to { transform: scale(1.12); } 
 }
 
-.volunteer-banner.transitioning::before {
-  opacity: 0;
-}
-
-.volunteer-banner.transitioning::after {
-  opacity: 1;
-}
-
-/* Overlay gradient */
-.volunteer-banner .overlay {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.home-volunteer-banner .overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.8));
   z-index: -1;
 }
 
-@keyframes slowZoom {
-  0% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1.15);
-  }
-}
-
-.volunteer-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 20px;
+.home-volunteer-content {
+  max-width: 800px; 
+  margin: 0 auto; 
+  padding: 0 20px; 
   position: relative;
 }
 
-.volunteer-title {
-  font-size: 2.8rem;
+.home-volunteer-title {
+  font-size: 2.8rem; 
   margin-bottom: 25px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  position: relative;
-  display: inline-block;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-.volunteer-description {
-  font-size: 1.3rem;
-  max-width: 700px;
-  margin: 0 auto 35px;
+.home-volunteer-description {
+  font-size: 1.3rem; 
+  max-width: 700px; 
+  margin: 0 auto 35px; 
   line-height: 1.6;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
-.volunteer-btn {
-  padding: 14px 35px;
-  font-size: 1.1rem;
-  box-shadow: 0 5px 20px rgba(233, 30, 99, 0.4);
+/* Accessibility: reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { 
+    animation: none !important; 
+    transition: none !important; 
+  }
 }
 
-/* Responsive */
+/* Tối ưu lại Media Queries - Gộp theo breakpoint */
+@media (max-width: 1200px) {
+  .home-hero-title {
+    font-size: 3rem;
+  }
+  
+  .home-volunteer-title {
+    font-size: 2.5rem;
+  }
+  
+  .home-volunteer-description {
+    font-size: 1.2rem;
+  }
+  
+  .home-section-title {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .home-services-section,
+  .home-stats-section,
+  .home-volunteer-banner {
+    padding: 80px 0;
+  }
+  
+  .home-hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .home-hero-description {
+    font-size: 1.3rem;
+  }
+  
+  .home-volunteer-title {
+    font-size: 2.2rem;
+  }
+  
+  .home-volunteer-description {
+    font-size: 1.1rem;
+  }
+  
+  .floating-rescue-btn {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .floating-rescue-btn img {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 @media (max-width: 768px) {
-  .hero-section, .hero-slide {
+  .home-hero-section, .home-hero-slide {
     height: 70vh;
     min-height: 500px;
   }
   
-  .hero-title {
+  .home-hero-title {
     font-size: 2rem;
   }
   
-  .hero-description {
+  .home-hero-description {
+    font-size: 1.1rem;
+  }
+  
+  .home-services-section,
+  .home-stats-section,
+  .home-volunteer-banner {
+    padding: 60px 0;
+  }
+  
+  .home-section-title {
+    font-size: 1.8rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  .home-section-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  .home-service-icon {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .home-service-title {
+    font-size: 1.3rem;
+  }
+  
+  .home-stat-value {
+    font-size: 2.5rem;
+  }
+  
+  .home-stat-label {
     font-size: 1rem;
   }
   
-  .section-title {
+  .home-volunteer-title {
     font-size: 1.8rem;
   }
   
-  .services-section, .recent-rescues, .testimonials-section {
-    padding: 80px 0;
-  }
-}
-
-@media (max-width: 576px) {
-  .hero-section, .hero-slide {
-    height: 60vh;
-    min-height: 400px;
+  .home-volunteer-description {
+    font-size: 1rem;
   }
   
-  .hero-title {
-    font-size: 1.8rem;
-  }
-  
-  .section-title {
-    font-size: 1.5rem;
+  .home-button {
+    padding: 12px 30px;
+    font-size: 1rem;
   }
   
   .floating-rescue-btn {
     width: 60px;
     height: 60px;
+    bottom: 20px;
+    right: 20px;
   }
   
   .floating-rescue-btn img {
     width: 35px;
     height: 35px;
+  }
+  
+  .icon1 { top: -60px; }
+  .icon2 { left: -60px; }
+  .icon3 { bottom: -60px; }
+  .icon4 { right: -60px; }
+}
+
+@media (max-width: 576px) {
+  .home-hero-section, .home-hero-slide {
+    height: 60vh;
+    min-height: 400px;
+  }
+  
+  .home-hero-title {
+    font-size: 1.8rem;
+  }
+  
+  .home-hero-description {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .home-services-section,
+  .home-stats-section,
+  .home-volunteer-banner {
+    padding: 40px 0;
+  }
+  
+  .home-section-title {
+    font-size: 1.6rem;
+    margin-bottom: 2rem;
+  }
+  
+  .home-section-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+  
+  .home-service-content {
+    padding: 20px;
+  }
+  
+  .home-service-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+  }
+  
+  .home-service-title {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  
+  .home-service-description {
+    margin-bottom: 20px;
+  }
+  
+  .home-button {
+    padding: 10px 25px;
+    font-size: 0.9rem;
+  }
+  
+  .home-stat-value {
+    font-size: 2rem;
+  }
+  
+  .home-stat-label {
+    font-size: 0.9rem;
+  }
+  
+  .home-volunteer-title {
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+  }
+  
+  .home-volunteer-description {
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+  }
+  
+  .floating-rescue-btn {
+    width: 50px;
+    height: 50px;
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .floating-rescue-btn img {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .floating-rescue-text {
+    display: none;
+  }
+  
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .icon1 { top: -50px; }
+  .icon2 { left: -50px; }
+  .icon3 { bottom: -50px; }
+  .icon4 { right: -50px; }
+}
+
+@media (max-width: 375px) {
+  .home-hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .home-hero-description {
+    font-size: 0.9rem;
+  }
+  
+  .home-section-title {
+    font-size: 1.4rem;
+  }
+  
+  .home-volunteer-title {
+    font-size: 1.4rem;
+  }
+  
+  .home-volunteer-description {
+    font-size: 0.85rem;
+  }
+  
+  .home-button {
+    padding: 8px 20px;
+    font-size: 0.85rem;
   }
 }

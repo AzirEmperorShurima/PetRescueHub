@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import AdminLayout from '../../components/layouts/AdminLayout';
-import Dashboard from './pages/Dashboard';
-import UserManagement from './pages/UserManagement';
-import PetManagement from './pages/PetManagement';
-import VolunteerManagement from './pages/VolunteerManagement';
-import EventManagement from './pages/EventManagement';
-import DonationManagement from './pages/DonationManagement';
-import AdminProfile from './pages/AdminProfile';
-import AdminLogin from './pages/AdminLogin';
-import RescueManagement from './pages/RescueManagement';
+import Dashboard from './components/Dashboard';
+import UserManagement from './components/UserManagement';
+import PetManagement from './components/PetManagement';
+import VolunteerManagement from './components/VolunteerManagement';
+import EventManagement from './components/EventManagement';
+import DonationManagement from './components/DonationManagement';
+import AdminProfile from './components/AdminProfile';
+import AdminLogin from './components/AdminLogin';
+import RescueManagement from './components/RescueManagement';
 
 const AdminApp = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

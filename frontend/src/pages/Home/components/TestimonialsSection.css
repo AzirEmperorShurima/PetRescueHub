@@ -12,18 +12,6 @@
   text-align: center;
 }
 
-.testimonials-section .section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: var(--primary-gradient);
-  border-radius: 2px;
-}
-
 .testimonials-section .section-subtitle {
   text-align: center;
   margin-bottom: 2rem;
