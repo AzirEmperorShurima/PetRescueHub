@@ -1,218 +1,426 @@
-/* Import phông chữ từ Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+/* ============================= */
+/*         Global Settings       */
+/* ============================= */
+:root {
+  --primary: #E91E63;
+  --secondary: #FF9800;
+  --hover-color: #FF4081;
+  --bg: #f8f9fa;
+  --input-bg: #fff;
+  --input-placeholder: rgb(170, 170, 170);
+  --input-focus-border: #12B1D1;
+  --shadow: rgba(133, 189, 215, 0.88) 0px 30px 30px -20px;
+  --box-shadow-img: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
 
-/* Auth Container */
-.auth-container {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  background: var(--bg);
+}
+
+/* Ẩn nút bật/tắt mật khẩu mặc định trên Edge */
+input[type="password"]::-ms-reveal {
+  display: none;
+}
+
+/* ============================= */
+/*        Container & Logo       */
+/* ============================= */
+.login-form-container {
+  max-width: 800px;
+  background: linear-gradient(0deg, var(--input-bg) 0%, rgb(244, 247, 251) 100%);
+  border-radius: 40px;
+  padding: 30px 40px;
+  border: 5px solid var(--input-bg);
+  box-shadow: var(--shadow);
+  margin: 40px auto;
+  transition: 0.3s all;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  font-family: 'Poppins', sans-serif; /* Phông chữ chính cho container */
-  position: relative;
-  overflow: hidden;
-}
-
-/* Thêm overlay hình ảnh nền mờ */
-.auth-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('https://images.unsplash.com/photo-1543466835-00a7907e9de1');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.05;
-  z-index: 0;
-}
-
-.auth-wrapper {
-  width: 100%;
-  max-width: 450px;
-  position: relative;
-  z-index: 1;
-}
-
-/* Các phần CSS khác giữ nguyên */
-
-/* Pet Rescue Appeal - Cập nhật để hiển thị hình ảnh chú chó */
-.pet-rescue-appeal {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px dashed rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.pet-images-carousel {
-  position: relative;
-  height: 200px;
-  margin-bottom: 1rem;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Sử dụng hình ảnh chú chó bị bỏ rơi */
-.pet-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: opacity 1.5s ease-in-out;
-}
-
-.pet-rescue-message {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem;
-  color: #555;
-  font-style: italic;
-  margin-top: 0.8rem;
-  line-height: 1.5;
-  letter-spacing: 0.2px;
-  background-color: rgba(233, 30, 99, 0.05);
-  padding: 0.8rem;
-  border-radius: 8px;
-  border-left: 3px solid #E91E63;
-}
-
-/* Thêm hiệu ứng hover cho hình ảnh */
-.pet-images-carousel:hover .pet-image {
-  transform: scale(1.05);
-  transition: transform 0.5s ease;
-}
-
-/* Thêm nút kêu gọi hành động */
-.rescue-cta {
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: #E91E63;
-  color: white;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(233, 30, 99, 0.3);
-}
-
-.rescue-cta:hover {
-  background-color: #C2185B;
-  transform: translateY(-2px);
-}
-
-.auth-card {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  padding: 2.5rem;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* Auth Header */
-.auth-header {
-  text-align: center;
-  margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .auth-logo {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.auth-logo img {
   height: 60px;
-  margin-bottom: 1.5rem;
+  margin-right: 15px;
 }
 
-.text-logo {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #E91E63;
-  margin-bottom: 1.5rem;
-  letter-spacing: -0.5px;
-  position: relative;
-  display: inline-block;
+.auth-logo h2 {
+  color: var(--primary);
+  font-size: 32px;
+  font-weight: bold;
 }
 
-.text-logo::before {
-  content: "🐾";
-  margin-right: 8px;
-  font-size: 1.8rem;
+/* ============================= */
+/*         Form Section          */
+/* ============================= */
+.auth-form-section {
+  flex: 1;
+  min-width: 320px;
+  padding-right: 30px;
+  display: flex;
+  flex-direction: column;
 }
 
-.auth-title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.8rem;
-  font-weight: 700;
+.heading {
+  text-align: center;
+  font-weight: 900;
+  font-size: 30px;
   color: #333;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.5px;
 }
 
 .auth-subtitle {
+  text-align: center;
   color: #666;
-  font-size: 0.95rem;
-  font-weight: 300;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
-/* Form Styles */
-.form-label {
+/* ============================= */
+/*         Form Elements         */
+/* ============================= */
+.form {
+  margin-top: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #444;
-  font-size: 0.95rem;
-  letter-spacing: 0.2px;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-family: 'Poppins', sans-serif;
-  transition: all 0.3s ease;
-  background-color: #f9f9f9;
-}
-
-/* Auth Button */
-.auth-button {
-  width: 100%;
-  padding: 0.9rem;
-  background: linear-gradient(135deg, #E91E63 0%, #FF9800 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  margin-bottom: 5px;
   font-weight: 600;
-  font-family: 'Montserrat', sans-serif;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  color: #333;
+}
+
+.input {
+  width: 100%;
+  background: var(--input-bg);
+  border: none;
+  padding: 15px 20px;
+  border-radius: 20px;
+  margin-top: 5px;
+  box-shadow: #cff0ff 0px 10px 10px -5px;
+  border-inline: 2px solid transparent;
+}
+
+.input::placeholder {
+  color: var(--input-placeholder);
+}
+
+.input:focus {
+  outline: none;
+  border-inline: 2px solid var(--input-focus-border);
+}
+
+/* ============================= */
+/*       Password Field          */
+/* ============================= */
+.password-input-wrapper {
   position: relative;
 }
 
-/* Social Login */
-.social-button {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  letter-spacing: 0.2px;
+.toggle-password-btn {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
-/* Pet Rescue Appeal */
-.pet-rescue-message {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem;
+.toggle-password-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ============================= */
+/*        Form Options           */
+/* ============================= */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+}
+
+.remember-me,
+.terms-agreement {
+  display: flex;
+  align-items: center;
+}
+
+.remember-me input,
+.terms-agreement input {
+  margin-right: 8px;
+}
+
+.forgot-password {
+  font-size: 14px;
+}
+
+/* ============================= */
+/*           Links               */
+/* ============================= */
+.register-link a,
+.login-link a,
+.forgot-password a,
+.terms-agreement a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.register-link a:hover,
+.login-link a:hover,
+.forgot-password a:hover,
+.terms-agreement a:hover {
+  color: var(--hover-color);
+}
+
+/* ============================= */
+/*         Button Styling        */
+/* ============================= */
+.login-button {
+  display: block;
+  width: 100%;
+  font-weight: bold;
+  background: linear-gradient(45deg, var(--secondary), var(--primary));
+  color: #fff;
+  border: none;
+  padding: 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 20px;
+}
+
+.login-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3);
+}
+
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ============================= */
+/*       Social Login Area       */
+/* ============================= */
+.social-account-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.social-account-container .title {
+  display: block;
   color: #666;
-  font-style: italic;
-  margin-top: 0.5rem;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.social-accounts {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.social-button {
+  background: var(--input-bg);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.social-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.social-button.google { color: #DB4437; }
+.social-button.apple { color: #000; }
+.social-button.twitter { color: #1DA1F2; }
+
+.svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ============================= */
+/*        Register/Login Links   */
+/* ============================= */
+.register-link,
+.login-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* ============================= */
+/*       Image & Quote Block     */
+/* ============================= */
+.auth-image-container {
+  flex: 1;
+  min-width: 320px;
+  margin-top: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  height: 450px;
+  box-shadow: var(--box-shadow-img);
+  border: 5px solid #fff;
+}
+
+.auth-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px;
+  transition: transform 0.5s;
+}
+
+.auth-image:hover {
+  transform: scale(1.05);
+}
+
+.auth-quote {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 20px;
+  font-size: 14.5px;
   line-height: 1.5;
-  letter-spacing: 0.2px;
+  backdrop-filter: blur(3px);
+}
+
+.auth-quote p {
+  margin-bottom: 10px;
+  font-weight: 300;
+}
+
+.auth-quote-author {
+  font-style: italic;
+  font-size: 13px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* ============================= */
+/*          Error Message        */
+/* ============================= */
+.error-message {
+  background: #ffebee;
+  color: #d32f2f;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  border-left: 4px solid #d32f2f;
+}
+
+/* ============================= */
+/*   Already Logged In Options   */
+/* ============================= */
+.already-logged-in-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.already-logged-in-options button {
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.already-logged-in-options .btn-outline-danger {
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  background: transparent;
+}
+
+.already-logged-in-options .btn-outline-danger:hover {
+  color: #fff;
+  background: #dc3545;
+}
+
+/* ============================= */
+/*         Responsive            */
+/* ============================= */
+@media (max-width: 768px) {
+  .login-form-container {
+    flex-direction: column;
+    max-width: 95%;
+    padding: 30px;
+  }
+  .auth-form-section {
+    padding-right: 0;
+    margin-bottom: 30px;
+  }
+  .auth-image-container {
+    height: 350px;
+    width: 100%;
+  }
+  .auth-logo img {
+    height: 50px;
+  }
+  .auth-logo h2 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-form-container {
+    padding: 20px;
+    max-width: 100%;
+    margin: 10px;
+    border-radius: 20px;
+  }
+  .heading {
+    font-size: 24px;
+  }
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .forgot-password {
+    align-self: flex-end;
+  }
+  .auth-image-container {
+    height: 200px;
+  }
 }

@@ -3,6 +3,27 @@
   color: #fff;
   padding: 8px 0;
   font-size: 0.9rem;
+  position: fixed; /* Thêm position fixed */
+  top: 0; /* Đặt ở vị trí top 0 */
+  left: 0; /* Đặt ở vị trí left 0 */
+  width: 100%; /* Chiều rộng 100% */
+  z-index: 1000; /* Z-index cao hơn Navigation */
+  height: 40px; /* Chiều cao cố định */
+}
+
+/* Thêm style mới để đảm bảo không ảnh hưởng đến trang auth */
+.auth-page .top-bar {
+  display: none !important;
+}
+
+/* Các style khác giữ nguyên */
+
+@media (max-width: 768px) {
+  .top-bar {
+    display: none; /* Ẩn TopBar trên mobile */
+  }
+  
+  /* Các style khác giữ nguyên */
 }
 
 .top-bar-content {
@@ -17,7 +38,7 @@
 
 .contact-info i {
   margin-right: 5px;
-  color: #3498db;
+  color: #000000;
 }
 
 .top-bar-right {
@@ -32,12 +53,25 @@
   position: relative;
 }
 
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%; /* Thêm vị trí top 50% */
+  transform: translateY(-50%); /* Thêm transform để căn giữa theo chiều dọc */
+  color: #999;
+  font-size: 0.9rem;
+  z-index: 1;
+  opacity: 0.5;
+}
+
 .search-input {
-  padding: 5px 10px;
+  padding: 5px 10px 5px 30px; /* Giữ nguyên padding */
   border: none;
   border-radius: 4px;
   margin-right: 5px;
   font-size: 0.9rem;
+  height: 28px; /* Thêm chiều cao cố định */
+  line-height: 28px; /* Thêm line-height bằng với height */
 }
 
 .btn-icon {

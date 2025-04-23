@@ -1,4 +1,4 @@
-import { toast } from 'react-toastify'; // Cần cài đặt: npm install react-toastify
+import { toast } from 'react-toastify';
 
 /**
  * Xử lý lỗi từ API một cách nhất quán
@@ -8,15 +8,12 @@ import { toast } from 'react-toastify'; // Cần cài đặt: npm install react-
  * @returns {string} Thông báo lỗi
  */
 export const handleApiError = (error, defaultMessage = 'Đã xảy ra lỗi', showToast = true) => {
-  // Lấy thông báo lỗi từ response nếu có
   const errorMessage = error.response?.data?.message || 
                        error.message || 
                        defaultMessage;
   
-  // Log lỗi để debug
   console.error('API Error:', error);
   
-  // Hiển thị toast thông báo nếu cần
   if (showToast) {
     toast.error(errorMessage);
   }
@@ -27,11 +24,10 @@ export const handleApiError = (error, defaultMessage = 'Đã xảy ra lỗi', sh
     
     switch (status) {
       case 400:
-        // Bad Request - Thông báo lỗi validation
         console.log('Lỗi dữ liệu đầu vào:', error.response.data);
         break;
       case 401:
-        // Unauthorized - Đã được xử lý trong axios interceptor
+        // Đã được xử lý trong axios interceptor
         break;
       case 403:
         // Forbidden - Không có quyền truy cập

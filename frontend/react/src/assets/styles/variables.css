@@ -1,0 +1,68 @@
+:root {
+  /* Colors */
+  --primary-color: #E91E63;
+  --secondary-color: #FF9800;
+  --primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  
+  /* Brand colors */
+  --brand-primary: #D34F81;
+  --brand-secondary: #3498db;
+  
+  /* Text colors */
+  --text-color: #333333;
+  --text-light: #718096;
+  --text-lighter: #a0aec0;
+  --text-dark: #2d3748;
+  
+  /* Background colors */
+  --bg-white: #ffffff;
+  --bg-light: #f8fafc;
+  --bg-gray: #f8f9fa;
+  --bg-dark: #2d3748;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-primary: 0 5px 15px rgba(233, 30, 99, 0.3);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 30px;
+  --radius-full: 50%;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  
+  /* Layout */
+  --header-height: 80px;
+  --topbar-height: 40px;
+  --footer-height: 300px;
+  --content-min-height: calc(100vh - var(--header-height) - var(--footer-height));
+  
+  /* Transitions */
+  --transition-fast: all 0.2s ease;
+  --transition-standard: all 0.3s ease;
+  --transition-slow: all 0.4s ease-in-out;
+  
+  /* Breakpoints */
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  
+  /* Z-index */
+  --z-dropdown: 900;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal: 1000;
+  --z-tooltip: 1050;
+  --z-header: 800;
+}

@@ -17,7 +17,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../components/contexts/AuthContext';
 import { questionDetailMock, answersMock } from '../../mocks/questionDetailMock';
 
 // Import các components dùng chung

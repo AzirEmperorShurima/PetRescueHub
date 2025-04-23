@@ -1,11 +1,12 @@
 import React from 'react';
 import { Box, Skeleton, Card, CardContent, CardActions } from '@mui/material';
+import PropTypes from 'prop-types';
 
-const ForumSkeleton = () => {
+const ForumSkeleton = ({ count = 5 }) => {
   return (
     <Box>
-      {[1, 2, 3].map((item) => (
-        <Card key={item} sx={{ mb: 2 }}>
+      {Array.from({ length: count }).map((_, index) => (
+        <Card key={index} sx={{ mb: 2 }}>
           <CardContent>
             <Box display="flex" alignItems="center" mb={1}>
               <Skeleton variant="circular" width={40} height={40} />
@@ -41,6 +42,10 @@ const ForumSkeleton = () => {
       ))}
     </Box>
   );
+};
+
+ForumSkeleton.propTypes = {
+  count: PropTypes.number
 };
 
 export default ForumSkeleton;

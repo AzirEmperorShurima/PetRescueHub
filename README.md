@@ -1,110 +1,72 @@
-# Pet Rescue Hub
+# Pet Rescue Hub - Frontend
 
-## Overview
-The Pet Rescue Hub is a web application designed to connect users, volunteers, and administrators in a seamless platform for pet rescue and adoption. The application allows users to request rescue services, volunteers to respond to these requests, and administrators to manage users and volunteers effectively.
+## Introduction
 
-## Project Structure
-The project is structured into three main parts: backend, frontend, and database.
+Pet Rescue Hub is an online platform connecting pet lovers, volunteers, and animal rescue organizations. This project aims to create a supportive community for pet rescue, care, and adoption.
 
-### Backend
-The backend is implemented using both Node.js and Django, providing flexibility and scalability.
+## Key Features
 
-- **Node.js**: 
-  - Located in the `backend/nodejs` directory.
-  - Uses Express for handling HTTP requests and MongoDB for data storage.
-  - Contains controllers for managing admin, user, and volunteer functionalities.
-  - Routes are defined for each type of user.
+- **Community Forum**: Share experiences, ask questions, and exchange information
+- **Pet Adoption**: Browse and apply to adopt rescue pets
+- **Donations**: Support rescue operations through financial contributions
+- **Events**: Discover rescue events, exhibitions, and community activities
+- **Volunteer Program**: Register to become a rescue volunteer
+- **Care Guides**: Educational resources for pet caregiving
 
-- **Django**: 
-  - Located in the `backend/django` directory.
-  - Provides an alternative backend option using Django's robust framework.
-  - Contains models, views, and URL routing for admin, user, and volunteer functionalities.
+## Technology Stack
 
-### Frontend
-The frontend is developed using both React and Flutter, catering to web and mobile users.
+- React 18
+- Material UI & Chakra UI
+- React Router v6
+- Axios
+- React Bootstrap
+- React Toastify
+- Dayjs
 
-- **React**: 
-  - Located in the `frontend/react` directory.
-  - Provides a responsive web interface for users, volunteers, and admins.
-  - Components include dashboards for each user type.
+## Installation & Setup
 
-- **Flutter**: 
-  - Located in the `frontend/flutter` directory.
-  - Provides a mobile application interface for users and volunteers.
-  - Screens include dashboards for each user type.
+### System Requirements
 
-### Database
-The database is managed using MongoDB, with scripts for initialization and seeding located in the `database/mongo` directory.
+- Node.js (v14+)
+- npm (v6+)
 
-## Features
-- **User Features**:
-  - Register and log in to the platform.
-  - Request pet rescue services.
-  - View available pets for adoption.
+### Installation Steps
 
-- **Volunteer Features**:
-  - Register as a volunteer.
-  - Respond to rescue requests.
-  - Manage their availability.
-
-- **Admin Features**:
-  - Manage users and volunteers.
-  - Oversee rescue requests and adoption processes.
-  - Generate reports on activities.
-
-## Setup Instructions
-1. **Clone the repository**:
-   ```
-   git clone <repository-url>
-   cd pet-rescue-hub
+1. Clone repository:
+   ```bash
+   git clone https://github.com/your-username/pet-rescue-hub.git
    ```
 
-2. **Backend Setup**:
-   - For Node.js:
-     - Navigate to `backend/nodejs`.
-     - Install dependencies:
-       ```
-       npm install
-       ```
-     - Start the server:
-       ```
-       node app.js
-       ```
+2. Navigate to the frontend directory:
+   ```
+   cd pet-rescue-hub/frontend/react
+   ```
 
-   - For Django:
-     - Navigate to `backend/django`.
-     - Install dependencies:
-       ```
-       pip install -r requirements.txt
-       ```
-     - Run migrations and start the server:
-       ```
-       python manage.py migrate
-       python manage.py runserver
-       ```
+3. Install the dependencies:
+   ```
+   npm install
+   ```
 
-3. **Frontend Setup**:
-   - For React:
-     - Navigate to `frontend/react`.
-     - Install dependencies:
-       ```
-       npm install
-       ```
-     - Start the React application:
-       ```
-       npm start
-       ```
+### Running the Application
 
-   - For Flutter:
-     - Navigate to `frontend/flutter`.
-     - Get dependencies:
-       ```
-       flutter pub get
-       ```
-     - Run the Flutter application:
-       ```
-       flutter run
-       ```
+To start the development server, run:
+```
+npm start
+```
 
-## Conclusion
-The Pet Rescue Hub aims to create a community-driven platform for pet rescue and adoption, leveraging modern web technologies to provide a user-friendly experience.
+The application will be available at `http://localhost:3000`.
+
+### Building for Production
+
+To create a production build, run:
+```
+npm run build
+```
+
+This will create an optimized build of the application in the `build` folder.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or features.
+
+## License

@@ -2,29 +2,30 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
   Button,
   Dialog,
-  DialogActions,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TablePagination,
+  Chip,
+  IconButton,
+  DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogTitle,
+  DialogActions,
   TextField,
-  IconButton,
   Snackbar,
-  Alert,
-  Chip
+  Alert
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import axios from 'axios';
-import { fDate, fDateTime } from '../../../utils/format-time'; // Đã cập nhật đường dẫn import
+import { fDate, fDateTime } from '../../../utils/format-time';
+import DataTable from '../../../components/common/DataTable';
 
 const EventManagement = () => {
   const [events, setEvents] = useState([]);

@@ -5,9 +5,9 @@ export const translations = {
     event: 'Sự Kiện',
     adopt: 'Nhận Nuôi',
     donate: 'Quyên Góp',
-    petGuide: 'Tài Liệu',
-    hotline: 'Hotline: 0984268233',
-    email: 'Email: petrescuehubsupport@gmail.com',
+    petGuide: 'Cẩm Nang',
+    hotline: 'Hotline: (+84) 984268233',
+    email: 'Email: petrescuehub@gmail.com',
     search: 'Tìm kiếm',
     contact: 'Liên hệ',
     login: 'Đăng nhập',
@@ -20,12 +20,12 @@ export const translations = {
     adopt: 'Adopt',
     donate: 'Donate',
     petGuide: 'Pet Guide',
-    hotline: 'Hotline: 0984268233',      
-    email: 'Email: petrescuehubsupport@gmail.com', 
+    hotline: 'Hotline: (+84) 984268233',      
+    email: 'Email: petrescuehub@gmail.com', 
     search: 'Search...',                 
     contact: 'Contact',
     login: 'Login',
-    register: 'Register'
+    register: 'Sign up'
   }
 };
 

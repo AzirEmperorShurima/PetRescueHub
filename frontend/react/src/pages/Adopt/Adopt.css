@@ -1,0 +1,173 @@
+.adopt-page {
+  padding: 60px 0;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+  
+  .adopt-header {
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 20px;
+  animation: fadeIn 0.8s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.adopt-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+  }
+  
+  .adopt-header .lead {
+    font-size: 1.2rem;
+    color: #666;
+  }
+  
+  .adopt-content {
+    max-width: 1200px;
+  }
+  
+  .pet-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .pet-item {
+    width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #fff;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .pet-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .pet-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .pet-info {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  
+  .pet-info h3 {
+    font-size: 1.5rem;
+    color: #007bff;
+  }
+  
+  .pet-info p {
+    margin: 5px 0;
+    color: #555;
+  }
+  
+  .pet-info .btn {
+    padding: 8px 16px;
+    font-size: 1rem;
+  }
+  
+  .pet-info-details {
+    flex-grow: 1;
+    margin-bottom: 15px;
+  }
+  
+  .pet-actions {
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .adopt-button {
+    width: 100%;
+    padding: 10px 0;
+    background-color: #007bff;
+    color: rgb(235, 53, 219);
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background-color 0.3s;
+  }
+  
+  .adopt-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Thêm các style mới để đảm bảo các card có chiều cao đồng đều */
+  .MuiCard-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .MuiCardContent-root {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .pet-details {
+    flex-grow: 1;
+  }
+  
+  .pet-action-area {
+    margin-top: auto;
+    padding-top: 16px;
+  }
+  
+  /* Thêm style mới để cố định sidebar */
+  .adopt-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100%;
+  }
+  
+  /* Đảm bảo container chính có chiều cao đủ để cuộn */
+  .adopt-container {
+    min-height: calc(100vh - 200px);
+  }
+  
+  /* Đảm bảo tất cả các card có chiều cao đồng nhất */
+  .pet-grid-item {
+    height: 100%;
+    display: flex;
+  }
+  
+  /* Đảm bảo hình ảnh có kích thước đồng nhất */
+  .pet-image-container {
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .pet-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Cải thiện hiển thị thông tin thú cưng */
+  .pet-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .pet-details {
+    flex-grow: 1;
+  }

@@ -6,9 +6,20 @@ import {
   QuestionAnswer as QuestionIcon, 
   Event as EventIcon 
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-const ForumActions = ({ onCreatePost, onCreateQuestion, onCreateEvent, displayStyle = 'horizontal' }) => {
+const ForumActions = ({ isAuthenticated, onCreatePost, onCreateQuestion, onCreateEvent, displayStyle = 'horizontal' }) => {
+  const navigate = useNavigate();
+  
+  const handleAction = (action) => {
+    if (isAuthenticated) {
+      action();
+    } else {
+      navigate('/auth/login');
+    }
+  };
+
   if (displayStyle === 'vertical') {
     return (
       <Box display="flex" flexDirection="column" gap={1}>
@@ -17,25 +28,27 @@ const ForumActions = ({ onCreatePost, onCreateQuestion, onCreateEvent, displaySt
           color="primary"
           startIcon={<PostIcon />}
           fullWidth
-          onClick={onCreatePost}
+          onClick={() => handleAction(onCreatePost)}
         >
           Tạo bài viết
         </Button>
+
         <Button
           variant="outlined"
           color="primary"
           startIcon={<QuestionIcon />}
           fullWidth
-          onClick={onCreateQuestion}
+          onClick={() => handleAction(onCreateQuestion)}
         >
           Đặt câu hỏi
         </Button>
+        
         <Button
           variant="outlined"
           color="primary"
           startIcon={<EventIcon />}
           fullWidth
-          onClick={onCreateEvent}
+          onClick={() => handleAction(onCreateEvent)}
         >
           Tạo sự kiện
         </Button>
@@ -44,31 +57,51 @@ const ForumActions = ({ onCreatePost, onCreateQuestion, onCreateEvent, displaySt
   }
 
   return (
-    <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={1} mb={3}>
+    <Box 
+      display="flex" 
+      flexDirection="column"
+      gap={2}
+      sx={{
+        width: '100%',
+        maxWidth: 180,
+        '& .MuiButton-root': {
+          justifyContent: 'flex-start',
+          padding: '12px 20px',
+          borderRadius: '10px',
+          backgroundColor: 'white',
+          color: '#D34F81',
+          border: '1px solid #D34F81',
+          '&:hover': {
+            backgroundColor: '#D34F81',
+            color: 'white'
+          }
+        }
+      }}
+    >
       <Button 
-        variant="contained" 
-        color="primary" 
-        startIcon={<AddIcon />} 
+        variant="outlined"
+        startIcon={<AddIcon />}
         endIcon={<PostIcon />}
-        onClick={onCreatePost}
+        onClick={() => handleAction(onCreatePost)}
+        fullWidth
       >
         Tạo bài viết
       </Button>
       <Button 
-        variant="contained" 
-        color="primary" 
-        startIcon={<AddIcon />} 
+        variant="outlined"
+        startIcon={<AddIcon />}
         endIcon={<QuestionIcon />}
-        onClick={onCreateQuestion}
+        onClick={() => handleAction(onCreateQuestion)}
+        fullWidth
       >
         Đặt câu hỏi
       </Button>
       <Button 
-        variant="contained" 
-        color="primary" 
-        startIcon={<AddIcon />} 
+        variant="outlined"
+        startIcon={<AddIcon />}
         endIcon={<EventIcon />}
-        onClick={onCreateEvent}
+        onClick={() => handleAction(onCreateEvent)}
+        fullWidth
       >
         Tạo sự kiện
       </Button>
@@ -77,6 +110,7 @@ const ForumActions = ({ onCreatePost, onCreateQuestion, onCreateEvent, displaySt
 };
 
 ForumActions.propTypes = {
+  isAuthenticated: PropTypes.bool.isRequired,
   onCreatePost: PropTypes.func.isRequired,
   onCreateQuestion: PropTypes.func.isRequired,
   onCreateEvent: PropTypes.func.isRequired,

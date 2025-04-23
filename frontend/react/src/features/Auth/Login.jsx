@@ -1,214 +1,221 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from 'react';
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
+import { FaGoogle, FaApple, FaXTwitter } from 'react-icons/fa6';
+import { Link, useNavigate } from 'react-router-dom';
 import '../../assets/styles/components/auth/Auth.css';
-import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { FaGoogle, FaApple } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
-// Xóa các import phông Roboto không tồn tại
-// import '@fontsource/roboto/300.css';
-// import '@fontsource/roboto/400.css';
-// import '@fontsource/roboto/500.css';
-// import '@fontsource/roboto/700.css';
+import petLogo from '../../assets/images/logo.svg';
+import { useAuth } from '../../components/contexts/AuthContext.jsx';
+import { useNotification } from '../../components/contexts/NotificationContext';
 
-// Xóa import framer-motion
-// import { motion } from "framer-motion";
+function Login() {
+  const navigate = useNavigate();
+  const { login, logout, user } = useAuth();
+  const { showNotification } = useNotification();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showAlreadyLoggedIn, setShowAlreadyLoggedIn] = useState(false);
 
-// Thay thế import logo bằng text logo
-// import logo from '../../assets/images/logo.png';
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (user && user.id) {
+      console.log("User already logged in:", user);
+      setShowAlreadyLoggedIn(true);
+    }
+  }, [user]);
 
-LOGIN.propTypes = {};
+  const handleChangEmail = (e) => {
+    setEmail(e.target.value);
+    setError("");
+  };
 
-function LOGIN(props) {
-    useEffect(() => {
-        // Có thể thêm logic nếu cần
-        document.title = "Đăng nhập | PetRescueHub";
-        
-        // Thêm logic chuyển đổi hình ảnh
-        const interval = setInterval(() => {
-            const images = document.querySelectorAll('.pet-image');
-            const activeImage = document.querySelector('.pet-image.active');
-            
-            if (images.length > 0 && activeImage) {
-                activeImage.classList.remove('active');
-                const nextIndex = Array.from(images).indexOf(activeImage) + 1;
-                const nextImage = images[nextIndex % images.length];
-                nextImage.classList.add('active');
-            }
-        }, 5000);
-        
-        return () => clearInterval(interval);
-    }, []);
+  const handleChangePassword = (e) => {
+    setPassword(e.target.value);
+    setError("");
+  };
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [showPass, setShowPass] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+  const handleShowPass = () => {
+    setShowPass((prev) => !prev);
+  };
 
-    const handleChangEmail = (e) => {
-        setEmail(e.target.value);
-    };
+  const handleRememberMe = () => {
+    setRememberMe((prev) => !prev);
+  };
 
-    const handleChangePassword = (e) => {
-        setPassword(e.target.value);
-    };
+  const handleLoginGoogle = () => {
+    // Implement Google login
+  };
 
-    const handleShowPass = () => {
-        setShowPass((prev) => !prev);
-    };
+  const handleLoginApple = () => {
+    // Implement Apple login
+  };
 
-    const handleLoginGoogle = () => {
-        window.open("http://localhost:3000/auth/google", "_self");
-    };
+  const handleLoginTwitter = () => {
+    // Implement Twitter login
+  };
 
-    const handleSubmitForm = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        try {
-            const credentials = { userName: email, password: password };
-            console.table(credentials);
-            // Giả lập API call
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-        } catch (error) {
-            console.error("Lỗi:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  const handleSubmitForm = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
+    try {
+      await login(email, password, rememberMe);
+      showNotification('Đăng nhập thành công!', 'success');
+      navigate('/');
+    } catch (error) {
+      setError("Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleContinueWithCurrentUser = () => {
+    navigate('/');
+  };
+
+  const handleLogoutAndContinue = () => {
+    logout();
+    setShowAlreadyLoggedIn(false);
+  };
+
+  if (showAlreadyLoggedIn) {
     return (
-        <div className="auth-container">
-            <div className="auth-wrapper">
-                {/* Thay thế motion.div bằng div thông thường */}
-                <div className="auth-card">
-                    <div className="auth-header">
-                        {/* Thay thế hình ảnh logo bằng text logo */}
-                        <h2 className="text-logo">PetRescueHub</h2>
-                        <h1 className="auth-title">Đăng nhập</h1>
-                        <p className="auth-subtitle">Chào mừng bạn quay trở lại với PetRescueHub</p>
-                    </div>
-
-                    <form className="auth-form" onSubmit={handleSubmitForm}>
-                        <div className="form-group">
-                            <label htmlFor="email" className="form-label">Email</label>
-                            <div className="input-container">
-                                <input
-                                    required
-                                    className="form-input"
-                                    value={email}
-                                    onChange={handleChangEmail}
-                                    type="email"
-                                    name="email"
-                                    id="email"
-                                    placeholder="Nhập địa chỉ email của bạn"
-                                    autoComplete="username"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="password" className="form-label">Mật khẩu</label>
-                            <div className="input-container password-container">
-                                <input
-                                    required
-                                    className="form-input"
-                                    value={password}
-                                    onChange={handleChangePassword}
-                                    type={showPass ? "text" : "password"}
-                                    name="password"
-                                    id="password"
-                                    placeholder="Nhập mật khẩu của bạn"
-                                    autoComplete="current-password"
-                                />
-                                <button 
-                                    type="button" 
-                                    className="password-toggle" 
-                                    onClick={handleShowPass}
-                                    aria-label={showPass ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                                >
-                                    {showPass ? (
-                                        <AiFillEyeInvisible className="icon" />
-                                    ) : (
-                                        <AiFillEye className="icon" />
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="form-options">
-                            <div className="remember-me">
-                                <input 
-                                    type="checkbox" 
-                                    id="rememberMe" 
-                                    checked={rememberMe}
-                                    onChange={() => setRememberMe(!rememberMe)}
-                                />
-                                <label htmlFor="rememberMe">Ghi nhớ đăng nhập</label>
-                            </div>
-                            <a href="#" className="forgot-password">Quên mật khẩu?</a>
-                        </div>
-
-                        <button
-                            className={`auth-button ${isLoading ? 'loading' : ''}`}
-                            type="submit"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <span className="spinner"></span>
-                                    <span>Đang xử lý...</span>
-                                </>
-                            ) : (
-                                "Đăng nhập"
-                            )}
-                        </button>
-                    </form>
-
-                    <div className="auth-divider">
-                        <span>Hoặc đăng nhập với</span>
-                    </div>
-
-                    <div className="social-login">
-                        <button className="social-button google" onClick={handleLoginGoogle}>
-                            <FaGoogle />
-                            <span>Google</span>
-                        </button>
-                        <button className="social-button apple">
-                            <FaApple />
-                            <span>Apple</span>
-                        </button>
-                        <button className="social-button twitter">
-                            <FaXTwitter />
-                            <span>Twitter</span>
-                        </button>
-                    </div>
-
-                    <div className="auth-footer">
-                        <p>Chưa có tài khoản? <a href="/register" className="register-link">Đăng ký ngay</a></p>
-                        <p className="terms">
-                            Bằng cách đăng nhập, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của chúng tôi
-                        </p>
-                    </div>
-                    
-                    {/* Thêm phần hình ảnh động vật cần giúp đỡ */}
-                    <div className="pet-rescue-appeal">
-                        <div className="pet-images-carousel">
-                            <img 
-                              src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
-                              alt="Chú chó cần được giúp đỡ" 
-                              className="pet-image" 
-                            />
-                        </div>
-                        <p className="pet-rescue-message">
-                            Mỗi ngày, hàng nghìn thú cưng như chú chó này đang cần sự giúp đỡ. 
-                            Đăng nhập để cùng chúng tôi mang lại hy vọng cho những sinh mạng bé nhỏ.
-                        </p>
-                        <a href="/rescue" className="rescue-cta">Tìm hiểu cách bạn có thể giúp đỡ</a>
-                    </div>
-                </div>
-            </div>
+      <div className="login-form-container">
+        <div className="auth-logo">
+          <img src={petLogo} alt="PetRescueHub Logo" />
+          <h2>PetRescueHub</h2>
         </div>
+        <div className="auth-form-section">
+          <div className="heading">Bạn đã đăng nhập</div>
+          <div className="auth-subtitle">
+            Bạn đã đăng nhập với tài khoản <strong>{user.email}</strong>
+          </div>
+          <div className="already-logged-in-options">
+            <button className="btn btn-primary" onClick={handleContinueWithCurrentUser}>
+              Tiếp tục với tài khoản hiện tại
+            </button>
+            <button className="btn btn-outline-danger" onClick={handleLogoutAndContinue}>
+              Đăng xuất và đăng nhập với tài khoản khác
+            </button>
+          </div>
+        </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="login-form-container">
+      <div className="auth-logo">
+        <img src={petLogo} alt="PetRescueHub Logo" />
+        <h2>PetRescueHub</h2>
+      </div>
+      <div className="auth-form-section">
+        <div className="heading">Đăng nhập</div>
+        <div className="auth-subtitle">Chào mừng bạn trở lại với PetRescueHub</div>
+        {error && <div className="error-message">{error}</div>}
+        <form className="form" onSubmit={handleSubmitForm}>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              required
+              className="input"
+              value={email}
+              onChange={handleChangEmail}
+              type="email"
+              name="email"
+              id="email"
+              placeholder="Nhập địa chỉ email của bạn"
+              autoComplete="username"
+            />
+          </div>
+
+          <div className="form-group password-group">
+            <label htmlFor="password">Mật khẩu</label>
+            <div className="password-input-wrapper">
+              <input
+                required
+                className="input"
+                value={password}
+                onChange={handleChangePassword}
+                type={showPass ? 'text' : 'password'}
+                name="password"
+                id="password"
+                placeholder="Mật khẩu"
+                autoComplete="current-password"
+              />
+              <button 
+                type="button"
+                onClick={handleShowPass}
+                className="toggle-password-btn"
+                aria-label={showPass ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+              >
+                {showPass ? <AiFillEyeInvisible /> : <AiFillEye />}
+              </button>
+            </div>
+          </div>
+
+          <div className="form-options">
+            <div className="remember-me">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={handleRememberMe}
+              />
+              <label htmlFor="rememberMe">Ghi nhớ đăng nhập</label>
+            </div>
+            <div className="forgot-password">
+              <Link to="/auth/forgot-password">Quên mật khẩu?</Link>
+            </div>
+          </div>
+
+          <button type="submit" className="login-button" disabled={isLoading}>
+            {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+          </button>
+        </form>
+
+        <div className="social-account-container">
+          <span className="title">Hoặc đăng nhập với</span>
+          <div className="social-accounts">
+            <button className="social-button google" onClick={handleLoginGoogle}>
+              <FaGoogle className="svg" />
+            </button>
+            <button className="social-button apple" onClick={handleLoginApple}>
+              <FaApple className="svg" />
+            </button>
+            <button className="social-button twitter" onClick={handleLoginTwitter}>
+              <FaXTwitter className="svg" />
+            </button>
+          </div>
+        </div>
+
+        <div className="register-link">
+          Bạn chưa có tài khoản? <Link to="/auth/register">Đăng ký ngay</Link>
+        </div>
+      </div>
+      <div className="auth-image-container">
+        <img
+          src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1586&q=80"
+          alt="Happy dog"
+          className="auth-image"
+        />
+        <div className="auth-quote">
+          <p>
+            Mỗi ngày, hàng nghìn thú cưng cũng như chủ nhân đã tìm thấy nhau qua ứng dụng của chúng tôi.
+            Những ánh mắt hạnh phúc đó chính là động lực để chúng tôi tiếp tục phát triển.
+          </p>
+          <div className="auth-quote-author">
+            Tìm hiểu thêm tại thế giới thú cưng của chúng tôi
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default LOGIN;
+export default Login;

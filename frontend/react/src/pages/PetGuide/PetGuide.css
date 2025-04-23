@@ -1,0 +1,76 @@
+.pet-guide-container {
+  padding-top: 40px;
+  padding-bottom: 60px;
+  min-height: 100vh;
+}
+
+.pet-guide-header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.page-title {
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  background: linear-gradient(90deg, #ff6b8b 0%, #ff8e53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.page-subtitle {
+  color: #666;
+  max-width: 700px;
+  margin: 0 auto !important;
+}
+
+.content-wrapper {
+  border-radius: 20px !important;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  background-color: #fff;
+}
+
+.guide-tabs {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.guide-tab {
+  padding: 20px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  transition: all 0.3s ease;
+}
+
+.tab-content {
+  min-height: 600px;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .pet-guide-container {
+    padding-top: 20px;
+  }
+  
+  .page-title {
+    font-size: 2rem !important;
+  }
+  
+  .content-wrapper {
+    border-radius: 15px !important;
+  }
+}

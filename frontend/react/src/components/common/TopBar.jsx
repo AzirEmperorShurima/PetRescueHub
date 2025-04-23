@@ -1,9 +1,8 @@
 import React, { useContext } from 'react';
 import { GB, VN } from 'country-flag-icons/react/3x2';
-import { LanguageContext } from '../../contexts/LanguageContext';
+import { LanguageContext } from '../contexts/LanguageContext';
 import translations from '../../utils/translations';
 import '../../assets/styles/components/TopBar.css';
-
 
 const TopBar = () => {
   const { language, toggleLanguage } = useContext(LanguageContext);
@@ -20,6 +19,7 @@ const TopBar = () => {
           
           <div className="top-bar-right">
             <div className="search-container">
+              <i className="fas fa-search search-icon"></i>
               <input type="text" className="search-input" placeholder={t.search} />
               <button className="btn-icon">
                 <i className="fas fa-search"></i>

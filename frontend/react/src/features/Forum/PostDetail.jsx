@@ -17,7 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 // Thêm plugin locale cho dayjs
 import 'dayjs/locale/vi';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../components/contexts/AuthContext';
 
 // Import mock data
 import { postDetailMock, postCommentsMock } from '../../mocks/postDetailMock';

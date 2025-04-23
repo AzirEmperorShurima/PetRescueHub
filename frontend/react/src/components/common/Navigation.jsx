@@ -1,47 +1,50 @@
-import React, { useContext, useState, useEffect, useRef } from 'react';
-import { NavLink, Link } from 'react-router-dom'; // Thêm NavLink
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import '../../assets/styles/components/Navigation.css';
-import logo from '../../assets/images/logo.svg'; // Đảm bảo SVG này khớp với ảnh mẫu
-import { LanguageContext } from '../../contexts/LanguageContext';
+import logo from '../../assets/images/logo.svg';
+import { useAuth } from '../contexts/AuthContext';
+import UserMenu from './UserMenu/UserMenu';
+import { useContext } from 'react';
+import { LanguageContext } from '../contexts/LanguageContext';
 import translations from '../../utils/translations';
 
 const Navigation = () => {
+  const navigate = useNavigate();
   const { language } = useContext(LanguageContext);
   const t = translations[language];
-  const [isLogoVisible, setLogoVisible] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  const [isLogoVisible, setIsLogoVisible] = useState(true);
   const navRef = useRef(null);
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLogoVisible(true);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Thêm effect để xử lý sự kiện cuộn
+  // Kiểm tra scroll để thay đổi style của navbar
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const navHeight = navRef.current?.offsetHeight || 0;
-      
-      // Khi cuộn xuống quá chiều cao của navbar, thêm class sticky
-      if (scrollPosition > navHeight) {
+      if (window.scrollY > 50) {
         setIsSticky(true);
       } else {
         setIsSticky(false);
       }
     };
 
-    // Đăng ký sự kiện cuộn
     window.addEventListener('scroll', handleScroll);
-    
-    // Cleanup khi component unmount
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  // Hiệu ứng hiển thị logo
+  useEffect(() => {
+    setIsLogoVisible(true);
+  }, []);
+
+  const handleLogin = () => {
+    navigate('/auth/login');
+  };
+
+  const handleRegister = () => {
+    navigate('/auth/register');
+  };
 
   return (
     <nav 
@@ -74,53 +77,77 @@ const Navigation = () => {
           <ul className="navbar-nav mx-auto">
             <li className="nav-item">
               <NavLink
-                className="nav-link"
+                className={({isActive}) => isActive ? "nav-link active" : "nav-link"}
                 to="/"
-                exact
-                activeClassName="active"
+                end
               >
                 {t.home}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/forum" activeClassName="active">
+              <NavLink 
+                className={({isActive}) => isActive ? "nav-link active" : "nav-link"}
+                to="/forum"
+              >
                 {t.forum}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/event" activeClassName="active">
+              <NavLink 
+                className={({isActive}) => isActive ? "nav-link active" : "nav-link"}
+                to="/event"
+              >
                 {t.event}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/adopt" activeClassName="active">
+              <NavLink 
+                className={({isActive}) => isActive ? "nav-link active" : "nav-link"}
+                to="/adopt"
+              >
                 {t.adopt}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/donate" activeClassName="active">
+              <NavLink 
+                className={({isActive}) => isActive ? "nav-link active" : "nav-link"}
+                to="/donate"
+              >
                 {t.donate}
               </NavLink>
             </li>
             <li className="nav-item">
               <NavLink
-                className="nav-link"
-                to="/PetGuide"
-                activeClassName="active"
+                className={({isActive}) => isActive ? "nav-link active" : "nav-link"}
+                to="/petguide"
               >
-                {t.petGuide}
+                {t.petGuide || "Cẩm nang"}
               </NavLink>
             </li>
           </ul>
 
-          <div className="nav-buttons">
-            <Link to="/auth/login" className="btn btn-outline-primary me-2">
-              {t.login}
-            </Link>
-            <Link to="/auth/register" className="btn btn-primary">
-              {t.register}
-            </Link>
-          </div>
+          {loading ? (
+            <div className="nav-buttons">
+              <div className="loading-indicator">Đang tải...</div>
+            </div>
+          ) : user && user.id ? (
+            <UserMenu user={user} />
+          ) : (
+            <div className="nav-buttons">
+              <button 
+                className="btn btn-outline-primary me-2" 
+                onClick={handleLogin}
+              >
+                {t?.login || 'Đăng nhập'}
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={handleRegister}
+              >
+                {t?.register || 'Đăng ký'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

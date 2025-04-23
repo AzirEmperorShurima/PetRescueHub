@@ -7,8 +7,9 @@ export const petsMock = [
     age: '2 tuổi', 
     gender: 'male',
     description: 'Chó Golden Retriever thân thiện, năng động và rất thích chơi đùa với trẻ em.', 
-    image: 'https://images.pexels.com/photos/825949/pexels-photo-825949.jpeg',
-    tags: ['chó', 'Golden Retriever', 'thân thiện']
+    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+    tags: ['chó', 'Golden Retriever', 'thân thiện'],
+    status: 'available'
   },
   { 
     id: 2, 
@@ -18,8 +19,9 @@ export const petsMock = [
     age: '1 tuổi', 
     gender: 'female',
     description: 'Mèo Xiêm đáng yêu, điềm tĩnh và rất sạch sẽ.', 
-    image: 'https://images.pexels.com/photos/4587993/pexels-photo-4587993.jpeg',
-    tags: ['mèo', 'Xiêm', 'điềm tĩnh']
+    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+    tags: ['mèo', 'Xiêm', 'điềm tĩnh'],
+    status: 'available'
   },
   { 
     id: 3, 
@@ -29,8 +31,9 @@ export const petsMock = [
     age: '3 tuổi', 
     gender: 'male',
     description: 'Chó Poodle thông minh, dễ huấn luyện và rất thân thiện với mọi người.', 
-    image: 'https://images.pexels.com/photos/5212704/pexels-photo-5212704.jpeg',
-    tags: ['chó', 'Poodle', 'thông minh']
+    image: 'https://images.unsplash.com/photo-1575859431774-2e57ed632664?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+    tags: ['chó', 'Poodle', 'thông minh'],
+    status: 'available'
   },
   { 
     id: 4, 
