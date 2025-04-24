@@ -10,7 +10,7 @@ authRouter.use((req, res, next) => {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
+        // 'Access-Control-Allow-Origin': '*',
     });
     // res.flushHeaders();
     next();

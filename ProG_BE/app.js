@@ -29,10 +29,9 @@ app.set('strict routing', true) // phân biệt /user và /user/
 
 // app.use(express.static('public')) // thư mục chứa file tĩnh (image, video, ...)
 app.use(cors({
-    // origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    // credentials: true,
-    // methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-}))
+    origin: 'http://localhost:3000',
+    credentials: true
+}));
 app.use(compression())
 app.use(cookieParser())
 app.use(helmet());

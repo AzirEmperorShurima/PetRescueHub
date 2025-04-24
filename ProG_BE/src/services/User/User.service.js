@@ -1,29 +1,4 @@
-// import jwt from "jsonwebtoken";
-// import { SECRET_KEY } from "../../../config.js";
-// export const authenticateUser = (req, cookiePath) => {
-//     const userCookies = req.cookies.cookiePath;
-//     if (!userCookies) {
-//         return new Error("No token provided");
-//     }
 
-//     try {
-//         return jwt.verify(userCookies, SECRET_KEY);
-//     } catch (err) {
-//         throw new Error("Invalid or expired token");
-//     }
-// };
-// /**
-// * Lấy ID người dùng từ cookie
-// * @param {Object} req - Đối tượng yêu cầu
-// * @returns {String} - ID người dùng
-// */
-// export const getUserIdFromCookies = (data, req, cookiesPath) => {
-//     if (!data) {
-//         data = "id"
-//     }
-//     const decodedUser = authenticateUser(req, cookiesPath);
-//     return decodedUser.data;
-// }
 import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../../../config.js";
 

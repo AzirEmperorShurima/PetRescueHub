@@ -730,3 +730,58 @@ export const report_compromised_account = async (req, res) => {
         });
     }
 };
+
+export const requestReactivation = async (req, res) => {
+    const { email } = req.body;
+
+    const foundUser = await user.findOne({ email });
+    if (!foundUser || !foundUser.isCompromised) {
+        return res.status(400).json({ message: 'No compromised account found with this email' });
+    }
+
+    const reactivationToken = jwt.sign(
+        { id: foundUser._id, email: foundUser.email },
+        SECRET_KEY,
+        { expiresIn: '15m' }
+    );
+
+    // Gửi mail xác thực
+    await sendMailService({
+        email,
+        subject: "Reactivate your account",
+        html: `<p>Click the link below to reactivate your account:</p>
+               <a href="https://yourdomain.com/reactivate?token=${reactivationToken}">Reactivate Account</a>`
+    });
+
+    return res.status(200).json({ message: 'Reactivation link has been sent to your email' });
+};
+
+export const reactivateCompromisedAccount = async (req, res) => {
+    const { token } = req.query;
+    if (!token) {
+        return res.status(400).json({ message: 'Token is required' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const foundUser = await user.findOne({ _id: decoded.id, email: decoded.email });
+
+        if (!foundUser || !foundUser.isCompromised) {
+            return res.status(400).json({ message: 'Invalid or already reactivated account' });
+        }
+
+        foundUser.isActive = true;
+        foundUser.isCompromised = false;
+        foundUser.tokens = []; // Reset token để tránh reuse
+        await foundUser.save();
+
+        return res.status(200).json({ message: 'Account has been reactivated successfully' });
+
+    } catch (error) {
+        const expired = error.name === 'TokenExpiredError';
+        return res.status(expired ? 401 : 500).json({
+            message: expired ? 'Token expired. Request a new reactivation link.' : 'Server error',
+            error: error.message
+        });
+    }
+};
