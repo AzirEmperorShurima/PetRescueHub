@@ -70,6 +70,10 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        isCompromised: {
+            type: Boolean,
+            default: false
+        },
         volunteerRequestStatus: {
             type: String,
             enum: ["pending", "approved", "rejected", "none"],
