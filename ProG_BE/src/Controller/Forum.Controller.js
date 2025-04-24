@@ -1,103 +1,19 @@
 import { StatusCodes } from "http-status-codes";
-import PostSchema, { ForumPost, PostModel } from "../models/PostSchema.js";
+import { ForumPost, PostModel } from "../models/PostSchema.js";
 import * as forumService from "../services/Forum/Forum.service.js";
 import * as commentService from "../services/Comments/Comments.service.js"
 import * as reactionService from "../services/Reaction/Reaction.service.js";
-import { getUserFieldFromToken} from "../services/User/User.service.js";
+import { getUserFieldFromToken } from "../services/User/User.service.js";
 import { CommentModel } from "../models/CommentsSchema.js";
 import Reaction from "../models/ReactionSchema.js";
-
-
-// export const getForumPosts = async (req, res) => {
-//     const requestOptions = {
-//         page: req.query.page,
-//         limit: req.query.limit,
-//         sort: req.query.sort || { createdAt: -1 },
-//         search: req.query.search || "",
-//         tag: req.query.tag || "",
-//         postType: req.query.postType || ""
-//     }
-//     const result = await forumService.getListForumPosts(requestOptions);
-
-//     if (result.success) {
-//         const posts = result.data;
-//         const totalPosts = await PostModel.countDocuments(requestOptions); // Lấy tổng số bài viết
-
-//         const totalPages = Math.ceil(totalPosts / requestOptions.limit); // Tính tổng số trang
-
-//         return res.status(200).json({
-//             success: true,
-//             data: posts,
-//             pagination: {
-//                 currentPage: requestOptions.page,
-//                 totalPages: totalPages,
-//                 totalPosts: totalPosts
-//             }
-//         });
-//     } else {
-//         return res.status(500).json({ success: false, message: result.message });
-//     }
-// };
-// export const getForumPosts = async (req, res) => {
-//     try {
-//         const userId = getUserIdFromCookies(req); // Lấy userId từ cookies
-
-//         const requestOptions = {
-//             page: parseInt(req.query.page) || 1,
-//             limit: parseInt(req.query.limit) || 10,
-//             sort: req.query.sort ? JSON.parse(req.query.sort) : { createdAt: -1 },
-//             search: req.query.search || "",
-//             tag: req.query.tag || "",
-//             postType: req.query.postType || "",
-//             userId
-//         };
-
-//         const result = await forumService.getRefreshedListForumPosts(requestOptions);
-
-//         if (!result.success) {
-//             return res.status(500).json({ success: false, message: result.message });
-//         }
-
-//         const posts = result.data;
-//         const filter = {
-//             ...(requestOptions.tag && { tags: requestOptions.tag }),
-//             ...(requestOptions.search && { $text: { $search: requestOptions.search } }),
-//             ...(requestOptions.postType && { postType: requestOptions.postType }),
-//             $or: [
-//                 { postStatus: "public" },
-//                 ...(userId ? [{ author: userId }] : [])
-//             ]
-//         };
-
-//         const totalPosts = await PostModel.countDocuments(filter);
-//         const totalPages = Math.ceil(totalPosts / requestOptions.limit);
-
-//         return res.status(200).json({
-//             success: true,
-//             data: posts,
-//             pagination: {
-//                 currentPage: requestOptions.page,
-//                 totalPages,
-//                 totalPosts,
-//                 limit: requestOptions.limit,
-//                 hasNext: requestOptions.page < totalPages,
-//                 hasPrev: requestOptions.page > 1
-//             },
-//             metadata: {
-//                 timestamp: new Date().toISOString(),
-//                 postType: requestOptions.postType
-//             }
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ success: false, message: "Lỗi server khi lấy danh sách bài viết" });
-//     }
-// };
+import { COOKIE_PATHS } from "../../config.js";
 
 export const getForumPosts = async (req, res) => {
     try {
-        const userId = getUserIdFromCookies(req);
-
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         const requestOptions = {
             limit: parseInt(req.query.limit) || 10,
             cursor: req.query.cursor || null,
@@ -132,6 +48,10 @@ export const getForumPosts = async (req, res) => {
 
 
 export const getPostById = async (req, res) => {
+    const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+    if (!userId) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+    }
     const result = await forumService.getPostById(req.params.Post_id);
 
     if (result.success) {
@@ -143,7 +63,7 @@ export const getPostById = async (req, res) => {
 
 export const updateForumPost = async (req, res) => {
     try {
-        const userId = getUserIdFromCookies(req);
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -215,14 +135,13 @@ export const createNewForumPost = async (req, res) => {
     try {
         const { title, content, tags, imgUrl, postType } = req.body;
 
-        const userId = getUserIdFromCookies(req);
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
         if (!title || !content) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Tiêu đề và nội dung không được để trống" });
-        }
-
-        if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
 
         const result = await forumService.createPost(
@@ -259,9 +178,9 @@ export const createNewForumPost = async (req, res) => {
 export const addComment = async (req, res) => {
     try {
         const { postId, content } = req.body;
-        const userId = getUserIdFromCookies(req);
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "UnAuthorize" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
 
         // Kiểm tra bài viết có tồn tại không
@@ -284,7 +203,7 @@ export const addComment = async (req, res) => {
 export const replyComment = async (req, res) => {
     try {
         const { postId, content, parentComment } = req.body;
-        const userId = getUserIdFromCookies(req);
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -308,23 +227,14 @@ export const replyComment = async (req, res) => {
 
     }
 }
-// export const getCommentsByPost = async (req, res) => {
-//     try {
-//         const { postId } = req.params;
-//         const listComments = await commentService.getCommentsByPostIdService(postId);
-//         if (!listComments.success) {
-//             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: "GET comment by Post id failed", message: listComments.message });
-//         }
-//         return res.status(StatusCodes.OK).json({ status: "GET comment Successfully", commentsData: listComments.data });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
-//     }
-// };
 
 // lấy danh sách comment(đã phân trang) của 1 bài post 
 export const getCommentsByPost = async (req, res) => {
     try {
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         const { postId } = req.params;
         const { page = 1, limit = 10 } = req.query; // Thêm phân trang từ query
 
@@ -360,6 +270,10 @@ export const getCommentsByPost = async (req, res) => {
 
 // Lấy danh sách reply comments theo commentId của comment cha
 export const getRepliesByParent = async (req, res) => {
+    const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+    if (!userId) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+    }
     try {
         const { commentId } = req.params; // Lấy commentId thay vì postId
         const { page = 1, limit = 10 } = req.query;
@@ -397,9 +311,9 @@ export const getRepliesByParent = async (req, res) => {
 export const deleteComment = async (req, res) => {
     try {
         const { commentId } = req.params;
-        const userId = getUserIdFromCookies(req);
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
         const comment = await CommentModel.findById(commentId);
         if (!comment) return res.status(StatusCodes.NOT_FOUND).json({ message: "Comment does not exists" });
@@ -424,7 +338,7 @@ export const updateComment = async (req, res) => {
     try {
         const { commentId } = req.params;
         const { content } = req.body;
-        const userId = getUserIdFromCookies(req);
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -452,10 +366,9 @@ export const updateComment = async (req, res) => {
 export const handlerReaction = async (req, res) => {
     try {
         const { targetId, reactionType, targetType } = req.body;
-        const userId = getUserIdFromCookies(req);
-
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Bạn cần đăng nhập để thực hiện hành động này' });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
         if (!reactionType) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Loại reaction không được để trống' });
@@ -486,6 +399,10 @@ export const handlerReaction = async (req, res) => {
 
 export const getReactionsByPost = async (req, res) => {
     try {
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         const { postId, targetId } = req.params;
         if (!postId) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "PostId không được để trống" });
@@ -516,12 +433,11 @@ export const getReactionsByPost = async (req, res) => {
 */
 export const getUserInteractedPosts = async (req, res) => {
     try {
-        const userId = getUserIdFromCookies(req);
-        const { page = 1, limit = 10 } = req.query;
-
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Bạn cần đăng nhập để thực hiện hành động này' });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
+        const { page = 1, limit = 10 } = req.query;
 
         const result = await reactionService.getUserInteractedPosts({
             userId,

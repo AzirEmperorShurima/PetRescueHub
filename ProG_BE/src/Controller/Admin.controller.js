@@ -1,3 +1,4 @@
+import { COOKIE_PATHS } from "../../config.js";
 import Role from "../models/Role.js";
 import user from "../models/user.js";
 import { createPackage } from "../services/PackageService/PackageService.js";
@@ -9,12 +10,39 @@ import { getUserIdFromCookies } from "../services/User/User.service.js";
  */
 export const getUsers = async (req, res) => {
     try {
-        const users = await user.find().populate("roles", "name");
-        res.json(users);
+        // Lấy ID từ token trong cookie
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName);
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
+        }
+
+        // Tìm user từ DB
+        const requestingUser = await user.findById(userId).populate('roles', 'name');
+        if (!requestingUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const isAdmin = requestingUser.roles?.some(role => role.name === 'admin');
+        if (!isAdmin) {
+            return res.status(403).json({ message: "You are not authorized to access this resource" });
+        }
+
+        // Lấy danh sách người dùng, ẩn các thông tin nhạy cảm
+        const users = await user.find({}, '-password -tokens -__v')
+            .populate("roles", "name")
+            .lean(); // plain JS object
+
+        return res.status(200).json({
+            count: users.length,
+            users
+        });
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error in getUsers:', error);
+        return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
 
 /**
  * @desc Xóa người dùng (Chỉ Admin)
@@ -23,28 +51,39 @@ export const deleteUser = async (req, res) => {
     try {
         const { id_delete } = req.body;
 
-        const spy = getUserIdFromCookies(req)
-        if (!spy) {
-            return res.status(403).json({ message: "Bạn không có quyền xóa người dùng!" });
-        }
-        const _user = await user.findById(spy).populate("roles", "name");
-        if (!_user) return res.status(404).json({ message: "Người dùng không tồn tại!" });
-
-        const userRoles = _user.roles.map(role => role.name); // Lấy danh sách tên roles
-        if (!userRoles.includes("admin")) {
+        // Lấy user ID từ token cookie
+        const currentUserId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName);
+        if (!currentUserId) {
             return res.status(403).json({ message: "Bạn không có quyền xóa người dùng!" });
         }
 
-        if (spy === id_delete) {  // 🔹 Kiểm tra nếu admin đang xóa chính mình
+        // Tìm người dùng hiện tại và kiểm tra quyền
+        const currentUser = await user.findById(currentUserId).populate("roles", "name");
+        if (!currentUser) {
+            return res.status(404).json({ message: "Tài khoản hiện tại không tồn tại!" });
+        }
+
+        const isAdmin = currentUser.roles.some(role => role.name === "admin");
+        if (!isAdmin) {
+            return res.status(403).json({ message: "Bạn không có quyền xóa người dùng!" });
+        }
+
+        // Không cho phép admin tự xóa chính mình
+        if (currentUserId === id_delete) {
             return res.status(400).json({ message: "Bạn không thể tự xóa chính mình!" });
         }
+
+        // Tiến hành xóa người dùng
         const deletedUser = await user.findByIdAndDelete(id_delete);
+        if (!deletedUser) {
+            return res.status(404).json({ message: "Người dùng không tồn tại!" });
+        }
 
-        if (!deletedUser) return res.status(404).json({ message: "Người dùng không tồn tại!" });
+        return res.status(200).json({ message: "Xóa người dùng thành công!" });
 
-        res.json({ message: "Xóa người dùng thành công!" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("❌ Error in deleteUser:", error);
+        return res.status(500).json({ message: "Lỗi server", error: error.message });
     }
 };
 
