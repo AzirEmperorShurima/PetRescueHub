@@ -1,129 +1,65 @@
-import { usersMock, loginResponseMock } from '../mocks/authMock';
+// auth.service.js
+import axios from 'axios';
+import api from '../utils/axios'; // dùng axios có xử lý refresh
 
-// Lưu thông tin người dùng đã đăng nhập vào localStorage hoặc sessionStorage
 const setUserSession = (user, token, rememberMe = true) => {
-  if (!user || !token) {
-    console.error("Invalid user or token data:", { user, token });
-    return;
-  }
-  
   const storage = rememberMe ? localStorage : sessionStorage;
   storage.setItem('user', JSON.stringify(user));
   storage.setItem('token', token);
-  console.log("User session saved:", { user, token, storage: rememberMe ? "localStorage" : "sessionStorage" });
 };
 
-// Lấy thông tin người dùng đã đăng nhập từ localStorage hoặc sessionStorage
 const getUserSession = () => {
-  // Kiểm tra localStorage trước
-  const userStr = localStorage.getItem('user');
-  if (userStr) {
-    try {
-      const user = JSON.parse(userStr);
-      console.log("User found in localStorage:", user);
-      return user;
-    } catch (e) {
-      console.error("Error parsing user from localStorage:", e);
-    }
-  }
-  
-  // Nếu không có trong localStorage, kiểm tra sessionStorage
-  const sessionUserStr = sessionStorage.getItem('user');
-  if (sessionUserStr) {
-    try {
-      const user = JSON.parse(sessionUserStr);
-      console.log("User found in sessionStorage:", user);
-      return user;
-    } catch (e) {
-      console.error("Error parsing user from sessionStorage:", e);
-    }
-  }
-  
-  console.log("No user found in storage");
-  return null;
+  const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+  return userStr ? JSON.parse(userStr) : null;
 };
 
-// Lấy token từ localStorage hoặc sessionStorage
 const getToken = () => {
   return localStorage.getItem('token') || sessionStorage.getItem('token');
 };
 
-// Xóa thông tin người dùng đã đăng nhập
 const removeUserSession = () => {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
-  sessionStorage.removeItem('user');
-  sessionStorage.removeItem('token');
-  console.log("User session removed");
+  localStorage.clear();
+  sessionStorage.clear();
 };
 
-// Giả lập API đăng nhập
-const login = async (email, password) => {
-  console.log("Login attempt:", { email, password });
-  
-  // Giả lập delay của API
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Tìm người dùng trong mock data
-  const user = usersMock.find(u => u.email === email && u.password === password);
-  
-  if (user) {
-    // Tạo bản sao của user và loại bỏ password
-    const { password: _, ...userWithoutPassword } = user;
-    
-    // Đảm bảo trả về thông tin đầy đủ của người dùng
-    console.log("Đã tìm thấy thông tin người dùng:", userWithoutPassword);
-    
-    return {
-      user: userWithoutPassword,
-      token: 'fake-jwt-token'
-    };
-  } else {
-    console.error("Không tìm thấy người dùng với email và password đã cung cấp");
-    throw new Error('Invalid email or password');
-  }
+const login = async ({ username, email, password }) => {
+  const res = await axios.post(`http://localhost:4000/api/auth/access/login`, {
+    username,
+    email,
+    password
+  }, { withCredentials: true });
+
+  return res.data; // { user, message }
 };
 
-// Giả lập API đăng ký
-const register = async (userData) => {
-  console.log("Register attempt:", userData);
-  
-  // Giả lập delay của API
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Kiểm tra email đã tồn tại chưa
-  const existingUser = usersMock.find(u => u.email === userData.email);
-  
-  if (existingUser) {
-    throw new Error('Email already exists');
-  }
-  
-  // Tạo người dùng mới
-  const newUser = {
-    id: usersMock.length + 1,
-    name: userData.name || userData.email.split('@')[0],
-    email: userData.email,
-    avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
-    role: 'user',
-    createdAt: new Date().toISOString()
+const register = async ({ username, email, password }) => {
+  const res = await api.post('/auth/sign/signup', { username, email, password });
+  return res.data;
+};
+
+const sendOTP = async (email, type) => {
+  const res = await api.post('/auth/otp/send', { email, type });
+  return res.data;
+};
+
+// Gửi payload { userId, otp } theo API backend :contentReference[oaicite:5]{index=5}
+const verifyOTP = async (userId, otp) => {
+    const token = getToken();
+    const res = await api.post(
+      '/auth/sign/verify-otp',
+      { userId, otp },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return res.data;  // { success, user, token }
   };
-  
-  // Trong thực tế, bạn sẽ lưu người dùng mới vào database
-  // Ở đây chúng ta chỉ giả lập
-  
-  return {
-    user: newUser,
-    token: 'fake-jwt-token'
-  };
-};
 
-const authService = {
+export default {
   setUserSession,
   getUserSession,
   getToken,
   removeUserSession,
   login,
-  register
+  register,
+  sendOTP,
+  verifyOTP
 };
-
-export default authService;

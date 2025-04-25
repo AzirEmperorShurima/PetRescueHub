@@ -31,7 +31,6 @@ export const Signup_Handler = async (req, res) => {
             id: CreateUser._id,
             tokenType: TOKEN_TYPE.REGISTER_VERIFY.name,
         }
-        console.log("🚀 ~ file: Auth.Controller.js:40 ~ Signup_Handler ~ userSignUpPayLoad:", userSignUpPayLoad)
         const token = await getCookies(
             userSignUpPayLoad,
             COOKIE_PATHS.REGISTER_VERIFY.Path,
@@ -107,19 +106,13 @@ export const loginHandler = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid Password' });
         }
-        // console.log("🚀 ~ file: Auth.Controller.js:90 ~ loginHandler ~ foundUser:")
-        // let roles = []
-        // foundUser.roles.forEach((r) => {
-        //     roles.push(r.name)
-        // })
-        // console.log(roles)
+
         const userLoginPayLoad = {
             id: foundUser._id,
             email: foundUser.email,
             roles: foundUser.roles.map(role => role.name), // Add roles here
             tokenType: TOKEN_TYPE.ACCESS_TOKEN.name,
         }
-        console.log("🚀 ~ file: Auth.Controller.js:90 ~ loginHandler ~ userLoginPayLoad:", userLoginPayLoad)
         const newCookies = await getCookies(
             userLoginPayLoad,
             COOKIE_PATHS.ACCESS_TOKEN.Path,
@@ -188,52 +181,86 @@ export const logoutHandler = async (req, res) => {
 
 export const refreshToken = async (req, res) => {
     try {
-        // Lấy token từ cookie
-        const currentToken = req.cookies.token;
-        if (!currentToken) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
+        // Lấy refresh token từ cookie
+        const refreshToken = req.cookies[COOKIE_PATHS.REFRESH_TOKEN.CookieName];
+        if (!refreshToken) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Missing refresh token' });
         }
 
-        // Giải mã token
-        let decoded;
-        try {
-            decoded = jwt.verify(currentToken, SECRET_KEY);
-        } catch (err) {
-            return res.status(StatusCodes.FORBIDDEN).json({ message: 'Invalid or expired token', error: err.message });
-        }
-        const foundUser = await user.findById(decoded.id);
-        if (!foundUser) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User not found' });
-        }
-        const validToken = foundUser.tokens.find(tokenObj => tokenObj.token === currentToken);
-
-        if (!validToken) {
-            return res.status(StatusCodes.FORBIDDEN).json({ message: 'Token is not valid or has been revoked' });
+        // Lấy userId từ access token
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Invalid or missing access token' });
         }
 
-        foundUser.tokens = foundUser.tokens.filter(tokenObj => tokenObj.token !== currentToken);
-        const newToken = jwt.sign({ id: foundUser._id }, SECRET_KEY, { expiresIn: '1d' });
-        foundUser.tokens.push({
-            type: "REFRESH-TOKEN",
-            token: newToken,
-            signedAt: Date.now(),
-            expiredAt: Date.now() + 86400000
-        });
 
-        await foundUser.save();
+        const founduser = await user.findById(userId);
+        if (!founduser) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'User not found' });
+        }
+        const matchedToken = founduser.tokens.find(
+            (tokenObj) => tokenObj.token === refreshToken && tokenObj.type === TOKEN_TYPE.REFRESH_TOKEN.name
+        );
+        if (!matchedToken) {
+            return res.status(StatusCodes.FORBIDDEN).json({ error: 'Invalid or revoked refresh token' });
+        }
 
-        res.cookie('token', newToken, {
-            expires: new Date(Date.now() + 86400000),
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict'
-        });
+        // Xóa refresh token cũ
+        founduser.tokens = user.tokens.filter((tokenObj) => tokenObj.token !== refreshToken);
 
-        return res.status(StatusCodes.OK).json({ message: 'Token refreshed successfully', token: newToken });
+        // Tạo payload cho tokens 
+        const refreshTokenPayload = {
+            id: founduser._id,
+            email: founduser.email,
+            tokenType: TOKEN_TYPE.REFRESH_TOKEN.name,
+        };
+        const accessTokenPayload = {
+            id: founduser._id,
+            email: founduser.email,
+            roles: founduser.roles.map((role) => role.name),
+            tokenType: TOKEN_TYPE.ACCESS_TOKEN.name,
+        };
 
-    } catch (err) {
-        console.error("Refresh token error:", err);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error', error: err.message });
+        // Tạo tokens mới và lưu vào cookie
+        const newRefreshToken = await getCookies(
+            refreshTokenPayload,
+            COOKIE_PATHS.REFRESH_TOKEN.Path,
+            COOKIE_PATHS.REFRESH_TOKEN.CookieName,
+            TOKEN_TYPE.REFRESH_TOKEN.maxAge,
+            TOKEN_TYPE.REFRESH_TOKEN.expiresIn,
+            res
+        );
+        const newAccessToken = await getCookies(
+            accessTokenPayload,
+            COOKIE_PATHS.ACCESS_TOKEN.Path,
+            COOKIE_PATHS.ACCESS_TOKEN.CookieName,
+            TOKEN_TYPE.ACCESS_TOKEN.maxAge,
+            TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
+            res
+        );
+
+        founduser.tokens.push(
+            {
+                type: TOKEN_TYPE.REFRESH_TOKEN.name,
+                token: newRefreshToken,
+                signedAt: Date.now(),
+                expiredAt: Date.now() + TOKEN_TYPE.REFRESH_TOKEN.maxAge,
+            },
+            {
+                type: TOKEN_TYPE.ACCESS_TOKEN.name,
+                token: newAccessToken,
+                signedAt: Date.now(),
+                expiredAt: Date.now() + TOKEN_TYPE.ACCESS_TOKEN.maxAge,
+            }
+        );
+        await founduser.save();
+
+        return res.status(StatusCodes.OK).json({ message: 'Token refreshed successfully' });
+    } catch (error) {
+        console.error('Refresh token error:', error);
+        return res
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -259,6 +286,10 @@ export const manageTokens = async (_user, token, type) => {
 
 export const getProfile = async (req, res) => {
     try {
+        const userToken = req.cookies[COOKIE_PATHS.ACCESS_TOKEN.CookieName]
+        if (userToken) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - No token provided" });
+        }
         const currUserId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         const currUserRoles = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'roles') || [];
         const currAccessTokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'tokenType');
@@ -283,7 +314,7 @@ export const getProfile = async (req, res) => {
         if (!foundUser) {
             return res.status(StatusCodes.NOT_FOUND).json({ message: "User not found" });
         }
-
+        const isAdmin = currUserRoles.includes('admin')
         const isOwner = foundUser._id.toString() === currUserId;
         const isPrivate = foundUser.isPrivate || false;
 
@@ -296,11 +327,6 @@ export const getProfile = async (req, res) => {
                 return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - Token mismatch" });
             }
         }
-
-        // Base profile - Public info
-        // const hideIfPrivate = (value) => (isPrivate && !(isOwner || isAdmin)) ? "This is Private information" : value;
-        // const hideEmail = (value) => (isPrivate && !(isOwner || isAdmin)) ? "This is Private information" : value;
-        // const hidePhone = (value) => (isPrivate && !(isOwner || isAdmin)) ? "This is Private information" : value;
 
         let userProfile = {
             id: foundUser._id.toString(),
@@ -335,9 +361,6 @@ export const getProfile = async (req, res) => {
 export const verified_OTP = async (req, res) => {
     const cookies = req.cookies[COOKIE_PATHS.REGISTER_VERIFY.CookieName];
     const otp = req.body.otp;
-    console.log("🚀 ~ file: Auth.Controller.js:195 ~ verified_OTP ~ cookies:", req.cookies)
-    console.log("🚀 ~ file: Auth.Controller.js:195 ~ verified_OTP ~ cookies:", cookies)
-    console.log("🚀 ~ file: Auth.Controller.js:195 ~ verified_OTP ~ otp:", otp)
     if (!cookies) {
         return res
             .status(StatusCodes.UNAUTHORIZED)
@@ -352,10 +375,8 @@ export const verified_OTP = async (req, res) => {
 
     try {
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.REGISTER_VERIFY.CookieName, 'id');
-        console.log("🚀 ~ file: Auth.Controller.js:195 ~ verified_OTP ~ userId:", userId)
         const redisTokenKey = `register:${userId}`;
         const redisToken = await redisClient.get(redisTokenKey);
-        console.log("🚀 ~ file: Auth.Controller.js:195 ~ verified_OTP ~ redisToken:", redisToken)
         if (!redisToken || redisToken !== cookies) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: 'Verify OTP failed, token expired or invalid'
@@ -383,6 +404,29 @@ export const verified_OTP = async (req, res) => {
         }
 
         foundUser.isActive = true;
+        const userLoginPayLoad = {
+            id: foundUser._id,
+            email: foundUser.email,
+            roles: foundUser.roles.map(role => role.name), // Add roles here
+            tokenType: TOKEN_TYPE.ACCESS_TOKEN.name,
+        }
+        const newAccessToken = await getCookies(
+            userLoginPayLoad,
+            COOKIE_PATHS.ACCESS_TOKEN.Path,
+            COOKIE_PATHS.ACCESS_TOKEN.CookieName,
+            TOKEN_TYPE.ACCESS_TOKEN.maxAge,
+            TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
+            res
+        );
+        foundUser.tokens.push(
+            {
+                type: TOKEN_TYPE.ACCESS_TOKEN.name,
+                token: newAccessToken,
+                signedAt: Date.now(),
+                expiredAt: Date.now() + TOKEN_TYPE.ACCESS_TOKEN.maxAge,
+            }
+        );
+
         await foundUser.save();
         await Promise.all([
             redisClient.del(redisTokenKey),
@@ -397,6 +441,84 @@ export const verified_OTP = async (req, res) => {
         return res
             .status(StatusCodes.INTERNAL_SERVER_ERROR)
             .json({ message: 'Verify OTP failed, Internal Server Error' });
+    }
+};
+
+
+export const resendActivationOTP = async (req, res) => {
+    try {
+        const cookieName = COOKIE_PATHS.REGISTER_VERIFY.CookieName;
+        const cookiePath = COOKIE_PATHS.REGISTER_VERIFY.Path;
+
+        const existingCookie = req.cookies[cookieName];
+        if (!existingCookie) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "No registration cookie found"
+            });
+        }
+
+        const userId = getUserFieldFromToken(req, cookieName, 'id');
+        if (!userId) {
+            res.clearCookie(cookieName, {
+                path: cookiePath,
+                httpOnly: true,
+                secure: true,
+                sameSite: 'Strict'
+            });
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid registration cookie"
+            });
+        }
+
+        const foundUser = await UserModel.findById(userId).lean();
+        if (!foundUser) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "User not found"
+            });
+        }
+
+        const redisOTPKey = `otp:signup:${userId}`;
+        const otpTTL = await redisClient.ttl(redisOTPKey);
+
+        const newOTP = otpGenerator();
+
+        // Nếu vẫn còn OTP trong Redis thì ghi đè
+        if (otpTTL > 0) {
+            await redisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
+        } else {
+            // Nếu không còn nhưng user chưa active thì cũng cấp lại
+            if (!foundUser.active) {
+                await redisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
+            } else {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Account already activated"
+                });
+            }
+        }
+
+        // Gửi OTP qua email
+        setImmediate(() => {
+            sendMailService({
+                email: foundUser.email,
+                username: foundUser.username,
+                otp: newOTP
+            }).catch(err => console.error("Send mail failed:", err));
+        });
+
+        return res.status(StatusCodes.OK).json({
+            message: "A new OTP has been sent to your email",
+            email: foundUser.email
+        });
+
+    } catch (error) {
+        console.error("Error in Resend Activation OTP:", error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: 'Error in Resend Activation OTP',
+            error: {
+                message: error.message || "An unknown error occurred",
+                details: error.errors || {}
+            }
+        });
     }
 };
 
@@ -519,12 +641,12 @@ export const reset_password = async (req, res) => {
             tokenType: TOKEN_TYPE.REPORT_COMPROMISED.name,
         }
         const reportCompromisedToken = await getCookies(resetPasswordPayLoad, COOKIE_PATHS.REPORT_COMPROMISED, TOKEN_TYPE.REPORT_COMPROMISED.maxAge, TOKEN_TYPE.REPORT_COMPROMISED.expiresIn, res);
-        const tokenIndex = userFound.tokens.findIndex(t => t.type === 'REPORT-COMPROMISED');
+        const tokenIndex = userFound.tokens.findIndex(t => t.type === TOKEN_TYPE.REPORT_COMPROMISED.name);
 
         if (tokenIndex !== -1) {
 
             userFound.tokens[tokenIndex] = {
-                type: 'REPORT-COMPROMISED',
+                type: TOKEN_TYPE.REPORT_COMPROMISED.name,
                 token: reportCompromisedToken,
                 signedAt: Date.now().toString(),
                 expiredAt: (Date.now() + 86400000).toString()
@@ -532,7 +654,7 @@ export const reset_password = async (req, res) => {
         } else {
 
             userFound.tokens.push({
-                type: 'REPORT-COMPROMISED',
+                type: TOKEN_TYPE.REPORT_COMPROMISED.name,
                 token: reportCompromisedToken,
                 signedAt: Date.now().toString(),
                 expiredAt: (Date.now() + 86400000).toString()
@@ -577,21 +699,22 @@ export const report_compromised_account = async (req, res) => {
     }
 
     try {
-        // Giải mã token
         const decodedUser = jwt.verify(token, SECRET_KEY);
         const userID = decodedUser.id;
-        console.log(decodedUser);
-        // Tìm người dùng bằng ID
-        const foundUser = await user.findById(userID);
+        const userEmail = decodedUser.email
+
+        const foundUser = await user.findOne({ _id: userID, email: userEmail });
         if (!foundUser) {
             return res.status(404).json({ message: 'User not found' });
         }
-
+        if (foundUser.isActive == false) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Req failed' })
+        }
         foundUser.isActive = false;
+        foundUser.isCompromised = true;
         foundUser.tokens = foundUser.tokens.filter((t) => t.token !== token);
         await foundUser.save();
 
-        // Tùy chọn: Gửi thông báo qua email
         // await sendMailNotification({ email: foundUser.email });
 
         return res.status(200).json({ message: 'Account reported as compromised' });
@@ -608,42 +731,57 @@ export const report_compromised_account = async (req, res) => {
     }
 };
 
+export const requestReactivation = async (req, res) => {
+    const { email } = req.body;
 
-export const report_compromised_account1 = async (req, res) => {
+    const foundUser = await user.findOne({ email });
+    if (!foundUser || !foundUser.isCompromised) {
+        return res.status(400).json({ message: 'No compromised account found with this email' });
+    }
+
+    const reactivationToken = jwt.sign(
+        { id: foundUser._id, email: foundUser.email },
+        SECRET_KEY,
+        { expiresIn: '15m' }
+    );
+
+    // Gửi mail xác thực
+    await sendMailService({
+        email,
+        subject: "Reactivate your account",
+        html: `<p>Click the link below to reactivate your account:</p>
+               <a href="https://yourdomain.com/reactivate?token=${reactivationToken}">Reactivate Account</a>`
+    });
+
+    return res.status(200).json({ message: 'Reactivation link has been sent to your email' });
+};
+
+export const reactivateCompromisedAccount = async (req, res) => {
     const { token } = req.query;
-
     if (!token) {
         return res.status(400).json({ message: 'Token is required' });
     }
 
     try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const foundUser = await user.findOne({ _id: decoded.id, email: decoded.email });
 
-        const user = await user.findOne({
-            'tokens.token': token,
-            'tokens.type': 'REPORT-COMPROMISED'
-        });
-
-        if (!user) {
-            return res.status(404).json({ message: 'Invalid or expired token' });
+        if (!foundUser || !foundUser.isCompromised) {
+            return res.status(400).json({ message: 'Invalid or already reactivated account' });
         }
 
-        user.isActive = false;
+        foundUser.isActive = true;
+        foundUser.isCompromised = false;
+        foundUser.tokens = []; // Reset token để tránh reuse
+        await foundUser.save();
 
+        return res.status(200).json({ message: 'Account has been reactivated successfully' });
 
-        user.tokens = user.tokens.filter((t) => t.token !== token);
-
-        await user.save();
-
-        return res.status(200).json({ message: 'Account reported as compromised' });
     } catch (error) {
-        console.error('Error in report_compromised_account1:', error);
-
-        const isTokenExpired = error.name === 'TokenExpiredError';
-        return res.status(isTokenExpired ? 401 : 500).json({
-            message: isTokenExpired
-                ? 'Token has expired. Please request a new report link.'
-                : 'An error occurred while processing your request.',
-            error: error.message || 'Unknown error',
+        const expired = error.name === 'TokenExpiredError';
+        return res.status(expired ? 401 : 500).json({
+            message: expired ? 'Token expired. Request a new reactivation link.' : 'Server error',
+            error: error.message
         });
     }
 };

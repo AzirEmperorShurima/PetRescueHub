@@ -121,16 +121,16 @@ function Login() {
         {error && <div className="error-message">{error}</div>}
         <form className="form" onSubmit={handleSubmitForm}>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email / Username</label>
             <input
               required
               className="input"
               value={email}
               onChange={handleChangEmail}
-              type="email"
+              type="text"
               name="email"
               id="email"
-              placeholder="Nhập địa chỉ email của bạn"
+              placeholder="Nhập địa chỉ email hoặc tên đăng nhập của bạn"
               autoComplete="username"
             />
           </div>

@@ -14,6 +14,10 @@ export const COOKIE_PATHS = {
         CookieName: 'ACCESS-TOKEN',
         Path: '/'
     },
+    REFRESH_TOKEN: {
+        CookieName: 'ACCESS-TOKEN',
+        Path: '/'
+    },
     REGISTER_VERIFY: {
         CookieName: 'REGISTER_VERIFY',
         Path: '/api/auth/sign'
@@ -37,22 +41,27 @@ export const TOKEN_TYPE = {
         expiresIn: '24h',
         maxAge: 1000 * 60 * 60 * 24, // 24h
     },
-    REGISTER_VERIFY: {
+    REFRESH_TOKEN: {
+        name: 'REFRESH_TOKEN',
+        expiresIn: '24h',
+        maxAge: 1000 * 60 * 60 * 24,
+    },
+    REGISTER_VERIFY: { // verify otp in email while register
         name: 'REGISTER_VERIFY',
         expiresIn: '15m',
         maxAge: 1000 * 60 * 15, // 15m
     },
-    FORGOT_PASSWORD: {
+    FORGOT_PASSWORD: { // accept to enter and verify otp in email while forgot password
         name: 'FORGOT_PASSWORD',
         expiresIn: '15m',
         maxAge: 1000 * 60 * 15, // 15m
     },
-    FORGOT_PASSWORD_VERIFIED: {
+    FORGOT_PASSWORD_VERIFIED: {// verify otp in email while forgot password
         name: 'FORGOT_PASSWORD_VERIFIED',
         expiresIn: '15m',
         maxAge: 1000 * 60 * 15, // 15m
     },
-    ACCEPT_RESET_PASSWORD: {
+    ACCEPT_RESET_PASSWORD: { // accept to reset password
         name: 'ACCEPT_RESET_PASSWORD',
         expiresIn: '15m',
         maxAge: 1000 * 60 * 15, // 15m
@@ -62,11 +71,11 @@ export const TOKEN_TYPE = {
         expiresIn: '15m',
         maxAge: 1000 * 60 * 60 * 24, // 15m
     },
-    EMAIL_VERIFY: {
-        name: 'EMAIL_VERIFY',
-        expiresIn: '15m',
-        maxAge: 1000 * 60 * 15, // 15m
-    },
+    // EMAIL_VERIFY: {
+    //     name: 'EMAIL_VERIFY',
+    //     expiresIn: '15m',
+    //     maxAge: 1000 * 60 * 15, // 15m
+    // },
 }
 // Momo payment gate config 
 export const MOMO_API = 'https://test-payment.momo.vn/v2/gateway/api/create'

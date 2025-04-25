@@ -31,24 +31,20 @@ export const AuthProvider = ({ children }) => {
     checkLoggedIn();
   }, [checkLoggedIn]);
 
-  const login = useCallback(async (email, password, rememberMe = true) => {
+  const login = useCallback(async (emailOrUsername, password, rememberMe = true) => {
     try {
       setLoading(true);
-      const response = await authService.login(email, password);
+      // Truyền đúng object cho service
+      const response = await authService.login({ 
+        email: emailOrUsername.includes('@') ? emailOrUsername : undefined,
+        username: !emailOrUsername.includes('@') ? emailOrUsername : undefined,
+        password
+      });
       
       if (response && response.user) {
-        // Tìm thông tin đầy đủ của user từ mock data
-        const { usersMock } = require('../../mocks/authMock');
-        const fullUserData = usersMock.find(u => u.id === response.user.id);
-        
-        // Sử dụng thông tin đầy đủ nếu có, nếu không thì dùng thông tin cơ bản
-        const userData = fullUserData || response.user;
-        
-        console.log('Đăng nhập với thông tin đầy đủ:', userData);
-        
-        authService.setUserSession(userData, response.token, rememberMe);
-        setUser(userData);
-        return userData;
+        authService.setUserSession(response.user, response.token, rememberMe);
+        setUser(response.user);
+        return response.user;
       } else {
         throw new Error('Invalid login response');
       }
@@ -60,17 +56,15 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const register = useCallback(async (userData) => {
+  const register = useCallback(async (username, email, password) => {
     try {
       setLoading(true);
-      const response = await authService.register(userData);
+      const response = await authService.register({ username, email, password });
       
       if (response && response.user) {
-        authService.setUserSession(response.user, response.token);
-        setUser(response.user);
         return response.user;
       } else {
-        throw new Error('Invalid register response');
+        return response; // Trả về response để xử lý OTP
       }
     } catch (error) {
       console.error('Register error:', error);
@@ -79,6 +73,17 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+  const verifyOTP = useCallback(async (userId, otp) => {
+  setLoading(true);
+  const data = await authService.verifyOTP(userId, otp);  // đúng signature :contentReference[oaicite:6]{index=6}
+  if (data.success && data.user) {
+    authService.setUserSession(data.user, data.token);
+    setUser(data.user);
+  }
+  setLoading(false);
+  return data;
+}, []);
 
   const logout = useCallback(() => {
     authService.removeUserSession();
@@ -102,8 +107,9 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    updateUser
-  }), [user, loading, login, register, logout, updateUser]);
+    updateUser,
+    verifyOTP
+  }), [user, loading, login, register, logout, updateUser, verifyOTP]);
 
   return (
     <AuthContext.Provider value={contextValue}>

@@ -45,9 +45,9 @@ const checkOwnership = async (petId, ownerId) => {
  */
 export const createPet = async (req, res) => {
     try {
-        const ownerId = getUserIdFromCookies(req)
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!ownerId) {
-            return res.status(401).json({ message: "Người dùng chưa đăng nhập!" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
 
         const petData = {
@@ -81,8 +81,10 @@ export const createPet = async (req, res) => {
 export const uploadPetAvatar = async (req, res) => {
     try {
         const { petId, avatarUrl } = req.body
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         await checkOwnership(petId, ownerId); // Kiểm tra quyền
         const updatedPet = await petService.updatePetAvatar(petId, avatarUrl);
         res.status(200).json({ message: "Cập nhật avatar thành công!", avatar: updatedPet.avatar });
@@ -97,8 +99,10 @@ export const uploadPetAvatar = async (req, res) => {
 export const uploadPetCertificate = async (req, res) => {
     try {
         const { petId, certificateName, certificateType } = req.body;
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
         const certificateUrl = req.file?.path;
         if (!certificateUrl) throw new Error("Không có file được upload!");
@@ -122,8 +126,10 @@ export const updatePetProfile = async (req, res) => {
         const { petId } = req.params;
         if (!petId) return res.status(400).json({ message: "Missing pet ID!" });
 
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("User is not logged in!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
         await checkOwnership(petId, ownerId);
 
@@ -148,8 +154,10 @@ export const updatePetProfile = async (req, res) => {
 export const deletePet = async (req, res) => {
     try {
         const { petId } = req.body;
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
         await checkOwnership(petId, ownerId); // Kiểm tra quyền
         const deletePet = await petService.deletePet(petId);
@@ -165,6 +173,10 @@ export const deletePet = async (req, res) => {
  */
 export const getPetsByOwner = async (req, res) => {
     try {
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         const { ownerId } = req.body
         const pets = await petService.getPetsByOwner(ownerId);
         return res.status(200).json({ pets });

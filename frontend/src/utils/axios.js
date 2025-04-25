@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Cấu hình cơ bản
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
@@ -9,6 +9,7 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 15000, // 15 giây timeout
+  withCredentials: true, // Gửi cookie với mỗi request
 });
 
 // Biến để kiểm soát quá trình refresh token

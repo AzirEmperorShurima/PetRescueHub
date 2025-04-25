@@ -1,28 +1,19 @@
-import { mockLoginWithCredentials } from '../../../mocks/authMock';
-import { usersMock } from '../../../mocks/authMock';
+import authService from '../../../services/auth.service';
 import { useNavigate } from 'react-router-dom';
 
 // Hàm đăng nhập với đầy đủ thông tin người dùng
 const Auth = () => {
   const navigate = useNavigate();
   
-  const handleLogin = (email, password, rememberMe = true) => {
+  const handleLogin = async (email, password, rememberMe = true) => {
     try {
-      // Sử dụng hàm mockLoginWithCredentials từ authMock
-      const response = mockLoginWithCredentials(email, password);
+      // Gọi API đăng nhập thực tế
+      const response = await authService.login(email, password);
       
-      // Tìm thông tin đầy đủ của user từ usersMock để đảm bảo có đầy đủ thông tin
-      const fullUserData = usersMock.find(u => u.id === response.user.id);
+      // Lưu thông tin user và token
+      authService.setUserSession(response.user, response.token, rememberMe);
       
-      // Nếu tìm thấy thông tin đầy đủ, sử dụng nó thay vì thông tin cơ bản
-      const userData = fullUserData || response.user;
-      
-      // Lưu thông tin user và token vào localStorage hoặc sessionStorage tùy theo rememberMe
-      const storage = rememberMe ? localStorage : sessionStorage;
-      storage.setItem('user', JSON.stringify(userData));
-      storage.setItem('token', response.token);
-      
-      console.log('Đăng nhập thành công với thông tin:', userData);
+      console.log('Đăng nhập thành công với thông tin:', response.user);
       
       // Chuyển hướng đến trang Profile
       navigate('/profile');
@@ -30,7 +21,7 @@ const Auth = () => {
       return true;
     } catch (error) {
       console.error('Đăng nhập thất bại:', error.message);
-      return false;
+      throw error;
     }
   };
   

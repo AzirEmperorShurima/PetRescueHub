@@ -6,12 +6,13 @@ import '../../assets/styles/components/auth/Auth.css';
 import petLogo from '../../assets/images/logo.svg';
 import { useAuth } from '../../components/contexts/AuthContext';
 import { useNotification } from '../../components/contexts/NotificationContext';
+import OTPVerification from './OTPVerification';
 
 function Register() {
   const navigate = useNavigate();
-  const { register, logout, user } = useAuth();
+  const { register, logout, user, verifyOTP, login } = useAuth();
   const { showNotification } = useNotification();
-  const [username, setUsername] = useState(""); // Added username state
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -19,6 +20,10 @@ function Register() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
   const [showAlreadyLoggedIn, setShowAlreadyLoggedIn] = useState(false);
+
+  // Thêm state để quản lý hiển thị OTP dialog
+  const [showOTPDialog, setShowOTPDialog] = useState(false);
+  const [registeredUser, setRegisteredUser] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -28,7 +33,7 @@ function Register() {
     }
   }, [user]);
 
-  const handleChangeUsername = (e) => { // Added username handler
+  const handleChangeUsername = (e) => {
     setUsername(e.target.value);
     setError("");
   };
@@ -63,6 +68,7 @@ function Register() {
     // Implement Twitter login
   };
 
+  // Đoạn gọi API trong handleSubmitForm (đã chỉnh)
   const handleSubmitForm = async (e) => {
     e.preventDefault();
 
@@ -75,15 +81,56 @@ function Register() {
     setError("");
 
     try {
-      // Updated to include username in registration
-      await register(username, email, password);
-      showNotification('Đăng ký thành công!', 'success');
-      navigate('/');
+      const response = await register(username, email, password);
+      // Lưu tạm credentials để auto-login sau OTP (Web Storage API) :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
+      localStorage.setItem('tempEmail', email);
+      localStorage.setItem('tempPassword', password);
+      if (response?.message) showNotification(response.message);
+
+      // Sửa đổi cách xác định thông tin người dùng đã đăng ký
+      const registered = response?.user ||
+        (response?.userId && { id: response.userId, email }) ||
+        (response?.email && { id: username, email: response.email });
+
+      if (!registered) throw new Error("Thông tin trả về không hợp lệ");
+
+      setRegisteredUser(registered);
+      setShowOTPDialog(true);
     } catch (error) {
-      setError("Đăng ký thất bại. Vui lòng thử lại sau.");
-      console.error("Register error:", error);
+      setError(error.message || "Đăng ký thất bại. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Xử lý xác thực OTP
+  const handleVerifyOTP = async (otpCode) => {
+    try {
+      if (!registeredUser || !registeredUser.id) {
+        throw new Error("Thông tin người dùng không hợp lệ");
+      }
+
+      await verifyOTP(registeredUser.id, otpCode);
+
+      setShowOTPDialog(false);
+
+      try {
+        const savedEmail = localStorage.getItem('tempEmail');
+        const savedPassword = localStorage.getItem('tempPassword');
+        await login(savedEmail, savedPassword, true);    // ← dùng storage, không dùng state :contentReference[oaicite:2]{index=2}
+        localStorage.removeItem('tempPassword');          // ← xoá password tạm (bảo mật) :contentReference[oaicite:3]{index=3}
+        showNotification('Xác thực tài khoản và đăng nhập thành công!', 'success');
+        navigate('/'); // Chuyển hướng đến trang chủ
+      } catch (loginErr) {
+        console.error("Auto login error:", loginErr);
+        // Nếu đăng nhập tự động thất bại, vẫn thông báo xác thực thành công
+        showNotification('Xác thực tài khoản thành công! Vui lòng đăng nhập.', 'success');
+        navigate('/auth/login');
+      }
+
+      return true;
+    } catch (err) {
+      return Promise.reject(err.response?.message || "Xác thực OTP thất bại");
     }
   };
 
@@ -98,7 +145,7 @@ function Register() {
 
   if (showAlreadyLoggedIn) {
     return (
-      <div className="login-form-container">
+      <div className="register-form-container">
         <div className="auth-logo">
           <img src={petLogo} alt="PetRescueHub Logo" />
           <h2>PetRescueHub</h2>
@@ -137,7 +184,6 @@ function Register() {
         {error && <div className="error-message">{error}</div>}
 
         <form className="form" onSubmit={handleSubmitForm}>
-          {/* Added username field as the first input */}
           <div className="form-group">
             <label htmlFor="username">Tên người dùng</label>
             <input
@@ -182,7 +228,7 @@ function Register() {
                 placeholder="Nhập mật khẩu của bạn"
                 autoComplete="new-password"
               />
-              <button 
+              <button
                 type="button"
                 onClick={handleShowPass}
                 className="toggle-password-btn"
@@ -243,6 +289,15 @@ function Register() {
           <div className="auth-quote-author">- PetRescueHub</div>
         </div>
       </div>
+
+      {/* OTP Dialog */}
+      <OTPVerification
+        open={showOTPDialog}
+        onClose={() => setShowOTPDialog(false)}
+        userId={registeredUser?.id}    // ← thêm prop userId :contentReference[oaicite:2]{index=2}
+        email={email}
+        onVerify={handleVerifyOTP}
+      />
     </div>
   );
 }
