@@ -49,7 +49,7 @@ const Adopt = () => {
     <Box className="adopt-page">
       <Container maxWidth="lg">
         <Box className="adopt-header animate-fadeIn" textAlign="center" mb={4}>
-          <Typography variant="h3" component="h1" gutterBottom>
+          <Typography variant="h3" component="h1" gutterBottom className='adopt-title'>
             Nhận nuôi thú cưng
           </Typography>
           <Typography variant="subtitle1" color="textSecondary" gutterBottom>

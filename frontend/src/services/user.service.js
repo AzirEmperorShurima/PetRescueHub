@@ -1,10 +1,11 @@
 import api from '../utils/axios';
+import apiService from './api.service';
 
 const userService = {
-  getAll: () => api.get('/users'),
-  getById: (id) => api.get(`/users/${id}`),
-  update: (id, data) => api.put(`/users/${id}`, data),
-  delete: (id) => api.delete(`/users/${id}`),
+  // Sử dụng apiService cho các phương thức CRUD chuẩn
+  ...apiService.users,
+  
+  // Có thể thêm các phương thức tùy chỉnh ở đây nếu cần
 };
 
 export default userService;

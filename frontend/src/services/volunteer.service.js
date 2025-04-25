@@ -1,26 +1,18 @@
-import api from './api';
+import api from '../utils/axios';
+import apiService from './api.service';
 
 const volunteerService = {
+  // Sử dụng apiService cho các phương thức CRUD chuẩn
+  ...apiService.volunteers,
+  
   // Đăng ký tình nguyện viên mới
-  register: (data) => api.post('/volunteers/register', data),
-  
-  // Lấy danh sách tình nguyện viên
-  getAll: () => api.get('/volunteers'),
-  
-  // Lấy thông tin chi tiết tình nguyện viên
-  getById: (id) => api.get(`/volunteers/${id}`),
-  
-  // Cập nhật thông tin tình nguyện viên
-  update: (id, data) => api.put(`/volunteers/${id}`, data),
-  
-  // Xóa tình nguyện viên
-  delete: (id) => api.delete(`/volunteers/${id}`),
+  register: (data) => apiService.volunteers.create(data),
   
   // Đăng ký nhận yêu cầu cứu hộ
-  receiveRescueRequest: (data) => api.post('/volunteers/receive-rescue-request', data),
+  receiveRescueRequest: (data) => apiService.volunteers.receiveRescueRequest(data),
   
   // Quản lý hoạt động cứu hộ
-  manageRescueOperations: (data) => api.post('/volunteers/manage-rescue-operations', data)
+  manageRescueOperations: (data) => apiService.volunteers.manageRescueOperations(data)
 };
 
 export default volunteerService;

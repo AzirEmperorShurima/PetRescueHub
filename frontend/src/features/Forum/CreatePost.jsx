@@ -22,7 +22,7 @@ import {
   Image as ImageIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import api from '../../services/api';
+import apiService from '../../services/api.service';
 
 const CreatePost = () => {
   const navigate = useNavigate();
@@ -101,7 +101,7 @@ const CreatePost = () => {
       // if (image) {
       //   formData.append('image', image);
       // }
-      // const response = await api.post('/forum/posts', formData);
+      // const response = await apiService.forum.posts.create(formData);
       
       // Giả lập thành công
       setTimeout(() => {

@@ -56,7 +56,7 @@ const FeatureSection = () => {
           <Typography variant="h2" className="section-title animate-fadeIn">
            Dịch vụ của chúng tôi
           </Typography>
-          <Typography variant="subtitle1" className="section-subtitle animate-fadeIn">
+          <Typography variant="subtitle1" className="feature_section_subtitle animate-fadeIn">
             Khám phá các tính năng của Pet Rescue Hub giúp kết nối và hỗ trợ cộng đồng yêu thương động vật
           </Typography>
         </Box>

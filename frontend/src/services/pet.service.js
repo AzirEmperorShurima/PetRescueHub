@@ -1,11 +1,11 @@
 import api from '../utils/axios';
+import apiService from './api.service';
 
 const petService = {
-  getAll: () => api.get('/pets'),
-  getById: (id) => api.get(`/pets/${id}`),
-  create: (data) => api.post('/pets', data),
-  update: (id, data) => api.put(`/pets/${id}`, data),
-  delete: (id) => api.delete(`/pets/${id}`),
+  // Sử dụng apiService cho các phương thức CRUD chuẩn
+  ...apiService.pets,
+  
+  // Các phương thức tùy chỉnh
   uploadImage: (id, file, onUploadProgress) => {
     const formData = new FormData();
     formData.append('image', file);

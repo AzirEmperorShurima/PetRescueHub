@@ -349,7 +349,9 @@ body {
 }
 
 /* Volunteer Banner - Tối ưu animation */
-.home-volunteer-banner {
+
+/* Volunteer Banner Section - Enhanced */
+.volunteer-banner { 
   padding: 100px 0;
   position: relative;
   color: var(--bg-white);
@@ -361,17 +363,100 @@ body {
   animation-delay: 0.5s;
 }
 
-.home-volunteer-banner::before {
+.volunteer-banner::before,
+.volunteer-banner::after {
   content: '';
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-size: cover;
   background-position: center;
+  filter: brightness(0.85) contrast(1.05); /* Làm sáng hơn so với phiên bản cũ */
+  transform: scale(1.02); /* Giảm scale để không quá phóng đại */
+  z-index: -2;
+  transition: opacity 1.5s ease-in-out; /* Thêm transition để chuyển đổi mượt mà hơn */
+}
+
+.volunteer-banner::before {
   background-image: var(--current-volunteer-image);
-  filter: brightness(0.8) contrast(1.1);
-  z-index: -2; 
+  opacity: 1;
+  animation: optimizedZoom 20s ease infinite alternate; /* Sử dụng animation từ code gợi ý */
+}
+
+.volunteer-banner::after {
+  background-image: var(--next-volunteer-image);
+  opacity: 0;
   animation: optimizedZoom 20s ease infinite alternate;
+  animation-delay: 10s; /* Tăng delay để tránh xung đột */
+}
+
+.volunteer-banner.transitioning::before {
+  opacity: 0;
+}
+
+.volunteer-banner.transitioning::after {
+  opacity: 1;
+}
+
+/* Overlay gradient - Đã làm nhẹ hơn để thấy hình ảnh rõ hơn */
+.volunteer-banner .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6)); /* Giảm độ đậm của gradient */
+  z-index: -1;
+}
+
+/* Animation cho zoom hiệu quả hơn */
+@keyframes optimizedZoom {
+  0% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+/* Volunteer content styling */
+.home-volunteer-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.home-volunteer-title {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Thêm text shadow để nổi bật hơn */
+}
+
+.home-volunteer-description {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3); /* Thêm text shadow để nổi bật hơn */
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Hiệu ứng fade-in cho toàn bộ section */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes optimizedZoom { 

@@ -1,6 +1,6 @@
 // auth.service.js
-import axios from 'axios';
-import api from '../utils/axios'; // dùng axios có xử lý refresh
+import api from '../utils/axios';
+import apiService from './api.service';
 
 const setUserSession = (user, token, rememberMe = true) => {
   const storage = rememberMe ? localStorage : sessionStorage;
@@ -23,35 +23,25 @@ const removeUserSession = () => {
 };
 
 const login = async ({ username, email, password }) => {
-  const res = await axios.post(`http://localhost:4000/api/auth/access/login`, {
-    username,
-    email,
-    password
-  }, { withCredentials: true });
-
+  // Sử dụng apiService thay vì gọi axios trực tiếp
+  const res = await apiService.auth.login({ username, email, password });
   return res.data; // { user, message }
 };
 
 const register = async ({ username, email, password }) => {
-  const res = await api.post('/auth/sign/signup', { username, email, password });
+  const res = await apiService.auth.register({ username, email, password });
   return res.data;
 };
 
 const sendOTP = async (email, type) => {
-  const res = await api.post('/auth/otp/send', { email, type });
+  const res = await apiService.auth.sendOTP(email, type);
   return res.data;
 };
 
-// Gửi payload { userId, otp } theo API backend :contentReference[oaicite:5]{index=5}
 const verifyOTP = async (userId, otp) => {
-    const token = getToken();
-    const res = await api.post(
-      '/auth/sign/verify-otp',
-      { userId, otp },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return res.data;  // { success, user, token }
-  };
+  const res = await apiService.auth.verifyOTP(userId, otp);
+  return res.data;  // { success, user, token }
+};
 
 export default {
   setUserSession,

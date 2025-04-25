@@ -1,21 +1,13 @@
+/* Base container styles */
 .donate-container {
-  padding: 80px 0;
+  padding: 40px 0;
   background-color: #fff;
   background-image: linear-gradient(135deg, rgba(252, 252, 252, 0.9), rgba(255, 255, 255, 1));
   min-height: 100vh;
   position: relative;
 }
 
-/* Thiết lập chung */
-.donate-container {
-  padding: 80px 0;
-  background-color: #fff;
-  background-image: linear-gradient(135deg, rgba(252, 252, 252, 0.9), rgba(255, 255, 255, 1));
-  min-height: 100vh;
-  position: relative;
-}
-
-/* Thêm pattern overlay cho texture thực tế hơn */
+/* Pattern overlay for texture */
 .donate-container::before {
   content: '';
   position: absolute;
@@ -23,52 +15,40 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7 3.134-7 7-3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7 3.134-7 7-3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23e91e63' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z' fill='%23e91e63' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
 }
 
 /* Header */
 .donate-header {
-  margin-bottom: 70px;
-  text-align: center;
+  margin-bottom: 2rem;
   position: relative;
-  z-index: 1;
+  padding-bottom: 20px;
+  animation: fadeIn 0.8s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .donate-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  position: relative;
-  padding-bottom: 25px;
-  margin-bottom: 30px;
-  color: #333;
-  letter-spacing: -0.5px;
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.05);
-}
-
-.donate-subtitle {
-  font-size: 1.3rem;
-  color: #e91e63;
-  max-width: 800px;
-  margin: 0 auto 40px;
-  line-height: 1.6;
-  font-weight: 500;
-  padding: 0;
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
-  text-align: center;
-  font-style: italic;
+  font-weight: 700;
+  font-size: 3rem;
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, #ff6b8b 0%, #ff8e53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Card styles */
 .donation-info-card {
   border-radius: 24px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
   height: 100%;
   border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.3s ease;
   overflow: hidden;
   backdrop-filter: blur(10px);
   background-color: rgba(255, 255, 255, 0.98);
@@ -78,9 +58,8 @@
 
 .donation-info-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
   border-color: rgba(233, 30, 99, 0.15);
-  transition: all 0.3s ease;
 }
 
 /* Add subtle paw print background to info card */
@@ -91,7 +70,7 @@
   right: 15px;
   width: 150px;
   height: 150px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23e91e63' fill-opacity='0.03' d='M256 224c-79.5 0-144 64.5-144 144s64.5 144 144 144 144-64.5 144-144-64.5-144-144-144zm0 240c-52.9 0-96-43.1-96-96s43.1-96 96-96 96 43.1 96-96 43.1 96-96 96zm46.7-133.3c-10.2-8.5-25.3-7.1-33.8 3.1-8.5 10.2-7.1 25.3 3.1 33.8 10.2 8.5 25.3 7.1 33.8-3.1 8.5-10.2 7.1-25.3-3.1-33.8zm-93.4 0c-10.2 8.5-11.6 23.6-3.1 33.8s23.6 11.6 33.8 3.1c10.2-8.5 11.6-23.6 3.1-33.8s-23.6-11.6-33.8-3.1zm146.4-28.7c0-14.9-12.1-27-27-27s-27 12.1-27 27 12.1 27 27 27 27-12.1 27-27zm-192 0c0-14.9-12.1-27-27-27s-27 12.1-27 27 12.1 27 27 27 27-12.1 27-27zm96 0c0-14.9-12.1-27-27-27s-27 12.1-27 27 12.1 27 27 27 27-12.1 27-27z'%3E%3C/path%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23e91e63' fill-opacity='0.03' d='M256 224c-79.5 0-144 64.5-144 144s64.5 144 144 144 144-64.5 144-144-64.5-144-144-144z'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
   opacity: 0.5;
@@ -107,22 +86,22 @@
 }
 
 .donation-highlight {
-  font-weight: bold !important;
-  font-size: 1.2rem !important;
-  color: #e91e63 !important;
-  text-align: center !important;
-  padding: 15px !important;
-  border-left: 4px solid #e91e63 !important;
-  background-color: rgba(233, 30, 99, 0.05) !important;
-  border-radius: 0 8px 8px 0 !important;
-  margin: 20px 0 !important;
-  position: relative !important;
-  transition: all 0.3s ease !important;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #e91e63;
+  text-align: center;
+  padding: 15px;
+  border-left: 4px solid #e91e63;
+  background-color: rgba(233, 30, 99, 0.05);
+  border-radius: 0 8px 8px 0;
+  margin: 20px 0;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
 .donation-highlight:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.2) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.2);
 }
 
 .donation-tag {
@@ -150,7 +129,7 @@
 /* Animal showcase card */
 .animal-showcase-card {
   border-radius: 24px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
   height: 100%;
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -158,17 +137,12 @@
   background-color: transparent;
 }
 
-/* .animal-showcase-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
-} */
-
 .animal-image-container {
   position: relative;
   height: 500px;
   overflow: hidden;
   border-radius: 20px;
-  margin-bottom: 0; /* Đảm bảo không có margin dưới */
+  margin-bottom: 0;
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
@@ -210,35 +184,24 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.animal-image-caption::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 4px;
-  background: linear-gradient(to bottom, #e91e63, #ff9800);
-  border-radius: 2px;
-}
-
 .donate-now-btn {
-  background: linear-gradient(135deg, #e91e63 0%, #ff9800 100%) !important;
-  border-radius: 50px !important;
-  padding: 10px 35px !important; /* Tăng padding ngang từ 25px lên 35px */
-  font-weight: 600 !important;
-  text-transform: none !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
-  transition: all 0.3s ease !important;
-  border: none !important;
-  color: white !important;
-  font-size: 1rem !important;
-  letter-spacing: 0.5px !important;
-  min-width: 180px !important; /* Thêm min-width để đảm bảo nút có độ rộng tối thiểu */
+  background: linear-gradient(135deg, #e91e63 0%, #ff9800 100%);
+  border-radius: 50px;
+  padding: 10px 35px;
+  font-weight: 600;
+  text-transform: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  min-width: 180px;
 }
 
 .donate-now-btn:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
 }
 
 .image-indicator {
@@ -301,34 +264,34 @@
 }
 
 .rescue-story-title {
-  font-size: 1.4rem !important;
-  font-weight: 600 !important;
-  margin-bottom: 15px !important;
-  color: #e91e63 !important;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #e91e63;
 }
 
 .rescue-story-excerpt {
-  color: #666 !important;
-  margin-bottom: 20px !important;
+  color: #666;
+  margin-bottom: 20px;
   flex-grow: 1;
-  line-height: 1.6 !important;
+  line-height: 1.6;
 }
 
 .read-more-btn {
   align-self: flex-start;
-  color: #e91e63 !important;
-  border-color: #e91e63 !important;
-  border-radius: 30px !important;
-  padding: 5px 20px !important;
-  text-transform: none !important;
-  font-weight: 500 !important;
-  transition: all 0.3s ease !important;
+  color: #e91e63;
+  border-color: #e91e63;
+  border-radius: 30px;
+  padding: 5px 20px;
+  text-transform: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .read-more-btn:hover {
-  background-color: rgba(233, 30, 99, 0.08) !important;
-  transform: translateY(-3px) !important;
-  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.15) !important;
+  background-color: rgba(233, 30, 99, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.15);
 }
 
 /* Indicators for story slider */
@@ -358,54 +321,9 @@
   background-color: #ff9800;
 }
 
-/* Rescue stats */
-.rescue-stats-container {
-  display: none; /* Ẩn hoàn toàn phần thống kê */
-}
-
-/* Điều chỉnh khoảng cách để trang không bị trống */
-.donation-note-container {
-  margin-top: 20px; /* Giảm khoảng cách từ 35px xuống 20px */
-}
-
-/* Điều chỉnh khoảng cách của phần payment methods */
-.payment-methods-section {
-  margin-top: 40px; /* Giảm khoảng cách từ 80px xuống 40px */
-}
-
-.rescue-stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px;
-  border-radius: 12px;
-  background-color: white;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.rescue-stat-icon {
-  color: #e91e63;
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.rescue-stat-value {
-  font-size: 1.8rem !important;
-  font-weight: 700 !important;
-  color: #333;
-  margin-bottom: 5px !important;
-}
-
-.rescue-stat-label {
-  font-size: 0.9rem !important;
-  color: #666;
-  text-align: center;
-}
-
 /* Note container */
 .donation-note-container {
-  margin-top: 35px;
+  margin-top: 20px;
   padding: 25px;
   background-color: #fff9c4;
   border-radius: 16px;
@@ -422,7 +340,7 @@
 
 /* Payment methods section */
 .payment-methods-section {
-  margin-top: 80px;
+  margin-top: 20px;
   padding: 40px;
   background-color: white;
   border-radius: 24px;
@@ -430,7 +348,7 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.payment-section-title , .rescue-section-title {
+.payment-section-title, .rescue-section-title {
   font-size: 2.2rem;
   font-weight: 700;
   margin-bottom: 40px;
@@ -448,30 +366,30 @@
 }
 
 .payment-tab {
-  min-width: 120px !important;
-  font-weight: 600 !important;
-  text-transform: none !important;
-  transition: all 0.3s ease !important;
-  margin: 0 5px !important;
-  border-radius: 8px 8px 0 0 !important;
-  padding: 12px 20px !important;
+  min-width: 120px;
+  font-weight: 600;
+  text-transform: none;
+  transition: all 0.3s ease;
+  margin: 0 5px;
+  border-radius: 8px 8px 0 0;
+  padding: 12px 20px;
 }
 
 .payment-tab.active {
-  background-color: #f5f5f5 !important;
-  color: #e91e63 !important;
-  border-bottom: 3px solid #e91e63 !important;
+  background-color: #f5f5f5;
+  color: #e91e63;
+  border-bottom: 3px solid #e91e63;
 }
 
 .payment-tab-icon {
-  width: 35px !important;
-  height: 35px !important;
-  margin-right: 10px !important;
-  background-color: white !important;
-  padding: 5px !important;
-  border-radius: 8px !important;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
-  object-fit: contain !important;
+  width: 35px;
+  height: 35px;
+  margin-right: 10px;
+  background-color: white;
+  padding: 5px;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  object-fit: contain;
 }
 
 .payment-tab-content {
@@ -492,9 +410,9 @@
 }
 
 .instruction-title {
-  font-weight: 600 !important;
-  margin-bottom: 20px !important;
-  color: #333 !important;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
   position: relative;
   padding-left: 15px;
   border-left: 4px solid #e91e63;
@@ -520,10 +438,6 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
-.instruction-steps li:last-child {
-  margin-bottom: 0;
-}
-
 .bank-detail-item {
   display: flex;
   align-items: center;
@@ -539,10 +453,6 @@
 .bank-detail-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-}
-
-.bank-detail-item:last-child {
-  margin-bottom: 0;
 }
 
 /* QR code container styling */
@@ -582,14 +492,14 @@
 }
 
 .qr-code-caption {
-  margin-top: 15px !important;
-  text-align: center !important;
-  color: #555 !important;
-  font-size: 0.9rem !important;
-  font-weight: 500 !important;
+  margin-top: 15px;
+  text-align: center;
+  color: #555;
+  font-size: 0.9rem;
+  font-weight: 500;
   position: relative;
-  display: block !important;
-  width: 100% !important;
+  display: block;
+  width: 100%;
 }
 
 .qr-code-caption::after {
@@ -602,13 +512,7 @@
   border-radius: 2px;
 }
 
-@media (max-width: 768px) {
-  .qr-code-wrapper {
-    max-width: 200px;
-  }
-}
-
-/* Donation quote styling - đã tối ưu */
+/* Donation quote styling */
 .donation-quote-wrapper {
   margin-top: 10px;
   padding: 15px 20px;
@@ -620,14 +524,81 @@
 }
 
 .donation-quote {
-  font-size: 1.1rem !important;
+  font-size: 1.1rem;
   font-style: italic;
-  color: #555 !important;
+  color: #555;
   text-align: center;
-  line-height: 1.5 !important;
+  line-height: 1.5;
 }
 
 .highlight-text {
   color: #e91e63;
   font-weight: 600;
+}
+
+/* Media queries for better responsiveness */
+@media (max-width: 960px) {
+  .donate-title {
+    font-size: 2.5rem;
+  }
+  
+  .animal-image-container {
+    height: 400px;
+  }
+  
+  .payment-tab {
+    min-width: 100px;
+    padding: 10px 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .donate-title {
+    font-size: 2.2rem;
+  }
+  
+  .animal-image-container {
+    height: 350px;
+  }
+  
+  .qr-code-wrapper {
+    max-width: 200px;
+  }
+  
+  .donation-text {
+    font-size: 1.1rem;
+  }
+  
+  .payment-methods-section,
+  .rescue-stories-section {
+    padding: 30px 20px;
+  }
+  
+  .bank-details {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .donate-title {
+    font-size: 1.8rem;
+  }
+  
+  .animal-image-container {
+    height: 280px;
+  }
+  
+  .donation-text {
+    font-size: 1rem;
+  }
+  
+  .payment-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .payment-tab {
+    margin-bottom: 10px;
+    flex: 1 0 40%;
+  }
 }

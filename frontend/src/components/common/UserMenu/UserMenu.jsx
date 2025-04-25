@@ -58,7 +58,7 @@ const UserMenu = ({ user }) => {
         </IconButton>
         
         <div className="user-info-preview">
-          <span className="user-name-preview">{user?.name}</span>
+          <span className="user-name-preview">{user?.fullname}</span>
           <IconButton
             onClick={handleClick}
             size="small"
@@ -103,7 +103,7 @@ const UserMenu = ({ user }) => {
         <div className="user-info">
           <Avatar src={user?.avatar} alt={user?.name || 'User'} />
           <div className="user-details">
-            <div className="user-name">{user?.name || 'User'}</div>
+            <div className="user-name">{user?.fullname || user?.name || 'User'}</div>
             <div className="user-email">{user?.email || ''}</div>
           </div>
         </div>

@@ -5,6 +5,8 @@
   min-height: 100vh;
 }
 
+
+
 .forum-header {
   margin-bottom: 2rem;
   position: relative;
@@ -14,6 +16,15 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.forum-title {
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  background: linear-gradient(90deg, #ff6b8b 0%, #ff8e53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 .forum-sidebar {

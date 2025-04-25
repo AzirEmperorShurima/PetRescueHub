@@ -4,7 +4,7 @@ import petService from './pet.service';
 import eventService from './event.service';
 import donationService from './donation.service';
 import volunteerService from './volunteer.service';
-import api from '../utils/axios';
+import apiService from './api.service';
 
 export {
   authService,
@@ -13,5 +13,5 @@ export {
   eventService,
   donationService,
   volunteerService,
-  api as default
+  apiService as default
 };

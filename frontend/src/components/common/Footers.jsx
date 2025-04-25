@@ -125,7 +125,7 @@ const Footer = ({ darkLight }) => {
                         <div className="col-lg-6 col-sm-5 text-right">
                             <p>Made with <span className="heart">
                                 <FaHeart />
-                            </span> by <span className="team-credit">Team C1SE.03</span>
+                            </span> by <a href="/" target="_blank" rel="noreferrer" className="team-credit">Team C1SE.03</a>
                             </p>
                         </div>
                     </div>

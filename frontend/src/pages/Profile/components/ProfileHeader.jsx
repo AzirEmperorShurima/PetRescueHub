@@ -106,10 +106,10 @@ const ProfileHeader = ({ user }) => {
               
               <div className="profile-name-container">
                 <Typography variant="h4" className="profile-name">
-                  {user?.name}
+                  {user?.fullname || user?.name}
                 </Typography>
                 <Typography variant="subtitle1" className="profile-username">
-                  @{user?.username || user?.name?.toLowerCase().replace(/\s+/g, '')}
+                  @{user?.username || (user?.fullname || user?.name)?.toLowerCase().replace(/\s+/g, '')}
                 </Typography>
                 <Typography variant="body1" className="profile-bio">
                   {user?.bio || "Tôi là một tín đồ yêu động vật và luôn mong muốn giúp đỡ những thú cưng cần được cứu trợ."}

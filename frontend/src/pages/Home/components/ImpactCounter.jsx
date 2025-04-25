@@ -87,9 +87,9 @@ const ImpactCounter = () => {
   }, [inView]);
 
   return (
-    <section className="impact-counter-section" id="impact-counter">
+    // <section className="impact-counter-section" id="impact-counter">
       <Container maxWidth="lg">
-        <Box textAlign="center" mb={6}>
+        <Box textAlign="center" mb={4}>
           <Typography variant="h2" component="h2" className="section-title" gutterBottom>
             Tác Động Của Chúng Tôi
           </Typography>
@@ -153,7 +153,7 @@ const ImpactCounter = () => {
           ))}
         </Grid>
       </Container>
-    </section>
+    // </section>
   );
 };
 

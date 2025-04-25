@@ -78,7 +78,7 @@ const Forum = () => {
     <Box className="forum-page">
       <Container maxWidth="lg">
         <Box className="forum-header animate-fadeIn" textAlign="center" mb={4}>
-          <Typography variant="h3" component="h1" gutterBottom>
+          <Typography variant="h3" component="h1" gutterBottom className='forum-title'>
             Diễn đàn thú cưng
           </Typography>
           <Typography variant="subtitle1" color="textSecondary" gutterBottom>

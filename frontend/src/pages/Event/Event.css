@@ -26,24 +26,12 @@
 }
 
 .event-title {
-  font-weight: 700;
-  color: #333;
-  position: relative;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  background: linear-gradient(90deg, #ff6b8b 0%, #ff8e53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   display: inline-block;
-  margin-bottom: 20px;
-}
-
-.event-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0; /* Đã thay đổi từ 80px thành 0 để loại bỏ gạch dưới */
-  height: 4px;
-  background-color: #E91E63;
-  border-radius: 2px;
-  animation: none; /* Đã loại bỏ animation */
 }
 
 @keyframes expandWidth {
@@ -57,7 +45,6 @@
 
 .event-subtitle {
   max-width: 700px;
-  margin: 1.5rem auto 0;
   color: #666;
   line-height: 1.6;
   font-size: 1.1rem;

@@ -4,7 +4,7 @@ import '../../assets/styles/components/auth/Auth.css';
 import petLogo from '../../assets/images/logo.svg';
 import { useAuth } from '../../components/contexts/AuthContext';
 import { useNotification } from '../../components/contexts/NotificationContext';
-import api from '../../services/api';
+import apiService from '../../services/api.service';
 
 function ForgotPassword() {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ function ForgotPassword() {
     setError("");
 
     try {
-      await api.forgotPassword(email);
+      await apiService.auth.forgotPassword(email);
       setSuccess(true);
       showNotification('Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn!', 'success');
     } catch (error) {

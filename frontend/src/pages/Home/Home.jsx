@@ -185,7 +185,7 @@ const Home = () => {
       <VolunteerBannerSlider />
 
       {/* Volunteer Banner - Cập nhật class names */}
-      <section className="home-volunteer-banner">
+      <section className="volunteer-banner">
         <div className="overlay"></div>
         <div className="home-volunteer-content">
           <h2 className="home-volunteer-title">Trở thành tình nguyện viên</h2>

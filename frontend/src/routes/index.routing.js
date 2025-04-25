@@ -14,7 +14,6 @@ import ProtectedRoute from "../components/guards/ProtectedRoute";
 // Lazy-load toàn bộ pages/features
 const Login = lazy(() => import("../features/Auth/Login"));
 const Register = lazy(() => import("../features/Auth/Register"));
-const OTPVerification = lazy(() => import("../features/Auth/OTPVerification"));
 const ForgotPassword = lazy(() => import("../features/Auth/ForgotPassword"));
 
 const Home = lazy(() => import("../pages/Home/Home"));
@@ -69,7 +68,6 @@ const AppRoutes = () => (
         <Route path="auth">
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
-          <Route path="otp" element={<OTPVerification />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
         </Route>
         <Route path="terms" element={<Terms />} />
@@ -84,10 +82,9 @@ const AppRoutes = () => (
           <Route path="event/create" element={<CreateEvent />} />
           <Route path="profile" element={<Profile />} />
         </Route>
-        {/* Fallback 404 trong layout chính */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="notfound" element={<NotFound />} />
       </Route>
-      
+
       {/* Admin area với AdminLayout */}
       <Route path="/admin/*" element={<AdminApp />} />
     </Routes>

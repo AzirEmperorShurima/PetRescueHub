@@ -4,7 +4,7 @@
   min-height: 100vh;
 }
   
-  .adopt-header {
+.adopt-header {
   margin-bottom: 2rem;
   position: relative;
   padding-bottom: 20px;
@@ -15,20 +15,19 @@
   align-items: center;
 }
 
-.adopt-header h1 {
-    font-size: 2.5rem;
-    color: #333;
-  }
-  
-  .adopt-header .lead {
-    font-size: 1.2rem;
-    color: #666;
-  }
+.adopt-title {
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  background: linear-gradient(90deg, #ff6b8b 0%, #ff8e53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
   
   .adopt-content {
     max-width: 1200px;
   }
-  
+
   .pet-list {
     display: flex;
     flex-wrap: wrap;

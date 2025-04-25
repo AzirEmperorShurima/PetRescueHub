@@ -109,7 +109,7 @@ const Event = () => {
     <Box className="event-page">
       <Container maxWidth="lg">
         {/* Header */}
-        <Box textAlign="center" mb={6} className="event-header">
+        <Box textAlign="center" mb={4} className="event-header">
           <Typography variant="h3" component="h1" className="event-title" gutterBottom>
             Sự kiện
           </Typography>
