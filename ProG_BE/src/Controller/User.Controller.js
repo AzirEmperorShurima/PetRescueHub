@@ -8,9 +8,12 @@ import { getUserIdFromCookies } from "../services/User/User.service";
  */
 export const buyPremium = async (req, res) => {
     try {
-        const userId = getUserIdFromCookies(req)
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         const { paymentMethod, duration } = req.body;
-        if (!userId || !paymentMethod || duration) {
+        if (!paymentMethod || duration) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Thiếu thông tin thanh toán!" });
         }
 
@@ -68,7 +71,10 @@ export const buyPremium = async (req, res) => {
 
 export const updateUserProfile = async (req, res) => {
     try {
-        const userId = getUserIdFromCookies(req) // Lấy ID từ middleware xác thực
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         const updateData = req.body;
 
         const allowedUpdates = new Set(["fullname", "email", "avatar", "phonenumber", "address"]);

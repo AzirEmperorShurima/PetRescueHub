@@ -190,14 +190,16 @@ export const getPetsByOwner = async (req, res) => {
  */
 export const getPetDetails = async (req, res) => {
     try {
-        const { petId } = req.params; // Sử dụng params thay vì body cho RESTful
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const { petId } = req.params;
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
-        // await checkOwnership(petId, ownerId);
+        const isOwner = await checkOwnership(petId, ownerId);
         const pet = await petService.getPetOrThrow(petId);
         return res.status(200).json({
-            message: "Get Pet Portfolio Successfully", petData: pet
+            message: "Get Pet Portfolio Successfully", petData: pet, canEdit: isOwner
         });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -210,8 +212,10 @@ export const getPetDetails = async (req, res) => {
 export const addVaccinationRecord = async (req, res) => {
     try {
         const { petId, vaccineName, vaccinationDate, vaccinationCode } = req.body;
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
         await checkOwnership(petId, ownerId);
         const vaccinationData = {
@@ -236,8 +240,10 @@ export const addVaccinationRecord = async (req, res) => {
 export const addPetAlbumPhoto = async (req, res) => {
     try {
         const { petId, photoUrl } = req.body;
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("UnAuthorized!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         if (!photoUrl) throw new Error("Vui lòng cung cấp URL ảnh!");
 
         await checkOwnership(petId, ownerId);
@@ -257,8 +263,10 @@ export const addPetAlbumPhoto = async (req, res) => {
 export const removePhotoFromPetAlbum = async (req, res) => {
     try {
         const { petId, photoUrl } = req.body;
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
         await checkOwnership(petId, ownerId);
         const updatedPet = await petService.removePhotoFromAlbum(petId, photoUrl);
@@ -274,8 +282,10 @@ export const removePhotoFromPetAlbum = async (req, res) => {
 export const updateMicrochipId = async (req, res) => {
     try {
         const { petId, microchipId } = req.body;
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         if (!microchipId) throw new Error("Vui lòng cung cấp microchip ID!");
 
         await checkOwnership(petId, ownerId);
@@ -295,8 +305,10 @@ export const updateMicrochipId = async (req, res) => {
 export const deletePetCertificate = async (req, res) => {
     try {
         const { petId, certificateId } = req.body;
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
         if (!certificateId) throw new Error("Vui lòng cung cấp ID giấy chứng nhận!");
 
         await checkOwnership(petId, ownerId);
@@ -315,8 +327,10 @@ export const deletePetCertificate = async (req, res) => {
  */
 export const getPetStatistics = async (req, res) => {
     try {
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
         const pets = await petService.getPetsByOwner(ownerId);
         const stats = {
@@ -350,8 +364,10 @@ export const getPetStatistics = async (req, res) => {
  */
 export const searchPets = async (req, res) => {
     try {
-        const ownerId = getUserIdFromCookies(req);
-        if (!ownerId) throw new Error("Người dùng chưa đăng nhập!");
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
 
         const {
             breed,
@@ -379,6 +395,10 @@ export const searchPets = async (req, res) => {
 };
 
 export const petFilters = async (req, res) => {
+    const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+    if (!ownerId) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+    }
     try {
         let filter = {};
 
@@ -415,6 +435,10 @@ export const petFilters = async (req, res) => {
 }
 
 export const getAllPets = async (req, res) => {
+    const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+    if (!userId) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+    }
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
