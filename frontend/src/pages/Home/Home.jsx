@@ -12,17 +12,19 @@ import {
 } from '@mui/icons-material';
 import { heroSlides, services, recentRescues, testimonials, stats } from '../../mocks';
 import vetIcon from '../../assets/images/vet.svg';
-import './Home.css'; // Sử dụng file CSS được tối ưu
+import './Home.css'; 
 import '../../assets/styles/animations.css';
 
 import AboutSection from './components/AboutSection';
 import FeatureSection from './components/FeatureSection';
 import ImpactCounter from './components/ImpactCounter';
+import TestimonialsSection from './components/TestimonialsSection';
+import SuccessStories from './components/SuccessStories';
 import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
 import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider';
 import VolunteerRegistrationButton from '../../components/button/VolunteerRegistrationButton';
-import SuccessStories from './components/SuccessStories';
-import TestimonialsSection from './components/TestimonialsSection';
+
+
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);

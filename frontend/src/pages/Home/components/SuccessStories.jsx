@@ -37,7 +37,7 @@ const SuccessStories = () => {
   };
 
   return (
-    <section className="success-stories-section">
+    // <section className="success-stories-section">
       <Container maxWidth="lg">
         <Box className="section-header">
           <Typography variant="h2" className="section-title animate-fadeIn">
@@ -169,7 +169,7 @@ const SuccessStories = () => {
           </Grid>
         </Grid>
       </Container>
-    </section>
+    // </section>
   );
 };
 

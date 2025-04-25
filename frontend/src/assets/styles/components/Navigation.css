@@ -56,10 +56,9 @@
 }
 
 .navbar-brand .logo-text {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 1.8rem;
-  margin-left: 0.5rem;
+  font-family: 'Poiret One', cursive;
+  font-weight: 900;
+  font-size: 1.9rem;
   white-space: nowrap;
 }
 
@@ -92,7 +91,7 @@
 .nav-link {
   color: #000000;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.175rem;
   padding: 8px 16px;
   text-transform: uppercase;
   transition: all 0.3s ease;
@@ -214,7 +213,6 @@
 /* ==================== BUTTON STYLES ==================== */
 .nav-buttons {
   display: flex;
-  gap: 8px;
   align-items: center;
 }
 
