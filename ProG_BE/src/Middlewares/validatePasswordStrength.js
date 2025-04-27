@@ -1,3 +1,5 @@
+import { StatusCodes } from "http-status-codes";
+
 export const validatePasswordStrength = (req, res, next) => {
     const passwordsToCheck = [
         req.body.password,

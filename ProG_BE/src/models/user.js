@@ -74,13 +74,18 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        volunteerStatus: {
+            type: String,
+            enum: ["alreadyRescue", "not ready", "none"],
+            default: "none"
+        },
         volunteerRequestStatus: {
             type: String,
             enum: ["pending", "approved", "rejected", "none"],
             default: "none"
         },
-        isVIP: { type: Boolean, default: false }, // Trạng thái VIP
-        premiumExpiresAt: { type: Date } // Ngày hết hạn VIP
+        isVIP: { type: Boolean, default: false },
+        premiumExpiresAt: { type: Date }
     },
     {
         timestamps: true,
@@ -88,25 +93,65 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-userSchema.pre("validate", async function (next) {
+// Middleware để tự động cập nhật volunteerStatus dựa trên roles
+userSchema.pre("save", async function (next) {
     const user = this;
 
-    if (!user.id) {
-        user.id = uuidv4();
+    // Populate roles để lấy thông tin role.name
+    if (user.isModified("roles") || user.isNew) {
+        await user.populate("roles");
+        const hasVolunteerRole = user.roles.some(role => role.name.toLowerCase() === "volunteer");
+
+        if (hasVolunteerRole) {
+            // Nếu có role volunteer, đảm bảo volunteerStatus là alreadyRescue hoặc not ready
+            if (!["alreadyRescue", "not ready"].includes(user.volunteerStatus)) {
+                user.volunteerStatus = "not ready"; // Mặc định khi mới thêm role volunteer
+            }
+        } else {
+            // Nếu không có role volunteer, đặt volunteerStatus là none
+            user.volunteerStatus = "none";
+        }
     }
 
     next();
 });
 
+// Middleware để xử lý cập nhật roles qua findOneAndUpdate
+userSchema.pre("findOneAndUpdate", async function (next) {
+    const update = this.getUpdate();
+    if (update.roles) {
+        // Populate roles từ database nếu cần
+        const roles = await mongoose.model("Role").find({ _id: { $in: update.roles } });
+        const hasVolunteerRole = roles.some(role => role.name.toLowerCase() === "volunteer");
+
+        this.set({
+            volunteerStatus: hasVolunteerRole ? (update.volunteerStatus || "not ready") : "none"
+        });
+    }
+    next();
+});
+
+// Middleware để tạo id tự động
+userSchema.pre("validate", async function (next) {
+    const user = this;
+    if (!user.id) {
+        user.id = uuidv4();
+    }
+    next();
+});
+
+// Phương thức mã hóa mật khẩu
 userSchema.statics.encryptPassword = async function (password) {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
 };
 
+// Phương thức so sánh mật khẩu
 userSchema.statics.comparePassword = async function (password, receivedPassword) {
     return await bcrypt.compare(password, receivedPassword);
 };
 
+// Middleware để mã hóa mật khẩu trước khi lưu
 userSchema.pre("save", async function (next) {
     const user = this;
     if (!user.isModified("password")) {
@@ -117,6 +162,7 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
+// Phương thức so sánh mật khẩu của instance
 userSchema.methods.comparePassword = async function (password) {
     if (!password) throw new Error('Mật khẩu bị thiếu, không thể so sánh!');
     try {
