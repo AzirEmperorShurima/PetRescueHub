@@ -74,7 +74,7 @@
 .navbar-nav {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
   margin: 0;
   padding: 0;
   flex: 1; /* Cho phép menu chiếm hết không gian còn lại */

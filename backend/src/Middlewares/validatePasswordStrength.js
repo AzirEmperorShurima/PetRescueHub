@@ -1,32 +1,35 @@
-// middlewares/validatePasswordStrength.js
-
 import { StatusCodes } from "http-status-codes";
 
 export const validatePasswordStrength = (req, res, next) => {
-    const { password1 } = req.body;
+    const passwordsToCheck = [
+        req.body.password,
+        req.body.newPassword,
+        req.body.confirmPassword
+    ].filter(Boolean); // loại bỏ undefined/null
 
-    if (!password1) {
+    if (passwordsToCheck.length === 0) {
         return res.status(StatusCodes.BAD_REQUEST).json({
             message: "Password is required",
         });
     }
 
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password1);
-    const hasLowerCase = /[a-z]/.test(password1);
-    const hasNumber = /[0-9]/.test(password1);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password1);
+    const isValid = (password) => {
+        const minLength = 8;
+        return (
+            password.length >= minLength &&
+            /[A-Z]/.test(password) &&
+            /[a-z]/.test(password) &&
+            /[0-9]/.test(password) &&
+            /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        );
+    };
 
-    if (
-        password1.length < minLength ||
-        !hasUpperCase ||
-        !hasLowerCase ||
-        !hasNumber ||
-        !hasSpecialChar
-    ) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.",
-        });
+    for (const pwd of passwordsToCheck) {
+        if (!isValid(pwd)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.",
+            });
+        }
     }
 
     next();

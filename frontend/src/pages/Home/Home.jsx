@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import { 
   Pets as PetsIcon, 
@@ -12,19 +12,17 @@ import {
 } from '@mui/icons-material';
 import { heroSlides, services, recentRescues, testimonials, stats } from '../../mocks';
 import vetIcon from '../../assets/images/vet.svg';
-import './Home.css'; 
-import '../../assets/styles/animations.css';
+import styles from './Home.module.css';
 
-import AboutSection from './components/AboutSection';
-import FeatureSection from './components/FeatureSection';
-import ImpactCounter from './components/ImpactCounter';
-import TestimonialsSection from './components/TestimonialsSection';
-import SuccessStories from './components/SuccessStories';
+import AboutSection from './components/AboutSection/AboutSection';
+import FeatureSection from './components/FeatureSection/FeatureSection';
+import ImpactCounter from './components/ImpactCounter/ImpactCounter';
+import TestimonialsSection from './components/TestimonialsSection/TestimonialsSection';
+import SuccessStories from './components/SuccessStories/SuccessStories';
 import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
 import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider';
 import VolunteerRegistrationButton from '../../components/button/VolunteerRegistrationButton';
-
-
+import ChatbotWidget from './components/Chatbot/ChatbotWidget';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -54,7 +52,7 @@ const Home = () => {
     return () => clearInterval(slideInterval.current);
   }, []);
 
-  // Rescue button drag handlers - Tối ưu với throttle để cải thiện hiệu suất
+  // Rescue button drag handlers with optimized throttling
   const handleMouseDown = useCallback((e) => {
     if (rescueBtnRef.current) {
       isDragging.current = true;
@@ -65,7 +63,7 @@ const Home = () => {
 
   const handleMouseMove = useCallback((e) => {
     if (isDragging.current && rescueBtnRef.current) {
-      // Thêm request animation frame để tối ưu hiệu suất
+      // Using requestAnimationFrame for performance optimization
       requestAnimationFrame(() => {
         if (!isDragging.current) return;
         const x = Math.max(0, Math.min(e.clientX - offset.current.x, window.innerWidth - rescueBtnRef.current.offsetWidth));
@@ -103,30 +101,41 @@ const Home = () => {
   };
 
   return (
-    <div className="home-page">
-      {/* Hero Section - Cập nhật class names */}
-      <section className="home-hero-section animate-fadeIn">
+    <div className={styles.home}>
+      {/* Hero Section */}
+      <section className={styles.hero}>
         {heroSlides.map((slide, index) => (
           <div
             key={slide.id}
-            className="home-hero-slide"
-            style={{ backgroundImage: `url(${slide.image})`, display: index === currentSlide ? 'block' : 'none' }}
+            className={styles.hero__slide}
+            style={{ 
+              backgroundImage: `url(${slide.image})`, 
+              display: index === currentSlide ? 'block' : 'none' 
+            }}
           >
-            <div className="home-hero-overlay">
-              <div className="home-hero-content">
-                <h1 className="home-hero-title">{slide.title}</h1>
-                <p className="home-hero-description">{slide.description}</p>
+            <div className={styles.hero__overlay}>
+              <div className={styles.hero__content}>
+                <h1 className={styles.hero__title}>{slide.title}</h1>
+                <p className={styles.hero__description}>{slide.description}</p>
               </div>
             </div>
           </div>
         ))}
-        <div className="home-hero-nav-buttons">
-          <button className="home-hero-nav-button hero-nav-prev" onClick={() => changeSlide('prev')} aria-label="Previous slide">
+        <div className={styles.hero__navButtons}>
+          <button 
+            className={`${styles.hero__navButton} ${styles['hero__navButton--prev']}`} 
+            onClick={() => changeSlide('prev')} 
+            aria-label="Previous slide"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <button className="home-hero-nav-button hero-nav-next" onClick={() => changeSlide('next')} aria-label="Next slide">
+          <button 
+            className={`${styles.hero__navButton} ${styles['hero__navButton--next']}`} 
+            onClick={() => changeSlide('next')} 
+            aria-label="Next slide"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="9 18 15 12 9 6" />
             </svg>
@@ -138,17 +147,18 @@ const Home = () => {
       <AboutSection />
 
       {/* Floating Rescue Button */}
-      <div className="floating-rescue-btn" ref={rescueBtnRef} onClick={() => navigate('/rescue')}>
-        <span className="floating-rescue-text">Báo cáo cứu hộ</span>
+      <div className={styles.rescueBtn} ref={rescueBtnRef} onClick={() => navigate('/rescue')}>
+        <span className={styles.rescueBtn__text}>Báo cáo cứu hộ</span>
         <img src={vetIcon} alt="Báo cáo cứu hộ" />
-        <div className="icon-container">
-          <div className="icon icon1"><PetsIcon /></div>
-          <div className="icon icon2"><FavoriteIcon /></div>
-          <div className="icon icon3"><EventIcon /></div>
-          <div className="icon icon4"><HomeIcon /></div>
+        <div className={styles.rescueBtn__iconContainer}>
+          <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--1']}`}><PetsIcon /></div>
+          <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--2']}`}><FavoriteIcon /></div>
+          <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--3']}`}><EventIcon /></div>
+          <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--4']}`}><HomeIcon /></div>
         </div>
       </div>
 
+      <ChatbotWidget />
       {/* Feature Section */}
       <FeatureSection />
 
@@ -158,47 +168,33 @@ const Home = () => {
       {/* Success Stories */}
       <SuccessStories />
 
-      {/* Stats Section - Cập nhật class names */}
-      <section className="home-stats-section">
-        <Container>
-          <Row>
-            {stats.map((stat) => (
-              <Col md={3} sm={6} key={stat.id}>
-                <div className="home-stat-item">
-                  <div className="home-stat-icon">
-                    {stat.icon === 'pets' && <PetsIcon sx={{ fontSize: 40 }} />}
-                    {stat.icon === 'home' && <HomeIcon sx={{ fontSize: 40 }} />}
-                    {stat.icon === 'people' && <PeopleIcon sx={{ fontSize: 40 }} />}
-                    {stat.icon === 'event' && <EventIcon sx={{ fontSize: 40 }} />}
-                  </div>
-                  <div className="home-stat-value">{stat.value}+</div>
-                  <div className="home-stat-label">{stat.label}</div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-      </section>
-
       {/* Testimonials Section */}
       <TestimonialsSection testimonials={testimonials} />
 
       {/* Volunteer Banner Slider */}
       <VolunteerBannerSlider />
 
-      {/* Volunteer Banner - Cập nhật class names */}
-      <section className="volunteer-banner">
-        <div className="overlay"></div>
-        <div className="home-volunteer-content">
-          <h2 className="home-volunteer-title">Trở thành tình nguyện viên</h2>
-          <p className="home-volunteer-description">
+      {/* Volunteer Banner */}
+      <section className={styles.volunteerBanner}>
+        <div className={styles.volunteerBanner__overlay}></div>
+        <div className={styles.volunteerBanner__content}>
+          <h2 className={styles.volunteerBanner__title}>Trở thành tình nguyện viên</h2>
+          <p className={styles.volunteerBanner__description}>
             Tham gia cùng chúng tôi trong hành trình cứu trợ và bảo vệ thú cưng. Mỗi sự giúp đỡ đều ý nghĩa.
           </p>
-          <VolunteerRegistrationButton onClick={() => setShowVolunteerModal(true)} className="home-button" />
+          <VolunteerRegistrationButton 
+            onClick={() => setShowVolunteerModal(true)} 
+            className={styles.button}
+          />
         </div>
       </section>
 
-      <VolunteerForm isOpen={showVolunteerModal} onClose={() => setShowVolunteerModal(false)} onSubmit={handleVolunteerSubmit} />
+
+      <VolunteerForm 
+        isOpen={showVolunteerModal} 
+        onClose={() => setShowVolunteerModal(false)} 
+        onSubmit={handleVolunteerSubmit} 
+      />
     </div>
   );
 };

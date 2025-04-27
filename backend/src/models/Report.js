@@ -3,11 +3,6 @@ import mongoose from "mongoose";
 const ReportSchema = new mongoose.Schema({
     reporter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Người báo cáo
     targetId: { type: mongoose.Schema.Types.ObjectId, required: true }, // ID của bài viết, bình luận, user...
-    targetType: {
-        type: String,
-        enum: ["User", "Post", "Question", "Comment", "ForumPost"],
-        required: true
-    }, // Loại mục tiêu bị báo cáo
     reason: { type: String, required: true }, // Lý do báo cáo
     status: {
         type: String,

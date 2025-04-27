@@ -82,11 +82,11 @@ const AppRoutes = () => (
           <Route path="event/create" element={<CreateEvent />} />
           <Route path="profile" element={<Profile />} />
         </Route>
-        <Route path="notfound" element={<NotFound />} />
       </Route>
 
       {/* Admin area với AdminLayout */}
       <Route path="/admin/*" element={<AdminApp />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   </Suspense>
 );

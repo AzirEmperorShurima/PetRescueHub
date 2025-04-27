@@ -4,6 +4,7 @@ import { Avatar, Menu, MenuItem, IconButton, Divider, ListItemIcon, ListItemText
 import { AccountCircle, Settings, ExitToApp, Notifications, Favorite, Pets, Help } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import './UserMenu.css';
+import apiService from '../../../services/api.service';
 
 const UserMenu = ({ user }) => {
   const navigate = useNavigate();
@@ -44,10 +45,19 @@ const UserMenu = ({ user }) => {
     handleClose();
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-    handleClose();
+  const handleLogout = async () => {
+    try {
+      await apiService.auth.logout();
+      logout();
+      navigate('/');
+      handleClose();
+    } catch (error) {
+      // Có thể thêm thông báo lỗi nếu cần
+      console.error('Đăng xuất thất bại:', error);
+      logout();
+      navigate('/');
+      handleClose();
+    }
   };
 
   return (

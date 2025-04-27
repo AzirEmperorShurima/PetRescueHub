@@ -7,9 +7,9 @@ import { COOKIE_PATHS } from "../../config.js";
 export const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: (req) => {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN, 'token');
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN, 'id');
         if (!userId) {
-            console.log('NO') // Giới hạn cho người dùng đã đăng nhập
+            console.log('Guest User Request - Limited to 200 requests per IP');
         }
         return userId ? 1200 : 200;
     },

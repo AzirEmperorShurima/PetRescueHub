@@ -1,29 +1,36 @@
 // auth.service.js
-import api from '../utils/axios';
 import apiService from './api.service';
+import Cookies from 'js-cookie'; // Thêm js-cookie
+
+const COOKIE_OPTIONS = {
+  // Secure: true nếu dùng HTTPS
+  secure: true, 
+  sameSite: 'Strict',
+  path: '/', 
+  expires: 7 // 7 ngày (nếu rememberMe)
+};
 
 const setUserSession = (user, token, rememberMe = true) => {
-  const storage = rememberMe ? localStorage : sessionStorage;
-  storage.setItem('user', JSON.stringify(user));
-  storage.setItem('token', token);
+  const options = rememberMe ? { ...COOKIE_OPTIONS, expires: 7 } : { ...COOKIE_OPTIONS };
+  Cookies.set('user', JSON.stringify(user), options);
+  Cookies.set('token', token, options);
 };
 
 const getUserSession = () => {
-  const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+  const userStr = Cookies.get('user');
   return userStr ? JSON.parse(userStr) : null;
 };
 
 const getToken = () => {
-  return localStorage.getItem('token') || sessionStorage.getItem('token');
+  return Cookies.get('token') || null;
 };
 
 const removeUserSession = () => {
-  localStorage.clear();
-  sessionStorage.clear();
+  Cookies.remove('user', { path: '/' });
+  Cookies.remove('token', { path: '/' });
 };
 
 const login = async ({ username, email, password }) => {
-  // Sử dụng apiService thay vì gọi axios trực tiếp
   const res = await apiService.auth.login({ username, email, password });
   return res.data; // { user, message }
 };
@@ -40,7 +47,7 @@ const sendOTP = async (email, type) => {
 
 const verifyOTP = async (userId, otp) => {
   const res = await apiService.auth.verifyOTP(userId, otp);
-  return res.data;  // { success, user, token }
+  return res.data; // { success, user, token }
 };
 
 export default {

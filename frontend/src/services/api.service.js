@@ -20,6 +20,7 @@ const apiService = {
   auth: {
     login: (credentials) => api.post('/auth/access/login', credentials, { withCredentials: true }),
     register: (userData) => api.post('/auth/sign/signup', userData),
+    logout:() => api.post('/auth/logout', { withCredentials: true }),
     verify: () => api.get('/auth/verify'),
     forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
     resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
