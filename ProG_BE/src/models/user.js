@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
             enum: ["male", "female", "not provided"],
             default: "not provided"
         },
+        biography: {
+            type: String,
+            default: ""
+        },
         email: {
             type: String,
             unique: true,
