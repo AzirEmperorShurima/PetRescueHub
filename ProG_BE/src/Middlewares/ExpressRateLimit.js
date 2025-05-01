@@ -108,9 +108,9 @@ const logRateLimit = (req, userId, limit, type) => {
             } phút`;
     } else {
         logMessage = userId
-            ? `Người dùng ${userId} - Giới hạn ${limit} yêu cầu trong ${RATE_LIMIT_CONFIG[type].windowMs / 60000
+            ? `User inside request: ${userId} - Giới hạn ${limit} yêu cầu trong ${RATE_LIMIT_CONFIG[type].windowMs / 60000
             } phút`
-            : `Khách từ IP ${req.ip} - Giới hạn ${limit} yêu cầu trong ${RATE_LIMIT_CONFIG[type].windowMs / 60000
+            : `Guest from IP ${req.ip} - Giới hạn ${limit} yêu cầu trong ${RATE_LIMIT_CONFIG[type].windowMs / 60000
             } phút`;
     }
     console.log(logMessage);

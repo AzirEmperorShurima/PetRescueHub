@@ -24,3 +24,5 @@ docker-compose.yml
 Dockerfile
 *.tar
 .docker/
+bash.exe.stackdump
+ProG_BE/adminSeed.json

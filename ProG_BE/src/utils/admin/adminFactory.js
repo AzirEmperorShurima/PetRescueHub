@@ -1,7 +1,7 @@
 import fs from "fs";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
-import models_list from "../../models/modelsExport";
+import models_list from "../../models/modelsExport.js";
 
 const isPasswordValid = (password) => {
     return (

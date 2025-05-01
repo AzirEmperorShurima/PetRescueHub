@@ -1,7 +1,8 @@
-import { getUserFieldFromToken } from "../utils/token.js";
-import { COOKIE_PATHS, TOKEN_TYPE } from "../constants/index.js";
+
 import user from "../models/user.js";
-import redisClient from "../configs/redis.js";
+import { getUserFieldFromToken } from "../services/User/User.service.js";
+import { COOKIE_PATHS, TOKEN_TYPE } from "../../config.js";
+import { redisClient } from "../Cache/User_Cache.js";
 
 export const clearAdminCache = async (userId) => {
     try {
