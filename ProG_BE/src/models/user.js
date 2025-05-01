@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        secondaryPassword: {
+            type: String,
+            default: null,
+        },
         tokens: [{ type: Object }],
         roles: [
             {
@@ -100,8 +104,6 @@ const userSchema = new mongoose.Schema(
 // Middleware để tự động cập nhật volunteerStatus dựa trên roles
 userSchema.pre("save", async function (next) {
     const user = this;
-
-    // Populate roles để lấy thông tin role.name
     if (user.isModified("roles") || user.isNew) {
         await user.populate("roles");
         const hasVolunteerRole = user.roles.some(role => role.name.toLowerCase() === "volunteer");
@@ -124,7 +126,6 @@ userSchema.pre("save", async function (next) {
 userSchema.pre("findOneAndUpdate", async function (next) {
     const update = this.getUpdate();
     if (update.roles) {
-        // Populate roles từ database nếu cần
         const roles = await mongoose.model("Role").find({ _id: { $in: update.roles } });
         const hasVolunteerRole = roles.some(role => role.name.toLowerCase() === "volunteer");
 
@@ -161,6 +162,11 @@ userSchema.pre("save", async function (next) {
     if (!user.isModified("password")) {
         return next();
     }
+    if (user.isModified("secondaryPassword") && user.secondaryPassword) {
+        const hash = await bcrypt.hash(user.secondaryPassword, 10);
+        user.secondaryPassword = hash;
+    }
+
     const hash = await bcrypt.hash(user.password, 10);
     user.password = hash;
     next();

@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 import models_list from "./src/models/modelsExport.js";
+import { createAdminsFromJSON } from "./src/utils/admin/adminFactory.js";
 
 // export const mongoClient = new mongoose.connect("mongodb://localhost:27017/projectG",{})
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/PetRescueHub";
 const seedDatabase = async () => {
     try {
 
-        const roles = ["admin", "user", "volunteer"];
+        const roles = ["super_admin", "admin", "user", "volunteer"];
         const existingRoles = await models_list.Role.find();
         if (existingRoles.length === 0) {
             await models_list.Role.insertMany(roles.map((name) => ({ name })));
@@ -41,11 +42,11 @@ export const initializeCollections = async (models) => {
 
 export const connectToDatabase = async () => {
     try {
-        await mongoose.connect(mongoURI, {
-        });
+        await mongoose.connect(mongoURI, {});
         console.log("Connected to MongoDB!");
         await initializeCollections(models_list);
         await seedDatabase();
+        await createAdminsFromJSON("./adminSeed.json")
     } catch (err) {
         console.error("Database connection error:", err);
     }

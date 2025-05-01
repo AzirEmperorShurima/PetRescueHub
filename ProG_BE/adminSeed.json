@@ -1,0 +1,23 @@
+[
+    {
+        "username": "admin1",
+        "email": "admin1@example.com",
+        "password": "Admin@1234",
+        "secondaryPassword": "Sec@1234",
+        "role": "admin"
+    },
+    {
+        "username": "superadmin1",
+        "email": "superadmin1@example.com",
+        "password": "SuperAdmin@123",
+        "secondaryPassword": "Super@123",
+        "role": "super_admin"
+    },
+    {
+        "username": "baduser",
+        "email": "bad@example.com",
+        "password": "abc",
+        "secondaryPassword": "def",
+        "role": "admin"
+    }
+]

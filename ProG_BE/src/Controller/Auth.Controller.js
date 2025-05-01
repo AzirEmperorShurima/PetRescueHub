@@ -110,15 +110,29 @@ export const loginHandler = async (req, res) => {
         const userLoginPayLoad = {
             id: foundUser._id,
             email: foundUser.email,
-            roles: foundUser.roles.map(role => role.name), // Add roles here
+            roles: foundUser.roles.map(role => role.name),
             tokenType: TOKEN_TYPE.ACCESS_TOKEN.name,
         }
+        const refreshTokenPayload = {
+            id: foundUser._id,
+            email: foundUser.email,
+            tokenType: TOKEN_TYPE.REFRESH_TOKEN.name,
+        };
+
         const newCookies = await getCookies({
             PayLoad: userLoginPayLoad,
             path: COOKIE_PATHS.ACCESS_TOKEN.Path,
             cookieName: COOKIE_PATHS.ACCESS_TOKEN.CookieName,
             maxAge: TOKEN_TYPE.ACCESS_TOKEN.maxAge,
             expiresIn: TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
+            res
+        });
+        const newRefreshToken = await getCookies({
+            PayLoad: refreshTokenPayload,
+            path: COOKIE_PATHS.REFRESH_TOKEN.Path,
+            cookieName: COOKIE_PATHS.REFRESH_TOKEN.CookieName,
+            maxAge: TOKEN_TYPE.REFRESH_TOKEN.maxAge,
+            expiresIn: TOKEN_TYPE.REFRESH_TOKEN.expiresIn,
             res
         });
         const token = await manageTokens(foundUser, newCookies, TOKEN_TYPE.ACCESS_TOKEN.name);
