@@ -27,6 +27,7 @@ function ForgotPassword() {
   const handleChangeEmail = (e) => {
     setEmail(e.target.value);
     setError("");
+    console.log("Email changed:", email);
   };
 
   const handleSubmitForm = async (e) => {

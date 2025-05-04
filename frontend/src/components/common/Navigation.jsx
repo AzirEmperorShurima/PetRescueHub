@@ -17,22 +17,6 @@ const Navigation = () => {
   const navRef = useRef(null);
   const { user, loading } = useAuth();
 
-  // Kiểm tra scroll để thay đổi style của navbar
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsSticky(true);
-      } else {
-        setIsSticky(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
   // Hiệu ứng hiển thị logo
   useEffect(() => {
     setIsLogoVisible(true);

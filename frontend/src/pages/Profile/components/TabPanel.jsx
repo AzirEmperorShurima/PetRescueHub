@@ -10,10 +10,11 @@ const TabPanel = (props) => {
       hidden={value !== index}
       id={`profile-tabpanel-${index}`}
       aria-labelledby={`profile-tab-${index}`}
+      className={`profile-tab-panel ${value === index ? 'active' : ''}`}
       {...other}
     >
       {value === index && (
-        <Box sx={{ py: 3 }}>
+        <Box>
           {children}
         </Box>
       )}

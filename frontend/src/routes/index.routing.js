@@ -10,7 +10,8 @@ import MainLayout from "../components/layouts/MainLayout";
 import AdminLayout from "../components/layouts/AdminLayout";
 import LoadingScreen from "../components/common/LoadingScreen";
 import ProtectedRoute from "../components/guards/ProtectedRoute";
-
+import Rescue from "../pages/Rescue";
+import RescueSuccess from "../pages/Rescue/RescueSuccess";
 // Lazy-load toàn bộ pages/features
 const Login = lazy(() => import("../features/Auth/Login"));
 const Register = lazy(() => import("../features/Auth/Register"));
@@ -36,6 +37,8 @@ const Donate = lazy(() => import("../pages/Donate/Donate"));
 const PetGuide = lazy(() => import("../pages/PetGuide/PetGuide"));
 
 const Profile = lazy(() => import("../pages/Profile/Profile"));
+
+const Chatbot =  lazy(() => import("../services/Chatbot"));
 
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 
@@ -71,7 +74,9 @@ const AppRoutes = () => (
           <Route path="forgot-password" element={<ForgotPassword />} />
         </Route>
         <Route path="terms" element={<Terms />} />
-
+        <Route path="/rescue" element={<Rescue />} />
+        <Route path="/rescue/success" element={<RescueSuccess />} />
+        <Route path="chatbot" element={<Chatbot />} />
         {/* Pet Guide */}
         <Route path="petguide" element={<PetGuide />} />
 
@@ -80,7 +85,7 @@ const AppRoutes = () => (
           <Route path="forum/post/create" element={<CreatePost />} />
           <Route path="forum/question/create" element={<CreateQuestion />} />
           <Route path="event/create" element={<CreateEvent />} />
-          <Route path="profile" element={<Profile />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
       </Route>
 

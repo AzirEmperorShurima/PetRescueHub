@@ -4,7 +4,6 @@ import { FaGoogle, FaApple, FaXTwitter } from 'react-icons/fa6';
 import { Link, useNavigate } from 'react-router-dom';
 import '../../assets/styles/components/auth/Auth.css';
 import petLogo from '../../assets/images/logo.svg';
-import ForgotPassword from './ForgotPassword.jsx';
 import { useAuth } from '../../components/contexts/AuthContext.jsx';
 import { useNotification } from '../../components/contexts/NotificationContext';
 

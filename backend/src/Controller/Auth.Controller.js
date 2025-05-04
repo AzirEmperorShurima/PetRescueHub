@@ -287,7 +287,7 @@ export const manageTokens = async (_user, token, type) => {
 export const getProfile = async (req, res) => {
     try {
         const userToken = req.cookies[COOKIE_PATHS.ACCESS_TOKEN.CookieName]
-        if (userToken) {
+        if (!userToken) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - No token provided" });
         }
         const currUserId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');

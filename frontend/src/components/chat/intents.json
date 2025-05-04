@@ -1,0 +1,634 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": [
+        "Hello!",
+        "Xin chào!",
+        "Chào bạn!"
+      ],
+      "responses": [
+        "Xin chào! Rất vui được hỗ trợ bạn và thú cưng của bạn hôm nay!"
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "goodbye",
+      "patterns": ["Bye", "Goodbye", "Tạm biệt", "Hẹn gặp lại"],
+      "responses": [
+        "Hẹn gặp lại! Hãy chăm sóc tốt cho người bạn lông xù nhé!"
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "thanks",
+      "patterns": ["Thanks", "Cảm ơn", "Cảm ơn bạn", "Rất cảm ơn"],
+      "responses": [
+        "Cảm ơn bạn đã tin tưởng! Chúc thú cưng luôn khỏe mạnh!"
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "ran_can",
+      "patterns": [
+        "Chó bị rắn cắn làm sao?",
+        "Mèo bị rắn độc cắn phải làm gì?",
+        "Cách sơ cứu chó mèo bị rắn cắn"
+      ],
+      "responses": [
+        "Giữ thú cưng yên tĩnh, hạn chế di chuyển để chậm lây lan nọc độc.",
+        "Không hút nọc hoặc băng quá chặt. Đưa ngay đến bác sĩ thú y.",
+        "Quan sát dấu hiệu sưng, khó thở, và ghi lại thời gian bị cắn để báo bác sĩ."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "ong_dot",
+      "patterns": [
+        "Chó bị ong đốt thì làm sao?",
+        "Mèo bị kiến lửa đốt sơ cứu thế nào?",
+        "Sơ cứu chó mèo bị côn trùng đốt"
+      ],
+      "responses": [
+        "Nhẹ nhàng gắp ngòi ong nếu thấy, tránh bóp túi nọc.",
+        "Chườm lạnh vùng bị đốt để giảm sưng, theo dõi dấu hiệu dị ứng.",
+        "Nếu thú cưng khó thở hoặc sưng nhiều, đưa ngay đến bác sĩ thú y."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "bong_nuoc_soi",
+      "patterns": [
+        "Chó mèo bị bỏng nước sôi thì xử lý ra sao?",
+        "Sơ cứu khi thú cưng bị bỏng",
+        "Bị phỏng nước sôi sơ cứu thế nào cho chó mèo"
+      ],
+      "responses": [
+        "Xả nước mát sạch lên vùng bỏng trong 10-15 phút để làm dịu.",
+        "Băng nhẹ bằng gạc sạch, không bôi kem hay dầu lên vết bỏng.",
+        "Đưa đến bác sĩ thú y nếu vết bỏng sâu hoặc diện tích lớn."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "gay_xuong",
+      "patterns": [
+        "Chó mèo bị gãy chân xử lý thế nào?",
+        "Sơ cứu động vật gãy xương",
+        "Gãy tay chân ở chó mèo nên làm gì?"
+      ],
+      "responses": [
+        "Cố định nhẹ nhàng phần gãy bằng nẹp mềm hoặc băng vải sạch.",
+        "Không tự ý nắn xương, giữ thú cưng yên tĩnh khi vận chuyển.",
+        "Đưa ngay đến bác sĩ thú y để chụp X-quang và điều trị."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "hoc_di_vat",
+      "patterns": [
+        "Chó mèo bị hóc xương, phải làm sao?",
+        "Bị nghẹn dị vật xử lý thế nào?",
+        "Sơ cứu hóc dị vật ở thú cưng"
+      ],
+      "responses": [
+        "Kiểm tra miệng, nhẹ nhàng gắp dị vật nếu thấy rõ và dễ lấy.",
+        "Nếu không gắp được hoặc thú cưng khó thở, đưa ngay đến bác sĩ thú y.",
+        "Theo dõi dấu hiệu nghẹn như chảy dãi, ho, hoặc nôn mửa."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "ngot_nuoc",
+      "patterns": [
+        "Chó mèo bị ngộ độc nước uống có cần sơ cứu?",
+        "Chó mèo uống phải nước bẩn xử lý thế nào?",
+        "Sơ cứu khi chó mèo bị ngộ độc nước"
+      ],
+      "responses": [
+        "Lau sạch miệng thú cưng bằng nước sạch, không ép uống thêm nước.",
+        "Theo dõi dấu hiệu ngộ độc như nôn, run, hoặc co giật.",
+        "Đưa ngay đến bác sĩ thú y, mang theo mẫu nước nghi ngờ nếu có."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "say_ho",
+      "patterns": [
+        "Chó bị sảy thai phải làm gì?",
+        "Mèo bị sảy thai xử lý như thế nào?",
+        "Sảy thai ở thú cưng cần chăm sóc gì?"
+      ],
+      "responses": [
+        "Giữ thú cưng ở nơi yên tĩnh, sạch sẽ, tránh vận động mạnh.",
+        "Cung cấp nước sạch và dinh dưỡng, theo dõi dấu hiệu chảy máu.",
+        "Đưa đến bác sĩ thú y nếu có dấu hiệu bất thường như sốt hoặc mệt mỏi."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "dai_hut",
+      "patterns": [
+        "Chó bị dị ứng với phấn hoa phải làm sao?",
+        "Mèo bị dị ứng thời tiết xử lý thế nào?",
+        "Chó mèo bị dị ứng thuốc, làm gì?"
+      ],
+      "responses": [
+        "Hạn chế tiếp xúc với tác nhân gây dị ứng, giữ thú cưng ở nơi thoáng mát.",
+        "Nếu có thuốc chống dị ứng do bác sĩ kê, cho uống theo hướng dẫn.",
+        "Đưa ngay đến bác sĩ thú y nếu xuất hiện sưng mặt, khó thở, hoặc mẩn đỏ."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "so_cuu_nhanh",
+      "patterns": [
+        "Sơ cứu chó bị ngạt thở",
+        "Chó mèo bị ngất phải làm sao?",
+        "Sơ cứu cho thú cưng bị sốc"
+      ],
+      "responses": [
+        "Đảm bảo không gian thoáng, kiểm tra đường thở của thú cưng.",
+        "Nếu ngất, đặt nằm nghiêng, giữ ấm và đưa ngay đến bác sĩ thú y.",
+        "Thực hiện hô hấp nhân tạo nếu cần, nhưng ưu tiên đưa đến phòng khám."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "buon_non",
+      "patterns": [
+        "Chó mèo bị buồn nôn, xử lý thế nào?",
+        "Bị nôn mửa, chó mèo phải làm sao?",
+        "Chó bị nôn nhiều có cần đến bác sĩ không?"
+      ],
+      "responses": [
+        "Ngưng cho ăn 6-12 giờ, chỉ cho uống nước sạch với lượng nhỏ.",
+        "Theo dõi tần suất nôn và dấu hiệu khác như tiêu chảy hay mệt mỏi.",
+        "Nếu nôn kéo dài hoặc có máu, đưa ngay đến bác sĩ thú y."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "doan_dieu_hoa",
+      "patterns": [
+        "Chó mèo bị sốc nhiệt phải làm sao?",
+        "Chó bị nhiệt độ quá cao xử lý thế nào?",
+        "Sơ cứu khi thú cưng bị say nóng"
+      ],
+      "responses": [
+        "Chuyển thú cưng đến nơi mát, lau người bằng khăn ướt mát.",
+        "Cho uống nước mát từng ít một, không dùng nước đá lạnh đột ngột.",
+        "Đưa ngay đến bác sĩ thú y nếu thú cưng thở gấp hoặc ngất."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "sau_luoi",
+      "patterns": [
+        "Chó mèo bị sưng hạch sau lưng xử lý như thế nào?",
+        "Chó bị sưng phần cổ cần làm gì?",
+        "Sưng sau cổ mèo có nguy hiểm không?"
+      ],
+      "responses": [
+        "Quan sát vùng sưng, kiểm tra xem có nóng hoặc đau khi chạm không.",
+        "Nếu sưng không giảm sau 1-2 ngày, đưa đến bác sĩ thú y để kiểm tra.",
+        "Theo dõi thêm dấu hiệu như sốt, chán ăn, hoặc mệt mỏi."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "di_tieu",
+      "patterns": [
+        "Chó mèo tiểu ra máu, xử lý thế nào?",
+        "Chó bị viêm đường tiểu phải làm sao?",
+        "Mèo tiểu lắt nhắt cần chăm sóc gì?"
+      ],
+      "responses": [
+        "Đưa ngay đến bác sĩ thú y để xét nghiệm và điều trị nhiễm trùng hoặc sỏi.",
+        "Đảm bảo thú cưng uống đủ nước sạch để hỗ trợ đường tiết niệu.",
+        "Ghi lại tần suất và màu sắc nước tiểu để báo bác sĩ."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "mat_thi",
+      "patterns": [
+        "Chó mèo bị mù thì phải làm sao?",
+        "Làm thế nào để giúp chó mèo bị mất thị lực?",
+        "Sơ cứu khi chó mèo bị mù"
+      ],
+      "responses": [
+        "Đưa thú cưng đến bác sĩ thú y để kiểm tra nguyên nhân mất thị lực.",
+        "Sắp xếp môi trường sống an toàn, tránh thay đổi đồ đạc đột ngột.",
+        "Huấn luyện thú cưng di chuyển bằng âm thanh hoặc mùi hương."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "bi_ho",
+      "patterns": [
+        "Chó mèo bị ho nhiều có sao không?",
+        "Chó ho khan thì phải làm sao?",
+        "Mèo bị ho phải xử lý thế nào?"
+      ],
+      "responses": [
+        "Theo dõi tần suất ho và các dấu hiệu như chảy mũi hoặc sốt.",
+        "Giữ thú cưng ở nơi ấm áp, tránh không khí lạnh hoặc khói bụi.",
+        "Nếu ho kéo dài hơn 2 ngày, đưa đến bác sĩ thú y để kiểm tra."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "di_hay",
+      "patterns": [
+        "Chó mèo đi ngoài ra máu xử lý như thế nào?",
+        "Mèo bị tiêu chảy phải làm sao?",
+        "Chó đi ngoài có cần đi bác sĩ không?"
+      ],
+      "responses": [
+        "Ngưng cho ăn 12 giờ, cung cấp nước sạch để tránh mất nước.",
+        "Đưa ngay đến bác sĩ thú y nếu phân có máu hoặc tiêu chảy kéo dài.",
+        "Ghi lại tần suất và tình trạng phân để hỗ trợ chẩn đoán."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "sang_lung",
+      "patterns": [
+        "Chó mèo bị sàng lưng, phải làm sao?",
+        "Bị đau lưng, chó mèo cần chăm sóc gì?",
+        "Sưng lưng ở chó mèo có sao không?"
+      ],
+      "responses": [
+        "Hạn chế vận động, giữ thú cưng ở nơi yên tĩnh và thoải mái.",
+        "Quan sát dấu hiệu đau khi chạm hoặc khó di chuyển.",
+        "Đưa đến bác sĩ thú y nếu tình trạng kéo dài hoặc nghiêm trọng."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "nong_hong",
+      "patterns": [
+        "Chó mèo bị nóng hồng thì làm sao?",
+        "Chó bị sốt cao phải làm sao?",
+        "Mèo bị sốt có cần đưa bác sĩ ngay không?"
+      ],
+      "responses": [
+        "Đo nhiệt độ thú cưng, nếu trên 39.5°C, lau người bằng khăn mát.",
+        "Không tự ý dùng thuốc hạ sốt, đưa ngay đến bác sĩ thú y.",
+        "Theo dõi dấu hiệu mệt mỏi, chán ăn, hoặc run rẩy."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "nghien_thuoc",
+      "patterns": [
+        "Chó mèo nghiện thuốc phải làm sao?",
+        "Mèo nghiện thuốc có nguy hiểm không?",
+        "Chó bị lệ thuộc vào thuốc xử lý thế nào?"
+      ],
+      "responses": [
+        "Tư vấn bác sĩ thú y để xây dựng kế hoạch giảm liều thuốc từ từ.",
+        "Theo dõi hành vi và sức khỏe thú cưng trong quá trình cai thuốc.",
+        "Không tự ý ngừng thuốc đột ngột, cần có hướng dẫn chuyên môn."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "chuyen_nhiet",
+      "patterns": [
+        "Chó mèo bị chuyển nhiệt thì làm sao?",
+        "Mèo bị cảm lạnh có cần đưa bác sĩ không?",
+        "Chó bị lạnh co giật phải làm sao?"
+      ],
+      "responses": [
+        "Giữ thú cưng ấm bằng chăn hoặc quần áo, cho uống nước ấm.",
+        "Theo dõi dấu hiệu run rẩy, ho, hoặc chảy mũi kéo dài.",
+        "Đưa đến bác sĩ thú y nếu tình trạng không cải thiện trong 24 giờ."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "ca_cau",
+      "patterns": [
+        "Chó mèo bị cào xước phải làm sao?",
+        "Mèo bị thương do cào cần sơ cứu như thế nào?",
+        "Cào xước ở thú cưng có cần chăm sóc đặc biệt không?"
+      ],
+      "responses": [
+        "Rửa vết cào bằng dung dịch sát khuẩn nhẹ, băng bằng gạc sạch.",
+        "Theo dõi dấu hiệu sưng, đỏ, hoặc chảy mủ tại vết thương.",
+        "Đưa đến bác sĩ thú y nếu vết cào sâu hoặc không lành sau 2 ngày."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "cat_nhau",
+      "patterns": [
+        "Chó mèo cắn nhau phải xử lý thế nào?",
+        "Chó mèo cắn nhau có nguy hiểm không?",
+        "Sơ cứu khi chó mèo cắn nhau"
+      ],
+      "responses": [
+        "Rửa sạch vết cắn bằng nước muối loãng hoặc dung dịch sát khuẩn.",
+        "Theo dõi dấu hiệu nhiễm trùng như sưng, nóng, hoặc chảy mủ.",
+        "Đưa ngay đến bác sĩ thú y nếu vết cắn sâu hoặc chảy máu nhiều."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "benh_ngoai",
+      "patterns": [
+        "Chó mèo bị bệnh ngoài da phải làm sao?",
+        "Mèo bị rụng lông nhiều có sao không?",
+        "Chó bị ngứa ngoài da xử lý thế nào?"
+      ],
+      "responses": [
+        "Kiểm tra da thú cưng, tìm dấu hiệu đỏ, vảy, hoặc rụng lông bất thường.",
+        "Giữ vệ sinh sạch sẽ, tránh dùng xà phòng mạnh lên vùng da bệnh.",
+        "Đưa đến bác sĩ thú y để xét nghiệm và điều trị nếu tình trạng kéo dài."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "truot_giay",
+      "patterns": [
+        "Chó mèo bị trượt giày làm sao?",
+        "Chó bị té ngã có cần điều trị không?",
+        "Mèo bị ngã có cần đến bác sĩ thú y không?"
+      ],
+      "responses": [
+        "Quan sát xem thú cưng có đi khập khiễng hoặc đau khi chạm không.",
+        "Nghỉ ngơi và hạn chế vận động trong 24 giờ, theo dõi dấu hiệu bất thường.",
+        "Đưa đến bác sĩ thú y nếu thú cưng không đi lại bình thường sau 1-2 ngày."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "tan_nhiet",
+      "patterns": [
+        "Chó mèo bị sốc nhiệt phải làm sao?",
+        "Mèo bị ngất do nóng phải xử lý thế nào?",
+        "Sốc nhiệt ở thú cưng có nguy hiểm không?"
+      ],
+      "responses": [
+        "Di chuyển thú cưng đến nơi mát, làm mát bằng khăn ướt hoặc nước mát.",
+        "Cho uống nước mát từng ít một, tránh làm lạnh đột ngột bằng đá.",
+        "Đưa ngay đến bác sĩ thú y nếu thú cưng thở gấp, ngất, hoặc co giật."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "chay_mau_cam",
+      "patterns": [
+        "Chó bị chảy máu cam thì làm sao?",
+        "Mèo bị chảy máu mũi sơ cứu thế nào?",
+        "Chó mèo bị chảy máu cam xử lý ra sao?"
+      ],
+      "responses": [
+        "Giữ thú cưng bình tĩnh, chườm lạnh nhẹ lên sống mũi để cầm máu.",
+        "Không nhét bông hoặc vật lạ vào mũi, quan sát lượng máu chảy.",
+        "Đưa ngay đến bác sĩ thú y nếu máu chảy nhiều hoặc kéo dài."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "ngat",
+      "patterns": [
+        "Chó mèo bị ngất thì xử lý thế nào?",
+        "Thú cưng bị ngất xỉu cần làm gì?",
+        "Cách sơ cứu ngất cho chó mèo"
+      ],
+      "responses": [
+        "Đặt thú cưng nằm nghiêng ở nơi thoáng mát, kiểm tra nhịp thở.",
+        "Giữ ấm cơ thể, nhẹ nhàng xoa bóp để kích thích tuần hoàn.",
+        "Đưa ngay đến bác sĩ thú y nếu thú cưng không tỉnh lại nhanh chóng."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "di_ngoai_ra_mau",
+      "patterns": [
+        "Chó mèo đi ngoài ra máu phải làm gì?",
+        "Thú cưng tiêu chảy ra máu sơ cứu thế nào?",
+        "Đi ngoài phân máu ở chó mèo xử lý ra sao?"
+      ],
+      "responses": [
+        "Ngưng cho ăn 12-24 giờ, chỉ cung cấp nước sạch để tránh mất nước.",
+        "Ghi lại tần suất và màu sắc phân, đưa ngay đến bác sĩ thú y.",
+        "Không tự ý dùng thuốc cầm tiêu chảy, cần xét nghiệm để tìm nguyên nhân."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "vong_co_ban_chan",
+      "patterns": [
+        "Cách băng chân gãy cho chó mèo?",
+        "Hướng dẫn băng bó chân bị thương ở thú cưng",
+        "Cách sơ cứu gãy chân cho thú cưng tại nhà"
+      ],
+      "responses": [
+        "Dùng nẹp mềm hoặc băng vải cố định chân, không siết quá chặt.",
+        "Đảm bảo thú cưng không tự cắn băng, giữ yên khi vận chuyển.",
+        "Đưa ngay đến bác sĩ thú y để chụp X-quang và điều trị chuyên sâu."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "bi_co_giat",
+      "patterns": [
+        "Chó mèo bị co giật xử lý thế nào?",
+        "Sơ cứu động vật bị động kinh",
+        "Chó bị co giật phải làm sao?"
+      ],
+      "responses": [
+        "Đặt thú cưng ở nơi an toàn, tránh vật sắc nhọn hoặc cầu thang.",
+        "Ghi lại thời gian và mức độ co giật, không cố giữ chặt thú cưng.",
+        "Đưa ngay đến bác sĩ thú y sau cơn co giật để kiểm tra nguyên nhân."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "boi_duoi",
+      "patterns": [
+        "Chó bị đuối nước sơ cứu ra sao?",
+        "Cách cứu chó mèo đuối nước",
+        "Thú cưng bị sặc nước xử lý thế nào?"
+      ],
+      "responses": [
+        "Dốc đầu thú cưng xuống để nước thoát ra, lau sạch miệng và mũi.",
+        "Kiểm tra nhịp thở, thực hiện hô hấp nhân tạo nếu cần.",
+        "Giữ ấm và đưa ngay đến bác sĩ thú y để kiểm tra phổi."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "choang_nhiet",
+      "patterns": [
+        "Chó mèo bị sốc nhiệt phải làm gì?",
+        "Thú cưng bị nóng sốc xử lý thế nào?",
+        "Cách sơ cứu sốc nhiệt ở chó mèo"
+      ],
+      "responses": [
+        "Chuyển thú cưng đến nơi mát, làm mát bằng nước mát hoặc khăn ướt.",
+        "Theo dõi nhịp thở và thân nhiệt, cho uống nước mát từng ít một.",
+        "Đưa ngay đến bác sĩ thú y nếu có dấu hiệu ngất hoặc thở gấp."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "uoc_mua",
+      "patterns": [
+        "Chó mèo bị ướt mưa phải làm gì?",
+        "Cách xử lý thú cưng ướt mưa lạnh",
+        "Mèo ướt mưa run rẩy sơ cứu thế nào?"
+      ],
+      "responses": [
+        "Lau khô thú cưng bằng khăn sạch, sấy khô ở nhiệt độ thấp nếu cần.",
+        "Giữ thú cưng ở nơi ấm áp, cung cấp chăn hoặc quần áo giữ nhiệt.",
+        "Theo dõi dấu hiệu cảm lạnh như hắt hơi, đưa đến bác sĩ nếu kéo dài."
+      ],
+      "emergency": false
+    },
+    {
+      "tag": "di_tieu_kho_khan",
+      "patterns": [
+        "Chó mèo tiểu khó xử lý ra sao?",
+        "Thú cưng bị bí tiểu sơ cứu thế nào?",
+        "Bị kẹt tiểu ở chó mèo làm sao?"
+      ],
+      "responses": [
+        "Đưa ngay đến bác sĩ thú y để kiểm tra tắc nghẽn hoặc nhiễm trùng.",
+        "Không ép bụng hoặc cố gắng kích thích tiểu, có thể gây hại.",
+        "Ghi lại tần suất và dấu hiệu để cung cấp thông tin cho bác sĩ."
+      ],
+      "emergency": true
+    },
+    {
+      "tag": "nhiem_trung_tai",
+      "patterns": [
+        "Chó mèo bị viêm tai sơ cứu thế nào?",
+        "Cách xử lý khi thú cưng bị nhiễm trùng tai",
+        "Dấu hiệu nhiễm trùng tai ở chó mèo"
+      ],
+      "responses": [
+        "Vệ sinh tai bằng dung dịch chuyên dụng, tránh dùng tăm bông sâu.",
+        "Theo dõi dấu hiệu như lắc đầu, gãi tai, hoặc mùi hôi từ tai.",
+        "Đưa đến bác sĩ thú y nếu tai sưng, chảy mủ, hoặc thú cưng đau."
+      ],
+      "emergency": false
+    },
+    {
+    "tag": "an_phai_thuoc",
+    "patterns": [
+      "Chó mèo ăn phải thuốc của người thì làm sao?",
+      "Thú cưng nuốt thuốc độc xử lý thế nào?",
+      "Sơ cứu khi chó mèo ăn nhầm thuốc"
+    ],
+    "responses": [
+      "Giữ bình tĩnh, xác định loại thuốc và lượng thú cưng đã ăn.",
+      "Không tự ý gây nôn, liên hệ ngay bác sĩ thú y hoặc đường dây nóng ngộ độc.",
+      "Mang theo vỏ thuốc hoặc mẫu thuốc đến phòng khám để hỗ trợ chẩn đoán."
+    ],
+    "emergency": true
+  },
+  {
+    "tag": "vet_thuong_mo",
+    "patterns": [
+      "Chó mèo bị vết thương hở làm sao?",
+      "Cách sơ cứu vết cắt sâu ở thú cưng",
+      "Thú cưng bị rách da xử lý thế nào?"
+    ],
+    "responses": [
+      "Rửa vết thương bằng nước muối loãng hoặc dung dịch sát khuẩn nhẹ.",
+      "Dùng gạc sạch đè nhẹ để cầm máu, không chà xát mạnh.",
+      "Đưa ngay đến bác sĩ thú y nếu vết thương sâu hoặc chảy máu không dừng."
+    ],
+    "emergency": true
+  },
+  {
+    "tag": "bi_dien_giat",
+    "patterns": [
+      "Chó mèo bị điện giật phải làm gì?",
+      "Sơ cứu khi thú cưng bị giật điện",
+      "Thú cưng bị sốc điện xử lý ra sao?"
+    ],
+    "responses": [
+      "Ngắt nguồn điện trước khi chạm vào thú cưng để đảm bảo an toàn.",
+      "Kiểm tra nhịp thở và tim, thực hiện hô hấp nhân tạo nếu cần.",
+      "Đưa ngay đến bác sĩ thú y, ngay cả khi thú cưng tỉnh táo trở lại."
+    ],
+    "emergency": true
+  },
+  {
+    "tag": "mat_nuoc",
+    "patterns": [
+      "Chó mèo bị mất nước thì làm sao?",
+      "Cách xử lý khi thú cưng bị kiệt sức do mất nước",
+      "Dấu hiệu mất nước ở chó mèo là gì?"
+    ],
+    "responses": [
+      "Cho thú cưng uống nước sạch từng ít một, tránh ép uống quá nhiều.",
+      "Kiểm tra da cổ, nếu mất độ đàn hồi, đưa ngay đến bác sĩ thú y.",
+      "Cung cấp dung dịch bù điện giải nếu có hướng dẫn từ bác sĩ."
+    ],
+    "emergency": true
+  },
+  {
+    "tag": "an_thuc_an_la",
+    "patterns": [
+      "Chó mèo ăn phải thực phẩm lạ thì làm sao?",
+      "Thú cưng ăn đồ hỏng xử lý thế nào?",
+      "Sơ cứu khi chó mèo ăn nhầm thức ăn độc"
+    ],
+    "responses": [
+      "Xác định loại thực phẩm thú cưng đã ăn, giữ mẫu nếu có thể.",
+      "Theo dõi dấu hiệu ngộ độc như nôn, tiêu chảy, hoặc co giật.",
+      "Liên hệ bác sĩ thú y ngay, đặc biệt nếu ăn socola, nho, hoặc hành."
+    ],
+    "emergency": true
+  },
+  {
+    "tag": "stress",
+    "patterns": [
+      "Chó mèo bị stress thì phải làm sao?",
+      "Cách giúp thú cưng giảm căng thẳng",
+      "Thú cưng sợ hãi xử lý thế nào?"
+    ],
+    "responses": [
+      "Tạo không gian yên tĩnh, thoải mái, tránh tiếng ồn hoặc kích thích mạnh.",
+      "Dùng đồ chơi hoặc mùi hương quen thuộc để trấn an thú cưng.",
+      "Nếu stress kéo dài hoặc có hành vi bất thường, tư vấn bác sĩ thú y."
+    ],
+    "emergency": false
+  },
+  {
+    "tag": "loet_mieng",
+    "patterns": [
+      "Chó mèo bị loét miệng thì làm sao?",
+      "Thú cưng bị viêm miệng xử lý thế nào?",
+      "Dấu hiệu loét miệng ở chó mèo là gì?"
+    ],
+    "responses": [
+      "Kiểm tra miệng, tìm vết loét, sưng, hoặc mùi hôi bất thường.",
+      "Lau miệng bằng dung dịch sát khuẩn nhẹ theo hướng dẫn bác sĩ.",
+      "Đưa đến bác sĩ thú y nếu thú cưng bỏ ăn hoặc chảy nước dãi nhiều."
+    ],
+    "emergency": false
+  },
+  {
+    "tag": "mat_can_bang",
+    "patterns": [
+      "Chó mèo đi loạng choạng thì làm sao?",
+      "Thú cưng mất thăng bằng xử lý thế nào?",
+      "Sơ cứu khi chó mèo bị chóng mặt"
+    ],
+    "responses": [
+      "Giữ thú cưng ở nơi an toàn, tránh cầu thang hoặc vật sắc nhọn.",
+      "Theo dõi các dấu hiệu như nôn, lắc đầu, hoặc mắt chuyển động lạ.",
+      "Đưa ngay đến bác sĩ thú y để kiểm tra tai trong hoặc vấn đề thần kinh."
+    ],
+    "emergency": true
+  }
+  ]
+}

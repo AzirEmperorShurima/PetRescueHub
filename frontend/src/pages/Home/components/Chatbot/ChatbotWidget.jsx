@@ -4,7 +4,7 @@ import { Close as CloseIcon, Send as SendIcon, Chat as ChatIcon } from '@mui/ico
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../../components/contexts/AuthContext';
 import './ChatbotWidget.css';
-
+import axios from 'axios';
 const ChatbotWidget = () => {
   const { user } = useAuth(); // Thêm hook useAuth để kiểm tra trạng thái đăng nhập
   const [isOpen, setIsOpen] = useState(false);
@@ -44,75 +44,150 @@ const ChatbotWidget = () => {
     setMessages([welcomeMessage, suggestionMessage]);
   }, []);
 
-  const handleSendMessage = () => {
-    if (inputValue.trim() === '') return;
+  // const handleSendMessage = () => {
+  //   if (inputValue.trim() === '') return;
 
+  //   const userMessage = {
+  //     id: messages.length + 1,
+  //     text: inputValue,
+  //     sender: 'user',
+  //     timestamp: new Date()
+  //   };
+
+  //   setMessages([...messages, userMessage]);
+  //   setInputValue('');
+  //   setIsTyping(true);
+
+  //   setTimeout(() => {
+  //     const botResponse = {
+  //       id: messages.length + 2,
+  //       text: getBotResponse(inputValue),
+  //       sender: 'bot',
+  //       timestamp: new Date()
+  //     };
+
+  //     setMessages(prev => [...prev, botResponse, {
+  //       id: prev.length + 2,
+  //       suggestions: getRelatedSuggestions(inputValue),
+  //       sender: 'bot',
+  //       timestamp: new Date()
+  //     }]);
+
+  //     setIsTyping(false);
+  //   }, 1500);
+  // };
+  const handleSendMessage = async () => {
+    if (inputValue.trim() === '') return;
+  
     const userMessage = {
       id: messages.length + 1,
       text: inputValue,
       sender: 'user',
       timestamp: new Date()
     };
-
+  
     setMessages([...messages, userMessage]);
     setInputValue('');
     setIsTyping(true);
-
-    setTimeout(() => {
+  
+    try {
+      const res = await axios.post('http://192.168.1.6:5000/chat', {
+        message: inputValue
+      });
+  
       const botResponse = {
         id: messages.length + 2,
-        text: getBotResponse(inputValue),
+        text: res.data.response || 'Không có phản hồi từ AI.',
         sender: 'bot',
         timestamp: new Date()
       };
-
-      setMessages(prev => [...prev, botResponse, {
-        id: prev.length + 2,
-        suggestions: getRelatedSuggestions(inputValue),
+  
+      setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      const botResponse = {
+        id: messages.length + 2,
+        text: 'Lỗi kết nối tới máy chủ11111.',
         sender: 'bot',
         timestamp: new Date()
-      }]);
-
+      };
+  
+      setMessages(prev => [...prev, botResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
-
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
+  // const handleSuggestionClick = (suggestion) => {
+  //   const userMessage = {
+  //     id: messages.length + 1,
+  //     text: suggestion,
+  //     sender: 'user',
+  //     timestamp: new Date()
+  //   };
+
+  //   setMessages([...messages, userMessage]);
+  //   setIsTyping(true);
+
+  //   setTimeout(() => {
+  //     const botResponse = {
+  //       id: messages.length + 2,
+  //       text: getBotResponse(suggestion),
+  //       sender: 'bot',
+  //       timestamp: new Date()
+  //     };
+
+  //     setMessages(prev => [...prev, botResponse, {
+  //       id: prev.length + 2,
+  //       suggestions: getRelatedSuggestions(suggestion),
+  //       sender: 'bot',
+  //       timestamp: new Date()
+  //     }]);
+
+  //     setIsTyping(false);
+  //   }, 1500);
+  // };
+  const handleSuggestionClick = async (suggestion) => {
     const userMessage = {
       id: messages.length + 1,
       text: suggestion,
       sender: 'user',
       timestamp: new Date()
     };
-
+  
     setMessages([...messages, userMessage]);
     setIsTyping(true);
-
-    setTimeout(() => {
+  
+    try {
+      const res = await axios.post('http://192.168.1.6:5000/chat', {
+        message: suggestion
+      });
+  
       const botResponse = {
         id: messages.length + 2,
-        text: getBotResponse(suggestion),
+        text: res.data.response || 'Không có phản hồi từ AI.',
         sender: 'bot',
         timestamp: new Date()
       };
-
-      setMessages(prev => [...prev, botResponse, {
-        id: prev.length + 2,
-        suggestions: getRelatedSuggestions(suggestion),
+  
+      setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      const botResponse = {
+        id: messages.length + 2,
+        text: 'Lỗi kết nối tới máy chủ11111.',
         sender: 'bot',
         timestamp: new Date()
-      }]);
-
+      };
+  
+      setMessages(prev => [...prev, botResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
-
   const getBotResponse = (message) => {
     const lower = message.toLowerCase();
     if (lower.includes('cứu hộ')) {

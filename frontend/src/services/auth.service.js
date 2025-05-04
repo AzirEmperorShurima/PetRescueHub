@@ -40,13 +40,8 @@ const register = async ({ username, email, password }) => {
   return res.data;
 };
 
-const sendOTP = async (email, type) => {
-  const res = await apiService.auth.sendOTP(email, type);
-  return res.data;
-};
-
-const verifyOTP = async (userId, otp) => {
-  const res = await apiService.auth.verifyOTP(userId, otp);
+const verifyOTP = async (otp) => {
+  const res = await apiService.auth.verifyOTP(otp);
   return res.data; // { success, user, token }
 };
 
@@ -57,6 +52,5 @@ export default {
   removeUserSession,
   login,
   register,
-  sendOTP,
   verifyOTP
 };

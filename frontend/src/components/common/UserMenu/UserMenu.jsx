@@ -52,7 +52,6 @@ const UserMenu = ({ user }) => {
       navigate('/');
       handleClose();
     } catch (error) {
-      // Có thể thêm thông báo lỗi nếu cần
       console.error('Đăng xuất thất bại:', error);
       logout();
       navigate('/');
