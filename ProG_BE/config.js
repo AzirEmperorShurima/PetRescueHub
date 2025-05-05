@@ -34,6 +34,10 @@ export const COOKIE_PATHS = {
         CookieName: 'ACCEPT_RESET_PASSWORD',
         Path: '/api/auth/password'
     },
+    REPORT_COMPROMISED: {
+        CookieName: 'REPORT_COMPROMISED',
+        Path: '/api/auth/password'
+    },
 }
 export const TOKEN_TYPE = {
     ACCESS_TOKEN: {

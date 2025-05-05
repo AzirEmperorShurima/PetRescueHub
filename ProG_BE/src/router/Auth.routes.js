@@ -43,10 +43,10 @@ authRouter.post('/password/reset-password', [validatePasswordStrength], reset_pa
 // Token & OTP
 authRouter.post('/sign/verify-otp', verified_OTP);
 authRouter.get('/sign/verify-otp/refreshOtp', resendActivationOTP);
-authRouter.post('/password/verify-otp-forgot-password', [verified_Is_Email_Valid], verified_OTP_forgot_password);
+authRouter.post('/password/verify-otp-forgot-password', verified_OTP_forgot_password);
 
 // Security routes
-authRouter.post('/protect/report-compromised', report_compromised_account);
+authRouter.get('/protect/report-compromised', report_compromised_account);
 
 authRouter.get('/events', (req, res) => {
     // Thiết lập header cho SSE
@@ -60,7 +60,6 @@ authRouter.get('/events', (req, res) => {
     console.log('SSE client connected:', req.ip);
     res.write('data: Connection established\n\n');
 
-    // Gửi dữ liệu mỗi 5 giây
     const interval = setInterval(() => {
         const message = { time: new Date().toISOString() };
         console.log('Sending SSE message:', message);
@@ -68,14 +67,12 @@ authRouter.get('/events', (req, res) => {
         res.flush();
     }, 5000);
 
-    // Xử lý khi client ngắt kết nối
     req.on('close', () => {
         clearInterval(interval);
         console.log('SSE client disconnected:', req.ip);
         res.end();
     });
 
-    // Xử lý lỗi
     res.on('error', (err) => {
         console.error('SSE error:', err);
         clearInterval(interval);

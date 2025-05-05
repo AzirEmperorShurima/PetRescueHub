@@ -119,17 +119,22 @@ export const sendMailNotification = async (_mail) => {
         subject: _mail.subject,
         text: _mail.text,
         html: `
-            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 15px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 15px; background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                <!-- Logo Section -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="https://i.imgur.com/CJ8HfUK.png" alt="PetRescueHub Logo" style="width: 150px; height: auto;">
+                </div>
+
                 <!-- Header Section -->
                 <div style="text-align: center; margin-bottom: 25px;">
-                    <h1 style="color: #2c3e50; margin: 0; font-size: 28px; font-weight: 600;">${_mail.subject}</h1>
-                    <div style="width: 50px; height: 3px; background: linear-gradient(to right, #3498db, #2ecc71); margin: 15px auto;"></div>
+                    <h1 style="color: #2c3e50; margin: 0; font-size: 28px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">${_mail.subject}</h1>
+                    <div style="width: 80px; height: 4px; background: linear-gradient(to right, #3498db, #2ecc71); margin: 15px auto; border-radius: 2px;"></div>
                 </div>
 
                 <!-- Main Content Section -->
-                <div style="background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%); border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #e0e0e0;">
+                <div style="background: #ffffff; border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
                     ${_mail.html ? 
-                        `<div style="color: #2c3e50; font-size: 16px; line-height: 1.6; text-align: justify;">
+                        `<div style="color: #2c3e50; font-size: 16px; line-height: 1.8; text-align: justify;">
                             ${_mail.html}
                         </div>` 
                         : ''
@@ -138,15 +143,20 @@ export const sendMailNotification = async (_mail) => {
 
                 <!-- Footer Section -->
                 <div style="text-align: center; padding-top: 20px; border-top: 1px solid #eee;">
-                    <img src="https://i.imgur.com/YckHqaP.png" alt="PetRescueHub Logo" style="width: 120px; margin-bottom: 15px;">
-                    <div style="margin-bottom: 15px;">
-                        <a href="https://facebook.com/petrescuehub" style="text-decoration: none; color: #3498db; margin: 0 10px;">Facebook</a>
-                        <a href="https://twitter.com/petrescuehub" style="text-decoration: none; color: #3498db; margin: 0 10px;">Twitter</a>
-                        <a href="https://instagram.com/petrescuehub" style="text-decoration: none; color: #3498db; margin: 0 10px;">Instagram</a>
+                    <div style="margin-bottom: 20px;">
+                        <a href="https://facebook.com/petrescuehub" style="text-decoration: none; color: #ffffff; background: #3b5998; padding: 8px 15px; border-radius: 5px; margin: 0 5px; display: inline-block; font-size: 14px;">
+                            <img src="https://i.imgur.com/QV2cR68.png" alt="Facebook" style="width: 16px; vertical-align: middle; margin-right: 5px;">Facebook
+                        </a>
+                        <a href="https://twitter.com/petrescuehub" style="text-decoration: none; color: #ffffff; background: #1da1f2; padding: 8px 15px; border-radius: 5px; margin: 0 5px; display: inline-block; font-size: 14px;">
+                            <img src="https://i.imgur.com/0LPK4Qx.png" alt="Twitter" style="width: 16px; vertical-align: middle; margin-right: 5px;">Twitter
+                        </a>
+                        <a href="https://instagram.com/petrescuehub" style="text-decoration: none; color: #ffffff; background: #e1306c; padding: 8px 15px; border-radius: 5px; margin: 0 5px; display: inline-block; font-size: 14px;">
+                            <img src="https://i.imgur.com/P6vV0X6.png" alt="Instagram" style="width: 16px; vertical-align: middle; margin-right: 5px;">Instagram
+                        </a>
                     </div>
                     <p style="color: #7f8c8d; font-size: 14px; margin: 5px 0;">Trân trọng,</p>
                     <p style="color: #2c3e50; font-size: 16px; font-weight: bold; margin: 5px 0;">PetRescueHub Team</p>
-                    <p style="color: #95a5a6; font-size: 12px; margin-top: 15px;">© 2024 PetRescueHub. All rights reserved.</p>
+                    <p style="color: #95a5a6; font-size: 12px; margin-top: 15px;">© ${new Date().getFullYear()} PetRescueHub. All rights reserved.</p>
                 </div>
             </div>
         `,

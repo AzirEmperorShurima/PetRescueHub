@@ -1,9 +1,41 @@
 import { StatusCodes } from "http-status-codes";
-import { COOKIE_PATHS, TOKEN_TYPE } from "../../config";
-import { getUserFieldFromToken } from "../services/User/User.service";
-import User from "../models/user";
-import { redisClient } from "../Cache/User_Cache";
+import { COOKIE_PATHS, TOKEN_TYPE } from "../../config.js";
+import { getUserFieldFromToken } from "../services/User/User.service.js";
+import User from "../models/user.js";
+import { redisClient } from "../Cache/User_Cache.js";
 
+export const requestVolunteer = async (req, res) => {
+    try {
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userEmail = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'email');
+        const roles = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'roles');
+        const tokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "tokenType");
+
+        if (!userId || !userEmail || !roles || tokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized: Access Denied You must be login to use this resource " });
+        }
+        const user = await User.findById(userId);
+
+        if (!user) return res.status(404).json({ message: "User không tồn tại!" });
+
+        if (user.volunteerRequestStatus === "pending") {
+            return res.status(400).json({ message: "Bạn đã gửi yêu cầu trước đó, vui lòng chờ duyệt!" });
+        }
+
+        if (user.volunteerRequestStatus === "approved") {
+            return res.status(400).json({ message: "Bạn đã được phê duyệt làm volunteer!" });
+        }
+
+        // Cập nhật trạng thái
+        user.volunteerRequestStatus = "pending";
+        await user.save();
+
+        return res.status(200).json({ message: "Yêu cầu volunteer đã được gửi, vui lòng chờ duyệt!" });
+    } catch (error) {
+        console.error("Lỗi khi gửi yêu cầu volunteer:", error);
+        return res.status(500).json({ message: "Lỗi máy chủ!" });
+    }
+};
 
 export const volunteerUpdateStatus = async (req, res) => {
     // Get JWT Verification and Authorization from Cookies
@@ -88,3 +120,5 @@ export const volunteerUpdateStatus = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Server error" });
     }
 };
+
+
