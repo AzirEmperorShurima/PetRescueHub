@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import '../../assets/styles/components/auth/Auth.css';
 import petLogo from '../../assets/images/logo.svg';
 import { useAuth } from '../../components/contexts/AuthContext';
@@ -25,6 +26,8 @@ function ForgotPassword() {
   const [otpCode, setOtpCode] = useState("");
   const [resetToken, setResetToken] = useState("");
 
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -59,6 +62,14 @@ function ForgotPassword() {
     setError("");
   };
 
+  const handleShowNewPass = () => {
+    setShowNewPass((prev) => !prev);
+  };
+  
+  const handleShowConfirmPass = () => {
+    setShowConfirmPass((prev) => !prev);
+  };
+
   const handleSubmitForm = async (e) => {
     e.preventDefault();
 
@@ -91,7 +102,6 @@ function ForgotPassword() {
       const response = await authService.otpForgotPassword(otpInput);
       console.log("OTP verification response:", response);
 
-  // đoạn đầu của đoạn code đúng
       if (response.message === 'OTP verified successfully' || (response.success && response.resetToken)) {
         // Nếu không có resetToken, tạo một token tạm thời
         const token = response.resetToken || 'temp_token_' + new Date().getTime();
@@ -108,7 +118,7 @@ function ForgotPassword() {
       throw new Error(error.message || 'Xác thực OTP thất bại');
     }
   };
-// đoạn cuối
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
@@ -193,42 +203,67 @@ function ForgotPassword() {
 
       <div className="forgot-password-form-section">
         <div className="heading">Quên mật khẩu</div>
-        <div className="auth-subtitle">Nhập email của bạn để đặt lại mật khẩu</div>
+        
+        {/* Hiển thị tiêu đề tùy theo trạng thái */}
+        {showResetPassword ? (
+          <div className="auth-subtitle">Vui lòng nhập mật khẩu mới của bạn</div>
+        ) : (
+          <div className="auth-subtitle">Nhập email của bạn để đặt lại mật khẩu</div>
+        )}
 
         {error && <div className="error-message">{error}</div>}
 
         {showResetPassword ? (
           <div className="reset-password-form">
-            <p>Vui lòng nhập mật khẩu mới của bạn.</p>
             <form className="form" onSubmit={handleResetPassword}>
-              <div className="form-group">
+              <div className="form-group password-group">
                 <label htmlFor="newPassword">Mật khẩu mới</label>
-                <input
-                  required
-                  className="input"
-                  value={newPassword}
-                  onChange={handleChangePassword}
-                  type="password"
-                  name="newPassword"
-                  id="newPassword"
-                  placeholder="Nhập mật khẩu mới"
-                  autoComplete="new-password"
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    required
+                    className="input"
+                    value={newPassword}
+                    onChange={handleChangePassword}
+                    type={showNewPass ? 'text' : 'password'}
+                    name="newPassword"
+                    id="newPassword"
+                    placeholder="Nhập mật khẩu mới"
+                    autoComplete="new-password"
+                  />
+                  <button 
+                    type="button"
+                    onClick={handleShowNewPass}
+                    className="toggle-password-btn"
+                    aria-label={showNewPass ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                  >
+                    {showNewPass ? <AiFillEyeInvisible /> : <AiFillEye />}
+                  </button>
+                </div>
               </div>
 
-              <div className="form-group">
+              <div className="form-group password-group">
                 <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
-                <input
-                  required
-                  className="input"
-                  value={confirmPassword}
-                  onChange={handleChangeConfirmPassword}
-                  type="password"
-                  name="confirmPassword"
-                  id="confirmPassword"
-                  placeholder="Nhập lại mật khẩu mới"
-                  autoComplete="new-password"
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    required
+                    className="input"
+                    value={confirmPassword}
+                    onChange={handleChangeConfirmPassword}
+                    type={showConfirmPass ? 'text' : 'password'}
+                    name="confirmPassword"
+                    id="confirmPassword"
+                    placeholder="Nhập lại mật khẩu mới"
+                    autoComplete="new-password"
+                  />
+                  <button 
+                    type="button"
+                    onClick={handleShowConfirmPass}
+                    className="toggle-password-btn"
+                    aria-label={showConfirmPass ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                  >
+                    {showConfirmPass ? <AiFillEyeInvisible /> : <AiFillEye />}
+                  </button>
+                </div>
               </div>
 
               <button type="submit" className="login-button" disabled={isLoading}>
@@ -288,7 +323,7 @@ function ForgotPassword() {
         </div>
       </div>
 
-      {/* OTP Verification Dialog */}
+      {/* Thêm component OTPVerification với các props đúng */}
       <OTPVerification
         open={showOTPVerification}
         onClose={handleCloseOTPDialog}

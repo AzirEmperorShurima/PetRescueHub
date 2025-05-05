@@ -5,7 +5,7 @@ import authService from '../../services/auth.service';
 import { useNotification } from '../../components/contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
-
+// Sửa lại cách định nghĩa component
 const OTPVerification = ({ open, onClose, userId, email, onVerify, type = 'register' }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
@@ -141,8 +141,8 @@ const OTPVerification = ({ open, onClose, userId, email, onVerify, type = 'regis
           onClick={onClose}
           sx={{
             position: 'absolute',
-            right: 8,
-            top: 8,
+            right: (theme) => theme.spacing(1),
+            top: (theme) => theme.spacing(1),
             color: (theme) => theme.palette.grey[500],
           }}
         >
@@ -150,13 +150,13 @@ const OTPVerification = ({ open, onClose, userId, email, onVerify, type = 'regis
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Box sx={{ textAlign: 'center', mb: (theme) => theme.spacing(3) }}>
           <Typography variant="body1">
             Chúng tôi đã gửi mã OTP đến email {email}. Vui lòng nhập mã để hoàn tất quá trình.
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: (theme) => theme.spacing(1), mb: (theme) => theme.spacing(3) }}>
           {otp.map((digit, index) => (
             <TextField
               key={index}
@@ -176,12 +176,12 @@ const OTPVerification = ({ open, onClose, userId, email, onVerify, type = 'regis
         </Box>
 
         {error && (
-          <Typography color="error" sx={{ textAlign: 'center', mb: 2 }}>
+          <Typography color="error" sx={{ textAlign: 'center', mb: (theme) => theme.spacing(2) }}>
             {error}
           </Typography>
         )}
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: (theme) => theme.spacing(2) }}>
           <Button
             variant="contained"
             color="primary"
@@ -191,7 +191,7 @@ const OTPVerification = ({ open, onClose, userId, email, onVerify, type = 'regis
             Xác thực
           </Button>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: (theme) => theme.spacing(1) }}>
             <Typography variant="body2">
               Chưa nhận được mã?
             </Typography>
