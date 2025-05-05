@@ -165,6 +165,7 @@ export const logoutHandler = async (req, res) => {
             .json({ message: "Token is missing. Unauthorized access." });
     }
     const accessTokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'tokenType');
+    console.log(accessTokenType);
     if (!accessTokenType || accessTokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
         return res.status(StatusCodes.FORBIDDEN).json({ message: "Permission is Invalid -> 🚫 Access Denied" });
     }
@@ -180,7 +181,9 @@ export const logoutHandler = async (req, res) => {
         }
         _user.tokens = _user.tokens.filter(t => t.token !== token);
         await _user.save();
+        
         res.clearCookie(TOKEN_TYPE.ACCESS_TOKEN.name);
+        res.clearCookie(TOKEN_TYPE.REFRESH_TOKEN.name);
 
         return res
             .status(StatusCodes.OK)
@@ -808,9 +811,52 @@ export const requestReactivation = async (req, res) => {
     // Gửi mail xác thực
     await sendMailService({
         email,
-        subject: "Reactivate your account",
-        html: `<p>Click the link below to reactivate your account:</p>
-               <a href="https://yourdomain.com/reactivate?token=${reactivationToken}">Reactivate Account</a>`
+        subject: "Kích Hoạt Lại Tài Khoản",
+        html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="https://i.imgur.com/YckHqaP.png" alt="Logo" style="width: 120px; height: auto; margin-bottom: 20px;">
+                    <h1 style="color: #2c3e50; margin: 0; font-size: 28px; font-weight: 600;">Kích Hoạt Lại Tài Khoản</h1>
+                    <div style="width: 80px; height: 4px; background: linear-gradient(to right, #3498db, #2ecc71); margin: 15px auto; border-radius: 2px;"></div>
+                </div>
+
+                <div style="background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px;">
+                    <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+                        Để kích hoạt lại tài khoản của bạn, vui lòng nhấp vào nút bên dưới:
+                    </p>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="https://yourdomain.com/reactivate?token=${reactivationToken}" 
+                           style="display: inline-block; padding: 15px 35px; background: linear-gradient(to right, #3498db, #2ecc71); 
+                                  color: #ffffff; text-decoration: none; border-radius: 25px; font-weight: 600; 
+                                  transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);">
+                            Kích Hoạt Tài Khoản
+                        </a>
+                    </div>
+
+                    <div style="background-color: #fff8e1; border-left: 4px solid #ffa000; padding: 15px; margin-top: 25px; border-radius: 5px;">
+                        <p style="color: #795548; margin: 0; font-size: 14px;">
+                            ⚠️ Lưu ý: Liên kết này sẽ hết hạn sau 15 phút. Nếu bạn không yêu cầu kích hoạt lại tài khoản, 
+                            vui lòng bỏ qua email này.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="text-align: center; padding-top: 20px; border-top: 1px solid #eee;">
+                    <p style="color: #7f8c8d; font-size: 14px; margin: 0;">
+                        Đây là email tự động. Vui lòng không trả lời email này.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <a href="#" style="color: #3498db; text-decoration: none; margin: 0 10px;">Website</a>
+                        <a href="#" style="color: #3498db; text-decoration: none; margin: 0 10px;">Hỗ Trợ</a>
+                        <a href="#" style="color: #3498db; text-decoration: none; margin: 0 10px;">Điều Khoản</a>
+                    </div>
+                    <p style="color: #95a5a6; font-size: 12px; margin-top: 20px;">
+                        © ${new Date().getFullYear()} Project_G. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        `
     });
 
     return res.status(200).json({ message: 'Reactivation link has been sent to your email' });
