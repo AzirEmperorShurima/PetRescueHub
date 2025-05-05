@@ -165,14 +165,21 @@ export const logoutHandler = async (req, res) => {
             .json({ message: "Token is missing. Unauthorized access." });
     }
     const accessTokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'tokenType');
-    console.log(accessTokenType);
+    const refreshTokenType = getUserFieldFromToken(req, COOKIE_PATHS.REFRESH_TOKEN.CookieName, 'tokenType');
+    if (!refreshTokenType || refreshTokenType !== TOKEN_TYPE.REFRESH_TOKEN.name) {
+        return res.status(StatusCodes.FORBIDDEN).json({ message: "Permission is Invalid -> 🚫 Access Denied" });
+    }
     if (!accessTokenType || accessTokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
         return res.status(StatusCodes.FORBIDDEN).json({ message: "Permission is Invalid -> 🚫 Access Denied" });
     }
 
     try {
-        const userDecoded = jwt.verify(token, process.env.JWT_SECRET);
-        const _user = await user.findById(userDecoded.id);
+        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Token is missing. Unauthorized access." });
+        }
+
+        const _user = await user.findById(userId);
 
         if (!_user) {
             return res
@@ -181,7 +188,7 @@ export const logoutHandler = async (req, res) => {
         }
         _user.tokens = _user.tokens.filter(t => t.token !== token);
         await _user.save();
-        
+
         res.clearCookie(TOKEN_TYPE.ACCESS_TOKEN.name);
         res.clearCookie(TOKEN_TYPE.REFRESH_TOKEN.name);
 
@@ -198,13 +205,12 @@ export const logoutHandler = async (req, res) => {
 
 export const refreshToken = async (req, res) => {
     try {
-        // Lấy refresh token từ cookie
+
         const refreshToken = req.cookies[COOKIE_PATHS.REFRESH_TOKEN.CookieName];
         if (!refreshToken) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Missing refresh token' });
         }
 
-        // Lấy userId từ access token
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Invalid or missing access token' });
@@ -225,7 +231,6 @@ export const refreshToken = async (req, res) => {
         // Xóa refresh token cũ
         founduser.tokens = user.tokens.filter((tokenObj) => tokenObj.token !== refreshToken);
 
-        // Tạo payload cho tokens 
         const refreshTokenPayload = {
             id: founduser._id,
             email: founduser.email,
