@@ -34,12 +34,14 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (emailOrUsername, password, rememberMe = true) => {
     try {
       setLoading(true);
-      // Truyền đúng object cho service
-      const response = await authService.login({ 
+      // Chuẩn hóa dữ liệu đầu vào
+      const credentials = {
         email: emailOrUsername.includes('@') ? emailOrUsername : undefined,
         username: !emailOrUsername.includes('@') ? emailOrUsername : undefined,
         password
-      });
+      };
+      
+      const response = await authService.login(credentials);
       
       if (response && response.user) {
         authService.setUserSession(response.user, response.token, rememberMe);
@@ -59,7 +61,8 @@ export const AuthProvider = ({ children }) => {
   const register = useCallback(async (username, email, password) => {
     try {
       setLoading(true);
-      const response = await authService.register({ username, email, password });
+      const userData = { username, email, password };
+      const response = await authService.register(userData);
       
       if (response && response.user) {
         return response.user;
@@ -75,19 +78,33 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const verifyOTP = useCallback(async (userId, otp) => {
-  setLoading(true);
-  const data = await authService.verifyOTP(userId, otp);  // đúng signature :contentReference[oaicite:6]{index=6}
-  if (data.success && data.user) {
-    authService.setUserSession(data.user, data.token);
-    setUser(data.user);
-  }
-  setLoading(false);
-  return data;
-}, []);
+    try {
+      setLoading(true);
+      const data = await authService.verifyOTP(otp);
+      
+      if (data.success && data.user) {
+        authService.setUserSession(data.user, data.token);
+        setUser(data.user);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const logout = useCallback(() => {
-    authService.removeUserSession();
-    setUser(null);
+    try {
+      authService.logout();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Đảm bảo user vẫn bị xóa ngay cả khi có lỗi
+      setUser(null);
+    }
   }, []);
 
   const updateUser = useCallback((updatedUserData) => {

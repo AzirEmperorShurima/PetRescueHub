@@ -540,6 +540,7 @@ export const forgot_password = async (req, res) => {
     const { email } = req.body;
 
     try {
+        if (!email) return res.status(400).json({ message: "Email is required" });
 
         const userFound = await user.findOne({ email });
         if (!userFound) {
@@ -579,15 +580,19 @@ export const forgot_password = async (req, res) => {
 };
 
 export const verified_OTP_forgot_password = async (req, res) => {
-    const tokenType = getUserFieldFromToken(req, COOKIE_PATHS.FORGOT_PASSWORD, 'tokenType');
-    if (!tokenType || tokenType !== TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.name) {
-        return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access Denied' });
+    const tokenType = getUserFieldFromToken(req, COOKIE_PATHS.FORGOT_PASSWORD.CookieName, 'tokenType');
+    console.log(tokenType);
+    if (!tokenType || tokenType != TOKEN_TYPE.FORGOT_PASSWORD.name) {
+        return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access Denied : token-type' });
     }
-    const email = getUserFieldFromToken(req, COOKIE_PATHS.FORGOT_PASSWORD, 'email');
+    const email = getUserFieldFromToken(req, COOKIE_PATHS.FORGOT_PASSWORD.CookieName, 'email');
     if (!email) {
-        return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access Denied' });
+        return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access Denied : email' });
     }
     const { otp } = req.body;
+    if (!otp) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'OTP is required' });
+    }
 
     try {
         const userFound = await user.findOne({ email });
@@ -601,7 +606,7 @@ export const verified_OTP_forgot_password = async (req, res) => {
         }
         await redisClient.del(`forgotpassword:${email}`);
         res.clearCookie(TOKEN_TYPE.FORGOT_PASSWORD.name, {
-            path: COOKIE_PATHS.FORGOT_PASSWORD,
+            path: COOKIE_PATHS.FORGOT_PASSWORD.Path,
             httpOnly: true,
             secure: true,
             sameSite: 'Strict',
@@ -609,14 +614,14 @@ export const verified_OTP_forgot_password = async (req, res) => {
 
         const verifiedOtpForgotPasswordPayLoad = {
             email: email,
-            tokenType: TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.name,
+            tokenType: TOKEN_TYPE.ACCEPT_RESET_PASSWORD.name,
         }
         await getCookies({
             PayLoad: verifiedOtpForgotPasswordPayLoad,
-            path: COOKIE_PATHS.FORGOT_PASSWORD_VERIFIED,
-            CookieName: COOKIE_PATHS.FORGOT_PASSWORD_VERIFIED.CookieName,
-            maxAge: TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.maxAge,
-            expiresIn: TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.expiresIn,
+            path: COOKIE_PATHS.ACCEPT_RESET_PASSWORD,
+            cookieName: COOKIE_PATHS.ACCEPT_RESET_PASSWORD.CookieName,
+            maxAge: TOKEN_TYPE.ACCEPT_RESET_PASSWORD.maxAge,
+            expiresIn: TOKEN_TYPE.ACCEPT_RESET_PASSWORD.expiresIn,
             res
         });
 
@@ -632,11 +637,11 @@ export const verified_OTP_forgot_password = async (req, res) => {
 }
 export const reset_password = async (req, res) => {
     const { newPassword, confirmPassword } = req.body;
-    const acceptResetPasswordCookies = getUserFieldFromToken(req, COOKIE_PATHS.ACCEPT_RESET_PASSWORD, 'tokenType');
+    const acceptResetPasswordCookies = getUserFieldFromToken(req, COOKIE_PATHS.ACCEPT_RESET_PASSWORD.CookieName, 'tokenType');
     if (!acceptResetPasswordCookies || acceptResetPasswordCookies !== TOKEN_TYPE.ACCEPT_RESET_PASSWORD.name) {
         return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access Denied' });
     }
-    const resetPasswordEmail = getUserFieldFromToken(req, COOKIE_PATHS.ACCEPT_RESET_PASSWORD, 'email');
+    const resetPasswordEmail = getUserFieldFromToken(req, COOKIE_PATHS.ACCEPT_RESET_PASSWORD.CookieName, 'email');
 
     try {
         if (!resetPasswordEmail) {
@@ -657,7 +662,7 @@ export const reset_password = async (req, res) => {
         }
         const reportCompromisedToken = await getCookies({
             PayLoad: resetPasswordPayLoad,
-            path: COOKIE_PATHS.REPORT_COMPROMISED,
+            path: COOKIE_PATHS.REPORT_COMPROMISED.Path,
             cookieName: COOKIE_PATHS.REPORT_COMPROMISED.CookieName,
             maxAge: TOKEN_TYPE.REPORT_COMPROMISED.maxAge,
             expiresIn: TOKEN_TYPE.REPORT_COMPROMISED.expiresIn,
@@ -666,7 +671,6 @@ export const reset_password = async (req, res) => {
         const tokenIndex = userFound.tokens.findIndex(t => t.type === TOKEN_TYPE.REPORT_COMPROMISED.name);
 
         if (tokenIndex !== -1) {
-
             userFound.tokens[tokenIndex] = {
                 type: TOKEN_TYPE.REPORT_COMPROMISED.name,
                 token: reportCompromisedToken,
@@ -685,22 +689,56 @@ export const reset_password = async (req, res) => {
         userFound.password = newPassword;
 
         const usave = await userFound.save();
-        console.log(usave);
         await sendMailNotification({
             email: userFound.email,
             username: userFound.username,
-            subject: "🚨 Password Reset Successful 🚨",
-            text: `Hi ${userFound.username},\n\nYour password of Account ${userFound.email} has been successfully reset.\n\n
-            Please check again, if the password change was not done by you, please go to the report a compromised account section at this link.🫣
-            \n\nThank you.`,
+            subject: "🔐 Xác Nhận Đặt Lại Mật Khẩu",
+            text: `Xin chào ${userFound.username},\n\nMật khẩu tài khoản ${userFound.email} của bạn đã được đặt lại thành công.\n\nNếu bạn không thực hiện thay đổi này, vui lòng truy cập vào liên kết bên dưới để báo cáo tài khoản bị xâm phạm.\n\nTrân trọng.`,
             html: `
-                <p>Hi <strong>${userFound.username}</strong>,</p>
-                <p>Your password for the account <strong>${userFound.email}</strong> has been <span style="color: #d35400;"><b>successfully reset</b></span>.</p>
-                <p>If you did not request this change, please <a href="http://localhost:4000/api/auth/report/compromised?token=${reportCompromisedToken}" target="_blank" style="color: #e74c3c; font-weight: bold;">click here</a> to report your account as compromised.</p>
-                <p style="color: #7f8c8d; font-size: 14px;">This is an automated email. Please do not reply.</p>
+                <div style="background: linear-gradient(145deg, #ffffff 0%, #f3f4f6 100%); padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <img src="https://i.imgur.com/YckHqaP.png" alt="Security Alert" style="width: 80px; margin-bottom: 15px;">
+                        <h2 style="color: #2c3e50; margin: 0; font-size: 24px; font-weight: 600;">Thông Báo Bảo Mật</h2>
+                    </div>
+                    
+                    <div style="background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <p style="font-size: 16px; color: #34495e; margin-bottom: 20px; line-height: 1.6;">
+                            Xin chào <strong style="color: #2c3e50; font-size: 18px;">${userFound.username}</strong>,
+                        </p>
+                        
+                        <div style="background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%); border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #3498db;">
+                            <p style="color: #34495e; margin: 0; line-height: 1.6;">
+                                Mật khẩu cho tài khoản <strong style="color: #2c3e50;">${userFound.email}</strong> của bạn đã được 
+                                <span style="color: #27ae60; font-weight: 600;">đặt lại thành công</span>.
+                            </p>
+                        </div>
+                        
+                        <div style="background-color: #fff3cd; border-radius: 8px; padding: 20px; margin: 25px 0; border-left: 4px solid #f39c12;">
+                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                <span style="font-size: 24px; margin-right: 10px;">⚠️</span>
+                                <p style="color: #8a6d3b; margin: 0; font-weight: 600;">Cảnh Báo Bảo Mật</p>
+                            </div>
+                            <p style="color: #8a6d3b; margin: 10px 0 0 0; line-height: 1.6;">
+                                Nếu bạn không thực hiện thay đổi này, vui lòng 
+                                <a href="http://localhost:4000/api/auth/protect/report-compromised?token=${reportCompromisedToken}" 
+                                   style="color: #e74c3c; font-weight: 600; text-decoration: none; border-bottom: 2px solid #e74c3c;"
+                                   target="_blank">
+                                   nhấp vào đây
+                                </a> 
+                                để báo cáo tài khoản của bạn đã bị xâm phạm.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 25px; padding: 20px; background: rgba(255,255,255,0.8); border-radius: 8px;">
+                        <p style="color: #7f8c8d; font-size: 14px; margin: 0;">
+                            Đây là email tự động. Vui lòng không trả lời email này.
+                        </p>
+                    </div>
+                </div>
             `,
         });
-        res.clearCookie(TOKEN_TYPE.ACCEPT_RESET_PASSWORD.name, { httpOnly: true, path: '/' });
+        res.clearCookie(TOKEN_TYPE.ACCEPT_RESET_PASSWORD.name, { httpOnly: true, path: COOKIE_PATHS.ACCEPT_RESET_PASSWORD.Path });
 
         return res.status(200).json({ message: 'Password reset successful' });
     } catch (err) {

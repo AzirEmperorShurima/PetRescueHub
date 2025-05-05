@@ -47,15 +47,21 @@ const UserMenu = ({ user }) => {
 
   const handleLogout = async () => {
     try {
+      // Đảm bảo đóng menu trước khi đăng xuất
+      handleClose();
+      
+      // Gọi API đăng xuất với token xác thực
       await apiService.auth.logout();
+      
+      // Xử lý đăng xuất ở phía client ngay cả khi API thất bại
       logout();
       navigate('/');
-      handleClose();
     } catch (error) {
       console.error('Đăng xuất thất bại:', error);
+      
+      // Vẫn thực hiện đăng xuất ở phía client ngay cả khi API thất bại
       logout();
       navigate('/');
-      handleClose();
     }
   };
 

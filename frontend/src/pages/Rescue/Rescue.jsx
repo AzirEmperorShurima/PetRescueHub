@@ -268,7 +268,7 @@ const Rescue = () => {
                   step={1}
                   marks
                   min={1}
-                  max={20}
+                  max={5} // max 5km 
                   disabled={loading}
                 />
                 <Typography variant="body2" color="textSecondary" textAlign="center">

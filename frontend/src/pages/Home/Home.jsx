@@ -29,9 +29,11 @@ const Home = () => {
   const [showVolunteerModal, setShowVolunteerModal] = useState(false);
   const navigate = useNavigate();
   const slideInterval = useRef(null);
-  const rescueBtnRef = useRef(null);
-  const isDragging = useRef(false);
-  const offset = useRef({ x: 0, y: 0 });
+  
+  // Xóa các biến liên quan đến nút cứu hộ
+  // const rescueBtnRef = useRef(null);
+  // const isDragging = useRef(false);
+  // const offset = useRef({ x: 0, y: 0 });
 
   // Slide navigation
   const changeSlide = useCallback((direction) => {
@@ -53,45 +55,25 @@ const Home = () => {
   }, []);
 
   // Rescue button drag handlers with optimized throttling
-  const handleMouseDown = useCallback((e) => {
-    if (rescueBtnRef.current) {
-      isDragging.current = true;
-      const rect = rescueBtnRef.current.getBoundingClientRect();
-      offset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    }
-  }, []);
-
-  const handleMouseMove = useCallback((e) => {
-    if (isDragging.current && rescueBtnRef.current) {
-      // Using requestAnimationFrame for performance optimization
-      requestAnimationFrame(() => {
-        if (!isDragging.current) return;
-        const x = Math.max(0, Math.min(e.clientX - offset.current.x, window.innerWidth - rescueBtnRef.current.offsetWidth));
-        const y = Math.max(0, Math.min(window.innerHeight - e.clientY - offset.current.y, window.innerHeight - rescueBtnRef.current.offsetHeight));
-        rescueBtnRef.current.style.left = `${x}px`;
-        rescueBtnRef.current.style.bottom = `${y}px`;
-        rescueBtnRef.current.style.right = 'auto';
-      });
-    }
-  }, []);
-
-  const handleMouseUp = useCallback(() => {
-    isDragging.current = false;
-  }, []);
-
-  useEffect(() => {
-    const btn = rescueBtnRef.current;
-    if (btn) {
-      btn.addEventListener('mousedown', handleMouseDown);
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-    return () => {
-      if (btn) btn.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp]);
+  // Xóa các hàm xử lý kéo thả nút cứu hộ
+  // const handleMouseDown = useCallback((e) => { ... });
+  // const handleMouseMove = useCallback((e) => { ... });
+  // const handleMouseUp = useCallback(() => { ... });
+  
+  // Xóa useEffect liên quan đến nút cứu hộ
+  // useEffect(() => {
+  //   const btn = rescueBtnRef.current;
+  //   if (btn) {
+  //     btn.addEventListener('mousedown', handleMouseDown);
+  //     document.addEventListener('mousemove', handleMouseMove);
+  //     document.addEventListener('mouseup', handleMouseUp);
+  //   }
+  //   return () => {
+  //     if (btn) btn.removeEventListener('mousedown', handleMouseDown);
+  //     document.removeEventListener('mousemove', handleMouseMove);
+  //     document.removeEventListener('mouseup', handleMouseUp);
+  //   };
+  // }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
   // Volunteer form handler
   const handleVolunteerSubmit = (formData) => {
@@ -147,7 +129,8 @@ const Home = () => {
       <AboutSection />
 
       {/* Floating Rescue Button */}
-      <div className={styles.rescueBtn} ref={rescueBtnRef} onClick={() => navigate('/rescue')}>
+      {/* Xóa nút cứu hộ */}
+      {/* <div className={styles.rescueBtn} ref={rescueBtnRef} onClick={() => navigate('/rescue')}>
         <span className={styles.rescueBtn__text}>Báo cáo cứu hộ</span>
         <img src={vetIcon} alt="Báo cáo cứu hộ" />
         <div className={styles.rescueBtn__iconContainer}>
@@ -156,9 +139,10 @@ const Home = () => {
           <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--3']}`}><EventIcon /></div>
           <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--4']}`}><HomeIcon /></div>
         </div>
-      </div>
+      </div> */}
 
-      <ChatbotWidget />
+      {/* Xóa ChatbotWidget vì đã được di chuyển vào MainLayout */}
+      {/* <ChatbotWidget /> */}
       {/* Feature Section */}
       <FeatureSection />
 

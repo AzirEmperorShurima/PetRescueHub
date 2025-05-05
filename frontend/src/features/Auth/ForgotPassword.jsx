@@ -5,6 +5,8 @@ import petLogo from '../../assets/images/logo.svg';
 import { useAuth } from '../../components/contexts/AuthContext';
 import { useNotification } from '../../components/contexts/NotificationContext';
 import apiService from '../../services/api.service';
+import authService from '../../services/auth.service';
+import OTPVerification from './OTPVerification';
 
 function ForgotPassword() {
   const navigate = useNavigate();
@@ -15,6 +17,14 @@ function ForgotPassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [showAlreadyLoggedIn, setShowAlreadyLoggedIn] = useState(false);
+  
+  // Thêm các state mới
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [resetToken, setResetToken] = useState("");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -27,7 +37,16 @@ function ForgotPassword() {
   const handleChangeEmail = (e) => {
     setEmail(e.target.value);
     setError("");
-    console.log("Email changed:", email);
+  };
+
+  const handleChangePassword = (e) => {
+    setNewPassword(e.target.value);
+    setError("");
+  };
+
+  const handleChangeConfirmPassword = (e) => {
+    setConfirmPassword(e.target.value);
+    setError("");
   };
 
   const handleSubmitForm = async (e) => {
@@ -44,10 +63,67 @@ function ForgotPassword() {
     try {
       await apiService.auth.forgotPassword(email);
       setSuccess(true);
-      showNotification('Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn!', 'success');
+      setShowOTPVerification(true);
+      showNotification('Mã OTP đã được gửi đến email của bạn!', 'success');
     } catch (error) {
       setError("Không thể gửi email đặt lại mật khẩu. Vui lòng kiểm tra lại email của bạn.");
       console.error("Forgot password error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (otpInput) => {
+    try {
+      setOtpCode(otpInput);
+      // Sử dụng hàm otpResetPassword thay vì verifyOTP
+      const response = await apiService.auth.otpResetPassword(otpInput);
+      console.log("OTP verification response:", response);
+      
+      if (response.success) {
+        setShowOTPVerification(false);
+        setShowResetPassword(true);
+        setResetToken(response.token || "");
+        showNotification('Xác thực OTP thành công!', 'success');
+        return true;
+      } else {
+        throw new Error(response.message || 'Mã OTP không hợp lệ');
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      throw new Error(error.message || 'Xác thực OTP thất bại');
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    
+    if (!newPassword) {
+      setError("Vui lòng nhập mật khẩu mới.");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+    
+    if (newPassword.length < 8) {
+      setError("Mật khẩu phải có ít nhất 8 ký tự.");
+      return;
+    }
+    
+    setIsLoading(true);
+    setError("");
+    
+    try {
+      // Gọi API để đặt lại mật khẩu
+      await authService.resetPassword(resetToken, newPassword);
+      showNotification('Đặt lại mật khẩu thành công!', 'success');
+      navigate('/auth/login');
+    } catch (error) {
+      setError("Không thể đặt lại mật khẩu. Vui lòng thử lại.");
+      console.error("Reset password error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +137,10 @@ function ForgotPassword() {
     // Assuming logout function is available in the context
     // logout();
     setShowAlreadyLoggedIn(false);
+  };
+
+  const handleCloseOTPDialog = () => {
+    setShowOTPVerification(false);
   };
 
   if (showAlreadyLoggedIn) {
@@ -103,16 +183,55 @@ function ForgotPassword() {
 
         {error && <div className="error-message">{error}</div>}
 
-        {success ? (
+        {showResetPassword ? (
+          <div className="reset-password-form">
+            <p>Vui lòng nhập mật khẩu mới của bạn.</p>
+            <form className="form" onSubmit={handleResetPassword}>
+              <div className="form-group">
+                <label htmlFor="newPassword">Mật khẩu mới</label>
+                <input
+                  required
+                  className="input"
+                  value={newPassword}
+                  onChange={handleChangePassword}
+                  type="password"
+                  name="newPassword"
+                  id="newPassword"
+                  placeholder="Nhập mật khẩu mới"
+                  autoComplete="new-password"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+                <input
+                  required
+                  className="input"
+                  value={confirmPassword}
+                  onChange={handleChangeConfirmPassword}
+                  type="password"
+                  name="confirmPassword"
+                  id="confirmPassword"
+                  placeholder="Nhập lại mật khẩu mới"
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <button type="submit" className="login-button" disabled={isLoading}>
+                {isLoading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
+              </button>
+            </form>
+          </div>
+        ) : success ? (
           <div className="success-message">
-            <p>Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn.</p>
-            <p>Vui lòng kiểm tra hộp thư đến và làm theo hướng dẫn.</p>
+            <p>Chúng tôi đã gửi mã OTP đến email của bạn.</p>
+            <p>Vui lòng kiểm tra hộp thư đến và nhập mã OTP để tiếp tục.</p>
             <button 
               className="login-button" 
-              onClick={() => navigate('/auth/login')}
+              onClick={() => setShowOTPVerification(true)}
               style={{ marginTop: '20px' }}
             >
-              Quay lại đăng nhập
+              Nhập mã OTP
             </button>
           </div>
         ) : (
@@ -154,6 +273,14 @@ function ForgotPassword() {
           <div className="auth-quote-author">- PetRescueHub</div>
         </div>
       </div>
+
+      {/* OTP Verification Dialog */}
+      <OTPVerification
+        open={showOTPVerification}
+        onClose={handleCloseOTPDialog}
+        email={email}
+        onVerify={handleVerifyOTP}
+      />
     </div>
   );
 }

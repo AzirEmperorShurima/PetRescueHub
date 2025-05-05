@@ -110,65 +110,76 @@ function Register() {
         throw new Error("Thông tin người dùng không hợp lệ");
       }
 
-      await verifyOTP(registeredUser.id, otpCode);
-
-      setShowOTPDialog(false);
-
-      try {
-        const savedEmail = localStorage.getItem('tempEmail');
-        const savedPassword = localStorage.getItem('tempPassword');
-        await login(savedEmail, savedPassword, true);    // ← dùng storage, không dùng state :contentReference[oaicite:2]{index=2}
-        localStorage.removeItem('tempPassword');          // ← xoá password tạm (bảo mật) :contentReference[oaicite:3]{index=3}
-        // showNotification('Xác thực tài khoản và đăng nhập thành công!', 'success');
-        // navigate('/'); // Chuyển hướng đến trang chủ
-      } catch (loginErr) {
-        console.error("Auto login error:", loginErr);
-        // Nếu đăng nhập tự động thất bại, vẫn thông báo xác thực thành công
-        showNotification('Xác thực tài khoản thành công! Vui lòng đăng nhập.', 'success');
-        // navigate('/auth/login');
+      // Gọi API xác thực OTP với đúng tham số
+      const response = await verifyOTP(registeredUser.id, otpCode);
+      
+      if (response && response.success) {
+        setShowOTPDialog(false);
+        
+        try {
+          const savedEmail = localStorage.getItem('tempEmail');
+          const savedPassword = localStorage.getItem('tempPassword');
+          
+          if (savedEmail && savedPassword) {
+            await login(savedEmail, savedPassword, true);
+            localStorage.removeItem('tempPassword');
+            showNotification('Xác thực tài khoản và đăng nhập thành công!', 'success');
+            navigate('/');
+          } else {
+            showNotification('Xác thực tài khoản thành công! Vui lòng đăng nhập.', 'success');
+            navigate('/auth/login');
+          }
+        } catch (loginErr) {
+          console.error("Auto login error:", loginErr);
+          showNotification('Xác thực tài khoản thành công! Vui lòng đăng nhập.', 'success');
+          navigate('/auth/login');
+        }
+        
+        return true;
+      } else {
+        throw new Error(response?.message || "Xác thực OTP thất bại");
       }
-
-      return true;
     } catch (err) {
-      return Promise.reject(err.response?.message || "Xác thực OTP thất bại");
+      console.error("OTP verification error:", err);
+      return Promise.reject(err.response?.message || err.message || "Xác thực OTP thất bại");
     }
   };
 
-  // const handleContinueWithCurrentUser = () => {
-  //   navigate('/');
-  // };
+  const handleContinueWithCurrentUser = () => {
+    navigate('/');
+  };
 
-  // const handleLogoutAndContinue = () => {
-  //   logout();
-  //   setShowAlreadyLoggedIn(false);
-  // };
+  const handleLogoutAndContinue = () => {
+    logout();
+    setShowAlreadyLoggedIn(false);
+  };
 
-  // if (showAlreadyLoggedIn) {
-  //   return (
-  //     <div className="register-form-container">
-  //       <div className="auth-logo">
-  //         <img src={petLogo} alt="PetRescueHub Logo" />
-  //         <h2>PetRescueHub</h2>
-  //       </div>
+  if (showAlreadyLoggedIn) {
+    return (
+      <div className="register-form-container">
+        <div className="auth-logo">
+          <img src={petLogo} alt="PetRescueHub Logo" />
+          <h2>PetRescueHub</h2>
+        </div>
 
-  //       <div className="auth-form-section">
-  //         <div className="heading">Bạn đã đăng nhập</div>
-  //         <div className="auth-subtitle">
-  //           Bạn đã đăng nhập với tài khoản <strong>{user.email}</strong>
-  //         </div>
+        <div className="auth-form-section">
+          <div className="heading">Bạn đã đăng nhập</div>
+          <div className="auth-subtitle">
+            Bạn đã đăng nhập với tài khoản <strong>{user.email}</strong>
+          </div>
 
-  //         <div className="already-logged-in-options">
-  //           <button className="btn btn-primary" onClick={handleContinueWithCurrentUser}>
-  //             Tiếp tục với tài khoản hiện tại
-  //           </button>
-  //           <button className="btn btn-outline-danger" onClick={handleLogoutAndContinue}>
-  //             Đăng xuất và đăng ký tài khoản mới
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+          <div className="already-logged-in-options">
+            <button className="btn btn-primary" onClick={handleContinueWithCurrentUser}>
+              Tiếp tục với tài khoản hiện tại
+            </button>
+            <button className="btn btn-outline-danger" onClick={handleLogoutAndContinue}>
+              Đăng xuất và đăng ký tài khoản mới
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="register-form-container">
@@ -294,7 +305,7 @@ function Register() {
       <OTPVerification
         open={showOTPDialog}
         onClose={() => setShowOTPDialog(false)}
-        userId={registeredUser?.id}    // ← thêm prop userId :contentReference[oaicite:2]{index=2}
+        userId={registeredUser?.id}
         email={email}
         onVerify={handleVerifyOTP}
       />

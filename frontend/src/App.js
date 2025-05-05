@@ -6,6 +6,8 @@ import { ThemeProvider } from './components/contexts/ThemeContext';
 import { NotificationProvider } from './components/contexts/NotificationContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import AppRoutes from './routes/index.routing.js';
+import ChatbotWidget from './pages/Home/components/Chatbot/ChatbotWidget';
+import RescueButton from './components/button/RescueButton.jsx';
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
             <NotificationProvider>
               <Router>
                 <AppRoutes />
+                <ChatbotWidget />
+                <RescueButton />
               </Router>
             </NotificationProvider>
           </AuthProvider>

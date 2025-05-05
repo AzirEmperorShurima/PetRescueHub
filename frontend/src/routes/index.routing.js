@@ -10,12 +10,13 @@ import MainLayout from "../components/layouts/MainLayout";
 import AdminLayout from "../components/layouts/AdminLayout";
 import LoadingScreen from "../components/common/LoadingScreen";
 import ProtectedRoute from "../components/guards/ProtectedRoute";
-import Rescue from "../pages/Rescue";
-import RescueSuccess from "../pages/Rescue/RescueSuccess";
 // Lazy-load toàn bộ pages/features
 const Login = lazy(() => import("../features/Auth/Login"));
 const Register = lazy(() => import("../features/Auth/Register"));
 const ForgotPassword = lazy(() => import("../features/Auth/ForgotPassword"));
+
+const Rescue = lazy(() => import("../pages/Rescue/Rescue.jsx"));
+const RescueSuccess = lazy(() => import("../pages/Rescue/RescueSuccess"));
 
 const Home = lazy(() => import("../pages/Home/Home"));
 

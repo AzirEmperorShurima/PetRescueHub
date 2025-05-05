@@ -2,11 +2,11 @@
 .chatbot-button {
   position: fixed;
   bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
+  right: 7px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: linear-gradient(45deg, #E91E63, #FF5722);
+  background: linear-gradient(to right, rgba(255, 192, 203, 0.993), rgba(102, 51, 153, 0.33));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,7 +23,7 @@
 
 .chatbot-icon {
   color: white;
-  font-size: 28px !important;
+  font-size: 36px !important;
 }
 
 .chatbot-tooltip {
@@ -58,28 +58,33 @@
   transform: rotate(45deg);
 }
 
+/* Thêm các style mới cho việc kéo thả */
 .chatbot-widget {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 380px;
-  height: 550px; /* Increased to accommodate footer */
-  background-color: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  bottom: 20px;
+  right: 20px;
+  width: 350px;
+  height: 500px;
   display: flex;
   flex-direction: column;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   z-index: 1000;
 }
 
 .chatbot-header {
-  padding: 15px 20px;
-  background: linear-gradient(45deg, #E91E63, #FF5722);
-  color: white;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  padding: 10px 15px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #d34f81 100%);
+  color: white;
+  cursor: grab;
+}
+
+.chatbot-header:active {
+  cursor: grabbing;
 }
 
 .chatbot-avatar {

@@ -15,19 +15,33 @@ const createApiService = (endpoint) => {
   };
 };
 
-// Tạo các service cho từng entity
+/**
+ * API Service - Chỉ chứa các phương thức gọi API thuần túy
+ * Không chứa logic xử lý dữ liệu
+ */
 const apiService = {
   auth: {
+    // Xác thực
     login: (credentials) => api.post('/auth/access/login', credentials, { withCredentials: true }),
     register: (userData) => api.post('/auth/sign/signup', userData),
-    logout:() => api.post('/auth/logout', { withCredentials: true }),
-    forgotPassword: (email) => api.post('/auth/password/forgot-password', { email:email }),
-    resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
+    logout: () => api.post('/auth/logout', {}, { withCredentials: true }),
+    refreshToken: () => api.post('/auth/re-sign/refresh-token', {}, { withCredentials: true }),
+    
+    // Quản lý mật khẩu
+    forgotPassword: (email) => api.post('/auth/password/forgot-password', { email }),
+    resetPassword: (token, password) => api.post('/auth/password/reset-password', { token, password }),
+    
+    // Xác thực OTP
     verifyOTP: (otp) => api.post('/auth/sign/verify-otp', { otp }),
-    // forgotPasswordOTP:(otp) => api.post('/auth/password/verify-otp-forgot-password', { otp}),
+    otpResetPassword: (otp) => api.post('/auth/password/verify-otp-forgot-password', { otp }),
+    resendOTP: () => api.get('/auth/sign/verify-otp/refreshOtp'),
+    
+    // Thông tin người dùng
     getProfile: (targetUser) => api.get(`/auth/get/profile${targetUser ? `/${targetUser}` : ''}`),
     updateProfile: (userData) => api.put('/auth/update/profile', userData),
   },
+  
+  // Các API khác
   users: createApiService('users'),
   pets: createApiService('pets'),
   volunteers: {

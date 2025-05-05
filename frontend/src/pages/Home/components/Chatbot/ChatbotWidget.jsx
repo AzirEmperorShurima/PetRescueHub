@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, TextField, Button, IconButton, Avatar, Chip } from '@mui/material';
 import { Close as CloseIcon, Send as SendIcon, Chat as ChatIcon } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../../components/contexts/AuthContext';
 import './ChatbotWidget.css';
 import axios from 'axios';
+
 const ChatbotWidget = () => {
   const { user } = useAuth(); // Thêm hook useAuth để kiểm tra trạng thái đăng nhập
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +12,9 @@ const ChatbotWidget = () => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const chatbotRef = useRef(null);
+  const isDragging = useRef(false);
+  const offset = useRef({ x: 0, y: 0 });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,38 +47,44 @@ const ChatbotWidget = () => {
     setMessages([welcomeMessage, suggestionMessage]);
   }, []);
 
-  // const handleSendMessage = () => {
-  //   if (inputValue.trim() === '') return;
+  // Xử lý kéo thả chatbot
+  const handleMouseDown = (e) => {
+    if (e.target.closest('.chatbot-header')) {
+      isDragging.current = true;
+      const rect = chatbotRef.current.getBoundingClientRect();
+      offset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      e.preventDefault();
+    }
+  };
 
-  //   const userMessage = {
-  //     id: messages.length + 1,
-  //     text: inputValue,
-  //     sender: 'user',
-  //     timestamp: new Date()
-  //   };
+  const handleMouseMove = (e) => {
+    if (isDragging.current && chatbotRef.current) {
+      requestAnimationFrame(() => {
+        if (!isDragging.current) return;
+        const x = Math.max(0, Math.min(e.clientX - offset.current.x, window.innerWidth - chatbotRef.current.offsetWidth));
+        const y = Math.max(0, Math.min(e.clientY - offset.current.y, window.innerHeight - chatbotRef.current.offsetHeight));
+        chatbotRef.current.style.left = `${x}px`;
+        chatbotRef.current.style.top = `${y}px`;
+        chatbotRef.current.style.right = 'auto';
+        chatbotRef.current.style.bottom = 'auto';
+      });
+    }
+  };
 
-  //   setMessages([...messages, userMessage]);
-  //   setInputValue('');
-  //   setIsTyping(true);
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
 
-  //   setTimeout(() => {
-  //     const botResponse = {
-  //       id: messages.length + 2,
-  //       text: getBotResponse(inputValue),
-  //       sender: 'bot',
-  //       timestamp: new Date()
-  //     };
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
-  //     setMessages(prev => [...prev, botResponse, {
-  //       id: prev.length + 2,
-  //       suggestions: getRelatedSuggestions(inputValue),
-  //       sender: 'bot',
-  //       timestamp: new Date()
-  //     }]);
-
-  //     setIsTyping(false);
-  //   }, 1500);
-  // };
   const handleSendMessage = async () => {
     if (inputValue.trim() === '') return;
   
@@ -106,7 +115,7 @@ const ChatbotWidget = () => {
     } catch (error) {
       const botResponse = {
         id: messages.length + 2,
-        text: 'Lỗi kết nối tới máy chủ11111.',
+        text: 'Lỗi kết nối tới máy chủ.',
         sender: 'bot',
         timestamp: new Date()
       };
@@ -116,41 +125,13 @@ const ChatbotWidget = () => {
       setIsTyping(false);
     }
   };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
 
-  // const handleSuggestionClick = (suggestion) => {
-  //   const userMessage = {
-  //     id: messages.length + 1,
-  //     text: suggestion,
-  //     sender: 'user',
-  //     timestamp: new Date()
-  //   };
-
-  //   setMessages([...messages, userMessage]);
-  //   setIsTyping(true);
-
-  //   setTimeout(() => {
-  //     const botResponse = {
-  //       id: messages.length + 2,
-  //       text: getBotResponse(suggestion),
-  //       sender: 'bot',
-  //       timestamp: new Date()
-  //     };
-
-  //     setMessages(prev => [...prev, botResponse, {
-  //       id: prev.length + 2,
-  //       suggestions: getRelatedSuggestions(suggestion),
-  //       sender: 'bot',
-  //       timestamp: new Date()
-  //     }]);
-
-  //     setIsTyping(false);
-  //   }, 1500);
-  // };
   const handleSuggestionClick = async (suggestion) => {
     const userMessage = {
       id: messages.length + 1,
@@ -178,7 +159,7 @@ const ChatbotWidget = () => {
     } catch (error) {
       const botResponse = {
         id: messages.length + 2,
-        text: 'Lỗi kết nối tới máy chủ11111.',
+        text: 'Lỗi kết nối tới máy chủ.',
         sender: 'bot',
         timestamp: new Date()
       };
@@ -188,6 +169,7 @@ const ChatbotWidget = () => {
       setIsTyping(false);
     }
   };
+
   const getBotResponse = (message) => {
     const lower = message.toLowerCase();
     if (lower.includes('cứu hộ')) {
@@ -229,25 +211,29 @@ const ChatbotWidget = () => {
 
   return (
     <>
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.div className="chatbot-button" onClick={() => setIsOpen(true)}>
-            <ChatIcon className="chatbot-icon" />
-            <span className="chatbot-tooltip">Cần giúp đỡ? Chat với trợ lý AI 24/7</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {!isOpen && (
+        <div 
+          className="chatbot-button" 
+          onClick={() => setIsOpen(true)}
+        >
+          <ChatIcon className="chatbot-icon" />
+          <span className="chatbot-tooltip">Cần giúp đỡ? Chat với trợ lý AI 24/7</span>
+        </div>
+      )}
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div className="chatbot-widget">
-            <Box className="chatbot-header">
-              <Avatar className="chatbot-avatar" src="https://i.pravatar.cc/150?img=3" />
-              <Typography variant="subtitle1" className="chatbot-name">Pet Rescue AI Assistant</Typography>
-              <IconButton className="chatbot-close-btn" onClick={() => setIsOpen(false)}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
+      {isOpen && (
+        <div 
+          className="chatbot-widget"
+          ref={chatbotRef}
+          onMouseDown={handleMouseDown}
+        >
+          <div className="chatbot-header">
+            <Avatar className="chatbot-avatar" src="https://i.pravatar.cc/150?img=3" />
+            <Typography variant="subtitle1" className="chatbot-name">Pet Rescue AI Assistant</Typography>
+            <IconButton className="chatbot-close-btn" onClick={() => setIsOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </div>
 
             <Box className="chatbot-messages">
               {messages.map((message) => (
@@ -302,10 +288,9 @@ const ChatbotWidget = () => {
             <Box className="chatbot-footer">
               <Typography variant="caption">Powered by Pet Rescue AI - Hỗ trợ 24/7</Typography>
             </Box>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
-    </>
+      </>
   );
 };
 

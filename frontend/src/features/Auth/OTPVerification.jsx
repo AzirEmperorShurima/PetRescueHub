@@ -101,42 +101,38 @@ const OTPVerification = ({ open, onClose, userId, email, onVerify }) => {
 
     try {
       // Log thông tin trước khi gọi API
-      console.log("Verifying OTP with:", { email, otpCode });
-      await onVerify(otpCode);
-      // Log response để debug
-      let response;
+      console.log("Verifying OTP with:", { userId, email, otpCode });
+      
+      // Đặt trạng thái loading
+      let isProcessing = true;
+      
       try {
-        response = await onVerify(otpCode);
+        // Gọi API xác thực OTP
+        const response = await authService.verifyOTP(otpCode);
         console.log("OTP verification response:", response);
+        
+        // Kiểm tra phản hồi từ API
+        if (response && response.success) {
+          showNotification('Xác thực OTP thành công!', 'success');
+          
+          if (onVerify) {
+            // Nếu có callback onVerify (từ component cha), gọi nó
+            await onVerify(otpCode);
+          } else {
+            // Nếu không có callback, chuyển hướng đến trang đăng nhập
+            navigate('/auth/login');
+          }
+          
+          onClose();
+        } else {
+          // Nếu API trả về không thành công
+          setError('Mã OTP không hợp lệ. Vui lòng thử lại.');
+        }
       } catch (err) {
-        setError(err.message);
-        return;
-      }
-
-      // Kiểm tra response theo nhiều cách
-      const isSuccess =
-        response === true ||
-        response === 'success' ||
-        response?.status === 200 ||
-        response?.status === 201 ||
-        response?.success === true ||
-        (response?.data && (response.data.success === true || response.data.status === 'success'));
-
-      if (isSuccess) {
-        showNotification('Xác thực OTP thành công!', 'success');
-        onVerify(otpCode)    // emit lên parent để parent xử lý verify+login :contentReference[oaicite:4]{index=4}
-          .then(() => onClose())
-          .catch(err => setError(err.message));
-      } else {
-        // Nếu không thành công, hiển thị thông báo lỗi
-        const errorMessage =
-          response?.message ||
-          response?.data?.message ||
-          response?.error ||
-          response?.data?.error ||
-          'Xác thực OTP thất bại';
-
-        throw new Error(errorMessage);
+        console.error("Error during OTP verification:", err);
+        setError(err.message || "Xác thực OTP thất bại. Vui lòng thử lại.");
+      } finally {
+        isProcessing = false;
       }
     } catch (err) {
       console.error('OTP verification error:', err);
@@ -144,18 +140,19 @@ const OTPVerification = ({ open, onClose, userId, email, onVerify }) => {
     }
   };
 
+  // Thay đổi hàm handleResend để sử dụng resendOTP từ authService
   const handleResend = async () => {
     setCountdown(resendDelay);
     setCanResend(false);
-
+  
     try {
       // Gọi API gửi lại OTP
-      const response = await authService.sendOTP(email, 'register');
-      if (response.success) {
-        showNotification('Mã OTP mới đã được gửi đến email của bạn', 'info');
+      const response = await authService.resendOTP();
+      if (response && (response.success || response.status === 200)) {
+        showNotification('Mã OTP mới đã được gửi đến email của bạn', 'success');
         setError('');
       } else {
-        setError(response.message || 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.');
+        setError(response?.message || 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.');
       }
     } catch (err) {
       console.error('Resend OTP error:', err);

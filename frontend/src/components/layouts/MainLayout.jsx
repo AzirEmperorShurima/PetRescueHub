@@ -1,8 +1,8 @@
 import React from 'react';
+import { useLocation, Outlet } from 'react-router-dom';
 import TopBar from '../common/TopBar';
 import Navigation from '../common/Navigation';
 import Footer from '../common/Footers';
-import { useLocation, Outlet } from 'react-router-dom';
 import { Box } from '@mui/material';
 
 const MainLayout = () => {
