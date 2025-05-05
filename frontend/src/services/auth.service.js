@@ -105,10 +105,10 @@ class AuthService {
    * @param {string} otp - Mã OTP
    * @returns {Promise<Object>} Kết quả xác thực
    */
-  async otpResetPassword(otp) {
+  async otpForgotPassword(otp) {
     try {
       const response = await apiService.auth.otpResetPassword(otp);
-      return response.data; // { success, user, token }
+      return response.data; // { success, message }
     } catch (error) {
       console.error('OTP Reset Password API error:', error);
       throw error;
@@ -121,9 +121,9 @@ class AuthService {
    * @param {string} password - Mật khẩu mới
    * @returns {Promise<Object>} Kết quả đặt lại mật khẩu
    */
-  async resetPassword(token, password) {
+  async resetPassword(newPassword, confirmPassword) {
     try {
-      const response = await apiService.auth.resetPassword(token, password);
+      const response = await apiService.auth.resetPassword(newPassword, confirmPassword);
       return response.data;
     } catch (error) {
       console.error('Reset Password API error:', error);
@@ -144,6 +144,21 @@ class AuthService {
       console.error('Logout API error:', error);
       // Vẫn xóa session ngay cả khi API lỗi
       this.removeUserSession();
+      throw error;
+    }
+  }
+
+  /**
+   * Gửi yêu cầu quên mật khẩu
+   * @param {string} email - Email người dùng
+   * @returns {Promise<Object>} Kết quả gửi yêu cầu
+   */
+  async forgotPassword(email) {
+    try {
+      const response = await apiService.auth.forgotPassword(email);
+      return response.data;
+    } catch (error) {
+      console.error('Forgot Password API error:', error);
       throw error;
     }
   }

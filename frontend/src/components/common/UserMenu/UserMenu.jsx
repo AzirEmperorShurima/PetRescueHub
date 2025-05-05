@@ -4,7 +4,6 @@ import { Avatar, Menu, MenuItem, IconButton, Divider, ListItemIcon, ListItemText
 import { AccountCircle, Settings, ExitToApp, Notifications, Favorite, Pets, Help } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import './UserMenu.css';
-import apiService from '../../../services/api.service';
 
 const UserMenu = ({ user }) => {
   const navigate = useNavigate();
@@ -49,18 +48,12 @@ const UserMenu = ({ user }) => {
     try {
       // Đảm bảo đóng menu trước khi đăng xuất
       handleClose();
-      
-      // Gọi API đăng xuất với token xác thực
-      await apiService.auth.logout();
-      
-      // Xử lý đăng xuất ở phía client ngay cả khi API thất bại
+
+      // Chỉ gọi hàm logout từ AuthContext, không gọi API trực tiếp
       logout();
       navigate('/');
     } catch (error) {
       console.error('Đăng xuất thất bại:', error);
-      
-      // Vẫn thực hiện đăng xuất ở phía client ngay cả khi API thất bại
-      logout();
       navigate('/');
     }
   };

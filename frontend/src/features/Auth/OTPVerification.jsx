@@ -6,7 +6,7 @@ import { useNotification } from '../../components/contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
 
-const OTPVerification = ({ open, onClose, userId, email, onVerify }) => {
+const OTPVerification = ({ open, onClose, userId, email, onVerify, type = 'register' }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(60);
@@ -93,52 +93,24 @@ const OTPVerification = ({ open, onClose, userId, email, onVerify }) => {
 
   const handleVerify = async () => {
     const otpCode = otp.join('');
-
+  
     if (otpCode.length !== 6) {
       setError('Vui lòng nhập đủ 6 chữ số OTP');
       return;
     }
-
+  
     try {
-      // Log thông tin trước khi gọi API
-      console.log("Verifying OTP with:", { userId, email, otpCode });
-      
-      // Đặt trạng thái loading
-      let isProcessing = true;
-      
-      try {
-        // Gọi API xác thực OTP
-        const response = await authService.verifyOTP(otpCode);
-        console.log("OTP verification response:", response);
-        
-        // Kiểm tra phản hồi từ API
-        if (response && response.success) {
-          showNotification('Xác thực OTP thành công!', 'success');
-          
-          if (onVerify) {
-            // Nếu có callback onVerify (từ component cha), gọi nó
-            await onVerify(otpCode);
-          } else {
-            // Nếu không có callback, chuyển hướng đến trang đăng nhập
-            navigate('/auth/login');
-          }
-          
-          onClose();
-        } else {
-          // Nếu API trả về không thành công
-          setError('Mã OTP không hợp lệ. Vui lòng thử lại.');
-        }
-      } catch (err) {
-        console.error("Error during OTP verification:", err);
-        setError(err.message || "Xác thực OTP thất bại. Vui lòng thử lại.");
-      } finally {
-        isProcessing = false;
+      const result = await onVerify(otpCode);
+      if (result === true) {
+        // Nếu xác thực thành công, đóng dialog OTP
+        // Component cha (ForgotPassword) sẽ xử lý phần còn lại
+        onClose();
       }
     } catch (err) {
-      console.error('OTP verification error:', err);
-      setError(err.message || 'Xác thực OTP thất bại. Vui lòng thử lại.');
+      setError(err.message || 'Mã OTP không hợp lệ. Vui lòng thử lại.');
     }
   };
+  
 
   // Thay đổi hàm handleResend để sử dụng resendOTP từ authService
   const handleResend = async () => {

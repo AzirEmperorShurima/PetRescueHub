@@ -4,7 +4,6 @@ import '../../assets/styles/components/auth/Auth.css';
 import petLogo from '../../assets/images/logo.svg';
 import { useAuth } from '../../components/contexts/AuthContext';
 import { useNotification } from '../../components/contexts/NotificationContext';
-import apiService from '../../services/api.service';
 import authService from '../../services/auth.service';
 import OTPVerification from './OTPVerification';
 
@@ -17,7 +16,7 @@ function ForgotPassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [showAlreadyLoggedIn, setShowAlreadyLoggedIn] = useState(false);
-  
+
   // Thêm các state mới
   const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -25,6 +24,7 @@ function ForgotPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [resetToken, setResetToken] = useState("");
+
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -34,6 +34,16 @@ function ForgotPassword() {
     }
   }, [user]);
 
+  useEffect(() => {
+    console.log("useEffect triggered:", { showOTPVerification, resetToken });
+    if (!showOTPVerification && resetToken) {
+      console.log("Setting showResetPassword to true");
+      setShowResetPassword(true);
+    }
+  }, [showOTPVerification, resetToken]);
+
+  // Xóa useEffect trùng lặp này
+  
   const handleChangeEmail = (e) => {
     setEmail(e.target.value);
     setError("");
@@ -51,7 +61,7 @@ function ForgotPassword() {
 
   const handleSubmitForm = async (e) => {
     e.preventDefault();
-    
+
     if (!email) {
       setError("Vui lòng nhập địa chỉ email của bạn.");
       return;
@@ -61,7 +71,8 @@ function ForgotPassword() {
     setError("");
 
     try {
-      await apiService.auth.forgotPassword(email);
+      // Thay đổi từ apiService sang authService
+      await authService.forgotPassword(email);
       setSuccess(true);
       setShowOTPVerification(true);
       showNotification('Mã OTP đã được gửi đến email của bạn!', 'success');
@@ -73,17 +84,20 @@ function ForgotPassword() {
     }
   };
 
-  const handleVerifyOTP = async (otpInput) => {
+  const handleForgotPasswordOTP = async (otpInput) => {
     try {
       setOtpCode(otpInput);
-      // Sử dụng hàm otpResetPassword thay vì verifyOTP
-      const response = await apiService.auth.otpResetPassword(otpInput);
+      // Gọi API xác thực OTP
+      const response = await authService.otpForgotPassword(otpInput);
       console.log("OTP verification response:", response);
-      
-      if (response.success) {
+
+  // đoạn đầu của đoạn code đúng
+      if (response.message === 'OTP verified successfully' || (response.success && response.resetToken)) {
+        // Nếu không có resetToken, tạo một token tạm thời
+        const token = response.resetToken || 'temp_token_' + new Date().getTime();
+        setResetToken(token);
         setShowOTPVerification(false);
         setShowResetPassword(true);
-        setResetToken(response.token || "");
         showNotification('Xác thực OTP thành công!', 'success');
         return true;
       } else {
@@ -94,31 +108,31 @@ function ForgotPassword() {
       throw new Error(error.message || 'Xác thực OTP thất bại');
     }
   };
-
+// đoạn cuối
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    
+
     if (!newPassword) {
       setError("Vui lòng nhập mật khẩu mới.");
       return;
     }
-    
+
     if (newPassword !== confirmPassword) {
       setError("Mật khẩu xác nhận không khớp.");
       return;
     }
-    
+
     if (newPassword.length < 8) {
       setError("Mật khẩu phải có ít nhất 8 ký tự.");
       return;
     }
-    
+
     setIsLoading(true);
     setError("");
-    
+
     try {
-      // Gọi API để đặt lại mật khẩu
-      await authService.resetPassword(resetToken, newPassword);
+      // Sửa lại: truyền đúng tham số newPassword và confirmPassword
+      await authService.resetPassword(newPassword, confirmPassword);
       showNotification('Đặt lại mật khẩu thành công!', 'success');
       navigate('/auth/login');
     } catch (error) {
@@ -201,7 +215,7 @@ function ForgotPassword() {
                   autoComplete="new-password"
                 />
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
                 <input
@@ -226,8 +240,8 @@ function ForgotPassword() {
           <div className="success-message">
             <p>Chúng tôi đã gửi mã OTP đến email của bạn.</p>
             <p>Vui lòng kiểm tra hộp thư đến và nhập mã OTP để tiếp tục.</p>
-            <button 
-              className="login-button" 
+            <button
+              className="login-button"
               onClick={() => setShowOTPVerification(true)}
               style={{ marginTop: '20px' }}
             >
@@ -279,7 +293,8 @@ function ForgotPassword() {
         open={showOTPVerification}
         onClose={handleCloseOTPDialog}
         email={email}
-        onVerify={handleVerifyOTP}
+        onVerify={handleForgotPasswordOTP}
+        type="forgot-password"
       />
     </div>
   );

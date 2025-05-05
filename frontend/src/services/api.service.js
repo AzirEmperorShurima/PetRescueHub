@@ -23,22 +23,22 @@ const apiService = {
   auth: {
     // Xác thực
     login: (credentials) => api.post('/auth/access/login', credentials, { withCredentials: true }),
-    register: (userData) => api.post('/auth/sign/signup', userData),
+    register: (userData) => api.post('/auth/sign/signup', userData, { withCredentials: true } ),
     logout: () => api.post('/auth/logout', {}, { withCredentials: true }),
     refreshToken: () => api.post('/auth/re-sign/refresh-token', {}, { withCredentials: true }),
     
-    // Quản lý mật khẩu
-    forgotPassword: (email) => api.post('/auth/password/forgot-password', { email }),
-    resetPassword: (token, password) => api.post('/auth/password/reset-password', { token, password }),
+    // Quản lý mật khẩu 
+    forgotPassword: (email) => api.post('/auth/password/forgot-password', { email }, { withCredentials: true } ),
+    resetPassword: (newPassword, confirmPassword) => api.post('/auth/password/reset-password', { newPassword, confirmPassword }, { withCredentials: true }), 
     
     // Xác thực OTP
-    verifyOTP: (otp) => api.post('/auth/sign/verify-otp', { otp }),
-    otpResetPassword: (otp) => api.post('/auth/password/verify-otp-forgot-password', { otp }),
-    resendOTP: () => api.get('/auth/sign/verify-otp/refreshOtp'),
+    verifyOTP: (otp) => api.post('/auth/sign/verify-otp', { otp }, { withCredentials: true }),
+    otpResetPassword: (otp) => api.post('/auth/password/verify-otp-forgot-password', { otp }, { withCredentials: true }),
+    resendOTP: () => api.get('/auth/sign/verify-otp/refreshOtp', { withCredentials: true } ),
     
     // Thông tin người dùng
-    getProfile: (targetUser) => api.get(`/auth/get/profile${targetUser ? `/${targetUser}` : ''}`),
-    updateProfile: (userData) => api.put('/auth/update/profile', userData),
+    getProfile: (targetUser) => api.get(`/auth/get/profile${targetUser ? `/${targetUser}` : ''}`, { withCredentials: true } ),
+    updateProfile: (userData) => api.put('/auth/update/profile', userData, { withCredentials: true } ),
   },
   
   // Các API khác

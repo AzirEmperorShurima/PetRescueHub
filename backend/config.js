@@ -15,7 +15,7 @@ export const COOKIE_PATHS = {
         Path: '/'
     },
     REFRESH_TOKEN: {
-        CookieName: 'ACCESS-TOKEN',
+        CookieName: 'REFRESH_TOKEN',
         Path: '/'
     },
     REGISTER_VERIFY: {

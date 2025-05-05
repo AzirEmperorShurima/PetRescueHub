@@ -14,6 +14,8 @@ import { avatarConfig } from './config.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import adminRouter from './src/router/Admin.routes.js';
+import volunteerRouter from './src/router/Volunteer.routes.js';
+import PetRescueRouter from './src/router/PetRescue.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,8 +47,10 @@ app.use(apiLimiter);
 app.use('/api/auth', authRouter);
 app.use('/api/forum', forumRoutes)
 app.use('/api/user', userRoute)
+app.use('/api/volunteer', volunteerRouter)
 app.use('/api/pet', petRoute)
 app.use('/api/admin', adminRouter)
+app.use('/api/PetRescue',PetRescueRouter)
 
 app.use('/api/root', express.static(path.join(__dirname, 'src/root/image')));
 
