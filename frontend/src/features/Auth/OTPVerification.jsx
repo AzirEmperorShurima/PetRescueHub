@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogTitle, IconButton, Button, TextField, Box,
 import CloseIcon from '@mui/icons-material/Close';
 import authService from '../../services/auth.service';
 import { useNotification } from '../../components/contexts/NotificationContext';
-import { useNavigate } from 'react-router-dom';
 
 // Sửa lại cách định nghĩa component
 const OTPVerification = ({ open, onClose, userId, email, onVerify, type = 'register' }) => {
@@ -13,7 +12,6 @@ const OTPVerification = ({ open, onClose, userId, email, onVerify, type = 'regis
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef([]);
   const { showNotification } = useNotification();
-  const navigate = useNavigate();
   const resendDelay = 60; // 60 seconds
 
   useEffect(() => {

@@ -23,9 +23,7 @@ import {
   Alert
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
-import axios from 'axios';
 import { fDate, fDateTime } from '../../../utils/format-time';
-import DataTable from '../../../components/common/DataTable';
 
 const EventManagement = () => {
   const [events, setEvents] = useState([]);
@@ -51,7 +49,7 @@ const EventManagement = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
   const fetchEvents = async () => {
     try {

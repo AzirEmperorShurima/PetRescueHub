@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import PropTypes from 'prop-types';
 import TagList from './TagList';
-import LazyImage from '../../common/LazyImage';
+import LazyImage from '../../common/interactions/LazyImage';
 
 const ContentCard = ({ title, content, image, tags, children, sx = {} }) => {
   return (

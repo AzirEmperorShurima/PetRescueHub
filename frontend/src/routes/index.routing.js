@@ -2,13 +2,9 @@ import React, { lazy, Suspense } from "react";
 import {
   Routes,
   Route,
-  Navigate,
-  Outlet,
 } from "react-router-dom";
-
 import MainLayout from "../components/layouts/MainLayout";
-import AdminLayout from "../components/layouts/AdminLayout";
-import LoadingScreen from "../components/common/LoadingScreen";
+import LoadingScreen from "../components/common/display/LoadingScreen";
 import ProtectedRoute from "../components/guards/ProtectedRoute";
 // Lazy-load toàn bộ pages/features
 const Login = lazy(() => import("../features/Auth/Login"));

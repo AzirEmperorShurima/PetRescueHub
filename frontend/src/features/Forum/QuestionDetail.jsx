@@ -21,14 +21,12 @@ import { useAuth } from '../../components/contexts/AuthContext';
 import { questionDetailMock, answersMock } from '../../mocks/questionDetailMock';
 
 // Import các components dùng chung
-import { 
-  LikeButton, 
-  CommentForm, 
-  CommentList, 
-  ShareButton, 
-  TagList,
-  ActionMenu
-} from '../../components/common';
+import ActionMenu from '../../components/common/interactions/ActionMenu';
+import LikeButton from '../../components/common/interactions/LikeButton';
+import CommentForm from '../../components/common/interactions/CommentForm';
+// import CommentList from '../../components/common/interactions/CommentList';
+import ShareButton from '../../components/common/interactions/ShareButton';
+import TagList from '../../components/common/interactions/TagList';
 
 const QuestionDetail = () => {
   const { id } = useParams();

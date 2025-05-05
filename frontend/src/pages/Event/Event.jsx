@@ -6,7 +6,6 @@ import {
   Box, 
   Grid, 
   Button, 
-  Divider,
   Pagination,
   Card,
   CardMedia,
@@ -29,9 +28,6 @@ import {
 } from '@mui/icons-material';
 import './Event.css';
 
-// Import các components dùng chung
-import { ContentCard, TagList } from '../../components/common';
-import { fDate } from '../../utils/format-time';
 // Thay đổi import để sử dụng dữ liệu mock từ file events.js
 import { events } from '../../mocks/events';
 

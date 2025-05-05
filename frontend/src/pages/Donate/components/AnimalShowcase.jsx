@@ -6,8 +6,7 @@ import {
   Box,
   Button
 } from '@mui/material';
-import { motion } from 'framer-motion';
-import LazyImage from '../../../components/common/LazyImage';
+import LazyImage from '../../../components/common/interactions/LazyImage';
 
 const AnimalShowcase = ({ rescueImages, currentImageIndex, setCurrentImageIndex }) => {
   return (

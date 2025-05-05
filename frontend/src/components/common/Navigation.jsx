@@ -54,29 +54,28 @@ const Navigation = () => {
               <NavLink
                 className="nav-link"
                 to="/"
-                exact
-                activeClassName="active"
+                end
               >
                 {t.home}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/forum" activeClassName="active">
+              <NavLink className="nav-link" to="/forum">
                 {t.forum}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/event" activeClassName="active">
+              <NavLink className="nav-link" to="/event">
                 {t.event}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/adopt" activeClassName="active">
+              <NavLink className="nav-link" to="/adopt">
                 {t.adopt}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/donate" activeClassName="active">
+              <NavLink className="nav-link" to="/donate">
                 {t.donate}
               </NavLink>
             </li>
@@ -84,7 +83,6 @@ const Navigation = () => {
               <NavLink
                 className="nav-link"
                 to="/PetGuide"
-                activeClassName="active"
               >
                 {t.petGuide}
               </NavLink>

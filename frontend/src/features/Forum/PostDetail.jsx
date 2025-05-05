@@ -23,15 +23,13 @@ import { useAuth } from '../../components/contexts/AuthContext';
 import { postDetailMock, postCommentsMock } from '../../mocks/postDetailMock';
 
 // Import các components dùng chung
-import { 
-  LikeButton, 
-  CommentForm, 
-  CommentList, 
-  ShareButton, 
-  TagList,
-  ImageOptimizer,
-  ActionMenu
-} from '../../components/common';
+import ActionMenu from '../../components/common/interactions/ActionMenu';
+import LikeButton from '../../components/common/interactions/LikeButton';
+import CommentForm from '../../components/common/interactions/CommentForm';
+import CommentList from '../../components/common/interactions/CommentList';
+import ShareButton from '../../components/common/interactions/ShareButton';
+import TagList from '../../components/common/interactions/TagList';
+import LazyImage from '../../components/common/interactions/LazyImage';
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -177,11 +175,13 @@ const PostDetail = () => {
         
         {post.image && (
           <Box sx={{ mb: 3 }}>
-            <ImageOptimizer 
+            <LazyImage 
               src={post.image} 
               alt={post.title} 
               width="100%" 
-              height="auto" 
+              height="400px" 
+              effect="blur"
+              sx={{ borderRadius: '8px' }}
             />
           </Box>
         )}
