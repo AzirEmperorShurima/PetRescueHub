@@ -2,26 +2,66 @@ import jwt from "jsonwebtoken"
 import { SECRET_KEY } from "../../config.js"
 import { StatusCodes } from "http-status-codes";
 
-
-export const getCookies = async (userPayLoad, path = '/', cookieName = 'Anonymous', maxAge, expiresIn = '24h', res) => {
+export const getCookies = async ({
+    PayLoad,
+    path = '/',
+    cookieName = 'Anonymous',
+    maxAge = 1000 * 60 * 60 * 24, // default 24h
+    expiresIn = '24h',
+    res
+}) => {
     try {
-        const token = jwt.sign(userPayLoad, SECRET_KEY, { expiresIn });
+        if (!res || typeof res.cookie !== 'function') {
+            throw new Error('Invalid "res" object provided to getCookies');
+        }
+
+        if (!PayLoad || typeof PayLoad !== 'object') {
+            throw new Error('"PayLoad" must be a valid object');
+        }
+
+        if (!cookieName || typeof cookieName !== 'string') {
+            throw new Error('"cookieName" must be a valid string');
+        }
+
+        if (!expiresIn || (typeof expiresIn !== 'string' && typeof expiresIn !== 'number')) {
+            throw new Error('"expiresIn" must be a string (like "24h", "15m") or number of seconds');
+        }
+
+        const token = jwt.sign(PayLoad, SECRET_KEY, { expiresIn });
 
         res.cookie(cookieName, token, {
-            maxAge: maxAge || 1000 * 60 * 60 * 24,
+            maxAge,
             httpOnly: true,
-            // secure: process.env.NODE_ENV === "production",
             secure: true,
             sameSite: 'Strict',
-            path: path,
+            path,
         });
 
-        return token
+        return token;
     } catch (err) {
-        console.error("Create Cookies Error:", err);
-        throw new Error("Failed to create cookies");
+        console.error('Create Cookies Error:', err);
+        throw new Error('Failed to create cookies: ' + err.message);
     }
 };
+
+// export const getCookies = async ({ PayLoad, path = '/', cookieName = 'Anonymous', maxAge, expiresIn = '24h', res }) => {
+//     try {
+//         const token = jwt.sign(PayLoad, SECRET_KEY, { expiresIn });
+
+//         res.cookie(cookieName, token, {
+//             maxAge: maxAge || 1000 * 60 * 60 * 24,
+//             httpOnly: true,
+//             secure: true,
+//             sameSite: 'Strict',
+//             path: path,
+//         });
+
+//         return token
+//     } catch (err) {
+//         console.error("Create Cookies Error:", err);
+//         throw new Error("Failed to create cookies");
+//     }
+// };
 
 
 

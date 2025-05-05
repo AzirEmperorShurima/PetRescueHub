@@ -31,14 +31,14 @@ export const Signup_Handler = async (req, res) => {
             id: CreateUser._id,
             tokenType: TOKEN_TYPE.REGISTER_VERIFY.name,
         }
-        const token = await getCookies(
-            userSignUpPayLoad,
-            COOKIE_PATHS.REGISTER_VERIFY.Path,
-            COOKIE_PATHS.REGISTER_VERIFY.CookieName,
-            TOKEN_TYPE.REGISTER_VERIFY.maxAge,
-            TOKEN_TYPE.REGISTER_VERIFY.expiresIn,
+        const token = await getCookies({
+            PayLoad: userSignUpPayLoad,
+            path: COOKIE_PATHS.REGISTER_VERIFY.Path,
+            cookieName: COOKIE_PATHS.REGISTER_VERIFY.CookieName,
+            maxAge: TOKEN_TYPE.REGISTER_VERIFY.maxAge,
+            expiresIn: TOKEN_TYPE.REGISTER_VERIFY.expiresIn,
             res
-        );
+        });
         const register_token_redisKey = `register:${CreateUser._id}`;
         await redisClient.set(register_token_redisKey, token, { EX: 60 * 15 });
 
@@ -110,17 +110,31 @@ export const loginHandler = async (req, res) => {
         const userLoginPayLoad = {
             id: foundUser._id,
             email: foundUser.email,
-            roles: foundUser.roles.map(role => role.name), // Add roles here
+            roles: foundUser.roles.map(role => role.name),
             tokenType: TOKEN_TYPE.ACCESS_TOKEN.name,
         }
-        const newCookies = await getCookies(
-            userLoginPayLoad,
-            COOKIE_PATHS.ACCESS_TOKEN.Path,
-            COOKIE_PATHS.ACCESS_TOKEN.CookieName,
-            TOKEN_TYPE.ACCESS_TOKEN.maxAge,
-            TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
+        const refreshTokenPayload = {
+            id: foundUser._id,
+            email: foundUser.email,
+            tokenType: TOKEN_TYPE.REFRESH_TOKEN.name,
+        };
+
+        const newCookies = await getCookies({
+            PayLoad: userLoginPayLoad,
+            path: COOKIE_PATHS.ACCESS_TOKEN.Path,
+            cookieName: COOKIE_PATHS.ACCESS_TOKEN.CookieName,
+            maxAge: TOKEN_TYPE.ACCESS_TOKEN.maxAge,
+            expiresIn: TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
             res
-        );
+        });
+        const newRefreshToken = await getCookies({
+            PayLoad: refreshTokenPayload,
+            path: COOKIE_PATHS.REFRESH_TOKEN.Path,
+            cookieName: COOKIE_PATHS.REFRESH_TOKEN.CookieName,
+            maxAge: TOKEN_TYPE.REFRESH_TOKEN.maxAge,
+            expiresIn: TOKEN_TYPE.REFRESH_TOKEN.expiresIn,
+            res
+        });
         const token = await manageTokens(foundUser, newCookies, TOKEN_TYPE.ACCESS_TOKEN.name);
 
         return res.status(StatusCodes.OK).json({
@@ -222,22 +236,22 @@ export const refreshToken = async (req, res) => {
         };
 
         // Tạo tokens mới và lưu vào cookie
-        const newRefreshToken = await getCookies(
-            refreshTokenPayload,
-            COOKIE_PATHS.REFRESH_TOKEN.Path,
-            COOKIE_PATHS.REFRESH_TOKEN.CookieName,
-            TOKEN_TYPE.REFRESH_TOKEN.maxAge,
-            TOKEN_TYPE.REFRESH_TOKEN.expiresIn,
+        const newRefreshToken = await getCookies({
+            PayLoad: refreshTokenPayload,
+            path: COOKIE_PATHS.REFRESH_TOKEN.Path,
+            cookieName: COOKIE_PATHS.REFRESH_TOKEN.CookieName,
+            maxAge: TOKEN_TYPE.REFRESH_TOKEN.maxAge,
+            expiresIn: TOKEN_TYPE.REFRESH_TOKEN.expiresIn,
             res
-        );
-        const newAccessToken = await getCookies(
-            accessTokenPayload,
-            COOKIE_PATHS.ACCESS_TOKEN.Path,
-            COOKIE_PATHS.ACCESS_TOKEN.CookieName,
-            TOKEN_TYPE.ACCESS_TOKEN.maxAge,
-            TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
+        });
+        const newAccessToken = await getCookies({
+            PayLoad: accessTokenPayload,
+            path: COOKIE_PATHS.ACCESS_TOKEN.Path,
+            cookieName: COOKIE_PATHS.ACCESS_TOKEN.CookieName,
+            maxAge: TOKEN_TYPE.ACCESS_TOKEN.maxAge,
+            expiresIn: TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
             res
-        );
+        });
 
         founduser.tokens.push(
             {
@@ -267,8 +281,6 @@ export const refreshToken = async (req, res) => {
 export const manageTokens = async (_user, token, type) => {
     try {
         let tokensArray = _user.tokens || [];
-        console.log("Existing Tokens:", tokensArray);
-
         const now = Date.now();
         tokensArray = tokensArray.filter(tokenObj => (now - parseInt(tokenObj.signedAt)) < 86400000);
         if (tokensArray.length >= 5) {
@@ -333,6 +345,7 @@ export const getProfile = async (req, res) => {
             username: foundUser.username,
             fullName: foundUser.fullname,
             birthdate: foundUser.birthdate,
+            biography: foundUser.biography,
             avatar: foundUser.avatar,
             address: isPrivate && !(isOwner || isAdmin) ? "This is Private information" : foundUser.address,
             roles: isPrivate && !(isOwner || isAdmin) ? "This is Private information" : foundUser.roles.map(role => role.name),
@@ -407,17 +420,17 @@ export const verified_OTP = async (req, res) => {
         const userLoginPayLoad = {
             id: foundUser._id,
             email: foundUser.email,
-            roles: foundUser.roles.map(role => role.name), // Add roles here
+            roles: foundUser.roles.map(role => role.name),
             tokenType: TOKEN_TYPE.ACCESS_TOKEN.name,
         }
-        const newAccessToken = await getCookies(
-            userLoginPayLoad,
-            COOKIE_PATHS.ACCESS_TOKEN.Path,
-            COOKIE_PATHS.ACCESS_TOKEN.CookieName,
-            TOKEN_TYPE.ACCESS_TOKEN.maxAge,
-            TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
+        const newAccessToken = await getCookies({
+            PayLoad: userLoginPayLoad,
+            path: COOKIE_PATHS.ACCESS_TOKEN.Path,
+            cookieName: COOKIE_PATHS.ACCESS_TOKEN.CookieName,
+            maxAge: TOKEN_TYPE.ACCESS_TOKEN.maxAge,
+            expiresIn: TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
             res
-        );
+        });
         foundUser.tokens.push(
             {
                 type: TOKEN_TYPE.ACCESS_TOKEN.name,
@@ -540,13 +553,14 @@ export const forgot_password = async (req, res) => {
             email: userFound.email,
             tokenType: TOKEN_TYPE.FORGOT_PASSWORD.name,
         }
-        const forgotPasswordCookies = await getCookies(
-            forgotPasswordPayLoad,
-            COOKIE_PATHS.FORGOT_PASSWORD,
-            TOKEN_TYPE.FORGOT_PASSWORD.maxAge,
-            TOKEN_TYPE.FORGOT_PASSWORD.expiresIn,
+        const forgotPasswordCookies = await getCookies({
+            PayLoad: forgotPasswordPayLoad,
+            path: COOKIE_PATHS.FORGOT_PASSWORD.Path,
+            cookieName: COOKIE_PATHS.FORGOT_PASSWORD.CookieName,
+            maxAge: TOKEN_TYPE.FORGOT_PASSWORD.maxAge,
+            expiresIn: TOKEN_TYPE.FORGOT_PASSWORD.expiresIn,
             res
-        );
+        });
 
         await sendMailForgotPassword({
             email: userFound.email,
@@ -597,13 +611,14 @@ export const verified_OTP_forgot_password = async (req, res) => {
             email: email,
             tokenType: TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.name,
         }
-        await getCookies(
-            verifiedOtpForgotPasswordPayLoad,
-            COOKIE_PATHS.FORGOT_PASSWORD_VERIFIED,
-            TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.maxAge,
-            TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.expiresIn,
+        await getCookies({
+            PayLoad: verifiedOtpForgotPasswordPayLoad,
+            path: COOKIE_PATHS.FORGOT_PASSWORD_VERIFIED,
+            CookieName: COOKIE_PATHS.FORGOT_PASSWORD_VERIFIED.CookieName,
+            maxAge: TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.maxAge,
+            expiresIn: TOKEN_TYPE.FORGOT_PASSWORD_VERIFIED.expiresIn,
             res
-        );
+        });
 
         return res.status(200).json({ message: 'OTP verified successfully' });
     } catch (err) {
@@ -640,7 +655,14 @@ export const reset_password = async (req, res) => {
             email: userFound.email,
             tokenType: TOKEN_TYPE.REPORT_COMPROMISED.name,
         }
-        const reportCompromisedToken = await getCookies(resetPasswordPayLoad, COOKIE_PATHS.REPORT_COMPROMISED, TOKEN_TYPE.REPORT_COMPROMISED.maxAge, TOKEN_TYPE.REPORT_COMPROMISED.expiresIn, res);
+        const reportCompromisedToken = await getCookies({
+            PayLoad: resetPasswordPayLoad,
+            path: COOKIE_PATHS.REPORT_COMPROMISED,
+            cookieName: COOKIE_PATHS.REPORT_COMPROMISED.CookieName,
+            maxAge: TOKEN_TYPE.REPORT_COMPROMISED.maxAge,
+            expiresIn: TOKEN_TYPE.REPORT_COMPROMISED.expiresIn,
+            res
+        });
         const tokenIndex = userFound.tokens.findIndex(t => t.type === TOKEN_TYPE.REPORT_COMPROMISED.name);
 
         if (tokenIndex !== -1) {
