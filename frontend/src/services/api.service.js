@@ -38,8 +38,9 @@ const apiService = {
     
     // Thông tin người dùng
     getProfile: (targetUser) => api.get(`/auth/get/profile${targetUser ? `/${targetUser}` : ''}`, { withCredentials: true } ),
-    updateProfile: (userData) => api.put('/auth/update/profile', userData, { withCredentials: true } ),
-  },
+    // updateProfile: (userData) => api.put('/auth/update/profile', userData, { withCredentials: true } ),
+    // uploadAvatar: (formData) => api.upload('/auth/update/avatar', formData, { withCredentials: true }),
+},
   
   // Các API khác
   users: createApiService('users'),

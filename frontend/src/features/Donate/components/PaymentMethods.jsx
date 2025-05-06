@@ -159,7 +159,7 @@ const PaymentAppTab = ({ appName, qrCode }) => (
           <img src={qrCode} alt={`QR Code ${appName}`} className="qr-code" />
         </Box>
         <Typography variant="body2" className="qr-code-caption">
-          Quét mã QR bằng ứng dụng {appName}
+          Quét mã QR bằng ứng dụng &quot;{appName}&quot;
         </Typography>
       </Box>
     </Grid>

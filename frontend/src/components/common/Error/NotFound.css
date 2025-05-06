@@ -1,0 +1,132 @@
+/* Container chính */
+.not-found404-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #87CEEB, #e0f7fa);
+    perspective: 1000px;
+  }
+  
+  /* Cờ Việt Nam */
+  .flag-background {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(212,0,0,0.05);
+    z-index: 1;
+  }
+  .flag-star {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 30rem;
+    color: rgba(255,222,0,0.07);
+    animation: float 8s ease-in-out infinite;
+    z-index: 2;
+  }
+  @keyframes float { 0%,100% { transform: translate(-50%,-50%) rotate(0deg);} 50%{ transform: translate(-50%,-50%) rotate(5deg);} }
+  
+  /* Mây */
+  .cloud { position: absolute; width:120px; height:60px; background:rgba(255,255,255,0.7); border-radius:100px; box-shadow:0 8px 5px rgba(0,0,0,0.1);}
+  .cloud:before, .cloud:after { content:''; position:absolute; background:rgba(255,255,255,0.7); border-radius:50%; }
+  .cloud:before { width:60px; height:60px; top:-30px; left:20px; }
+  .cloud:after  { width:80px; height:80px; top:-40px; right:20px; }
+  
+  /* Núi xanh realistic */
+  .mountains {
+    position:absolute; bottom:30%; left:0; width:100%; height:25%;
+    background: linear-gradient(to top, #2E8B57, #006400);
+    clip-path: polygon(0% 100%,10% 70%,20% 100%,30% 60%,40% 80%,50% 50%,60% 70%,70% 60%,80% 90%,90% 75%,100% 100%);
+    z-index:6;
+  }
+  
+  /* Đất nâu realistic */
+  .rice-field {
+    position:absolute; bottom:0; left:0; width:100%; height:30%;
+    background: repeating-linear-gradient(0deg, #A0522D 0px, #A0522D 10px, #8B4513 10px, #8B4513 20px);
+    z-index:7;
+  }
+  
+  /* Trâu + nông dân inline SVG */
+  .farmer-buffalo-scene { position:absolute; bottom:10%; left:50%; transform:translateX(-50%);
+    display:flex; align-items:flex-end; gap:1rem; z-index:9;
+    animation: plow-scene 20s linear infinite;
+  }
+  @keyframes plow-scene { 0%{transform:translateX(-100%) scaleX(1);} 50%{transform:translateX(100%) scaleX(1);} 100%{transform:translateX(-100%) scaleX(1);} }
+  .buffalo-svg { width:100px; height:auto; }
+  .farmer-svg { width:40px; height:auto; }
+  
+  /* Cỏ phía trước */
+  .foreground-grass { position:absolute; bottom:0; left:0; width:100%; height:50px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 50'%3E%3Cpath d='M0,50 L0,30 Q5,20 10,30 Q15,10 20,30 Q25,20 30,30 Q35,15 40,30 Q45,25 50,30 L50,50 Z' fill='%236b8e23'/%3E%3C/svg%3E");
+    background-repeat:repeat-x; background-size:50px 50px; z-index:10;
+  }
+  
+  /* Card nội dung 404 */
+  .not-found-card { background:rgba(255,255,255,0.9); border-radius:1rem;
+    box-shadow:0 20px 50px rgba(0,0,0,0.2); padding:2.5rem; text-align:center;
+    max-width:32rem; z-index:20; position:relative; border:2px solid rgba(212,0,0,0.2);
+    transform:rotateX(5deg); backdrop-filter:blur(5px);
+  }
+  
+  /* Mã lỗi & tiêu đề */
+  .code { font-size:6rem; font-weight:800;
+    background:linear-gradient(45deg,#d40000,#ff6b6b);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    margin:0; text-shadow:3px 3px 0 rgba(0,0,0,0.1);
+    font-family:'Montserrat',sans-serif; letter-spacing:-3px;
+  }
+  .notfound-title { font-size:2rem; margin:0.5rem 0 1.5rem; color:#333;
+    font-family:'Montserrat',sans-serif; position:relative;
+  }
+  
+  /* Message với buffalo SVG */
+  .animal-message { display:flex; align-items:center; justify-content:center; gap:1rem;
+    background:rgba(255,255,255,0.8); border-radius:1rem; padding:1.5rem;
+    margin:2rem 0; box-shadow:0 5px 15px rgba(0,0,0,0.05); border:1px dashed #ccc;
+  }
+  .message { font-size:1.1rem; color:#444; line-height:1.6; margin:0; }
+  .highlight { color:#d40000; font-weight:bold; font-size:1.3rem; }
+  
+  /* Footprints */
+  .animal-footprints { display:flex; justify-content:center; margin-bottom:2rem; }
+  .footprint { width:25px; height:25px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cellipse cx='25' cy='25' rx='15' ry='20' fill='rgba(212,0,0,0.2)'/%3E%3Cellipse cx='15' cy='15' rx='5' ry='7' fill='rgba(212,0,0,0.2)'/%3E%3Cellipse cx='35' cy='15' rx='5' ry='7' fill='rgba(212,0,0,0.2)'/%3E%3Cellipse cx='15' cy='35' rx='5' ry='7' fill='rgba(212,0,0,0.2)'/%3E%3Cellipse cx='35' cy='35' rx='5' ry='7' fill='rgba(212,0,0,0.2)'/%3E%3C/svg%3E");
+    background-size:contain; background-repeat:no-repeat; margin:0 10px;
+  }
+  .fp1 { transform:rotate(10deg); }
+  .fp2 { transform:rotate(-15deg); }
+  .fp3 { transform:rotate(5deg); }
+  .fp4 { transform:rotate(-5deg); }
+  .fp5 { transform:rotate(15deg); }
+  
+  /* Button về trang chủ */
+  .btn-home { display:inline-flex; align-items:center; gap:0.5rem;
+    padding:0.75rem 2rem; background:linear-gradient(145deg,#d40000,#b20000);
+    color:white; border:none; border-radius:0.5rem; cursor:pointer;
+    font-size:1.1rem; font-weight:600; box-shadow:0 8px 15px rgba(212,0,0,0.3);
+    transition:all 0.3s; position:relative; overflow:hidden; z-index:1;
+  }
+  .btn-home:before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+    transition:all 0.5s; z-index:-1;
+  }
+  .btn-home:hover { transform:translateY(-5px); box-shadow:0 12px 20px rgba(212,0,0,0.4); }
+  .btn-home:hover:before { left:100%; }
+  .btn-home:active { transform:translateY(-2px); }
+  
+  /* Footer note */
+  .footer-note { margin-top:2rem; font-size:1rem; color:#555; font-style:italic;
+    border-top:1px dashed #ccc; padding-top:1rem;
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .not-found-card { max-width:90%; padding:1.5rem; }
+    .code { font-size:4rem; }
+    .notfound-title { font-size:1.5rem; }
+    .flag-star { font-size:15rem; }
+    .mountains { height:20%; }
+    .animal-message { flex-direction:column; text-align:center; }
+  }

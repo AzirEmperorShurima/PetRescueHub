@@ -200,7 +200,7 @@ const VolunteerForm = ({ isOpen, onClose, onSubmit }) => {
             />
           </FormControl>
 
-          <FormControl mb={6} isRequired>
+          <FormControl mb={6} required>
             <Checkbox
               id="terms"
               isChecked={formData.termsAccepted}

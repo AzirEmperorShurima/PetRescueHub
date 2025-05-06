@@ -14,7 +14,7 @@ const Terms = () => {
           Điều khoản sử dụng & Chính sách riêng tư
         </Typography>
         <Typography variant="subtitle1" className="terms-updated">
-          Cập nhật lần cuối: 01/06/2023
+          Cập nhật lần cuối: 06/05/2025
         </Typography>
         <Divider className="terms-divider" />
 
@@ -92,8 +92,8 @@ const Terms = () => {
             Đội ngũ hỗ trợ của PetRescueHub luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn. Liên hệ với chúng tôi qua:
             <ul>
               <li>Email: support@petrescuehub.com</li>
-              <li>Hotline: 1900-xxxx</li>
-              <li>Văn phòng: Tầng 15, Tòa nhà Landmark 81, TP.HCM</li>
+              <li>Hotline: 0984268233</li>
+              <li>Văn phòng: 254 Nguyen Van Linh, TP.Da Nang</li>
             </ul>
           </Typography>
         </Box>

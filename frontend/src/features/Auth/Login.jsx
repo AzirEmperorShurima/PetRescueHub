@@ -85,21 +85,21 @@ function Login() {
 
   if (showAlreadyLoggedIn) {
     return (
-      <div className="auth-form-container">
+      <div className="auth-form-container logged-in-container">
         <div className="auth-logo">
           <img src={petLogo} alt="PetRescueHub Logo" />
           <h2>PetRescueHub</h2>
         </div>
-        <div className="auth-form-section">
-          <div className="heading">Bạn đã đăng nhập</div>
+        <div className="auth-form-section logged-in-section">
+          <div className="auth-heading">Bạn đã đăng nhập</div>
           <div className="auth-subtitle">
             Bạn đã đăng nhập với tài khoản <strong>{user.email}</strong>
           </div>
-          <div className="already-logged-in-options">
-            <button className="btn btn-primary" onClick={handleContinueWithCurrentUser}>
+          <div className="auth-action-buttons">
+            <button className="auth-button auth-button--primary" onClick={handleContinueWithCurrentUser}>
               Tiếp tục với tài khoản hiện tại
             </button>
-            <button className="btn btn-outline-danger" onClick={handleLogoutAndContinue}>
+            <button className="auth-button auth-button--outline" onClick={handleLogoutAndContinue}>
               Đăng xuất và đăng nhập với tài khoản khác
             </button>
           </div>

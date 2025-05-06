@@ -35,9 +35,9 @@ const PetGuide = lazy(() => import("../pages/PetGuide/PetGuide"));
 
 const Profile = lazy(() => import("../pages/Profile/Profile"));
 
-const Chatbot =  lazy(() => import("../services/Chatbot"));
+const Chatbot =  lazy(() => import("../services/Chatbot.service.js"));
 
-const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
+const NotFound = lazy(() => import("../components/common/Error/NotFound.jsx"));
 
 const AdminApp = lazy(() => import("../pages/admin/AdminApp"));
 

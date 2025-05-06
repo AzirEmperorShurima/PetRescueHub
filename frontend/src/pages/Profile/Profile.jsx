@@ -76,7 +76,7 @@ const Profile = () => {
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
-      
+
       // Chuẩn bị dữ liệu để gửi lên server
       const profileData = {
         fullName: editedUser.fullname,
@@ -87,7 +87,7 @@ const Profile = () => {
         gender: editedUser.gender,
         bio: editedUser.bio
       };
-      
+
       // Gọi API để cập nhật thông tin
       const response = await apiService.auth.updateProfile(profileData);
 
@@ -98,7 +98,7 @@ const Profile = () => {
           ...profileData,
           updatedAt: new Date().toISOString()
         });
-        
+
         setNotification({
           open: true,
           message: 'Cập nhật thông tin thành công!',
@@ -120,66 +120,66 @@ const Profile = () => {
     }
   };
 
-   // Xử lý tải lên avatar mới
-   const handleAvatarUpload = async (file) => {
-    try {
-      setIsSaving(true);
-      
-      // Tạo FormData để gửi file
-      const formData = new FormData();
-      formData.append('avatar', file);
-      
-      // Gọi API để tải lên avatar
-      const response = await apiService.auth.uploadAvatar(formData);
-      
-      if (response && response.data && response.data.avatarUrl) {
-        // Cập nhật avatar trong state
-        setUser({
-          ...user,
-          avatar: response.data.avatarUrl
-        });
-        
-        setNotification({
-          open: true,
-          message: 'Cập nhật ảnh đại diện thành công!',
-          severity: 'success'
-        });
-      } else {
-        throw new Error('Không nhận được URL avatar từ server');
-      }
-    } catch (error) {
-      console.error('Lỗi khi tải lên avatar:', error);
-      setNotification({
-        open: true,
-        message: error.response?.data?.message || 'Có lỗi xảy ra khi tải lên ảnh đại diện!',
-        severity: 'error'
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  // Xử lý tải lên avatar mới
+  //  const handleAvatarUpload = async (file) => {
+  //   try {
+  //     setIsSaving(true);
+
+  //     // Tạo FormData để gửi file
+  //     const formData = new FormData();
+  //     formData.append('avatar', file);
+
+  //     // Gọi API để tải lên avatar
+  //     const response = await apiService.auth.uploadAvatar(formData);
+
+  //     if (response && response.data && response.data.avatarUrl) {
+  //       // Cập nhật avatar trong state
+  //       setUser({
+  //         ...user,
+  //         avatar: response.data.avatarUrl
+  //       });
+
+  //       setNotification({
+  //         open: true,
+  //         message: 'Cập nhật ảnh đại diện thành công!',
+  //         severity: 'success'
+  //       });
+  //     } else {
+  //       throw new Error('Không nhận được URL avatar từ server');
+  //     }
+  //   } catch (error) {
+  //     console.error('Lỗi khi tải lên avatar:', error);
+  //     setNotification({
+  //       open: true,
+  //       message: error.response?.data?.message || 'Có lỗi xảy ra khi tải lên ảnh đại diện!',
+  //       severity: 'error'
+  //     });
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
 
 
   // Kiểm tra tính hợp lệ của form
   const isFormValid = () => {
     if (!editedUser) return false;
-    
+
     // Kiểm tra các trường bắt buộc
     if (!editedUser.fullname || !editedUser.email) return false;
-    
+
     // Kiểm tra định dạng email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(editedUser.email)) return false;
-    
+
     // Kiểm tra số điện thoại (nếu có)
     if (editedUser.phonenumber) {
       const phoneRegex = /^[0-9]{10,11}$/;
       if (!phoneRegex.test(editedUser.phonenumber)) return false;
     }
-    
+
     return true;
   };
-  
+
   // Đóng thông báo
   const handleCloseNotification = () => {
     setNotification(prev => ({ ...prev, open: false }));
@@ -196,20 +196,12 @@ const Profile = () => {
 
         if (response && response.data && response.data.userProfile) {
           const userProfile = response.data.userProfile;
-          console.log('Thông tin người dùng từ API:', userProfile);
-          console.log('Avatar từ API:', userProfile.avatar);
-
-          // Xử lý avatar
-          const processedAvatar = processAvatarUrl(userProfile.avatar);
-          console.log('Avatar sau khi xử lý:', processedAvatar);
-
           // Cập nhật state với dữ liệu từ API
           setUser({
             id: userProfile.id,
             username: userProfile.username,
             fullname: userProfile.fullName || userProfile.fullname,
             email: userProfile.email,
-            // Xử lý avatar đúng cách
             avatar: processAvatarUrl(userProfile.avatar),
             address: userProfile.address,
             phonenumber: Array.isArray(userProfile.phonenumber) ? userProfile.phonenumber[0] : userProfile.phonenumber,
@@ -226,24 +218,24 @@ const Profile = () => {
             updatedAt: userProfile.updatedAt
           });
 
-          const userPets = mockPets.filter(p => p.ownerId === userProfile.id);
-          const userPosts = mockPosts.filter(p => p.authorId === userProfile.id);
-          const userAchievements = mockAchievements || [];
-          const userRoles = Array.isArray(userProfile.roles) ? userProfile.roles : [];
-          const isVolunteer = userRoles.includes('volunteer');
-          const userRescues = isVolunteer ?
-            mockRescues.filter(r => r.assignedTo === userProfile.username) : [];
-          const userDonations = isVolunteer ? [
-            { id: 1, amount: 500000, campaign: 'Mái ấm cho mèo hoang', date: '2023-05-20' },
-            { id: 2, amount: 300000, campaign: 'Thức ăn cho chó bị bỏ rơi', date: '2023-06-15' },
-            { id: 3, amount: 1000000, campaign: 'Phẫu thuật cho thú cưng bị thương', date: '2023-07-10' }
-          ] : [];
+          // const userPets = mockPets.filter(p => p.ownerId === userProfile.id);
+          // const userPosts = mockPosts.filter(p => p.authorId === userProfile.id);
+          // const userAchievements = mockAchievements || [];
+          // const userRoles = Array.isArray(userProfile.roles) ? userProfile.roles : [];
+          // const isVolunteer = userRoles.includes('volunteer');
+          // const userRescues = isVolunteer ?
+          //   mockRescues.filter(r => r.assignedTo === userProfile.username) : [];
+          // const userDonations = isVolunteer ? [
+          //   { id: 1, amount: 500000, campaign: 'Mái ấm cho mèo hoang', date: '2023-05-20' },
+          //   { id: 2, amount: 300000, campaign: 'Thức ăn cho chó bị bỏ rơi', date: '2023-06-15' },
+          //   { id: 3, amount: 1000000, campaign: 'Phẫu thuật cho thú cưng bị thương', date: '2023-07-10' }
+          // ] : [];
 
-          setPets(userPets);
-          setPosts(userPosts);
-          setAchievements(userAchievements);
-          setRescues(userRescues);
-          setDonations(userDonations);
+          // setPets(userPets);
+          // setPosts(userPosts);
+          // setAchievements(userAchievements);
+          // setRescues(userRescues);
+          // setDonations(userDonations);
         } else {
           setError('Không thể lấy thông tin người dùng từ API');
         }
@@ -300,23 +292,11 @@ const Profile = () => {
   };
 
   // Hàm xử lý URL avatar
-  const processAvatarUrl = (avatarPath) => {
-    if (!avatarPath) return null;
-
-    // Kiểm tra nếu là URL đầy đủ
-    if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
-      return avatarPath;
-    }
-
-    // Kiểm tra nếu là đường dẫn tương đối
-    if (avatarPath.startsWith('/')) {
-      // Thêm domain của backend vào trước đường dẫn
-      // Thay thế URL dưới đây bằng URL thực tế của backend của bạn
-      return `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${avatarPath}`;
-    }
-
-    // Trường hợp khác, trả về đường dẫn gốc
-    return avatarPath;
+  const processAvatarUrl = (path) => {
+    if (!path) return '/default-avatar.png';
+    return path.startsWith('http')
+      ? path
+      : `${process.env.REACT_APP_API_URL || ''}${path.startsWith('/') ? '' : '/'}${path}`;
   };
 
   if (loading) {
@@ -347,8 +327,6 @@ const Profile = () => {
 
   return (
     <div className="profile-page">
-      {/* <ProfileHeader user={user} /> */}
-
       <Container maxWidth="lg">
         <Grid container spacing={4} className="profile-content-container">
           <Grid container item spacing={3}>
@@ -358,6 +336,7 @@ const Profile = () => {
                 <CardContent className="profile-avatar-container">
                   <Avatar
                     src={user.avatar}
+                    imgProps={{ crossOrigin: 'anonymous' }}
                     alt={user.fullname || user.username}
                     className="profile-avatar"
                   />
@@ -367,14 +346,23 @@ const Profile = () => {
                   <Typography variant="body2" className="profile-username">
                     @{user.username}
                   </Typography>
-                  {user.roles && user.roles.length > 0 && (
-                    <Chip
-                      label={typeof user.roles[0] === 'object' ? user.roles[0].name : user.roles[0]}
-                      color="primary"
-                      size="small"
-                      className="role-chip"
-                    />
-                  )}
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {(() => {
+                      const roles = user.roles.map(role => typeof role === 'object' ? role.name : role);
+                      const matchedRole = roles.find(r => r.toLowerCase() === 'volunteer') || roles.find(r => r.toLowerCase() === 'user');
+                      if (!matchedRole) return null;
+
+                      return (
+                        <Chip
+                          key={matchedRole}
+                          label={matchedRole}
+                          color="primary"
+                          size="small"
+                        />
+                      );
+                    })()}
+                  </Box>
+
                 </CardContent>
 
                 <Divider className="sidebar-divider" />

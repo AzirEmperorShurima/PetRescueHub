@@ -1,6 +1,7 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
@@ -26,6 +27,11 @@ module.exports = {
       test: /\.(js|css|html|svg)$/,
       threshold: 10240,
       minRatio: 0.8,
+    }),
+    new ESLintPlugin({
+      extensions: ['js', 'jsx'],
+      emitWarning: true,
+      failOnError: false,
     }),
   ],
   performance: {

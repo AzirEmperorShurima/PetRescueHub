@@ -23,7 +23,7 @@ function ForgotPassword() {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [setOtpCode] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [resetToken, setResetToken] = useState("");
 
   const [showNewPass, setShowNewPass] = useState(false);

@@ -296,7 +296,7 @@ function Register() {
           className="register-image"
         />
         <div className="auth-quote">
-          <p>"Cứu một sinh mạng là anh hùng, cứu hàng triệu sinh mạng là nhà cứu trợ."</p>
+          <p>&quot;Cứu một sinh mạng là anh hùng, cứu hàng triệu sinh mạng là nhà cứu trợ.&quot;</p>
           <div className="auth-quote-author">- PetRescueHub</div>
         </div>
       </div>

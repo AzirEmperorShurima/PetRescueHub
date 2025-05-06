@@ -1,4 +1,3 @@
-import api from '../utils/axios';
 import apiService from './api.service';
 
 const userService = {

@@ -22,7 +22,6 @@ import {
   Image as ImageIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import apiService from '../../services/api.service';
 
 const CreatePost = () => {
   const navigate = useNavigate();
@@ -153,9 +152,9 @@ const CreatePost = () => {
               label="Danh mục"
               required
             >
-              {categories.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.name}
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
                 </MenuItem>
               ))}
             </Select>
@@ -169,11 +168,7 @@ const CreatePost = () => {
             onChange={(event, newValue) => setTags(newValue)}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
-                <Chip
-                  variant="outlined"
-                  label={option}
-                  {...getTagProps({ index })}
-                />
+                <Chip key={index} label={option} />
               ))
             }
             renderInput={(params) => (
