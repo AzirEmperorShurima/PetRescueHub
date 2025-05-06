@@ -1,6 +1,7 @@
 import Role from "../models/Role";
-import user from "../models/user";
-import { getUserIdFromCookies } from "../services/User/User.service";
+import User from "../models/user";
+import { getUserFieldFromToken } from "../services/User/User.service";
+
 
 
 /**
@@ -22,7 +23,7 @@ export const buyPremium = async (req, res) => {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Thời gian không hợp lệ!" });
         }
 
-        const _user = await user.findById(userId);
+        const _user = await User.findById(userId);
         if (!_user) {
             return res.status(StatusCodes.NOT_FOUND).json({ message: "Người dùng không tồn tại!" });
         }
@@ -36,7 +37,7 @@ export const buyPremium = async (req, res) => {
             paymentMethod: paymentMethod
         }
         // Gọi API cổng thanh toán (ví dụ: Stripe, PayPal, VNPay, MoMo)
-        const paymentResult = await processPayment(user, paymentOptions);
+        const paymentResult = await processPayment(User, paymentOptions);
         if (!paymentResult.success) {
             return res.status(StatusCodes.PAYMENT_REQUIRED).json({ message: "Thanh toán thất bại!", error: paymentResult.error });
         }
@@ -77,7 +78,7 @@ export const updateUserProfile = async (req, res) => {
         }
         const updateData = req.body;
 
-        const allowedUpdates = new Set(["fullname", "email", "avatar", "phonenumber", "address"]);
+        const allowedUpdates = new Set(["fullname", "avatar", "phonenumber", "address"]);
         const updates = Object.keys(updateData)
             .filter(key => allowedUpdates.has(key) && updateData[key] !== undefined);
 
@@ -86,12 +87,12 @@ export const updateUserProfile = async (req, res) => {
         }
 
         // Kiểm tra email trùng lặp (chỉ nếu email khác với hiện tại)
-        if (updateData.email) {
-            const emailExists = await User.exists({ email: updateData.email, id: { $ne: userId } });
-            if (emailExists) {
-                return res.status(400).json({ success: false, message: "Email is already in use!" });
-            }
-        }
+        // if (updateData.email) {
+        //     const emailExists = await User.exists({ email: updateData.email, id: { $ne: userId } });
+        //     if (emailExists) {
+        //         return res.status(400).json({ success: false, message: "Email is already in use!" });
+        //     }
+        // }
 
         // Chỉ cập nhật nếu có thay đổi
         const updateFields = Object.fromEntries(

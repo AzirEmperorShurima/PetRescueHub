@@ -10,6 +10,7 @@ import {
 } from "../Controller/Admin.controller.js";
 import { isAdmin } from "../Middlewares/Check_is_Admin.js";
 import { validatePasswordStrength } from "../Middlewares/validatePasswordStrength.js";
+import { loginHandler } from "../Controller/Auth.Controller.js";
 
 const adminRouter = Router()
 
