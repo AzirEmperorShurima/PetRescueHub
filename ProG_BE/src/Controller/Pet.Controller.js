@@ -7,6 +7,7 @@ import Joi from "joi";
 const petUpdateSchema = Joi.object({
     name: Joi.string().trim(),
     age: Joi.number().min(0),
+    petDob: Joi.date(),
     breed: Joi.string().trim(),
     breedName: Joi.string().trim(),
     gender: Joi.string().valid('male', 'female', 'unknown'),
@@ -43,23 +44,16 @@ export const createPet = async (req, res) => {
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
+        const { error, value } = petUpdateSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            return res.status(400).json({
+                message: "Dữ liệu không hợp lệ",
+                details: error.details.map((d) => d.message)
+            });
+        }
 
         const petData = {
-            name: req.body.name,
-            dob: req.body.petDob || null,
-            breed: req.body.breed,
-            breedName: req.body.breedName || null,
-            age: req.body.age || 0,
-            petDetails: req.body.petDetails,
-            gender: req.body.gender || "unknown",
-            weight: req.body.weight || 0,
-            height: req.body.height || 0,
-            reproductiveStatus: req.body.reproductiveStatus || "not neutered",
-            vaccinationStatus: req.body.vaccinationStatus || [],
-            avatar: req.body.avatar || null,
-            microchipId: req.body.microchipId || null,
-            petAlbum: req.body.petAlbum || [],
-            createdAt: new Date()
+            ...value
         };
 
         const newPet = await petService.createPetProfile(ownerId, petData);

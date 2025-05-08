@@ -4,7 +4,7 @@ const PetProfileSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
         age: { type: Number, index: true, min: 0, default: 0 },
-
+        petDob: { type: Date, default: null },
         breed: { type: String, required: true, trim: true, index: true },
         breedName: { type: String, required: true, trim: true, index: true },
         petState: { type: String, required: true, enum: ["ReadyToAdopt", "NotReadyToAdopt", "Adopted"], default: "NotReadyToAdopt" },
