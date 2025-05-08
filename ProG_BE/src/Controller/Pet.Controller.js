@@ -21,14 +21,6 @@ const petUpdateSchema = Joi.object({
             vaccinationCode: Joi.string()
         })
     ),
-    certifications: Joi.array().items(
-        Joi.object({
-            name: Joi.string().required(),
-            type: Joi.string().valid('image', 'pdf').required(),
-            url: Joi.string().required(),
-            issuedDate: Joi.date()
-        })
-    ),
     avatar: Joi.string(),
     microchipId: Joi.string(),
     petAlbum: Joi.array().items(Joi.string())
@@ -61,12 +53,15 @@ export const createPet = async (req, res) => {
             petDetails: req.body.petDetails,
             gender: req.body.gender || "unknown",
             weight: req.body.weight || 0,
+            height: req.body.height || 0,
+            reproductiveStatus: req.body.reproductiveStatus || "not neutered",
+            vaccinationStatus: req.body.vaccinationStatus || [],
             avatar: req.body.avatar || null,
             microchipId: req.body.microchipId || null,
-            healthRecords: req.body.healthRecords || [],
-            certifications: req.body.certifications || [],
+            petAlbum: req.body.petAlbum || [],
             createdAt: new Date()
         };
+
         const newPet = await petService.createPetProfile(ownerId, petData);
         res.status(201).json({ message: "Thêm thú cưng thành công!", pet: newPet });
     } catch (error) {
