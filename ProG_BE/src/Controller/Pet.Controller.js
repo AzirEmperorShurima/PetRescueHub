@@ -1,3 +1,5 @@
+import { StatusCodes } from "http-status-codes";
+import { COOKIE_PATHS } from "../../config.js";
 import * as petService from "../services/Pet/Pet.service.js";
 import { getUserFieldFromToken } from "../services/User/User.service.js";
 import Joi from "joi";
@@ -56,7 +58,7 @@ export const createPet = async (req, res) => {
             breed: req.body.breed,
             breedName: req.body.breedName || null,
             age: req.body.age || 0,
-            details: req.body.details,
+            petDetails: req.body.petDetails,
             gender: req.body.gender || "unknown",
             weight: req.body.weight || 0,
             avatar: req.body.avatar || null,

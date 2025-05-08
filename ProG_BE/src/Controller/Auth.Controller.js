@@ -517,20 +517,24 @@ export const resendActivationOTP = async (req, res) => {
             }
         }
 
-        // Gửi OTP qua email
-        setImmediate(() => {
-            sendMailService({
+        // Gửi email OTP mới
+        try {
+            await sendMailService({
                 email: foundUser.email,
                 username: foundUser.username,
                 otp: newOTP
-            }).catch(err => console.error("Send mail failed:", err));
-        });
+            });
 
-        return res.status(StatusCodes.OK).json({
-            message: "A new OTP has been sent to your email",
-            email: foundUser.email
-        });
-
+            return res.status(StatusCodes.OK).json({
+                message: "OTP đã được gửi lại thành công",
+                expiresIn: "15 phút"
+            });
+        } catch (error) {
+            console.error("Lỗi gửi mail OTP:", error);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Không thể gửi OTP, vui lòng thử lại sau"
+            });
+        }
     } catch (error) {
         console.error("Error in Resend Activation OTP:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

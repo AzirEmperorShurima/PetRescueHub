@@ -1,6 +1,6 @@
-import Role from "../models/Role";
-import User from "../models/user";
-import { getUserFieldFromToken } from "../services/User/User.service";
+import Role from "../models/Role.js";
+import User from "../models/user.js";
+import { getUserFieldFromToken } from "../services/User/User.service.js";
 
 
 

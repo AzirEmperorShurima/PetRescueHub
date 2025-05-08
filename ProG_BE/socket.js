@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import http from "http";
 import NotificationSchema, { createNotificationModel } from "./src/models/NotificationSchema.js";
+import User from "./src/models/user.js";
 
 
 const server = http.createServer();
@@ -165,6 +166,25 @@ io.on("connection", socket => {
 
     socket.on("heartbeat", () => {
         socket.emit("heartbeat_ack");
+    });
+
+    socket.on("volunteer_location", async ({ latitude, longitude }) => {
+        try {
+            const userId = getUserBySocketId(socket.id);
+            if (!userId) return;
+
+            const user = await User.findById(userId).select("volunteerStatus");
+            if (user?.volunteerStatus === "alreadyRescue") {
+                await redisClient.geoAdd("volunteers", {
+                    longitude,
+                    latitude,
+                    member: userId,
+                });
+                console.log(`[${new Date().toISOString()}] Updated location for volunteer ${userId}`);
+            }
+        } catch (error) {
+            console.error(`[${new Date().toISOString()}] Volunteer location update error:`, error);
+        }
     });
 });
 
