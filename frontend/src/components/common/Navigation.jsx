@@ -16,6 +16,7 @@ const Navigation = () => {
   const [menuOpen, setMenuOpen] = useState(false);              // ← Thêm dòng này
   const navRef = useRef(null);
   const { user, loading } = useAuth();
+  const [showAdoptDropdown, setShowAdoptDropdown] = useState(false);
 
   // Hiệu ứng hiển thị logo
   useEffect(() => {
@@ -69,39 +70,62 @@ const Navigation = () => {
           <ul className="navbar-nav mx-auto">
             <li className="nav-item">
               <NavLink
-                className="nav-link"
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                 to="/"
-                exact
-                activeClassName="active"
               >
                 {t.home}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/forum" activeClassName="active">
+              <NavLink 
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/forum"
+              >
                 {t.forum}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/event" activeClassName="active">
+              <NavLink 
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/event"
+              >
                 {t.event}
               </NavLink>
             </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/adopt" activeClassName="active">
+            <li className="nav-item dropdown"
+                onMouseEnter={() => setShowAdoptDropdown(true)}
+                onMouseLeave={() => setShowAdoptDropdown(false)}>
+              <NavLink 
+                className={({ isActive }) => `nav-link dropdown-toggle ${isActive ? 'active' : ''}`}
+                to="/adopt"
+              >
                 {t.adopt}
               </NavLink>
+              <ul className={`dropdown-menu ${showAdoptDropdown ? 'show' : ''}`}>
+                <li>
+                  <Link className="dropdown-item" to="/findhome">
+                    Tìm nhà mới
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="/adopt">
+                    Nhận nuôi thú cưng
+                  </Link>
+                </li>
+              </ul>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/donate" activeClassName="active">
+              <NavLink 
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/donate"
+              >
                 {t.donate}
               </NavLink>
             </li>
             <li className="nav-item">
               <NavLink
-                className="nav-link"
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                 to="/PetGuide"
-                activeClassName="active"
               >
                 {t.petGuide}
               </NavLink>

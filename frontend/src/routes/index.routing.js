@@ -26,9 +26,8 @@ const Event = lazy(() => import("../pages/Event/Event"));
 const CreateEvent = lazy(() => import("../features/Event/CreateEvent"));
 const EventDetail = lazy(() => import("../features/Event/EventDetail"));
 
-
+const FindHome = lazy(() => import("../pages/Adopt/FindHome"));
 const Adopt = lazy(() => import("../pages/Adopt/Adopt"));
-
 
 const Donate = lazy(() => import("../pages/Donate/Donate"));
 const PetGuide = lazy(() => import("../pages/PetGuide/PetGuide"));
@@ -51,6 +50,7 @@ const AppRoutes = () => (
         <Route index element={<Home />} />
         {/* Các route khác giữ nguyên */}
         {/* Adopt, Donate */}
+        <Route path="findhome" element={<FindHome />} />
         <Route path="adopt" element={<Adopt />} />
         <Route path="donate" element={<Donate />} />
         {/* Forum public */}

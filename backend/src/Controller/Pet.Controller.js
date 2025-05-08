@@ -1,3 +1,4 @@
+import { COOKIE_PATHS } from "../../config.js";
 import * as petService from "../services/Pet/Pet.service.js";
 import { getUserFieldFromToken } from "../services/User/User.service.js";
 import Joi from "joi";

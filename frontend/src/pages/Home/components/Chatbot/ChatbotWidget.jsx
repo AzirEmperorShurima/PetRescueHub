@@ -6,7 +6,7 @@ import './ChatbotWidget.css';
 import axios from 'axios';
 
 const ChatbotWidget = () => {
-  const { user } = useAuth(); // Thêm hook useAuth để kiểm tra trạng thái đăng nhập
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');

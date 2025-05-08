@@ -2,6 +2,7 @@
   "name": "petrescuehub_fe",
   "version": "1.0.0",
   "private": true,
+  "proxy": "http://localhost:4000",
   "author": "Phạm Minh Thiện",
   "scripts": {
     "start": "react-scripts start",
@@ -71,4 +72,5 @@
       "last 1 safari version"
     ]
   }
+  
 }

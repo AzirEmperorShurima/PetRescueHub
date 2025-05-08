@@ -81,12 +81,11 @@ const UserMenu = ({ user }) => {
             aria-controls={open ? 'account-menu' : undefined}
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
-            className="avatar-button"
           >
             <Avatar 
-              src={user?.avatar} 
-              alt={user?.name || 'User'} 
-              className="user-avatar"
+              src={user?.avatar || `${process.env.REACT_APP_API_URL}/root/Default_Avatar_Non_Align.jpg`}
+              alt={user?.fullname || 'User Avatar'}
+              sx={{ width: 32, height: 32 }}
             />
           </IconButton>
         </div>

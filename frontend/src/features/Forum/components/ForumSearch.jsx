@@ -7,7 +7,7 @@ import {
   IconButton, 
   Menu, 
   MenuItem,
-  Typography // Add Typography import
+  Typography
 } from '@mui/material';
 import { 
   Search as SearchIcon, 
@@ -28,6 +28,48 @@ const ForumSearch = ({
   categories,
   displayStyle = 'horizontal'
 }) => {
+  const FilterMenu = () => (
+    <Menu
+      anchorEl={filterAnchorEl}
+      open={Boolean(filterAnchorEl)}
+      onClose={onFilterClose}
+    >
+      <MenuItem disabled>
+        <Typography variant="subtitle2">Sắp xếp theo</Typography>
+      </MenuItem>
+      <MenuItem 
+        onClick={() => onSortChange('newest')}
+        selected={sortBy === 'newest'}
+      >
+        Mới nhất
+      </MenuItem>
+      <MenuItem 
+        onClick={() => onSortChange('oldest')}
+        selected={sortBy === 'oldest'}
+      >
+        Cũ nhất
+      </MenuItem>
+      <MenuItem 
+        onClick={() => onSortChange('mostLiked')}
+        selected={sortBy === 'mostLiked'}
+      >
+        Nhiều lượt thích nhất
+      </MenuItem>
+      <MenuItem 
+        onClick={() => onSortChange('mostCommented')}
+        selected={sortBy === 'mostCommented'}
+      >
+        Nhiều bình luận nhất
+      </MenuItem>
+      <MenuItem 
+        onClick={() => onSortChange('mostViewed')}
+        selected={sortBy === 'mostViewed'}
+      >
+        Nhiều lượt xem nhất
+      </MenuItem>
+    </Menu>
+  );
+
   if (displayStyle === 'horizontal') {
     return (
       <Box display="flex" alignItems="center" mb={3}>
@@ -55,30 +97,7 @@ const ForumSearch = ({
         >
           Lọc
         </Button>
-        <Menu
-          anchorEl={filterAnchorEl}
-          open={Boolean(filterAnchorEl)}
-          onClose={onFilterClose}
-        >
-          <MenuItem disabled>
-            <Typography variant="subtitle2">Sắp xếp theo</Typography>
-          </MenuItem>
-          <MenuItem onClick={() => onSortChange('newest')}>
-            Mới nhất
-          </MenuItem>
-          <MenuItem onClick={() => onSortChange('oldest')}>
-            Cũ nhất
-          </MenuItem>
-          <MenuItem onClick={() => onSortChange('mostLiked')}>
-            Nhiều lượt thích nhất
-          </MenuItem>
-          <MenuItem onClick={() => onSortChange('mostCommented')}>
-            Nhiều bình luận nhất
-          </MenuItem>
-          <MenuItem onClick={() => onSortChange('mostViewed')}>
-            Nhiều lượt xem nhất
-          </MenuItem>
-        </Menu>
+        <FilterMenu />
       </Box>
     );
   }
@@ -108,45 +127,7 @@ const ForumSearch = ({
         }}
         sx={{ mb: 2 }}
       />
-      <Menu
-        anchorEl={filterAnchorEl}
-        open={Boolean(filterAnchorEl)}
-        onClose={onFilterClose}
-      >
-        <MenuItem disabled>
-          <Typography variant="subtitle2">Sắp xếp theo</Typography>
-        </MenuItem>
-        <MenuItem 
-          onClick={() => onSortChange('newest')}
-          selected={sortBy === 'newest'}
-        >
-          Mới nhất
-        </MenuItem>
-        <MenuItem 
-          onClick={() => onSortChange('oldest')}
-          selected={sortBy === 'oldest'}
-        >
-          Cũ nhất
-        </MenuItem>
-        <MenuItem 
-          onClick={() => onSortChange('mostLiked')}
-          selected={sortBy === 'mostLiked'}
-        >
-          Nhiều lượt thích nhất
-        </MenuItem>
-        <MenuItem 
-          onClick={() => onSortChange('mostCommented')}
-          selected={sortBy === 'mostCommented'}
-        >
-          Nhiều bình luận nhất
-        </MenuItem>
-        <MenuItem 
-          onClick={() => onSortChange('mostViewed')}
-          selected={sortBy === 'mostViewed'}
-        >
-          Nhiều lượt xem nhất
-        </MenuItem>
-      </Menu>
+      <FilterMenu />
     </Box>
   );
 };

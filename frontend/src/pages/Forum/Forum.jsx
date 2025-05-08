@@ -28,15 +28,16 @@ const Forum = () => {
 
   const {
     loading,
+    posts,
+    questions,
+    events,
+    findLostPet, // Add this line
     tabValue,
     searchTerm,
     filterAnchorEl,
     sortBy,
     categoryFilter,
     categories,
-    posts,
-    questions,
-    events,
     handleTabChange,
     handleSearchChange,
     handleFilterClick,
@@ -52,6 +53,7 @@ const Forum = () => {
   const safePosts = posts || [];
   const safeQuestions = questions || [];
   const safeEvents = events || [];
+  const safeFindPet = findLostPet || []; // Add this line
 
   return (
     <Box className="forum-page">
@@ -99,7 +101,8 @@ const Forum = () => {
                     isAuthenticated={!!user}
                     onCreatePost={() => navigate('/forum/post/create')}
                     onCreateQuestion={() => navigate('/forum/question/create')}
-                    onCreateEvent={() => navigate('/forum/event/create')}
+                    onCreateEvent={() => navigate('/event/create')}
+                    onFindLostPet={() => navigate('/lost-pets/create')}
                   />
                 </Box>
 
@@ -150,6 +153,7 @@ const Forum = () => {
                   <Tab label={`Bài viết (${safePosts.length})`} />
                   <Tab label={`Câu hỏi (${safeQuestions.length})`} />
                   <Tab label={`Sự kiện (${safeEvents.length})`} />
+                  <Tab label={`Thú đi lạc (${safeFindPet.length})`} />
                 </Tabs>
               </Box>
 
@@ -222,6 +226,28 @@ const Forum = () => {
                       ) : (
                         <Typography variant="body1" textAlign="center" py={4}>
                           Không có sự kiện nào phù hợp với tìm kiếm của bạn.
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                  {tabValue === 3 && (
+                    <Box className="forum-findpets">
+                      {safeFindPet.length > 0 ? (
+                        safeFindPet.map(findPet => (
+                          <ForumCard
+                            key={findPet._id}
+                            item={findPet}
+                            type="findLostPet"
+                            categories={safeCategories}
+                            onToggleLike={() => handleToggleLike(findPet._id, 'findLostPet')}
+                            onToggleFavorite={() => handleToggleFavorite(findPet._id, 'findLostPet')}
+                            formatDate={formatDate}
+                            onClick={() => navigate(`/forum/findLostPet/${findPet._id}`)}
+                          />
+                        ))
+                      ) : (
+                        <Typography variant="body1" textAlign="center" py={4}>
+                          Không có bài viết tìm thú cưng nào phù hợp với tìm kiếm của bạn.
                         </Typography>
                       )}
                     </Box>

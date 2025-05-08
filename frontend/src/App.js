@@ -13,17 +13,18 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <LanguageProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <Router>
+        {/* Router phải bao tất cả các Provider dùng useNavigate, useRoutes,… */}
+        <Router>
+          <LanguageProvider>
+            <AuthProvider>
+              <NotificationProvider>
                 <AppRoutes />
                 <ChatbotWidget />
                 <RescueButton />
-              </Router>
-            </NotificationProvider>
-          </AuthProvider>
-        </LanguageProvider>
+              </NotificationProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </Router>
       </ThemeProvider>
     </ErrorBoundary>
   );

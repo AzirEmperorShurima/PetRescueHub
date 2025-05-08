@@ -22,6 +22,9 @@ import {
   BookmarkBorder as BookmarkBorderIcon
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
+import PostSticker from './PostSticker';
+
+// Remove duplicate Card and CardContent imports
 
 const ForumCard = ({ 
   item, 
@@ -53,7 +56,8 @@ const ForumCard = ({
   return (
     <Card 
       sx={{ 
-        mb: 3, 
+        mb: 3,
+        position: 'relative', // Thêm position relative
         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
         '&:hover': {
           transform: 'translateY(-5px)',
@@ -62,6 +66,7 @@ const ForumCard = ({
       }}
       onClick={onClick ? () => onClick(item.id) : undefined}
     >
+      <PostSticker type={type} /> {/* Thêm PostSticker component */}
       <CardContent>
         <Box display="flex" alignItems="center" mb={2}>
           <Avatar 
@@ -77,17 +82,7 @@ const ForumCard = ({
               {formatDate ? formatDate(item.createdAt) : new Date(item.createdAt).toLocaleDateString()}
             </Typography>
           </Box>
-          {category && (
-            <Chip 
-              label={category.name} 
-              size="small" 
-              sx={{ 
-                ml: 'auto',
-                bgcolor: category.color || theme.palette.primary.main,
-                color: '#fff'
-              }} 
-            />
-          )}
+          {/* Xóa phần hiển thị category cũ */}
         </Box>
         
         <Link to={getDetailUrl()} style={{ textDecoration: 'none', color: 'inherit' }}>

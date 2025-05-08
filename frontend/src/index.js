@@ -10,9 +10,11 @@ const AppComponent = (
 );
 
 const DevAppComponent = (
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  // <React.StrictMode>
+  //   <App />
+  // </React.StrictMode>
+
+  <App />
 );
 
 root.render(

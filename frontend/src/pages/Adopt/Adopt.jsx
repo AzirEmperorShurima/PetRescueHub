@@ -55,6 +55,14 @@ const Adopt = () => {
           <Typography variant="subtitle1" color="textSecondary" gutterBottom>
             Tìm kiếm người bạn đồng hành mới cho cuộc sống của bạn
           </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/adopt/find-home')}
+            sx={{ mt: 2 }}
+          >
+            Đăng thông tin thú cưng cần tìm nhà
+          </Button>
         </Box>
         
         <Grid container spacing={3}>
