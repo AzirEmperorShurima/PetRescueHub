@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import '../../assets/styles/components/Navigation.css';
 import logo from '../../assets/images/logo.svg';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from './UserMenu/UserMenu';
-import { useContext } from 'react';
 import { LanguageContext } from '../contexts/LanguageContext';
 import translations from '../../utils/translations';
 
@@ -14,6 +13,7 @@ const Navigation = () => {
   const t = translations[language];
   const [isSticky, setIsSticky] = useState(false);
   const [isLogoVisible, setIsLogoVisible] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);              // ← Thêm dòng này
   const navRef = useRef(null);
   const { user, loading } = useAuth();
 
@@ -21,6 +21,10 @@ const Navigation = () => {
   useEffect(() => {
     setIsLogoVisible(true);
   }, []);
+
+  const toggleMenu = () => {                                     // ← Thêm hàm này
+    setMenuOpen(!menuOpen);
+  };
 
   const handleLogin = () => {
     navigate('/auth/login');
@@ -48,34 +52,48 @@ const Navigation = () => {
           </span>
         </Link>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
+        {/* ↓ Nút hamburger toggle chỉ hiện ở mobile */}
+        <button 
+          className="navbar-toggler"
+          type="button"
+          onClick={toggleMenu}                                  // ← Gọi toggleMenu
+          aria-controls="navbarNav"
+          aria-expanded={menuOpen}
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+
+        {/* ↓ Thay đổi class collapse để dùng state menuOpen */}
+        <div className={`collapse navbar-collapse ${menuOpen ? 'show' : ''}`} id="navbarNav">
           <ul className="navbar-nav mx-auto">
             <li className="nav-item">
               <NavLink
                 className="nav-link"
                 to="/"
-                end
+                exact
+                activeClassName="active"
               >
                 {t.home}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/forum">
+              <NavLink className="nav-link" to="/forum" activeClassName="active">
                 {t.forum}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/event">
+              <NavLink className="nav-link" to="/event" activeClassName="active">
                 {t.event}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/adopt">
+              <NavLink className="nav-link" to="/adopt" activeClassName="active">
                 {t.adopt}
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/donate">
+              <NavLink className="nav-link" to="/donate" activeClassName="active">
                 {t.donate}
               </NavLink>
             </li>
@@ -83,6 +101,7 @@ const Navigation = () => {
               <NavLink
                 className="nav-link"
                 to="/PetGuide"
+                activeClassName="active"
               >
                 {t.petGuide}
               </NavLink>

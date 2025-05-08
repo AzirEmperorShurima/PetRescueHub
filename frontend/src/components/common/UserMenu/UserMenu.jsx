@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, Menu, MenuItem, IconButton, Divider, ListItemIcon, ListItemText } from '@mui/material';
 import { AccountCircle, Settings, ExitToApp, Notifications, Favorite, Pets, Help } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useNotification } from '../../contexts/NotificationContext';
 import './UserMenu.css';
 
 const UserMenu = ({ user }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { showSuccess } = useNotification();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -50,10 +52,16 @@ const UserMenu = ({ user }) => {
       handleClose();
 
       // Chỉ gọi hàm logout từ AuthContext, không gọi API trực tiếp
-      logout();
+      await logout();
+      showSuccess('Đăng xuất thành công!');
       navigate('/');
     } catch (error) {
-      console.error('Đăng xuất thất bại:', error);
+      console.error('Logout error:', error);
+      // Hiển thị thông báo lỗi cụ thể nếu có
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Đăng xuất thất bại. Vui lòng thử lại.';
+      showSuccess('Đăng xuất thất bại: ' + errorMessage);
       navigate('/');
     }
   };
@@ -89,7 +97,6 @@ const UserMenu = ({ user }) => {
         id="account-menu"
         open={open}
         onClose={handleClose}
-        onClick={handleClose}
         PaperProps={{
           elevation: 0,
           sx: {

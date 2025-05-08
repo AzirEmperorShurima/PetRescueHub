@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -9,48 +9,34 @@ import {
   Paper,
   Chip,
   IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Autocomplete,
   Stack,
-  Alert
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Image as ImageIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
+import forumService from '../../services/forum.service';
 
 const CreatePost = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [category, setCategory] = useState('');
   const [tags, setTags] = useState([]);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const categories = [
-    { id: 'dog', name: 'Chó' },
-    { id: 'cat', name: 'Mèo' },
-    { id: 'rescue', name: 'Cứu hộ' },
-    { id: 'adoption', name: 'Nhận nuôi' },
-    { id: 'health', name: 'Sức khỏe' },
-    { id: 'training', name: 'Huấn luyện' },
-    { id: 'food', name: 'Thức ăn' },
-    { id: 'accessories', name: 'Phụ kiện' }
-  ];
-  
-  const tagSuggestions = [
+  const [tagSuggestions, setTagSuggestions] = useState([
     'golden retriever', 'husky', 'corgi', 'poodle', 'chihuahua',
     'mèo anh lông ngắn', 'mèo ba tư', 'mèo munchkin', 'mèo ragdoll',
     'chăm sóc', 'huấn luyện', 'dinh dưỡng', 'sức khỏe', 'tiêm phòng',
     'cứu hộ', 'nhận nuôi', 'thức ăn', 'đồ chơi', 'phụ kiện'
-  ];
+  ]);
+  
   
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -82,8 +68,8 @@ const CreatePost = () => {
       return;
     }
     
-    if (!category) {
-      setError('Vui lòng chọn danh mục');
+    if (tags.length > 5) {
+      setError('Vui lòng chọn tối đa 5 thẻ');
       return;
     }
     
@@ -91,25 +77,60 @@ const CreatePost = () => {
     setError('');
     
     try {
-      // Trong thực tế, bạn sẽ gọi API để tạo bài viết
-      // const formData = new FormData();
-      // formData.append('title', title);
-      // formData.append('content', content);
-      // formData.append('category', category);
-      // formData.append('tags', JSON.stringify(tags));
-      // if (image) {
-      //   formData.append('image', image);
-      // }
-      // const response = await apiService.forum.posts.create(formData);
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
       
-      // Giả lập thành công
-      setTimeout(() => {
-        setLoading(false);
+      console.log('Tiêu đề:', title);
+      console.log('Nội dung:', content);
+      
+      // Thay vì gửi JSON string, gửi từng tag riêng lẻ
+      if (tags && tags.length > 0) {
+        tags.forEach(tag => formData.append('tags', tag));
+        console.log('Tags:', tags);
+      }
+      
+      formData.append('postType', 'Post'); // Mặc định là loại Post
+      console.log('Loại bài viết:', 'Post');
+      
+      let response;
+      
+      if (image) {
+        formData.append('imgUrl', image);
+        console.log('Có hình ảnh:', image.name);
+        
+        // Kiểm tra nội dung của FormData
+        console.log('FormData entries:');
+        for (let pair of formData.entries()) {
+          console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        console.log('Gọi API tạo bài viết mới với hình ảnh...');
+        response = await forumService.createNewPostWithImage(formData);
+      } else {
+        // Nếu không có hình ảnh, tạo đối tượng dữ liệu thông thường
+        const postData = {
+          title,
+          content,
+          tags: tags.length > 0 ? tags : [],
+          postType: 'Post'
+        };
+        
+        console.log('Gọi API tạo bài viết mới không có hình ảnh...');
+        response = await forumService.createNewPost(postData);
+      }
+      
+      console.log('Kết quả API:', response);
+      
+      if (response && response.success) {
         navigate('/forum');
-      }, 1000);
+      } else {
+        setError(response?.message || 'Đã xảy ra lỗi khi tạo bài viết');
+      }
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error('Chi tiết lỗi khi tạo bài viết:', error.response || error);
       setError('Đã xảy ra lỗi khi tạo bài viết. Vui lòng thử lại sau.');
+    } finally {
       setLoading(false);
     }
   };
@@ -143,32 +164,15 @@ const CreatePost = () => {
             sx={{ mb: 3 }}
           />
           
-          <FormControl fullWidth sx={{ mb: 3 }}>
-            <InputLabel id="category-label">Danh mục</InputLabel>
-            <Select
-              labelId="category-label"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              label="Danh mục"
-              required
-            >
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  {category.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
           <Autocomplete
             multiple
             freeSolo
             options={tagSuggestions}
             value={tags}
-            onChange={(event, newValue) => setTags(newValue)}
+            onChange={(event, newValue) => setTags(newValue.slice(0, 5))}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
-                <Chip key={index} label={option} />
+                <Chip key={index} label={option} {...getTagProps({ index })} />
               ))
             }
             renderInput={(params) => (
@@ -177,6 +181,7 @@ const CreatePost = () => {
                 variant="outlined"
                 label="Thẻ (tối đa 5 thẻ)"
                 placeholder="Nhập thẻ và nhấn Enter"
+                helperText="Thẻ giúp người dùng tìm kiếm bài viết của bạn dễ dàng hơn"
               />
             )}
             sx={{ mb: 3 }}
@@ -253,6 +258,7 @@ const CreatePost = () => {
               variant="contained"
               color="primary"
               disabled={loading}
+              startIcon={loading && <CircularProgress size={20} color="inherit" />}
             >
               {loading ? 'Đang tạo...' : 'Tạo bài viết'}
             </Button>

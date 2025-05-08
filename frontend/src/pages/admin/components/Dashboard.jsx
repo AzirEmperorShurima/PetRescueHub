@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Grid, Paper, Typography, Box, Card, CardContent, CardHeader } from '@mui/material';
 import { fDateTime } from '../../../utils/format-time';
 // Import mock data
@@ -14,34 +14,35 @@ const Dashboard = () => {
     donationsCount: 0
   });
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        // Sử dụng mock data thay vì hardcode
-        const recentActivities = [
-          { id: 1, type: 'user_register', user: users[0].name, timestamp: new Date() },
-          { id: 2, type: 'pet_adopted', pet: pets[0].name, user: users[1].name, timestamp: new Date(Date.now() - 86400000) },
-          { id: 3, type: 'donation', amount: donations[0].amount, user: users[2].name, timestamp: new Date(Date.now() - 172800000) },
-        ];
+  // Sử dụng useCallback để tối ưu hàm fetchDashboardData
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      // Sử dụng mock data thay vì hardcode
+      const recentActivities = [
+        { id: 1, type: 'user_register', user: users[0].name, timestamp: new Date() },
+        { id: 2, type: 'pet_adopted', pet: pets[0].name, user: users[1].name, timestamp: new Date(Date.now() - 86400000) },
+        { id: 3, type: 'donation', amount: donations[0].amount, user: users[2].name, timestamp: new Date(Date.now() - 172800000) },
+      ];
 
-        setStats({
-          totalUsers: users.length,
-          totalPets: pets.length,
-          totalVolunteers: volunteers.length,
-          totalDonations: donations.reduce((sum, donation) => sum + donation.amount, 0),
-          donationsCount: donations.length,
-          recentActivities
-        });
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      }
-    };
-
-    fetchDashboardData();
+      setStats({
+        totalUsers: users.length,
+        totalPets: pets.length,
+        totalVolunteers: volunteers.length,
+        totalDonations: donations.reduce((sum, donation) => sum + donation.amount, 0),
+        donationsCount: donations.length,
+        recentActivities
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
   }, []);
 
-  // Phần còn lại của component giữ nguyên
-  const getActivityText = (activity) => {
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Sử dụng useMemo để tối ưu hàm getActivityText
+  const getActivityText = useCallback((activity) => {
     switch (activity.type) {
       case 'user_register':
         return `${activity.user} đã đăng ký tài khoản`;
@@ -52,7 +53,7 @@ const Dashboard = () => {
       default:
         return 'Hoạt động không xác định';
     }
-  };
+  }, []);
 
   return (
     <Box>

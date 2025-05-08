@@ -1,5 +1,5 @@
 // ImpactCounter.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Grid, Typography, Box, Card } from '@mui/material';
 import { useInView } from 'react-intersection-observer';
 import styles from './ImpactCounter.module.css';
@@ -24,7 +24,8 @@ const ImpactCounter = () => {
     events: 50,
   };
 
-  const counterData = [
+  // Sử dụng useMemo để tránh tạo lại mảng này mỗi khi component render
+  const counterData = useMemo(() => [
     {
       id: 'rescued',
       icon: 'pets',
@@ -57,7 +58,7 @@ const ImpactCounter = () => {
       description: 'Các sự kiện nhận nuôi, quyên góp và nâng cao nhận thức cộng đồng',
       color: '#3F51B5', // Blue
     },
-  ];
+  ], [counters]);
 
   useEffect(() => {
     if (inView) {
@@ -85,7 +86,7 @@ const ImpactCounter = () => {
       
       return () => clearInterval(timer);
     }
-  }, [inView]);
+  }, [inView, targetValues]);
 
   return (
     <Container maxWidth="lg">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Typography, Box, Grid, Card, CardMedia, CardContent, Avatar, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { testimonials, recentRescues } from '../../../../mocks';
@@ -14,10 +14,10 @@ const SuccessStories = () => {
     }, 5000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [testimonials.length]);
   
-  // Animation variants
-  const containerVariants = {
+  // Animation variants - Sử dụng useMemo để tránh tạo lại object này mỗi khi component render
+  const containerVariants = useMemo(() => ({
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -25,16 +25,16 @@ const SuccessStories = () => {
         staggerChildren: 0.3
       }
     }
-  };
+  }), []);
   
-  const itemVariants = {
+  const itemVariants = useMemo(() => ({
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: { type: 'spring', stiffness: 100 }
     }
-  };
+  }), []);
 
   return (
     <section className={styles.successStories}>

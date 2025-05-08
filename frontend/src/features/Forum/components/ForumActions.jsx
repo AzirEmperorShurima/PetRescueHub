@@ -1,120 +1,66 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Box, Button } from '@mui/material';
-import { 
-  Add as AddIcon, 
-  Article as PostIcon, 
-  QuestionAnswer as QuestionIcon, 
-  Event as EventIcon 
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import { Add as AddIcon, QuestionAnswer as QuestionIcon, Event as EventIcon } from '@mui/icons-material';
 
-const ForumActions = ({ isAuthenticated, onCreatePost, onCreateQuestion, onCreateEvent, displayStyle = 'horizontal' }) => {
-  const navigate = useNavigate();
-  
-  const handleAction = (action) => {
+const ForumActions = ({ isAuthenticated, onCreatePost, onCreateQuestion, onCreateEvent }) => {
+  // Sử dụng useCallback để tối ưu các hàm xử lý sự kiện
+  const handleCreatePost = useCallback(() => {
     if (isAuthenticated) {
-      action();
+      onCreatePost();
     } else {
-      navigate('/auth/login');
+      alert('Vui lòng đăng nhập để tạo bài viết mới');
     }
-  };
+  }, [isAuthenticated, onCreatePost]);
 
-  if (displayStyle === 'vertical') {
-    return (
-      <Box display="flex" flexDirection="column" gap={1}>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<PostIcon />}
-          fullWidth
-          onClick={() => handleAction(onCreatePost)}
-        >
-          Tạo bài viết
-        </Button>
+  const handleCreateQuestion = useCallback(() => {
+    if (isAuthenticated) {
+      onCreateQuestion();
+    } else {
+      alert('Vui lòng đăng nhập để đặt câu hỏi mới');
+    }
+  }, [isAuthenticated, onCreateQuestion]);
 
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<QuestionIcon />}
-          fullWidth
-          onClick={() => handleAction(onCreateQuestion)}
-        >
-          Đặt câu hỏi
-        </Button>
-        
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<EventIcon />}
-          fullWidth
-          onClick={() => handleAction(onCreateEvent)}
-        >
-          Tạo sự kiện
-        </Button>
-      </Box>
-    );
-  }
+  const handleCreateEvent = useCallback(() => {
+    if (isAuthenticated) {
+      onCreateEvent();
+    } else {
+      alert('Vui lòng đăng nhập để tạo sự kiện mới');
+    }
+  }, [isAuthenticated, onCreateEvent]);
 
   return (
-    <Box 
-      display="flex" 
-      flexDirection="column"
-      gap={2}
-      sx={{
-        width: '100%',
-        maxWidth: 180,
-        '& .MuiButton-root': {
-          justifyContent: 'flex-start',
-          padding: '12px 20px',
-          borderRadius: '10px',
-          backgroundColor: 'white',
-          color: '#D34F81',
-          border: '1px solid #D34F81',
-          '&:hover': {
-            backgroundColor: '#D34F81',
-            color: 'white'
-          }
-        }
-      }}
-    >
-      <Button 
+    <Box className="forum-create-buttons">
+      <Button
         variant="outlined"
+        color="primary"
         startIcon={<AddIcon />}
-        endIcon={<PostIcon />}
-        onClick={() => handleAction(onCreatePost)}
+        onClick={handleCreatePost}
         fullWidth
+        sx={{ mb: 1 }}
       >
         Tạo bài viết
       </Button>
-      <Button 
+      <Button
         variant="outlined"
-        startIcon={<AddIcon />}
-        endIcon={<QuestionIcon />}
-        onClick={() => handleAction(onCreateQuestion)}
+        color="primary"
+        startIcon={<QuestionIcon />}
+        onClick={handleCreateQuestion}
         fullWidth
+        sx={{ mb: 1 }}
       >
         Đặt câu hỏi
       </Button>
-      <Button 
+      <Button
         variant="outlined"
-        startIcon={<AddIcon />}
-        endIcon={<EventIcon />}
-        onClick={() => handleAction(onCreateEvent)}
+        color="primary"
+        startIcon={<EventIcon />}
+        onClick={handleCreateEvent}
         fullWidth
       >
         Tạo sự kiện
       </Button>
     </Box>
   );
-};
-
-ForumActions.propTypes = {
-  isAuthenticated: PropTypes.bool.isRequired,
-  onCreatePost: PropTypes.func.isRequired,
-  onCreateQuestion: PropTypes.func.isRequired,
-  onCreateEvent: PropTypes.func.isRequired,
-  displayStyle: PropTypes.oneOf(['horizontal', 'vertical'])
 };
 
 export default ForumActions;

@@ -23,6 +23,7 @@ module.exports = {
   ],
   rules: {
     'react/react-in-jsx-scope': 'off',
+    'react/no-unescaped-entities': 'off',
     'react/prop-types': 'warn',
     'no-unused-vars': 'warn',
     'no-console': 'warn',

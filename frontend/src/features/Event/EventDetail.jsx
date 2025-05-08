@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { 
   Container, 
   Typography, 
@@ -41,6 +41,11 @@ const EventDetail = () => {
     handleLike, 
     handleCommentSubmit 
   } = useEventDetail(id);
+
+  // Sử dụng useCallback cho hàm điều hướng
+  const handleNavigateBack = useCallback(() => {
+    navigate('/events');
+  }, [navigate]);
 
   if (loading) {
     return (

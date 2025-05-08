@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Grid, Typography, Box, Pagination } from '@mui/material';
 import EventCard from './componet/EventCard';
 import { events } from '../../mocks';
@@ -13,13 +13,17 @@ const EventList = () => {
     // Sắp xếp sự kiện theo ngày (gần nhất trước)
     const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
     setFilteredEvents(sortedEvents);
-  }, []);
+  }, []); // Đã có dependency array trống, nhưng có thể tối ưu hơn
 
-  // Tính toán sự kiện hiển thị trên trang hiện tại
-  const indexOfLastEvent = currentPage * eventsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+  // Tính toán sự kiện hiển thị trên trang hiện tại bằng useMemo
+  const { currentEvents, totalPages, indexOfFirstEvent, indexOfLastEvent } = useMemo(() => {
+    const indexOfLastEvent = currentPage * eventsPerPage;
+    const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+    const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+    const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+    
+    return { currentEvents, totalPages, indexOfFirstEvent, indexOfLastEvent };
+  }, [currentPage, filteredEvents, eventsPerPage]);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);

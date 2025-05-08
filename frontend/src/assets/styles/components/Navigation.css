@@ -7,10 +7,11 @@
   box-shadow: var(--box-shadow-sm);
   min-height: 100px;
   position: fixed;
-  top: 40px;
+  top: 40px; /* Chiều cao mặc định của TopBar */
   left: 0;
   width: 100%;
   z-index: 999;
+  transition: top 0.3s ease;
 }
 
 .navbar > .container {
@@ -203,6 +204,14 @@
   }
 }
 
+/* Thêm media query cho màn hình nhỏ hơn để xử lý khi TopBar mở rộng */
+@media (max-width: 768px) {
+  /* Khi TopBar mở rộng, Navigation sẽ được điều chỉnh */
+  .navbar.nav-with-expanded-topbar {
+    /* Sử dụng JavaScript để thêm class này và điều chỉnh top động */
+  }
+}
+
 /* Media query cho màn hình lớn hơn */
 @media (min-width: 1400px) {
   .navbar > .container {
@@ -275,4 +284,54 @@
     width: 100%;
     padding: 10px 20px;
   }
+
+  /* ==================== HAMBURGER TOGGLER ==================== */
+.navbar-toggler {
+  display: none;            /* mặc định ẩn trên desktop */
+  border: none;
+  background: transparent;
+  padding: 0.5rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.navbar-toggler-icon {
+  display: inline-block;
+  width: 1.5rem;
+  height: 2px;
+  background-color: #000;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler-icon::before,
+.navbar-toggler-icon::after {
+  content: "";
+  position: absolute;
+  width: 1.5rem;
+  height: 2px;
+  background-color: #000;
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler-icon::before {
+  top: -8px;
+}
+
+.navbar-toggler-icon::after {
+  top: 8px;
+}
+
+/* Khi collapse đang đóng thì ẩn hoàn toàn */
+@media (max-width: 991px) {
+  .navbar-toggler {
+    display: block;         /* hiện hamburger ở mobile */
+  }
+  .collapse.navbar-collapse {
+    display: none;          /* ẩn menu khi chưa bấm */
+  }
+  .collapse.navbar-collapse.show {
+    display: block;         /* hiện menu khi bấm */
+  }
+}
 }

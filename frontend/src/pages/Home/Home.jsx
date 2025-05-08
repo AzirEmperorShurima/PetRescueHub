@@ -1,17 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col } from 'react-bootstrap';
-import { 
-  Pets as PetsIcon, 
-  Favorite as FavoriteIcon, 
-  Event as EventIcon, 
-  Home as HomeIcon,
-  People as PeopleIcon,
-  LocalHospital as EmergencyIcon,
-  Handshake as VolunteerIcon
-} from '@mui/icons-material';
-import { heroSlides, services, recentRescues, testimonials, stats } from '../../mocks';
-import vetIcon from '../../assets/images/vet.svg';
+import { heroSlides, testimonials} from '../../mocks';
 import styles from './Home.module.css';
 
 import AboutSection from './components/AboutSection/AboutSection';
@@ -22,18 +11,12 @@ import SuccessStories from './components/SuccessStories/SuccessStories';
 import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
 import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider';
 import VolunteerRegistrationButton from '../../components/button/VolunteerRegistrationButton';
-import ChatbotWidget from './components/Chatbot/ChatbotWidget';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showVolunteerModal, setShowVolunteerModal] = useState(false);
   const navigate = useNavigate();
   const slideInterval = useRef(null);
-  
-  // Xóa các biến liên quan đến nút cứu hộ
-  // const rescueBtnRef = useRef(null);
-  // const isDragging = useRef(false);
-  // const offset = useRef({ x: 0, y: 0 });
 
   // Slide navigation
   const changeSlide = useCallback((direction) => {
@@ -53,27 +36,6 @@ const Home = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return () => clearInterval(slideInterval.current);
   }, []);
-
-  // Rescue button drag handlers with optimized throttling
-  // Xóa các hàm xử lý kéo thả nút cứu hộ
-  // const handleMouseDown = useCallback((e) => { ... });
-  // const handleMouseMove = useCallback((e) => { ... });
-  // const handleMouseUp = useCallback(() => { ... });
-  
-  // Xóa useEffect liên quan đến nút cứu hộ
-  // useEffect(() => {
-  //   const btn = rescueBtnRef.current;
-  //   if (btn) {
-  //     btn.addEventListener('mousedown', handleMouseDown);
-  //     document.addEventListener('mousemove', handleMouseMove);
-  //     document.addEventListener('mouseup', handleMouseUp);
-  //   }
-  //   return () => {
-  //     if (btn) btn.removeEventListener('mousedown', handleMouseDown);
-  //     document.removeEventListener('mousemove', handleMouseMove);
-  //     document.removeEventListener('mouseup', handleMouseUp);
-  //   };
-  // }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
   // Volunteer form handler
   const handleVolunteerSubmit = (formData) => {
@@ -128,21 +90,6 @@ const Home = () => {
       {/* About Section */}
       <AboutSection />
 
-      {/* Floating Rescue Button */}
-      {/* Xóa nút cứu hộ */}
-      {/* <div className={styles.rescueBtn} ref={rescueBtnRef} onClick={() => navigate('/rescue')}>
-        <span className={styles.rescueBtn__text}>Báo cáo cứu hộ</span>
-        <img src={vetIcon} alt="Báo cáo cứu hộ" />
-        <div className={styles.rescueBtn__iconContainer}>
-          <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--1']}`}><PetsIcon /></div>
-          <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--2']}`}><FavoriteIcon /></div>
-          <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--3']}`}><EventIcon /></div>
-          <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--4']}`}><HomeIcon /></div>
-        </div>
-      </div> */}
-
-      {/* Xóa ChatbotWidget vì đã được di chuyển vào MainLayout */}
-      {/* <ChatbotWidget /> */}
       {/* Feature Section */}
       <FeatureSection />
 
@@ -173,11 +120,9 @@ const Home = () => {
         </div>
       </section>
 
-
       <VolunteerForm 
         isOpen={showVolunteerModal} 
-        onClose={() => setShowVolunteerModal(false)} 
-        onSubmit={handleVolunteerSubmit} 
+        onClose={() => setShowVolunteerModal(false)}
       />
     </div>
   );

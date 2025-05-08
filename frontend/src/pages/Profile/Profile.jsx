@@ -193,7 +193,7 @@ const Profile = () => {
 
         // Gọi API để lấy thông tin profile
         const response = await apiService.auth.getProfile();
-
+        console.log('User profile:', response.data.userProfile);
         if (response && response.data && response.data.userProfile) {
           const userProfile = response.data.userProfile;
           // Cập nhật state với dữ liệu từ API
@@ -428,7 +428,8 @@ const Profile = () => {
                       {renderGenderIcon(user.gender)}
                       <Typography variant="body1" sx={{ ml: 1 }}>
                         {user.gender === 'male' ? 'Nam' :
-                          user.gender === 'female' ? 'Nữ' : 'Chưa cung cấp'}
+                          user.gender === 'female' ? 'Nữ' : 
+                          user.gender === 'not provided' ? 'Chưa cung cấp' : 'Chưa cung cấp'}
                       </Typography>
                     </Box>
                   </div>

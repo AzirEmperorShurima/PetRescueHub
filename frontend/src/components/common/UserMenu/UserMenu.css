@@ -46,6 +46,7 @@
   border: 2px solid #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
+  object-fit: cover; /* Đảm bảo ảnh hiển thị đúng tỷ lệ */
 }
 
 .user-avatar:hover {
@@ -85,5 +86,20 @@
 @media (min-width: 768px) {
   .user-name-preview {
     display: block;
+  }
+  
+  .user-menu-icons {
+    gap: 12px; /* Tăng khoảng cách trên màn hình lớn */
+  }
+}
+
+/* Thêm style cho mobile */
+@media (max-width: 767px) {
+  .user-menu-container {
+    justify-content: center;
+  }
+  
+  .user-menu-icons {
+    justify-content: center;
   }
 }

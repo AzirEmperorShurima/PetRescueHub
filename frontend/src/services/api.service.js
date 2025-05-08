@@ -43,6 +43,32 @@ const apiService = {
 },
   
   // Các API khác
+  forum: {
+    posts: {
+      ...createApiService('forum/posts'),
+      create: (data) => {
+        // Kiểm tra nếu là FormData thì sử dụng Content-Type phù hợp
+        if (data instanceof FormData) {
+          return api.post('/forum/posts/new', data, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            withCredentials: true
+          });
+        }
+        // Nếu không phải FormData thì sử dụng Content-Type mặc định
+        return api.post('/forum/posts/new', data, { withCredentials: true });
+      },
+      getAll: (params = {}) => api.get('/forum/GET/posts', { params }),
+      getById: (id) => api.get(`/forum/posts/${id}`),
+    },
+    questions: createApiService('forum/questions'),
+    comments: createApiService('forum/comments'),
+    categories: createApiService('forum/categories'),
+    tags: createApiService('forum/tags'),
+  },
+
+
   users: createApiService('users'),
   pets: createApiService('pets'),
   volunteers: {
@@ -53,13 +79,6 @@ const apiService = {
   donations: createApiService('donations'),
   events: createApiService('events'),
   rescues: createApiService('rescues'),
-  forum: {
-    posts: createApiService('forum/posts'),
-    questions: createApiService('forum/questions'),
-    comments: createApiService('forum/comments'),
-    categories: createApiService('forum/categories'),
-    tags: createApiService('forum/tags'),
-  },
 };
 
 export default apiService;

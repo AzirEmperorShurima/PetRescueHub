@@ -17,9 +17,11 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { FormControl, FormLabel } from '@mui/material';
+import { useNotification } from '../../contexts/NotificationContext';
 import './VolunteerForm.css';
 
-const VolunteerForm = ({ isOpen, onClose, onSubmit }) => {
+const VolunteerForm = ({ isOpen, onClose }) => {
+  const { showSuccess } = useNotification();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -41,7 +43,8 @@ const VolunteerForm = ({ isOpen, onClose, onSubmit }) => {
     { id: 'skill7', value: 'nhiếp ảnh', label: 'Nhiếp ảnh' },
     { id: 'skill8', value: 'thiết kế đồ họa', label: 'Thiết kế đồ họa' },
     { id: 'skill9', value: 'kỹ năng IT', label: 'Kỹ năng IT' },
-    { id: 'skill10', value: 'quản lý tình nguyện viên', label: 'Quản lý tình nguyện viên' }
+    { id: 'skill10', value: 'quản lý tình nguyện viên', label: 'Quản lý tình nguyện viên' },
+    { id: 'skill11', value: 'kỹ năng mềm', label: 'Kỹ năng mềm & cộng tác' },
   ];
 
   // Handle form input changes
@@ -80,9 +83,17 @@ const VolunteerForm = ({ isOpen, onClose, onSubmit }) => {
   // Handle volunteer form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    console.log('Volunteer form submitted:', formData);
+    
+    // Hiển thị thông báo thành công
+    showSuccess('Cảm ơn bạn đã đăng ký làm tình nguyện viên! Chúng tôi sẽ liên hệ với bạn sớm.');
+    
+    // Đóng modal
+    onClose();
+    
     // Reset form
     setFormData({
+      // Reset form data
       name: '',
       email: '',
       phone: '',
@@ -207,7 +218,7 @@ const VolunteerForm = ({ isOpen, onClose, onSubmit }) => {
               onChange={handleTermsChange}
               className="terms-checkbox"
             >
-              Tôi đồng ý với <a href="#" className="terms-link">điều khoản và điều kiện</a> của Pet Rescue Hub
+              Tôi đồng ý với <a href="/terms" className="terms-link">điều khoản và điều kiện</a> của Pet Rescue Hub
             </Checkbox>
           </FormControl>
           

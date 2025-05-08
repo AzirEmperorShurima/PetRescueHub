@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Grid, Typography, Box, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
 import './AboutSection.css';
 import { images } from '../../../../config/LinkImage.config';
 
@@ -15,14 +14,14 @@ const AboutSection = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Hàm cuộn đến phần Impact Counter
-  const scrollToImpact = (e) => {
+  // Sử dụng useCallback để tối ưu hàm này
+  const scrollToImpact = useCallback((e) => {
     e.preventDefault();
     const impactSection = document.getElementById('impact-counter');
     if (impactSection) {
       impactSection.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, []);
 
   return (
     <Container maxWidth="lg">
