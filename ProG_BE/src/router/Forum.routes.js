@@ -14,6 +14,7 @@ import {
     getRepliesByParent
 } from "../Controller/Forum.Controller.js";
 import { checkPostType } from "../Middlewares/checkPostType.js";
+import { uploadPostImages } from "../Middlewares/uploadMiddleware.js";
 
 const forumRoutes = Router();
 
@@ -26,7 +27,7 @@ forumRoutes.get('/', (req, res) => {
 // Post-related routes
 forumRoutes.get('/GET/posts', getForumPosts);
 forumRoutes.get('/GET/posts/:Post_id', getPostById);
-forumRoutes.post('/posts/new', [checkPostType], createNewForumPost);
+forumRoutes.post('/posts/new', [uploadPostImages(),checkPostType ], createNewForumPost);
 forumRoutes.put('/posts/:post_id', updateForumPost);
 
 // Comment-related routes
