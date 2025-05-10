@@ -158,7 +158,7 @@ export const loginHandler = async (req, res) => {
 
 export const logoutHandler = async (req, res) => {
     const token = req.cookies[COOKIE_PATHS.ACCESS_TOKEN.CookieName];
-console.log("Token:", token);
+
     if (!token) {
         return res
             .status(StatusCodes.UNAUTHORIZED)
@@ -167,17 +167,14 @@ console.log("Token:", token);
     const accessTokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'tokenType');
     const refreshTokenType = getUserFieldFromToken(req, COOKIE_PATHS.REFRESH_TOKEN.CookieName, 'tokenType');
     if (!refreshTokenType || refreshTokenType !== TOKEN_TYPE.REFRESH_TOKEN.name) {
-        console.log("Invalid refresh token type:", refreshTokenType);
         return res.status(StatusCodes.FORBIDDEN).json({ message: "Permission is Invalid -> 🚫 Access Denied" });
     }
     if (!accessTokenType || accessTokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
-        console.log("Invalid accesstoken type:", accessTokenType);
         return res.status(StatusCodes.FORBIDDEN).json({ message: "Permission is Invalid -> 🚫 Access Denied" });
     }
 
     try {
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
-        console.log("User ID:", userId);
         if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Token is missing. Unauthorized access." });
         }
@@ -520,20 +517,24 @@ export const resendActivationOTP = async (req, res) => {
             }
         }
 
-        // Gửi OTP qua email
-        setImmediate(() => {
-            sendMailService({
+        // Gửi email OTP mới
+        try {
+            await sendMailService({
                 email: foundUser.email,
                 username: foundUser.username,
                 otp: newOTP
-            }).catch(err => console.error("Send mail failed:", err));
-        });
+            });
 
-        return res.status(StatusCodes.OK).json({
-            message: "A new OTP has been sent to your email",
-            email: foundUser.email
-        });
-
+            return res.status(StatusCodes.OK).json({
+                message: "OTP đã được gửi lại thành công",
+                expiresIn: "15 phút"
+            });
+        } catch (error) {
+            console.error("Lỗi gửi mail OTP:", error);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Không thể gửi OTP, vui lòng thử lại sau"
+            });
+        }
     } catch (error) {
         console.error("Error in Resend Activation OTP:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

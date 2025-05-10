@@ -1,3 +1,4 @@
+import { StatusCodes } from "http-status-codes";
 import { COOKIE_PATHS } from "../../config.js";
 import * as petService from "../services/Pet/Pet.service.js";
 import { getUserFieldFromToken } from "../services/User/User.service.js";
@@ -6,6 +7,7 @@ import Joi from "joi";
 const petUpdateSchema = Joi.object({
     name: Joi.string().trim(),
     age: Joi.number().min(0),
+    petDob: Joi.date(),
     breed: Joi.string().trim(),
     breedName: Joi.string().trim(),
     gender: Joi.string().valid('male', 'female', 'unknown'),
@@ -18,14 +20,6 @@ const petUpdateSchema = Joi.object({
             vaccineName: Joi.string().required(),
             vaccinationDate: Joi.date(),
             vaccinationCode: Joi.string()
-        })
-    ),
-    certifications: Joi.array().items(
-        Joi.object({
-            name: Joi.string().required(),
-            type: Joi.string().valid('image', 'pdf').required(),
-            url: Joi.string().required(),
-            issuedDate: Joi.date()
         })
     ),
     avatar: Joi.string(),
@@ -50,22 +44,18 @@ export const createPet = async (req, res) => {
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
+        const { error, value } = petUpdateSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            return res.status(400).json({
+                message: "Dữ liệu không hợp lệ",
+                details: error.details.map((d) => d.message)
+            });
+        }
 
         const petData = {
-            name: req.body.name,
-            dob: req.body.petDob || null,
-            breed: req.body.breed,
-            breedName: req.body.breedName || null,
-            age: req.body.age || 0,
-            details: req.body.details,
-            gender: req.body.gender || "unknown",
-            weight: req.body.weight || 0,
-            avatar: req.body.avatar || null,
-            microchipId: req.body.microchipId || null,
-            healthRecords: req.body.healthRecords || [],
-            certifications: req.body.certifications || [],
-            createdAt: new Date()
+            ...value
         };
+
         const newPet = await petService.createPetProfile(ownerId, petData);
         res.status(201).json({ message: "Thêm thú cưng thành công!", pet: newPet });
     } catch (error) {

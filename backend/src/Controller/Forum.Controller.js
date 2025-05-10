@@ -133,8 +133,8 @@ export const updateForumPost = async (req, res) => {
 
 export const createNewForumPost = async (req, res) => {
     try {
-        const { title, content, tags, imgUrl, postType } = req.body;
-
+        const { title, content, tags, postType } = req.body;
+        const imgUrl = req.uploadedImageUrls || [];
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });

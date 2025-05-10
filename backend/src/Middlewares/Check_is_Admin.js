@@ -55,3 +55,44 @@ export const isAdmin = async (req, res, next) => {
         return res.status(500).json({ message: "Lỗi máy chủ khi xác thực quyền admin!" });
     }
 };
+
+export const checkAdminLogin = async (req, res, next) => {
+    try {
+        const { username, email, password } = req.body;
+
+        if (!username && !email) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Username or Email is required" });
+        }
+        if (!password) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Password is required" });
+        }
+
+        // Tìm user bằng email hoặc username
+        const foundUser = await User.findOne({
+            $or: [
+                { email: emailOrUsername },
+                { username: emailOrUsername }
+            ]
+        }).populate("roles", "name");
+
+        if (!foundUser) {
+            return res.status(404).json({ message: "Không tìm thấy người dùng" });
+        }
+
+        const hasAdminRole = foundUser.roles.some(role =>
+            role.name === 'admin' || role.name === 'super_admin'
+        );
+
+        if (!hasAdminRole) {
+            return res.status(403).json({ message: "Bạn không có quyền đăng nhập vào hệ thống quản trị!" });
+        }
+
+        // Cho phép tiếp tục nếu có quyền
+        req.user = foundUser;
+        next();
+
+    } catch (error) {
+        console.error("❌ Lỗi trong middleware checkAdminLogin:", error);
+        return res.status(500).json({ message: "Lỗi máy chủ khi xác thực vai trò admin!" });
+    }
+};

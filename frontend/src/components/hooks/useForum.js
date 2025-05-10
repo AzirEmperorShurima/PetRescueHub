@@ -52,10 +52,10 @@ export const useForum = () => {
         apiService.forum.posts.getAll({ ...params, postType: 'FindLostPetPost' })
       ]);
 
-      setPosts(postsRes.data || []);
-      setQuestions(questionsRes.data || []);
-      setEvents(eventsRes.data || []);
-      setFindLostPet(petPostRes.data || []); // Fix the undefined setPetPost
+      setPosts(postsRes.data?.data || []);
+      setQuestions(questionsRes.data?.data || []);
+      setEvents(eventsRes.data?.data || []);
+      setFindLostPet(petPostRes.data?.data || []); // Fix the undefined setPetPost
     } catch (err) {
       console.error('Error fetching posts:', err);
       setPosts([]);

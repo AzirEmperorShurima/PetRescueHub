@@ -8,9 +8,10 @@ import {
     rejectVolunteerRequest,
     revokeVolunteerRole
 } from "../Controller/Admin.controller.js";
-import { isAdmin } from "../Middlewares/Check_is_Admin.js";
+import { checkAdminLogin, isAdmin } from "../Middlewares/Check_is_Admin.js";
 import { validatePasswordStrength } from "../Middlewares/validatePasswordStrength.js";
 import { loginHandler } from "../Controller/Auth.Controller.js";
+
 const adminRouter = Router()
 
 adminRouter.get("/", (req, res) => {
@@ -36,7 +37,7 @@ adminRouter.get("/v2", async (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
-adminRouter.post('/private-access/admin/login', [validatePasswordStrength, isAdmin], loginHandler);
+adminRouter.post('/private-access/admin/login', [validatePasswordStrength, checkAdminLogin], loginHandler);
 
 adminRouter.get("/Get/list-users", [isAdmin], getUsers)
 adminRouter.get("/Get/v1/list-volunteers", [isAdmin], getVolunteers)

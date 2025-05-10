@@ -1,4 +1,5 @@
-import React from 'react';
+// Import statements
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/styles/animations.css';
 import {
@@ -22,16 +23,22 @@ import { useForum } from '../../components/hooks/useForum';
 import './Forum.css';
 
 const Forum = () => {
+  // Theme & Navigation
   const theme = useTheme();
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Refs
+  const searchDebounceRef = useRef(null);
+  const filterDebounceRef = useRef(null);
+
+  // Custom hooks
   const {
     loading,
     posts,
     questions,
     events,
-    findLostPet, // Add this line
+    findLostPet,
     tabValue,
     searchTerm,
     filterAnchorEl,
@@ -39,22 +46,93 @@ const Forum = () => {
     categoryFilter,
     categories,
     handleTabChange,
-    handleSearchChange,
+    handleSearchChange: originalHandleSearchChange,
     handleFilterClick,
     handleFilterClose,
-    handleSortChange,
-    handleCategoryChange,
+    handleSortChange: originalHandleSortChange,
+    handleCategoryChange: originalHandleCategoryChange,
     handleToggleLike,
     handleToggleFavorite,
     formatDate
   } = useForum();
 
+  // Safe data handling
   const safeCategories = categories || [];
   const safePosts = posts || [];
   const safeQuestions = questions || [];
   const safeEvents = events || [];
-  const safeFindPet = findLostPet || []; // Add this line
+  const safeFindPet = findLostPet || [];
 
+  // Event handlers
+  const handleSearchChange = (e) => {
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    searchDebounceRef.current = setTimeout(() => {
+      originalHandleSearchChange(e);
+    }, 500);
+  };
+
+  const handleSortChange = (value) => {
+    if (filterDebounceRef.current) {
+      clearTimeout(filterDebounceRef.current);
+    }
+    filterDebounceRef.current = setTimeout(() => {
+      originalHandleSortChange(value);
+    }, 300);
+  };
+
+  const handleCategoryChange = (categoryId) => {
+    if (filterDebounceRef.current) {
+      clearTimeout(filterDebounceRef.current);
+    }
+    filterDebounceRef.current = setTimeout(() => {
+      originalHandleCategoryChange(categoryId);
+    }, 300);
+  };
+
+  // Data loading functions
+  const loadPosts = async () => {
+    // Implement loadPosts logic
+  };
+
+  const loadQuestions = async () => {
+    // Implement loadQuestions logic
+  };
+
+  const loadEvents = async () => {
+    // Implement loadEvents logic
+  };
+
+  const loadFindLostPet = async () => {
+    // Implement loadFindLostPet logic
+  };
+
+  // Effects
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+      if (filterDebounceRef.current) {
+        clearTimeout(filterDebounceRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (tabValue === 0) {
+      loadPosts();
+    } else if (tabValue === 1) {
+      loadQuestions();
+    } else if (tabValue === 2) {
+      loadEvents();
+    } else if (tabValue === 3) {
+      loadFindLostPet();
+    }
+  }, [tabValue]);
+
+  // JSX
   return (
     <Box className="forum-page">
       <Container maxWidth="lg">
@@ -121,9 +199,6 @@ const Forum = () => {
                   <Typography variant="body2">
                     <strong>Sự kiện:</strong> {safeEvents.length}
                   </Typography>
-                  <Typography variant="body2">
-                    <strong>Thành viên tích cực:</strong> 125
-                  </Typography>
                 </Box>
               </Box>
             </Paper>
@@ -135,12 +210,12 @@ const Forum = () => {
               {/* Search and filter */}
               <ForumSearch
                 searchTerm={searchTerm}
-                onSearchChange={handleSearchChange}
+                onSearchChange={handleSearchChange} // Sử dụng hàm debounced
                 filterAnchorEl={filterAnchorEl}
                 onFilterClick={handleFilterClick}
                 onFilterClose={handleFilterClose}
-                onSortChange={handleSortChange}
-                onCategoryChange={handleCategoryChange}
+                onSortChange={handleSortChange} // Sử dụng hàm debounced
+                onCategoryChange={handleCategoryChange} // Sử dụng hàm debounced
                 sortBy={sortBy}
                 categoryFilter={categoryFilter}
                 categories={safeCategories}

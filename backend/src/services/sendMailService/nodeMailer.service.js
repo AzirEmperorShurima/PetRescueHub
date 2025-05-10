@@ -38,28 +38,42 @@ const sendMail = async ({ email, subject, text, html }) => {
 export const sendMailService = async (_mail) => {
     return sendMail({
         email: _mail.email,
-        subject: 'Your OTP Code',
-        text: `Hello ${_mail.username},\n\nYour OTP code is: ${_mail.otp}. It will expire in 15 minutes.\n
-        If you don't verify OTP, your inActivate account will be deleted after 7 days.\n\nThank you.\n
-        Best Regards,\n`,
+        subject: 'Mã OTP Kích Hoạt Tài Khoản',
+        text: `Xin chào ${_mail.username},\n\nMã OTP của bạn là: ${_mail.otp}. Mã này sẽ hết hạn sau 15 phút.\n
+        Nếu bạn không xác thực OTP, tài khoản chưa kích hoạt sẽ bị xóa sau 7 ngày.\n\nXin cảm ơn.\n
+        Trân trọng,\n`,
         html: `
-            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); background-color: #ffffff;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="color: #2c3e50; margin: 0; padding: 0; font-size: 24px; font-weight: 600;">Account Activation</h2>
-                    <p style="color: #7f8c8d; margin-top: 5px; font-size: 14px;">Please verify your account</p>
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h1 style="color: #2c3e50; margin: 0; padding: 0; font-size: 28px; font-weight: 700;">Xác Thực Tài Khoản</h1>
+                    <p style="color: #7f8c8d; margin-top: 10px; font-size: 16px;">Vui lòng xác thực để kích hoạt tài khoản của bạn</p>
                 </div>
-                <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-                    <p style="margin-top: 0;">Hello <strong style="color: #3498db;">${_mail.username}</strong>,</p>
-                    <p style="font-size: 16px; line-height: 1.5;">Thank you for registering. To activate your account, please use the OTP code below:</p>
-                    <div style="background-color: #ffffff; border-radius: 6px; border-left: 4px solid #3498db; padding: 15px; margin: 15px 0; text-align: center;">
-                        <p style="font-size: 28px; font-weight: bold; color: #e74c3c; margin: 0; letter-spacing: 2px;">${_mail.otp}</p>
+                
+                <div style="background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%); border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #eaeaea;">
+                    <p style="margin-top: 0; font-size: 16px;">Xin chào <strong style="color: #3498db; font-size: 18px;">${_mail.username}</strong>,</p>
+                    <p style="font-size: 16px; line-height: 1.6;">Cảm ơn bạn đã đăng ký tài khoản. Đây là mã OTP mới của bạn:</p>
+                    
+                    <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center;">
+                        <p style="font-size: 32px; font-weight: bold; color: #ffffff; margin: 0; letter-spacing: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${_mail.otp}</p>
                     </div>
-                    <p style="color: #7f8c8d; font-size: 14px;">This OTP will expire in <strong>15 minutes</strong>.</p>
-                    <p style="color: #e67e22; font-size: 14px; font-style: italic;">⚠️ If you don't verify your account, it will be deleted after 7 days.</p>
+                    
+                    <div style="background-color: #fff4e5; border-left: 4px solid #ff9800; padding: 15px; margin: 15px 0; border-radius: 4px;">
+                        <p style="color: #e67e22; font-size: 15px; margin: 0;">
+                            <strong>⚠️ Lưu ý quan trọng:</strong>
+                            <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                                <li>Mã OTP sẽ hết hạn sau <strong>15 phút</strong></li>
+                                <li>Tài khoản chưa kích hoạt sẽ bị xóa sau <strong>7 ngày</strong></li>
+                            </ul>
+                        </p>
+                    </div>
                 </div>
-                <div style="border-top: 1px solid #eee; padding-top: 15px; text-align: center;">
-                    <p style="color: #7f8c8d; font-size: 14px; margin: 5px 0;">If you didn't request this email, please ignore it.</p>
-                    <p style="color: #7f8c8d; font-size: 14px; margin-top: 15px;">Best Regards,<br><strong>PetRescueHub Team</strong></p>
+                
+                <div style="border-top: 2px solid #eee; padding-top: 20px; text-align: center;">
+                    <p style="color: #95a5a6; font-size: 14px; margin: 5px 0;">Nếu bạn không yêu cầu email này, vui lòng bỏ qua.</p>
+                    <div style="margin-top: 20px;">
+                        <p style="color: #7f8c8d; font-size: 14px; margin: 5px 0;">Trân trọng,</p>
+                        <p style="color: #2c3e50; font-size: 16px; font-weight: bold; margin: 5px 0;">PetRescueHub Team</p>
+                    </div>
                 </div>
             </div>
         `,
@@ -133,12 +147,12 @@ export const sendMailNotification = async (_mail) => {
 
                 <!-- Main Content Section -->
                 <div style="background: #ffffff; border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
-                    ${_mail.html ? 
-                        `<div style="color: #2c3e50; font-size: 16px; line-height: 1.8; text-align: justify;">
+                    ${_mail.html ?
+                `<div style="color: #2c3e50; font-size: 16px; line-height: 1.8; text-align: justify;">
                             ${_mail.html}
-                        </div>` 
-                        : ''
-                    }
+                        </div>`
+                : ''
+            }
                 </div>
 
                 <!-- Footer Section -->

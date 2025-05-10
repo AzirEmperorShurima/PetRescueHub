@@ -279,3 +279,67 @@ export const rejectRescueMission = async (req, res) => {
         return res.status(500).json({ error: 'Server error while rejecting mission' });
     }
 };
+
+
+export const cancelRescueMission = async (req, res) => {
+    try {
+        const { missionId } = req.params;
+        const volunteerId = req.user._id;
+
+        const mission = await RescueMissionHistory.findOne({ missionId }).populate('requester');
+
+        if (!mission) {
+            return res.status(404).json({ error: 'Nhiệm vụ không tồn tại' });
+        }
+
+        // Nếu đã hoàn thành hoặc hủy thì không được phép từ chối nữa
+        if (mission.status === 'completed' || mission.status === 'cancelled') {
+            return res.status(400).json({ error: 'Không thể hủy nhiệm vụ đã kết thúc hoặc đã bị hủy' });
+        }
+
+        if (!mission.selectedVolunteers.includes(volunteerId)) {
+            return res.status(403).json({ error: 'Bạn không thuộc nhiệm vụ này' });
+        }
+
+        // Loại volunteer ra khỏi danh sách
+        mission.selectedVolunteers = mission.selectedVolunteers.filter(
+            v => v.toString() !== volunteerId.toString()
+        );
+
+        // Nếu không còn ai nhận, tự động hủy mission
+        if (mission.selectedVolunteers.length === 0) {
+            mission.status = 'cancelled';
+        }
+
+        await mission.save();
+
+        // Gửi thông báo cho người yêu cầu
+        if (mission.requester) {
+            await Notification.create({
+                userId: mission.requester._id,
+                type: 'warning',
+                title: 'Tình nguyện viên đã từ chối',
+                message: `Một tình nguyện viên đã từ chối nhiệm vụ cứu hộ.`,
+            });
+
+            // Gửi realtime nếu có io
+            if (req.io) {
+                req.io.to(mission.requester._id.toString()).emit("notification", {
+                    type: 'warning',
+                    title: 'Tình nguyện viên đã từ chối',
+                    message: 'Một tình nguyện viên đã từ chối tham gia cứu hộ của bạn.',
+                    createdAt: new Date()
+                });
+            }
+        }
+
+        return res.json({
+            message: 'Bạn đã từ chối nhiệm vụ cứu hộ thành công.',
+            missionStatus: mission.status
+        });
+
+    } catch (err) {
+        console.error('Lỗi khi từ chối nhiệm vụ cứu hộ:', err);
+        return res.status(500).json({ error: 'Lỗi server khi hủy nhiệm vụ' });
+    }
+};

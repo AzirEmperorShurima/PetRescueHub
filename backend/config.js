@@ -7,6 +7,8 @@ export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123testing";
 export const MAINDB_MONGODB_URL = 'mongodb://localhost:27017'
 export const MAINDB_MONGODB_DBNAME = 'projectG'
 
+export const parentFolder = "PetRescueHub_Images"
+export const parentFolderId = process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID
 export const TOTP_SECRET_KEY = "XINCJAOBANNHO"
 
 export const COOKIE_PATHS = {
@@ -75,11 +77,7 @@ export const TOKEN_TYPE = {
         expiresIn: '15m',
         maxAge: 1000 * 60 * 60 * 24, // 15m
     },
-    // EMAIL_VERIFY: {
-    //     name: 'EMAIL_VERIFY',
-    //     expiresIn: '15m',
-    //     maxAge: 1000 * 60 * 15, // 15m
-    // },
+
 }
 // Momo payment gate config 
 export const MOMO_API = 'https://test-payment.momo.vn/v2/gateway/api/create'
