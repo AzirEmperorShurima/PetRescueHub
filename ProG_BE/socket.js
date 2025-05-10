@@ -36,7 +36,15 @@ const broadcastToRoom = (roomId, event, data, except = null) => {
     }
 };
 
-io.on("connection", socket => {
+io.on("connection", (socket) => {
+    // const clientKey = socket.handshake.auth.privateKey;
+    const clientKey = socket.handshake.headers['privatekey'];
+    if (!clientKey || clientKey !== process.env.PRIVATE_KEY_SOCKET) {
+        console.error(`[${new Date().toISOString()}] Unauthorized connection attempt: ${socket.id}`);
+        socket.disconnect(true);
+        return;
+    }
+    console.log(`[${new Date().toISOString()}] New authorized connection: ${socket.id}`);
     console.log(`[${new Date().toISOString()}] New connection: ${socket.id}`);
 
     // Đăng ký người dùng
@@ -165,7 +173,21 @@ io.on("connection", socket => {
     });
 
     socket.on("heartbeat", () => {
-        socket.emit("heartbeat_ack");
+        const userId = getUserBySocketId(socket.id);
+        const timestamp = new Date().toISOString();
+        if (userId) {
+            socket.emit("heartbeat_ack", {
+                status: "success",
+                timestamp,
+                userId
+            });
+        } else {
+            socket.emit("heartbeat_ack", {
+                status: "unregistered",
+                timestamp,
+                message: "User not registered"
+            });
+        }
     });
 
     socket.on("volunteer_location", async ({ latitude, longitude }) => {
@@ -202,9 +224,14 @@ io.sendNotification = async function (userId, data) {
     }
 };
 
-export const startSocketServer = () => {
-    server.listen(8080, () => {
-        console.log(`[${new Date().toISOString()}] Server is running on port 8080`);
+export const startSocketServer = (port) => {
+    server.listen(port, () => {
+        console.log('\x1b[32m%s\x1b[0m', '┌──────────────────────────────────────────┐');
+        console.log('\x1b[32m%s\x1b[0m', '│           Socket Server Started           │');
+        console.log('\x1b[32m%s\x1b[0m', '├──────────────────────────────────────────┤');
+        console.log('\x1b[32m%s\x1b[0m', `│ Time: ${new Date().toISOString()}    │`);
+        console.log('\x1b[32m%s\x1b[0m', `│ Port: ${port}                            │`);
+        console.log('\x1b[32m%s\x1b[0m', '└──────────────────────────────────────────┘');
     });
 };
 export default io;

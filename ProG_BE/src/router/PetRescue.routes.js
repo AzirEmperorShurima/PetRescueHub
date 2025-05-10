@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { acceptRescueMission, cancelRescueMission, cancelRescueRequest, completeRescueMission, confirmSelectedVolunteers, rejectRescueMission, requestRescue, requestToRescue } from "../Controller/RescueHub.Controller.js";
+import { isVolunteer } from "../Middlewares/check_is_volunteer.js";
 
 const PetRescueRouter = Router();
 
@@ -11,5 +13,18 @@ PetRescueRouter.get("/", async (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
+
+PetRescueRouter.post("/v1/rescue/create-rescue-request", requestRescue)
+PetRescueRouter.post("/v2/rescue/create-rescue-request", requestToRescue)
+
+PetRescueRouter.post("/v1/rescue/host/owner/confirm-volunteer", confirmSelectedVolunteers)
+PetRescueRouter.post("/v1/rescue/host/owner/rescue-request/cancel", cancelRescueRequest);
+
+PetRescueRouter.post("/v1/rescue/host/volunteer/rescue-request/accept", [isVolunteer], acceptRescueMission)
+PetRescueRouter.post("/v1/rescue/host/volunteer/rescue-request/reject", [isVolunteer], rejectRescueMission)
+PetRescueRouter.post("/v1/rescue/host/volunteer/rescue-request/cancel-pending-request", [isVolunteer], cancelRescueMission)
+
+PetRescueRouter.post("/v1/rescue/host/volunteer/complete-rescue/:missionId", completeRescueMission);
+
 
 export default PetRescueRouter;

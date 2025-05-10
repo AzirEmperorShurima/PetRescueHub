@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
-const ENCRYPTION_KEY = crypto.randomBytes(32); // 32 bytes key
-const IV_LENGTH = 16; // 16 bytes initialization vector
+const ENCRYPTION_KEY = crypto.randomBytes(32);
+const IV_LENGTH = 16; 
 
 // Hàm mã hóa
 export const _encrypt = (text) => {
@@ -9,7 +9,7 @@ export const _encrypt = (text) => {
   const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
-  return `${iv.toString('hex')}:${encrypted}`; // Ghép IV và dữ liệu đã mã hóa
+  return `${iv.toString('hex')}:${encrypted}`;
 };
 
 // Hàm giải mã

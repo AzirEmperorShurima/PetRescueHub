@@ -11,6 +11,7 @@ import PetProfile from "./PetProfile.js";
 import  { ForumPost, Question, FindLostPetPost, EventPost, PostModel } from "./PostSchema.js";
 import { CommentModel } from "./CommentsSchema.js";
 import Reaction from "./ReactionSchema.js";
+import PetRescueMissionHistory from "./PetRescueMissionHistory.js";
 
 const models_list = {
     user,
@@ -27,7 +28,8 @@ const models_list = {
     ForumPost,
     Question,
     FindLostPetPost,
-    EventPost
+    EventPost,
+    PetRescueMissionHistory
 };
 
 export default models_list;

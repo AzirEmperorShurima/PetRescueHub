@@ -16,6 +16,7 @@ import Footer from './components/footer/footers';
 import CreateVideoContent from './components/Media/CreateVideoContent';
 import Register from './components/Auth/Register/Register';
 import EmptyPage from './components/EmptyPage';
+import VideoCall from './api/videocall';
 function App() {
   const [isNotFound, setIsNotFound] = useState(false);
   const [mode, setMode] = useState(() => {
@@ -102,6 +103,7 @@ function App() {
                       <Route path="/listVideo/:id" element={<VideoDetail videos={videos} />} />
                       <Route path="/Auth/login" element={<LOGIN />} />
                       <Route path="/listVideo" element={<VideoList videos={videos} />}></Route>
+                      <Route path="/callVideo" element={<VideoCall />}></Route>
                       <Route path='*' element={<NotFound Auth={false} />}></Route>
                     </Routes>)
                   }

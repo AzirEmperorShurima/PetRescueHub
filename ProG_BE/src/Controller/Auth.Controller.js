@@ -4,6 +4,7 @@ import { COOKIE_PATHS, SECRET_KEY, TOKEN_TYPE } from '../../config.js';
 import user from '../models/user.js';
 import { getCookies } from '../Middlewares/Cookies.js';
 import Role from '../models/Role.js';
+import Notification from '../models/NotificationSchema.js'
 import { _encrypt } from '../utils/_crypto_.js';
 import { redisClient } from '../Cache/User_Cache.js';
 import { otpGenerator } from '../services/Otp/createOTP.js';
@@ -91,21 +92,47 @@ export const loginHandler = async (req, res) => {
         if (!password) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Password is required" });
         }
-
         const foundUser = await user.findOne(email ? { email } : { username }).populate("roles");
         if (!foundUser) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid Username or Email" });
         }
-
         if (!foundUser.isActive) {
             return res.status(StatusCodes.FORBIDDEN).json({ message: "Login Failed, User is not active" });
         }
 
-        // So sánh password
         const isPasswordValid = await user.comparePassword(password, foundUser.password);
         if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid Password' });
         }
+        const isFirstLogin = !foundUser.lastLoginAt;
+        const currentHour = new Date().getHours();
+        let greetingTitle, greetingMessage;
+
+        if (isFirstLogin) {
+            greetingTitle = 'Chào mừng bạn đến với PetRescueHub! 🎉';
+            greetingMessage = `Chào mừng ${foundUser.username} đã tham gia cộng đồng của chúng tôi. Hãy khám phá và tận hưởng những tính năng tuyệt vời!`;
+        } else {
+            if (currentHour >= 5 && currentHour < 12) {
+                greetingTitle = 'Chào buổi sáng! ☀️';
+                greetingMessage = `Chào buổi sáng ${foundUser.username}! Chúc bạn có một ngày tốt lành.`;
+            } else if (currentHour >= 12 && currentHour < 18) {
+                greetingTitle = 'Chào buổi chiều! 🌤️';
+                greetingMessage = `Chào buổi chiều ${foundUser.username}! Hy vọng bạn đang có một ngày tuyệt vời.`;
+            } else {
+                greetingTitle = 'Chào buổi tối! 🌙';
+                greetingMessage = `Chào buổi tối ${foundUser.username}! Cảm ơn bạn đã quay trở lại.`;
+            }
+        }
+
+        const welcomeNotification = new Notification({
+            userId: foundUser._id.toString(),
+            type: 'success',
+            title: greetingTitle,
+            message: greetingMessage
+        });
+        await welcomeNotification.save();
+        foundUser.lastLoginAt = new Date();
+        await foundUser.save();
 
         const userLoginPayLoad = {
             id: foundUser._id,
@@ -447,13 +474,11 @@ export const verified_OTP = async (req, res) => {
                 expiredAt: Date.now() + TOKEN_TYPE.ACCESS_TOKEN.maxAge,
             }
         );
-
         await foundUser.save();
         await Promise.all([
             redisClient.del(redisTokenKey),
             redisClient.del(redisOTPKey)
         ]);
-
         return res.status(StatusCodes.OK).json({
             message: 'OTP verified successfully, user activated'
         });

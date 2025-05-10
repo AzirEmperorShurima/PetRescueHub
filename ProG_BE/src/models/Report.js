@@ -15,7 +15,6 @@ const ReportSchema = new mongoose.Schema({
         default: "None"
     }, // Hình thức xử phạt
     adminNote: { type: String }, // Ghi chú từ admin về quyết định xử phạt
-    createdAt: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
 
 export default mongoose.model("Report", ReportSchema);

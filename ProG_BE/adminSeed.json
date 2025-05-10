@@ -26,5 +26,26 @@
         "password": "abc",
         "secondaryPassword": "def",
         "role": "admin"
+    },
+    {
+        "username": "nguyenvana",
+        "fullname": "Đỗ Nguyễn Minh Quân",
+        "birthday": "2003-01-01",
+        "gender": "male",
+        "phone": "0987654321",
+        "address": "123 Đường ABC, Thành phố XYZ",
+        "email": "tranvantri4@dtu.edu.vn",
+        "biography": "Ngoài ra, tôi còn rất thích chơi thể thao và tham gia các hoạt động thể thao như thể thao hình ảnh, thể thao nước ngoài, thể thao thể dục thể thao.",
+        "avatar": "https://newsmd2fr.keeng.vn/tiin/archive/imageslead/2022/03/29/90_3289e976177c1b19264383cf21b598bf.jpg",
+        "isActive": true,
+        "volunteerStatus": "not ready",
+        "volunteerRequestStatus": "approved",
+        "password": "Tri12345678@",
+        "role": [
+            "user",
+            "volunteer"
+        ],
+        "isVIP": true,
+        "premiumExpiresAt": "2029-12-31"
     }
 ]

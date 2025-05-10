@@ -35,6 +35,7 @@ const checkOwnership = async (petId, ownerId) => {
     }
     return pet;
 };
+
 /**
  * 🆕 Tạo thú cưng mới
  */
@@ -53,7 +54,9 @@ export const createPet = async (req, res) => {
         }
 
         const petData = {
-            ...value
+            ...value,
+            avatar: req.avatarUrl || null,
+            petAlbum: req.uploadedImageUrls || []
         };
 
         const newPet = await petService.createPetProfile(ownerId, petData);
@@ -111,32 +114,59 @@ export const uploadPetCertificate = async (req, res) => {
 /**
  * 📑 Cập nhật thông tin thú cưng
  */
-
 export const updatePetProfile = async (req, res) => {
     try {
         const { petId } = req.params;
-        if (!petId) return res.status(400).json({ message: "Missing pet ID!" });
+        if (!petId) return res.status(400).json({ 
+            success: false,
+            message: "Thiếu ID thú cưng!" 
+        });
 
         const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
         if (!ownerId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ 
+                success: false,
+                message: "Bạn cần đăng nhập để thực hiện hành động này" 
+            });
         }
 
         await checkOwnership(petId, ownerId);
 
         // Validate req.body using Joi
-        const { error, value } = petUpdateSchema.validate(req.body, { allowUnknown: false, stripUnknown: true });
+        const { error, value } = petUpdateSchema.validate(req.body, { 
+            allowUnknown: false, 
+            stripUnknown: true 
+        });
+        
         if (error) {
-            return res.status(400).json({ message: error.details[0].message });
+            return res.status(400).json({ 
+                success: false,
+                message: error.details[0].message 
+            });
         }
 
         const petUpdateData = value;
 
         const updatedPet = await petService.updatePetProfile(petId, petUpdateData);
-        if (!updatedPet) return res.status(404).json({ message: "Pet not found!" });
-        return res.status(200).json({ message: "Update successful!", pet: updatedPet });
+        if (!updatedPet) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Không tìm thấy thú cưng!" 
+            });
+        }
+
+        return res.status(200).json({ 
+            success: true,
+            message: "Cập nhật thông tin thành công!", 
+            pet: updatedPet 
+        });
     } catch (error) {
-        return res.status(500).json({ message: "System error!", error: error.message });
+        console.error("Lỗi cập nhật thông tin thú cưng:", error);
+        return res.status(500).json({ 
+            success: false,
+            message: "Lỗi hệ thống!", 
+            error: error.message 
+        });
     }
 };
 /**
@@ -440,3 +470,73 @@ export const getAllPets = async (req, res) => {
         return res.status(500).json({ message: "System error!", error: error.message });
     }
 }
+
+/**
+ * 🔄 Chuyển đổi trạng thái của thú cưng
+ */
+export const updatePetState = async (req, res) => {
+    try {
+        const { petId } = req.params;
+        const { petState } = req.body;
+
+        if (!petId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Thiếu ID thú cưng!"
+            });
+        }
+
+        // Kiểm tra trạng thái hợp lệ
+        const validStates = ["ReadyToAdopt", "NotReadyToAdopt", "Adopted"];
+        if (!validStates.includes(petState)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Trạng thái không hợp lệ! Trạng thái phải là một trong: ReadyToAdopt, NotReadyToAdopt, Adopted"
+            });
+        }
+
+        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: "Bạn cần đăng nhập để thực hiện hành động này"
+            });
+        }
+
+        // Kiểm tra quyền sở hữu
+        const pet = await PetProfile.findById(petId);
+        if (!pet) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "Không tìm thấy thú cưng!"
+            });
+        }
+
+        if (pet.ownerId.toString() !== ownerId) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+                message: "Bạn không có quyền thay đổi trạng thái của thú cưng này!"
+            });
+        }
+
+        // Cập nhật trạng thái
+        const updatedPet = await PetProfile.findByIdAndUpdate(
+            petId,
+            { petState },
+            { new: true, runValidators: true }
+        );
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Cập nhật trạng thái thú cưng thành công!",
+            pet: updatedPet
+        });
+    } catch (error) {
+        console.error("Lỗi khi cập nhật trạng thái thú cưng:", error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Đã xảy ra lỗi khi cập nhật trạng thái!",
+            error: error.message
+        });
+    }
+};
