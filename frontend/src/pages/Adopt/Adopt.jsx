@@ -58,7 +58,7 @@ const Adopt = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => navigate('/adopt/find-home')}
+            onClick={() => navigate('/findhome')}
             sx={{ mt: 2 }}
           >
             Đăng thông tin thú cưng cần tìm nhà

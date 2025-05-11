@@ -13,24 +13,22 @@ import {
   Snackbar,
   FormControlLabel,
   Checkbox,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
   Divider,
-  Avatar
+  Avatar,
 } from '@mui/material';
 import { 
   LocationOn as LocationIcon,
   MyLocation as MyLocationIcon,
   Send as SendIcon,
-  Pets as PetsIcon
+  Pets as PetsIcon,
+  AddPhotoAlternate as AddPhotoAlternateIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../components/contexts/AuthContext';
 import axios from 'axios';
 import './Rescue.css';
-import rescueService from '../../services/rescue.service';
+import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
 
 const Rescue = () => {
   const navigate = useNavigate();
@@ -59,8 +57,12 @@ const Rescue = () => {
     isGuest: !user?.id,
     status: 'pending',
     autoAssignVolunteer: true, // Mặc định tự động chọn tình nguyện viên
-    selectedVolunteers: [] // Danh sách tình nguyện viên được chọn
+    selectedVolunteers: [], // Danh sách tình nguyện viên được chọn
+    images: [] // Thêm mảng để lưu trữ hình ảnh
   });
+
+  // State để lưu trữ preview của ảnh
+  const [imagePreview, setImagePreview] = useState([]);
 
   // Lấy vị trí hiện tại của người dùng
   const getCurrentLocation = () => {
@@ -185,6 +187,39 @@ const Rescue = () => {
     });
   };
 
+  // Xử lý tải ảnh lên
+  const handleImageUpload = (files) => {
+    // Tạo preview cho các ảnh mới
+    const newImagePreviews = files.map(file => URL.createObjectURL(file));
+    
+    // Cập nhật state
+    setFormData({
+      ...formData,
+      images: [...formData.images, ...files]
+    });
+    setImagePreview([...imagePreview, ...newImagePreviews]);
+  };
+
+  // Xử lý xóa ảnh
+  const handleRemoveImage = (index) => {
+    const newImages = [...formData.images];
+    const newImagePreviews = [...imagePreview];
+    
+    // Xóa URL object để tránh rò rỉ bộ nhớ
+    URL.revokeObjectURL(newImagePreviews[index]);
+    
+    // Xóa ảnh khỏi mảng
+    newImages.splice(index, 1);
+    newImagePreviews.splice(index, 1);
+    
+    // Cập nhật state
+    setFormData({
+      ...formData,
+      images: newImages
+    });
+    setImagePreview(newImagePreviews);
+  };
+
   // Xử lý gửi form
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -222,25 +257,44 @@ const Rescue = () => {
     setLoading(true);
     try {
       // Chuẩn bị dữ liệu gửi đi
-      const rescueData = {
-        requester: user?.id || null,
-        guestInfo: formData.isGuest ? {
+      const rescueData = new FormData();
+      
+      // Thêm thông tin cơ bản
+      rescueData.append('requester', user?.id || null);
+      
+      if (formData.isGuest) {
+        rescueData.append('guestInfo', JSON.stringify({
           fullname: formData.fullname,
           phone: formData.phone
-        } : null,
-        location: formData.location,
-        radius: formData.radius,
-        notes: formData.notes,
-        petDetails: formData.petDetails,
-        missionId: `RESCUE-${Date.now()}`,
-        status: 'pending',
-        startedAt: new Date(),
-        autoAssign: formData.autoAssignVolunteer,
-        selectedVolunteers: formData.autoAssignVolunteer ? [] : formData.selectedVolunteers
-      };
+        }));
+      }
+      
+      rescueData.append('location', JSON.stringify(formData.location));
+      rescueData.append('radius', formData.radius);
+      rescueData.append('notes', formData.notes);
+      rescueData.append('petDetails', formData.petDetails);
+      rescueData.append('missionId', `RESCUE-${Date.now()}`);
+      rescueData.append('status', 'pending');
+      rescueData.append('startedAt', new Date().toISOString());
+      rescueData.append('autoAssign', formData.autoAssignVolunteer);
+      
+      if (!formData.autoAssignVolunteer) {
+        formData.selectedVolunteers.forEach(volunteer => {
+          rescueData.append('selectedVolunteers', volunteer);
+        });
+      }
+      
+      // Thêm hình ảnh vào FormData
+      formData.images.forEach(image => {
+        rescueData.append('images', image);
+      });
 
       // Gọi API để tạo báo cáo cứu hộ
-      const response = await rescueService.createRescueMission(rescueData);
+      const response = await axios.post('/api/rescue-missions', rescueData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
       setSnackbar({
         open: true,
@@ -250,7 +304,7 @@ const Rescue = () => {
       
       // Chuyển hướng sau khi gửi thành công
       setTimeout(() => {
-        navigate('/rescue/success', { state: { missionId: response.missionId } });
+        navigate('/rescue/success', { state: { missionId: response.data.missionId } });
       }, 2000);
     } catch (error) {
       console.error('Lỗi khi gửi báo cáo cứu hộ:', error);
@@ -391,6 +445,50 @@ const Rescue = () => {
               />
             </Grid>
 
+            {/* Thêm phần tải ảnh lên */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Hình ảnh thú cưng (tối đa 5 ảnh)
+              </Typography>
+              {/* Phần render ImageUploader trong form */}
+              <ImageUploader
+                images={formData.images}
+                previews={imagePreview}
+                onUpload={(files) => {
+                  // Tạo preview cho các ảnh mới
+                  const newImagePreviews = files.map(file => URL.createObjectURL(file));
+                  
+                  // Cập nhật state
+                  setFormData({
+                    ...formData,
+                    images: [...formData.images, ...files]
+                  });
+                  setImagePreview([...imagePreview, ...newImagePreviews]);
+                }}
+                onRemove={(index) => {
+                  const newImages = [...formData.images];
+                  const newImagePreviews = [...imagePreview];
+                  
+                  // Xóa URL object để tránh rò rỉ bộ nhớ
+                  URL.revokeObjectURL(newImagePreviews[index]);
+                  
+                  // Xóa ảnh khỏi mảng
+                  newImages.splice(index, 1);
+                  newImagePreviews.splice(index, 1);
+                  
+                  // Cập nhật state
+                  setFormData({
+                    ...formData,
+                    images: newImages
+                  });
+                  setImagePreview(newImagePreviews);
+                }}
+                maxImages={5}
+                label="Hình ảnh"
+                required={false}
+              />
+            </Grid>
+
             {/* Ghi chú */}
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>
@@ -404,7 +502,7 @@ const Rescue = () => {
                 name="notes"
                 value={formData.notes}
                 onChange={handleInputChange}
-                placeholder="Ví dụ: Một chú chó bị thương ở chân, nằm bên đường, cần được cứu hộ gấp..."
+                placeholder="Ví dụng: Một chú chó bị thương ở chân, nằm bên đường, cần được cứu hộ gấp..."
                 disabled={loading}
               />
             </Grid>

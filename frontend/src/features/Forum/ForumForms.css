@@ -1,0 +1,119 @@
+/* CSS cho trang tạo bài viết và câu hỏi */
+
+/* Class chung cho cả hai trang */
+.forum-image-uploader {
+  margin-top: 8px;
+}
+
+.forum-image-uploader .image-uploader-container {
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #f9f9f9;
+}
+
+.forum-image-uploader .image-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.forum-image-uploader .image-preview-item {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.forum-image-uploader .preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.forum-image-uploader .remove-image-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 4px;
+}
+
+.forum-image-uploader .upload-button {
+  height: 120px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.forum-image-uploader .required-mark {
+  color: #f44336;
+  margin-left: 4px;
+}
+
+/* Giữ lại class cũ để tương thích ngược */
+.post-image-uploader {
+  margin-top: 8px;
+}
+
+.post-image-uploader .image-uploader-container {
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #f9f9f9;
+}
+
+.post-image-uploader .image-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.post-image-uploader .image-preview-item {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-image-uploader .preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-image-uploader .remove-image-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 4px;
+}
+
+.post-image-uploader .upload-button {
+  height: 120px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.post-image-uploader .required-mark {
+  color: #f44336;
+  margin-left: 4px;
+}

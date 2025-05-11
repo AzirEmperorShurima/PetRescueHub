@@ -21,15 +21,13 @@ import {
   ArrowBack as ArrowBackIcon,
   CalendarMonth as CalendarIcon,
   LocationOn as LocationIcon,
-  Image as ImageIcon,
   Add as AddIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
-// Nếu không dùng locale nữa, có thể xóa các dòng import này
-// import dayjs from 'dayjs';
-// import 'dayjs/locale/vi';
+import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
+import './CreateEvent.css';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -58,8 +56,10 @@ const CreateEvent = () => {
     endDate: null,
     category: '',
     tags: [],
-    imageUrl: ''
+    images: []
   });
+  
+  const [imagePreviews, setImagePreviews] = useState([]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -86,11 +86,42 @@ const CreateEvent = () => {
     });
   };
   
+  const handleImageUpload = (files) => {
+    // Tạo URL preview cho các file ảnh
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    
+    setFormData({
+      ...formData,
+      images: [...formData.images, ...files]
+    });
+    
+    setImagePreviews([...imagePreviews, ...newPreviews]);
+  };
+  
+  const handleRemoveImage = (index) => {
+    const newImages = [...formData.images];
+    newImages.splice(index, 1);
+    
+    const newPreviews = [...imagePreviews];
+    newPreviews.splice(index, 1);
+    
+    setFormData({
+      ...formData,
+      images: newImages
+    });
+    
+    setImagePreviews(newPreviews);
+  };
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Form data:', formData);
     // Trong thực tế, bạn sẽ gọi API để tạo sự kiện
-    // api.post('/events', formData);
+    // const formDataToSend = new FormData();
+    // formDataToSend.append('title', formData.title);
+    // formDataToSend.append('description', formData.description);
+    // formData.images.forEach(image => formDataToSend.append('images', image));
+    // api.post('/events', formDataToSend);
     
     // Giả lập thành công và chuyển hướng
     alert('Tạo sự kiện thành công!');
@@ -250,22 +281,18 @@ const CreateEvent = () => {
             </Grid>
             
             <Grid item xs={12}>
-              <TextField
-                label="URL hình ảnh"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
-                fullWidth
-                variant="outlined"
-                placeholder="https://example.com/image.jpg"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <ImageIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              <Box className="event-image-uploader">
+                <ImageUploader
+                  images={formData.images}
+                  previews={imagePreviews}
+                  onUpload={handleImageUpload}
+                  onRemove={handleRemoveImage}
+                  maxImages={3}
+                  label="Hình ảnh sự kiện"
+                  required={false}
+                  acceptTypes="image/*"
+                />
+              </Box>
             </Grid>
             
             <Grid item xs={12} sx={{ mt: 2 }}>

@@ -12,22 +12,23 @@ import {
   Autocomplete,
   Stack,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Divider
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
-  Image as ImageIcon,
-  Delete as DeleteIcon
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 import forumService from '../../services/forum.service';
+import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
+import './ForumForms.css'; // Cập nhật import
 
 const CreateQuestion = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState([]);
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [tagSuggestions] = useState([
@@ -37,21 +38,23 @@ const CreateQuestion = () => {
     'cứu hộ', 'nhận nuôi', 'thức ăn', 'đồ chơi', 'phụ kiện'
   ]);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageUpload = (files) => {
+    // Tạo URL preview cho các file ảnh
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    
+    setImages([...images, ...files]);
+    setImagePreviews([...imagePreviews, ...newPreviews]);
   };
-
-  const handleRemoveImage = () => {
-    setImage(null);
-    setImagePreview('');
+  
+  const handleRemoveImage = (index) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    
+    const newPreviews = [...imagePreviews];
+    newPreviews.splice(index, 1);
+    
+    setImages(newImages);
+    setImagePreviews(newPreviews);
   };
 
   const handleSubmit = async (e) => {
@@ -80,16 +83,30 @@ const CreateQuestion = () => {
       formData.append('title', title);
       formData.append('content', content);
       
+      console.log('Tiêu đề:', title);
+      console.log('Nội dung:', content);
+      
       if (tags && tags.length > 0) {
         tags.forEach(tag => formData.append('tags', tag));
+        console.log('Tags:', tags);
       }
       
       formData.append('postType', 'Question'); // Đặt loại là Question
+      console.log('Loại bài viết:', 'Question');
       
       let response;
       
-      if (image) {
-        formData.append('imgUrl', image);
+      if (images && images.length > 0) {
+        images.forEach(image => formData.append('imgUrl', image));
+        console.log('Số lượng hình ảnh:', images.length);
+        
+        // Kiểm tra nội dung của FormData
+        console.log('FormData entries:');
+        for (let pair of formData.entries()) {
+          console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        console.log('Gọi API tạo câu hỏi mới với hình ảnh...');
         response = await forumService.createNewPostWithImage(formData);
       } else {
         const questionData = {
@@ -99,8 +116,11 @@ const CreateQuestion = () => {
           postType: 'Question'
         };
         
+        console.log('Gọi API tạo câu hỏi mới không có hình ảnh...');
         response = await forumService.createNewPost(questionData);
       }
+      
+      console.log('Kết quả API:', response);
       
       if (response && response.success) {
         navigate('/forum');
@@ -117,15 +137,17 @@ const CreateQuestion = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={1} sx={{ p: 3 }}>
-        <Box display="flex" alignItems="center" mb={3}>
+      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h5" component="h1">
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
             Đặt câu hỏi mới
           </Typography>
         </Box>
+        
+        <Divider sx={{ mb: 4 }} />
         
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -179,50 +201,17 @@ const CreateQuestion = () => {
             sx={{ mb: 3 }}
           />
           
-          <Box mb={3}>
-            <Typography variant="subtitle1" gutterBottom>
-              Hình ảnh (không bắt buộc)
-            </Typography>
-            
-            {!imagePreview ? (
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<ImageIcon />}
-              >
-                Tải lên hình ảnh
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </Button>
-            ) : (
-              <Box position="relative" display="inline-block">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '300px',
-                    borderRadius: '4px'
-                  }}
-                />
-                <IconButton
-                  color="error"
-                  onClick={handleRemoveImage}
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)'
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            )}
+          <Box className="forum-image-uploader" sx={{ mb: 3 }}>
+            <ImageUploader
+              images={images}
+              previews={imagePreviews}
+              onUpload={handleImageUpload}
+              onRemove={handleRemoveImage}
+              maxImages={3}
+              label="Hình ảnh (không bắt buộc)"
+              required={false}
+              acceptTypes="image/*"
+            />
           </Box>
           
           <Stack direction="row" spacing={2} justifyContent="flex-end">

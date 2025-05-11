@@ -545,15 +545,9 @@ const Profile = () => {
                                   <Email fontSize="small" /> Email
                                 </Typography>
                                 {isEditing ? (
-                                  <TextField
-                                    fullWidth
-                                    name="email"
-                                    value={editedUser.email || ''}
-                                    onChange={handleInputChange}
-                                    variant="outlined"
-                                    size="small"
-                                    className="edit-field"
-                                  />
+                                  <Typography variant="body1" className="field-value">
+                                    {editedUser.email || ''}
+                                  </Typography>
                                 ) : (
                                   <Typography variant="body1" className="field-value">
                                     {user.email}
@@ -601,14 +595,19 @@ const Profile = () => {
                                   <LocationOn fontSize="small" /> Địa chỉ
                                 </Typography>
                                 {isEditing ? (
-                                  <TextField
-                                    fullWidth
-                                    name="address"
+                                  <MapboxAutocomplete
+                                    publicKey="YOUR_MAPBOX_PUBLIC_KEY"
+                                    inputClass="edit-field"
+                                    onSuggestionSelect={(result) => {
+                                      setEditedUser({
+                                        ...editedUser,
+                                        address: result.place_name
+                                      });
+                                    }}
+                                    country="VN"
+                                    resetSearch={false}
+                                    placeholder="Nhập địa chỉ của bạn"
                                     value={editedUser.address || ''}
-                                    onChange={handleInputChange}
-                                    variant="outlined"
-                                    size="small"
-                                    className="edit-field"
                                   />
                                 ) : (
                                   <Typography variant="body1" className="field-value">

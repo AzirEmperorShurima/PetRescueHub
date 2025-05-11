@@ -12,22 +12,23 @@ import {
   Autocomplete,
   Stack,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Divider
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
-  Image as ImageIcon,
-  Delete as DeleteIcon
 } from '@mui/icons-material';
 import forumService from '../../services/forum.service';
+import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
+import './ForumForms.css'; // Cập nhật import
 
 const CreatePost = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState([]);
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [tagSuggestions, setTagSuggestions] = useState([
@@ -37,22 +38,23 @@ const CreatePost = () => {
     'cứu hộ', 'nhận nuôi', 'thức ăn', 'đồ chơi', 'phụ kiện'
   ]);
   
-  
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageUpload = (files) => {
+    // Tạo URL preview cho các file ảnh
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    
+    setImages([...images, ...files]);
+    setImagePreviews([...imagePreviews, ...newPreviews]);
   };
   
-  const handleRemoveImage = () => {
-    setImage(null);
-    setImagePreview('');
+  const handleRemoveImage = (index) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    
+    const newPreviews = [...imagePreviews];
+    newPreviews.splice(index, 1);
+    
+    setImages(newImages);
+    setImagePreviews(newPreviews);
   };
   
   const handleSubmit = async (e) => {
@@ -93,11 +95,12 @@ const CreatePost = () => {
       formData.append('postType', 'Post'); // Mặc định là loại Post
       console.log('Loại bài viết:', 'Post');
       
-      let response;
-      
-      if (image) {
-        formData.append('imgUrl', image);
-        console.log('Có hình ảnh:', image.name);
+      // Thêm tất cả các hình ảnh vào formData
+      if (images && images.length > 0) {
+        images.forEach((image, index) => {
+          formData.append('imgUrl', image);
+        });
+        console.log('Số lượng hình ảnh:', images.length);
         
         // Kiểm tra nội dung của FormData
         console.log('FormData entries:');
@@ -106,7 +109,15 @@ const CreatePost = () => {
         }
         
         console.log('Gọi API tạo bài viết mới với hình ảnh...');
-        response = await forumService.createNewPostWithImage(formData);
+        const response = await forumService.createNewPostWithImage(formData);
+        
+        console.log('Kết quả API:', response);
+        
+        if (response && response.success) {
+          navigate('/forum');
+        } else {
+          setError(response?.message || 'Đã xảy ra lỗi khi tạo bài viết');
+        }
       } else {
         // Nếu không có hình ảnh, tạo đối tượng dữ liệu thông thường
         const postData = {
@@ -117,15 +128,15 @@ const CreatePost = () => {
         };
         
         console.log('Gọi API tạo bài viết mới không có hình ảnh...');
-        response = await forumService.createNewPost(postData);
-      }
-      
-      console.log('Kết quả API:', response);
-      
-      if (response && response.success) {
-        navigate('/forum');
-      } else {
-        setError(response?.message || 'Đã xảy ra lỗi khi tạo bài viết');
+        const response = await forumService.createNewPost(postData);
+        
+        console.log('Kết quả API:', response);
+        
+        if (response && response.success) {
+          navigate('/forum');
+        } else {
+          setError(response?.message || 'Đã xảy ra lỗi khi tạo bài viết');
+        }
       }
     } catch (error) {
       console.error('Chi tiết lỗi khi tạo bài viết:', error.response || error);
@@ -137,15 +148,17 @@ const CreatePost = () => {
   
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={1} sx={{ p: 3 }}>
-        <Box display="flex" alignItems="center" mb={3}>
+      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h5" component="h1">
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
             Tạo bài viết mới
           </Typography>
         </Box>
+        
+        <Divider sx={{ mb: 4 }} />
         
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -199,50 +212,17 @@ const CreatePost = () => {
             sx={{ mb: 3 }}
           />
           
-          <Box mb={3}>
-            <Typography variant="subtitle1" gutterBottom>
-              Hình ảnh (không bắt buộc)
-            </Typography>
-            
-            {!imagePreview ? (
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<ImageIcon />}
-              >
-                Tải lên hình ảnh
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </Button>
-            ) : (
-              <Box position="relative" display="inline-block">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '300px',
-                    borderRadius: '4px'
-                  }}
-                />
-                <IconButton
-                  color="error"
-                  onClick={handleRemoveImage}
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)'
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            )}
+          <Box className="forum-image-uploader" sx={{ mb: 3 }}>
+            <ImageUploader
+              images={images}
+              previews={imagePreviews}
+              onUpload={handleImageUpload}
+              onRemove={handleRemoveImage}
+              maxImages={5}
+              label="Hình ảnh bài viết"
+              required={false}
+              acceptTypes="image/*"
+            />
           </Box>
           
           <Stack direction="row" spacing={2} justifyContent="flex-end">
