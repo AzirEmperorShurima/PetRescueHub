@@ -38,7 +38,6 @@ export const momoPaymentService = async (req, res) => {
         .digest('hex');
     console.log("--------------------SIGNATURE----------------")
 
-    //json object send to MoMo endpoint
     const requestBody = JSON.stringify({
         partnerCode: partnerCode,
         partnerName: "Test",

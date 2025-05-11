@@ -106,11 +106,16 @@ export const loginHandler = async (req, res) => {
         }
         const isFirstLogin = !foundUser.lastLoginAt;
         const currentHour = new Date().getHours();
-        let greetingTitle, greetingMessage;
+        let greetingTitle, greetingMessage, priority, metadata;
 
         if (isFirstLogin) {
             greetingTitle = 'Chào mừng bạn đến với PetRescueHub! 🎉';
             greetingMessage = `Chào mừng ${foundUser.username} đã tham gia cộng đồng của chúng tôi. Hãy khám phá và tận hưởng những tính năng tuyệt vời!`;
+            priority = 'high';
+            metadata = {
+                isFirstLogin: true,
+                userJoinedAt: new Date()
+            };
         } else {
             if (currentHour >= 5 && currentHour < 12) {
                 greetingTitle = 'Chào buổi sáng! ☀️';
@@ -122,13 +127,23 @@ export const loginHandler = async (req, res) => {
                 greetingTitle = 'Chào buổi tối! 🌙';
                 greetingMessage = `Chào buổi tối ${foundUser.username}! Cảm ơn bạn đã quay trở lại.`;
             }
+            priority = 'low';
+            metadata = {
+                loginTime: new Date(),
+                timeOfDay: currentHour >= 5 && currentHour < 12 ? 'morning' : 
+                          currentHour >= 12 && currentHour < 18 ? 'afternoon' : 'evening'
+            };
         }
 
         const welcomeNotification = new Notification({
             userId: foundUser._id.toString(),
             type: 'success',
             title: greetingTitle,
-            message: greetingMessage
+            message: greetingMessage,
+            priority: priority,
+            relatedTo: 'login',
+            metadata: metadata,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // Thông báo sẽ hết hạn sau 24 giờ
         });
         await welcomeNotification.save();
         foundUser.lastLoginAt = new Date();

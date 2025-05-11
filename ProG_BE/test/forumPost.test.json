@@ -1,0 +1,146 @@
+[
+    {
+        "title": "Chăm sóc thú cưng trong mùa hè",
+        "content": "Chia sẻ kinh nghiệm chăm sóc thú cưng trong thời tiết nóng bức. Cần chú ý những điểm sau...",
+        "tags": [
+            "pet care",
+            "summer",
+            "tips"
+        ],
+        "postType": "ForumPost"
+    },
+    {
+        "title": "Chăm sóc thú cưng trong mùa hè",
+        "content": "Chia sẻ kinh nghiệm chăm sóc thú cưng trong thời tiết nóng bức. Cần chú ý những điểm sau...",
+        "tags": [
+            "pet care",
+            "summer",
+            "tips"
+        ],
+        "postType": "ForumPost",
+        "imgUrl": [
+            "url_hinh_1.jpg",
+            "url_hinh_2.jpg"
+        ]
+    },
+    {
+        "title": "Chăm sóc thú cưng trong mùa hè",
+        "content": "Chia sẻ kinh nghiệm chăm sóc thú cưng trong thời tiết nóng bức. Cần chú ý những điểm sau...",
+        "tags": [
+            "pet care",
+            "summer",
+            "tips"
+        ],
+        "postType": "ForumPost",
+        "imgUrl": [
+            "url_hinh_1.jpg",
+            "url_hinh_2.jpg"
+        ]
+    },
+    {
+        "title": "Cách điều trị bệnh nấm da cho mèo?",
+        "content": "Mèo nhà mình bị nấm da, có ai biết cách điều trị không ạ?",
+        "tags": [
+            "cat",
+            "health",
+            "skin disease"
+        ],
+        "postType": "Question",
+        "questionDetails": {
+            "urgency": "high",
+            "category": "health"
+        }
+    },
+    {
+        "title": "Cách điều trị bệnh nấm da cho mèo?",
+        "content": "Mèo nhà mình bị nấm da, có ai biết cách điều trị không ạ?",
+        "tags": [
+            "cat",
+            "health",
+            "skin disease"
+        ],
+        "postType": "Question",
+        "questionDetails": {
+            "urgency": "high",
+            "category": "health"
+        },
+        "imgUrl": [
+            "url_hinh_benh_1.jpg",
+            "url_hinh_benh_2.jpg"
+        ]
+    },
+    {
+        "title": "Tìm chó Corgi đi lạc khu vực Quận 1",
+        "content": "Chó nhà mình đi lạc tại khu vực quận 1, ai thấy xin liên hệ giúp",
+        "tags": [
+            "lost pet",
+            "corgi",
+            "district 1"
+        ],
+        "postType": "FindLostPetPost",
+        "lostPetInfo": {
+            "petName": "Bơ",
+            "breed": "Corgi",
+            "color": "Nâu trắng",
+            "lastSeenLocation": "Công viên 23/9, Quận 1",
+            "lastSeenTime": "2024-01-20T15:30:00Z",
+            "contactPhone": "0123456789"
+        }
+    },
+    {
+        "title": "Tìm chó Corgi đi lạc khu vực Quận 1",
+        "content": "Chó nhà mình đi lạc tại khu vực quận 1, ai thấy xin liên hệ giúp",
+        "tags": [
+            "lost pet",
+            "corgi",
+            "district 1"
+        ],
+        "postType": "FindLostPetPost",
+        "lostPetInfo": {
+            "petName": "Bơ",
+            "breed": "Corgi",
+            "color": "Nâu trắng",
+            "lastSeenLocation": "Công viên 23/9, Quận 1",
+            "lastSeenTime": "2024-01-20T15:30:00Z",
+            "contactPhone": "0123456789"
+        },
+        "imgUrl": [
+            "url_hinh_cho_1.jpg",
+            "url_hinh_cho_2.jpg"
+        ]
+    },
+    {
+        "title": "Hội chợ thú cưng Sài Gòn 2024",
+        "content": "Hội chợ thú cưng lớn nhất Sài Gòn sẽ diễn ra vào cuối tháng 2...",
+        "tags": [
+            "event",
+            "pet fair",
+            "saigon"
+        ],
+        "postType": "EventPost",
+        "eventStartDate": "2024-02-28T08:00:00Z",
+        "eventEndDate": "2024-02-29T17:00:00Z",
+        "eventLocation": "Nhà thi đấu Phú Thọ",
+        "eventLongitude": 106.6789,
+        "eventLatitude": 10.7890
+    },
+    {
+        "title": "Hội chợ thú cưng Sài Gòn 2024",
+        "content": "Hội chợ thú cưng lớn nhất Sài Gòn sẽ diễn ra vào cuối tháng 2...",
+        "tags": [
+            "event",
+            "pet fair",
+            "saigon"
+        ],
+        "postType": "EventPost",
+        "eventStartDate": "2024-02-28T08:00:00Z",
+        "eventEndDate": "2024-02-29T17:00:00Z",
+        "eventLocation": "Nhà thi đấu Phú Thọ",
+        "eventLongitude": 106.6789,
+        "eventLatitude": 10.7890,
+        "imgUrl": [
+            "url_banner_event.jpg",
+            "url_poster_event.jpg"
+        ]
+    }
+]

@@ -1,5 +1,5 @@
 import multer from 'multer';
-import { uploadToFolder, getOrCreateNestedFolders } from '../services/upload/GoogleDrive.service.js';
+import { uploadToFolder, getOrCreateNestedFolders, getOrCreatePostTypeFolder } from '../services/upload/GoogleDrive.service.js';
 import { COOKIE_PATHS } from '../../config.js';
 import { getUserFieldFromToken } from '../services/User/User.service.js';
 
@@ -61,6 +61,10 @@ export const uploadPostImages = (fieldName = 'images', folderType = 'postImage')
                         message: 'Yêu cầu xác thực người dùng'
                     });
                 }
+
+                // Lấy postType từ request body
+                const postType = req.body.postType || 'ForumPost';
+
                 const folders = await getOrCreateNestedFolders(userId);
                 const targetFolderId = folders[folderType];
 
@@ -70,9 +74,19 @@ export const uploadPostImages = (fieldName = 'images', folderType = 'postImage')
                         message: `Thư mục ${folderType} không tồn tại`
                     });
                 }
-                console.log(`📤 Bắt đầu upload ${req.files.length} ảnh cho user ${userId}`);
+
+                // Tạo hoặc lấy thư mục con theo postType
+                const postTypeFolder = await getOrCreatePostTypeFolder(targetFolderId, postType);
+                if (!postTypeFolder) {
+                    return res.status(500).json({
+                        success: false,
+                        message: `Không thể tạo thư mục cho ${postType}`
+                    });
+                }
+
+                console.log(`📤 Bắt đầu upload ${req.files.length} ảnh cho user ${userId} vào thư mục ${postType}`);
                 const uploadPromises = req.files.map(file =>
-                    uploadWithRetry(file, targetFolderId)
+                    uploadWithRetry(file, postTypeFolder)
                 );
 
                 const results = await Promise.allSettled(uploadPromises);

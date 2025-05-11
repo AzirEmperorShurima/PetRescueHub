@@ -1,8 +1,36 @@
 import { Queue, Worker } from "bullmq";
 import IORedis from "ioredis";
 import user from "../models/user.js";
+import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from '../Config/redis.config.js';
 
-const connection = new IORedis();
+const connection = new IORedis({
+    username: REDIS_USERNAME,
+    password: REDIS_PASSWORD,
+    host: REDIS_HOST,
+    port: REDIS_PORT,
+    maxRetriesPerRequest: null,
+    connectTimeout: 10000,        // Tăng thời gian timeout kết nối lên 10s
+    retryStrategy: (times) => {
+        return Math.min(times * 50, 2000);
+    },
+    reconnectOnError: (err) => {
+        const targetError = 'READONLY';
+        if (err.message.includes(targetError)) {
+            return true;
+        }
+        return false;
+    }
+});
+
+// Thêm event listener để theo dõi trạng thái kết nối
+connection.on('connect', () => {
+    console.log('✅ Kết nối Redis thành công!');
+});
+
+connection.on('error', (error) => {
+    console.error('❌ Lỗi kết nối Redis:', error);
+});
+
 const cleanupQueue = new Queue("cleanupQueue", { connection });
 
 export const scheduleCleanupJob = async () => {

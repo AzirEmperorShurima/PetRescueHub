@@ -21,7 +21,6 @@ export const checkUserAuth = async (req, res, next) => {
             });
         }
 
-        // Kiểm tra loại token
         const tokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'tokenType');
         if (tokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -45,6 +44,33 @@ export const checkUserAuth = async (req, res, next) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Lỗi xác thực người dùng"
+        });
+    }
+};
+
+// sub-middlware
+export const checkUserRole = async (req, res, next) => {
+    try {
+        // checkUserAuth
+        if (!req.user) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: "Không tìm thấy thông tin người dùng"
+            });
+        }
+        if (!req.user.roles.includes('user')) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+                message: "Bạn không có quyền thực hiện hành động này"
+            });
+        }
+
+        next();
+    } catch (error) {
+        console.error("Lỗi kiểm tra role người dùng:", error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Lỗi kiểm tra quyền người dùng"
         });
     }
 };

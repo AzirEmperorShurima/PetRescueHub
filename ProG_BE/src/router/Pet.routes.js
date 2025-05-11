@@ -8,8 +8,12 @@ import {
     getPetsByOwner,
     petFilters,
     getPetDetails,
-    getAllPets
+    getAllPets,
+    updatePetState
 } from "../Controller/Pet.Controller.js";
+import { uploadPostImages } from "../Middlewares/uploadMiddleware.js";
+import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.js";
+import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
 
 const petRoute = Router()
 

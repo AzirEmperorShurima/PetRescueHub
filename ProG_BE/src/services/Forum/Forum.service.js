@@ -209,16 +209,17 @@ export const getPostById = async (id) => {
  * @param {String} postType - Loại bài viết (mặc định là "ForumPost")
  * @returns {Promise<Object>} - Bài viết mới được tạo
  */
-export const createPost = async (title, content, tags, imgUrl, userId, postType = "ForumPost") => {
+export const createPost = async (title, content, tags, imgUrl, userId, postType = "ForumPost", additionalFields = {}) => {
     try {
-        // Kiểm tra đầu vào
         if (!title?.trim() || !content?.trim() || !userId) {
             return { success: false, message: "Thiếu thông tin cần thiết" };
         }
+
         const normalizedTags = Array.isArray(tags) ? tags : tags ? [tags] : [];
         const normalizedImgUrl = Array.isArray(imgUrl) ? imgUrl : imgUrl ? [imgUrl] : [];
-        console.log("Normalized tags and imgUrl:", { normalizedTags, normalizedImgUrl }); // Debug log
-        const newPost = new PostModel({
+
+        // Tạo object chứa thông tin cơ bản của bài viết
+        const postData = {
             title: title.trim(),
             content: content.trim(),
             author: new mongoose.Types.ObjectId(userId),
@@ -226,8 +227,12 @@ export const createPost = async (title, content, tags, imgUrl, userId, postType 
             imgUrl: normalizedImgUrl,
             postType,
             postStatus: "public",
-        });
+            ...additionalFields 
+        };
+
+        const newPost = new PostModel(postData);
         await newPost.save();
+
         return { success: true, message: "Đăng bài thành công!", post: newPost };
     } catch (error) {
         console.error("❌ Lỗi khi tạo bài viết:", error);
