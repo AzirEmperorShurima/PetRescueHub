@@ -10,15 +10,12 @@ import {
   Badge, Pets, Article, EmojiEvents, VolunteerActivism,
   Edit, Save, Cancel, Male, Female, QuestionMark
 } from '@mui/icons-material';
-// import ProfileHeader from './components/ProfileHeader';
-// import ProfileStats from './components/ProfileStats';
 import PetGrid from './components/PetGrid';
 import PostGrid from './components/PostGrid';
 import Achievements from './components/Achievements';
-import ProfileActions from './components/ProfileActions';
 import RescueActivities from './components/RescueActivities';
-import VolunteerBadges from './components/VolunteerBadges';
 import ActivityTimeline from './components/ActivityTimeline';
+import VolunteerBadges from './components/VolunteerBadges';
 import TabPanel from './components/TabPanel';
 import './Profile.css';
 import { pets as mockPets } from '../../mocks/pets';
@@ -217,25 +214,6 @@ const Profile = () => {
             createdAt: userProfile.createdAt,
             updatedAt: userProfile.updatedAt
           });
-
-          // const userPets = mockPets.filter(p => p.ownerId === userProfile.id);
-          // const userPosts = mockPosts.filter(p => p.authorId === userProfile.id);
-          // const userAchievements = mockAchievements || [];
-          // const userRoles = Array.isArray(userProfile.roles) ? userProfile.roles : [];
-          // const isVolunteer = userRoles.includes('volunteer');
-          // const userRescues = isVolunteer ?
-          //   mockRescues.filter(r => r.assignedTo === userProfile.username) : [];
-          // const userDonations = isVolunteer ? [
-          //   { id: 1, amount: 500000, campaign: 'Mái ấm cho mèo hoang', date: '2023-05-20' },
-          //   { id: 2, amount: 300000, campaign: 'Thức ăn cho chó bị bỏ rơi', date: '2023-06-15' },
-          //   { id: 3, amount: 1000000, campaign: 'Phẫu thuật cho thú cưng bị thương', date: '2023-07-10' }
-          // ] : [];
-
-          // setPets(userPets);
-          // setPosts(userPosts);
-          // setAchievements(userAchievements);
-          // setRescues(userRescues);
-          // setDonations(userDonations);
         } else {
           setError('Không thể lấy thông tin người dùng từ API');
         }
@@ -261,8 +239,9 @@ const Profile = () => {
     const userRoles = Array.isArray(user?.roles) ? user.roles : [];
     if (userRoles.includes('volunteer')) {
       tabs.push(
-        { label: 'Thành tích', icon: <EmojiEvents /> },
-        { label: 'Hoạt động cứu hộ', icon: <VolunteerActivism /> }
+        { label: 'Hoạt động cứu hộ', icon: <VolunteerActivism /> },
+        { label: 'Thành tích', icon: <EmojiEvents /> }
+        
       );
     }
 
@@ -728,16 +707,16 @@ const Profile = () => {
                     <PostGrid posts={posts} />
                   </TabPanel>
 
-                  {/* Tab 3: Thành tích (chỉ hiển thị với volunteer) */}
-                  <TabPanel value={activeTab} index={3}>
-                    <Achievements achievements={achievements} />
-                    <VolunteerBadges user={user} achievements={achievements} />
-                  </TabPanel>
-
-                  {/* Tab 4: Hoạt động cứu hộ (chỉ hiển thị với volunteer) */}
+                  {/* Tab 3: Hoạt động cứu hộ (chỉ hiển thị với volunteer) */}
                   <TabPanel value={activeTab} index={4}>
                     <RescueActivities rescues={rescues} user={user} />
                     <ActivityTimeline user={user} rescues={rescues} donations={donations} posts={posts} />
+                  </TabPanel>
+
+                  {/* Tab 4: Thành tích (chỉ hiển thị với volunteer) */}
+                  <TabPanel value={activeTab} index={3}>
+                    <Achievements achievements={achievements} />
+                    <VolunteerBadges user={user} achievements={achievements} />
                   </TabPanel>
                 </Box>
               </Paper>

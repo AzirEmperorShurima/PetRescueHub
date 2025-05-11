@@ -14,8 +14,11 @@ import PetsIcon from '@mui/icons-material/Pets';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import { useNavigate } from 'react-router-dom';
 
-const PetGrid = ({ pets }) => {
+// Trong component PetGrid
+const PetGrid = ({ pets = [] }) => {
+  const navigate = useNavigate();
   if (!pets || pets.length === 0) {
     return (
       <Box className="empty-pets">
@@ -27,6 +30,7 @@ const PetGrid = ({ pets }) => {
           variant="contained" 
           className="add-pet-button"
           startIcon={<AddIcon />}
+          onClick={() => navigate('/findhome')}
         >
           Thêm thú cưng
         </Button>
@@ -42,6 +46,7 @@ const PetGrid = ({ pets }) => {
           variant="contained" 
           className="add-pet-button"
           startIcon={<AddIcon />}
+          onClick={() => navigate('/findhome')}
         >
           Thêm thú cưng
         </Button>

@@ -4,6 +4,7 @@
       "tag": "greeting",
       "patterns": [
         "Hello!",
+        "Hi",
         "Xin chào!",
         "Chào bạn!"
       ],

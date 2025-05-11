@@ -119,7 +119,7 @@ const Event = () => {
           <Paper
             component="form"
             className="event-search"
-            sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: { xs: '100%', sm: 'auto', md: 300 } }}
+            sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: { xs: '100%', sm: 'auto', md: 900 } }}
           >
             <InputBase
               sx={{ ml: 1, flex: 1 }}

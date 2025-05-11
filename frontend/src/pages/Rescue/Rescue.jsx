@@ -12,23 +12,33 @@ import {
   Alert,
   Snackbar,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Divider,
+  Avatar
 } from '@mui/material';
 import { 
   LocationOn as LocationIcon,
   MyLocation as MyLocationIcon,
-  Send as SendIcon
+  Send as SendIcon,
+  Pets as PetsIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../components/contexts/AuthContext';
 import axios from 'axios';
 import './Rescue.css';
+import rescueService from '../../services/rescue.service';
 
 const Rescue = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [volunteers, setVolunteers] = useState([]);
+  const [loadingVolunteers, setLoadingVolunteers] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -40,12 +50,16 @@ const Rescue = () => {
     fullname: user?.fullname || '',
     phone: user?.phone || '',
     notes: '',
-    radius: 1, // Bán kính mặc định 5km
+    petDetails: '', // Thêm trường mô tả chi tiết về thú cưng
+    radius: 1, // Bán kính mặc định 1km
     location: {
       type: 'Point',
       coordinates: [0, 0] // [longitude, latitude]
     },
-    isGuest: !user?.id
+    isGuest: !user?.id,
+    status: 'pending',
+    autoAssignVolunteer: true, // Mặc định tự động chọn tình nguyện viên
+    selectedVolunteers: [] // Danh sách tình nguyện viên được chọn
   });
 
   // Lấy vị trí hiện tại của người dùng
@@ -76,6 +90,11 @@ const Rescue = () => {
           message: 'Đã lấy vị trí hiện tại thành công',
           severity: 'success'
         });
+        
+        // Tìm tình nguyện viên gần đó khi có vị trí
+        if (longitude !== 0 && latitude !== 0) {
+          findNearbyVolunteers(longitude, latitude, formData.radius);
+        }
       },
       (error) => {
         console.error('Lỗi khi lấy vị trí:', error);
@@ -87,6 +106,32 @@ const Rescue = () => {
         });
       }
     );
+  };
+
+  // Tìm tình nguyện viên gần đó
+  const findNearbyVolunteers = async (longitude, latitude, radius) => {
+    setLoadingVolunteers(true);
+    try {
+      // Gọi API để tìm tình nguyện viên gần đó
+      const response = await axios.get('/api/volunteers/nearby', {
+        params: {
+          longitude,
+          latitude,
+          radius
+        }
+      });
+      
+      setVolunteers(response.data.volunteers || []);
+    } catch (error) {
+      console.error('Lỗi khi tìm tình nguyện viên:', error);
+      setSnackbar({
+        open: true,
+        message: 'Không thể tìm tình nguyện viên gần đó',
+        severity: 'warning'
+      });
+    } finally {
+      setLoadingVolunteers(false);
+    }
   };
 
   // Xử lý thay đổi input
@@ -103,6 +148,40 @@ const Rescue = () => {
     setFormData({
       ...formData,
       radius: newValue
+    });
+    
+    // Cập nhật danh sách tình nguyện viên khi thay đổi bán kính
+    if (formData.location.coordinates[0] !== 0 && formData.location.coordinates[1] !== 0) {
+      findNearbyVolunteers(
+        formData.location.coordinates[0],
+        formData.location.coordinates[1],
+        newValue
+      );
+    }
+  };
+
+  // Xử lý thay đổi checkbox tự động chọn tình nguyện viên
+  const handleAutoAssignChange = (e) => {
+    setFormData({
+      ...formData,
+      autoAssignVolunteer: e.target.checked
+    });
+  };
+
+  // Xử lý chọn tình nguyện viên
+  const handleVolunteerSelection = (volunteerId) => {
+    const selectedVolunteers = [...formData.selectedVolunteers];
+    const index = selectedVolunteers.indexOf(volunteerId);
+    
+    if (index === -1) {
+      selectedVolunteers.push(volunteerId);
+    } else {
+      selectedVolunteers.splice(index, 1);
+    }
+    
+    setFormData({
+      ...formData,
+      selectedVolunteers
     });
   };
 
@@ -130,22 +209,38 @@ const Rescue = () => {
       return;
     }
 
+    // Kiểm tra nếu không tự động chọn tình nguyện viên thì phải chọn ít nhất 1
+    if (!formData.autoAssignVolunteer && formData.selectedVolunteers.length === 0) {
+      setSnackbar({
+        open: true,
+        message: 'Vui lòng chọn ít nhất một tình nguyện viên',
+        severity: 'error'
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       // Chuẩn bị dữ liệu gửi đi
       const rescueData = {
-        ...formData,
         requester: user?.id || null,
         guestInfo: formData.isGuest ? {
           fullname: formData.fullname,
           phone: formData.phone
         } : null,
+        location: formData.location,
+        radius: formData.radius,
+        notes: formData.notes,
+        petDetails: formData.petDetails,
         missionId: `RESCUE-${Date.now()}`,
-        status: 'pending'
+        status: 'pending',
+        startedAt: new Date(),
+        autoAssign: formData.autoAssignVolunteer,
+        selectedVolunteers: formData.autoAssignVolunteer ? [] : formData.selectedVolunteers
       };
 
       // Gọi API để tạo báo cáo cứu hộ
-      const response = await axios.post('/api/rescue-missions', rescueData);
+      const response = await rescueService.createRescueMission(rescueData);
       
       setSnackbar({
         open: true,
@@ -155,7 +250,7 @@ const Rescue = () => {
       
       // Chuyển hướng sau khi gửi thành công
       setTimeout(() => {
-        navigate('/rescue/success', { state: { missionId: response.data.missionId } });
+        navigate('/rescue/success', { state: { missionId: response.missionId } });
       }, 2000);
     } catch (error) {
       console.error('Lỗi khi gửi báo cáo cứu hộ:', error);
@@ -277,6 +372,25 @@ const Rescue = () => {
               </Box>
             </Grid>
 
+            {/* Thông tin thú cưng cần cứu hộ */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                <PetsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Thông tin thú cưng cần cứu hộ
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Mô tả chi tiết về thú cưng cần cứu hộ"
+                name="petDetails"
+                value={formData.petDetails}
+                onChange={handleInputChange}
+                placeholder="Ví dụ: Loại thú cưng, màu lông, kích thước, đặc điểm nhận dạng..."
+                disabled={loading}
+              />
+            </Grid>
+
             {/* Ghi chú */}
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>
@@ -293,6 +407,67 @@ const Rescue = () => {
                 placeholder="Ví dụ: Một chú chó bị thương ở chân, nằm bên đường, cần được cứu hộ gấp..."
                 disabled={loading}
               />
+            </Grid>
+
+            {/* Tùy chọn tình nguyện viên */}
+            <Grid item xs={12}>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Tùy chọn tình nguyện viên
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.autoAssignVolunteer}
+                    onChange={handleAutoAssignChange}
+                    name="autoAssignVolunteer"
+                    color="primary"
+                    disabled={loading}
+                  />
+                }
+                label="Tự động chọn tình nguyện viên gần nhất"
+              />
+
+              {!formData.autoAssignVolunteer && volunteers.length > 0 && (
+                <Box mt={2} className="volunteer-selection">
+                  <Typography variant="subtitle1" gutterBottom>
+                    Chọn tình nguyện viên (tối thiểu 1 người):
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {volunteers.map((volunteer) => (
+                      <Grid item xs={12} sm={6} key={volunteer._id}>
+                        <Paper 
+                          className={`volunteer-card ${formData.selectedVolunteers.includes(volunteer._id) ? 'selected' : ''}`}
+                          onClick={() => handleVolunteerSelection(volunteer._id)}
+                          sx={{ 
+                            p: 2, 
+                            cursor: 'pointer',
+                            border: formData.selectedVolunteers.includes(volunteer._id) ? '2px solid #1976d2' : '1px solid #e0e0e0'
+                          }}
+                        >
+                          <Box display="flex" alignItems="center">
+                            <Avatar src={volunteer.avatar} alt={volunteer.fullname}>
+                              {volunteer.fullname.charAt(0)}
+                            </Avatar>
+                            <Box ml={2}>
+                              <Typography variant="subtitle1">{volunteer.fullname}</Typography>
+                              <Typography variant="body2" color="textSecondary">
+                                Khoảng cách: {(volunteer.distance / 1000).toFixed(2)} km
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {!formData.autoAssignVolunteer && volunteers.length === 0 && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  Không tìm thấy tình nguyện viên trong khu vực. Vui lòng tăng bán kính tìm kiếm hoặc chọn tự động gán.
+                </Alert>
+              )}
             </Grid>
 
             {/* Nút gửi */}

@@ -22,28 +22,33 @@ const UserMenu = ({ user }) => {
   };
 
   const handleProfile = () => {
-    navigate('/profile');
+    // Đóng menu trước khi chuyển hướng
     handleClose();
+    navigate('/profile');
   };
 
   const handleSettings = () => {
-    navigate('/settings');
+    // Đóng menu trước khi chuyển hướng
     handleClose();
+    navigate('/settings');
   };
 
   const handleMyPets = () => {
-    navigate('/my-pets');
+    // Đóng menu trước khi chuyển hướng
     handleClose();
+    navigate('/my-pets');
   };
 
   const handleMyFavorites = () => {
-    navigate('/favorites');
+    // Đóng menu trước khi chuyển hướng
     handleClose();
+    navigate('/favorites');
   };
 
   const handleHelp = () => {
-    navigate('/help');
+    // Đóng menu trước khi chuyển hướng
     handleClose();
+    navigate('/help');
   };
 
   const handleLogout = async () => {
@@ -96,6 +101,7 @@ const UserMenu = ({ user }) => {
         id="account-menu"
         open={open}
         onClose={handleClose}
+        disableScrollLock={true} // Thêm thuộc tính này để ngăn chặn việc khóa cuộn
         PaperProps={{
           elevation: 0,
           sx: {

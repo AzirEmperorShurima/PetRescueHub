@@ -4,6 +4,7 @@ import { Close as CloseIcon, Send as SendIcon, Chat as ChatIcon } from '@mui/ico
 import { useAuth } from '../../../../components/contexts/AuthContext';
 import './ChatbotWidget.css';
 import axios from 'axios';
+import logo from '../../../../assets/images/logo.svg';
 
 const ChatbotWidget = () => {
   const { user } = useAuth();
@@ -100,7 +101,8 @@ const ChatbotWidget = () => {
     setIsTyping(true);
   
     try {
-      const res = await axios.post('http://192.168.1.6:5000/chat', {
+      // Thay đổi URL API thành localhost hoặc URL phù hợp với môi trường của bạn
+      const res = await axios.post('http://localhost:5000/chat', {
         message: inputValue
       });
   
@@ -143,31 +145,34 @@ const ChatbotWidget = () => {
     setMessages([...messages, userMessage]);
     setIsTyping(true);
   
-    try {
-      const res = await axios.post('http://192.168.1.6:5000/chat', {
-        message: suggestion
-      });
-  
+    // Sử dụng hàm getBotResponse để lấy phản hồi thay vì gọi API
+    setTimeout(() => {
+      const botResponseText = getBotResponse(suggestion);
+      const relatedSuggestions = getRelatedSuggestions(suggestion);
+      
       const botResponse = {
         id: messages.length + 2,
-        text: res.data.response || 'Không có phản hồi từ AI.',
+        text: botResponseText,
         sender: 'bot',
         timestamp: new Date()
       };
-  
+      
       setMessages(prev => [...prev, botResponse]);
-    } catch (error) {
-      const botResponse = {
-        id: messages.length + 2,
-        text: 'Lỗi kết nối tới máy chủ.',
-        sender: 'bot',
-        timestamp: new Date()
-      };
-  
-      setMessages(prev => [...prev, botResponse]);
-    } finally {
+      
+      // Thêm tin nhắn gợi ý liên quan nếu có
+      if (relatedSuggestions && relatedSuggestions.length > 0) {
+        const suggestionsMessage = {
+          id: messages.length + 3,
+          suggestions: relatedSuggestions,
+          sender: 'bot',
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, suggestionsMessage]);
+      }
+      
       setIsTyping(false);
-    }
+    }, 1000); // Giả lập độ trễ phản hồi 1 giây
   };
 
   const getBotResponse = (message) => {
@@ -228,7 +233,7 @@ const ChatbotWidget = () => {
           onMouseDown={handleMouseDown}
         >
           <div className="chatbot-header">
-            <Avatar className="chatbot-avatar" src="https://i.pravatar.cc/150?img=3" />
+            <Avatar className="chatbot-avatar" src={logo}/>
             <Typography variant="subtitle1" className="chatbot-name">Pet Rescue AI Assistant</Typography>
             <IconButton className="chatbot-close-btn" onClick={() => setIsOpen(false)}>
               <CloseIcon />
@@ -238,7 +243,7 @@ const ChatbotWidget = () => {
             <Box className="chatbot-messages">
               {messages.map((message) => (
                 <Box key={message.id} className={`message-container ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}>
-                  {message.sender === 'bot' && <Avatar className="message-avatar" src="https://i.pravatar.cc/150?img=3" />}
+                  {message.sender === 'bot' && <Avatar className="message-avatar" src={logo} />}
                   <Box className="message-content">
                     {message.text && <Typography className="message-text">{message.text}</Typography>}
                     {message.suggestions && (
@@ -256,7 +261,7 @@ const ChatbotWidget = () => {
 
               {isTyping && (
                 <Box className="message-container bot-message">
-                  <Avatar className="message-avatar" src="https://i.pravatar.cc/150?img=3" />
+                  <Avatar className="message-avatar" src={logo} />
                   <Box className="message-content typing-content">
                     <Box className="typing-indicator">
                       <span></span><span></span><span></span>
