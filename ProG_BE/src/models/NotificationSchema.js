@@ -70,13 +70,11 @@ export const createNotificationModel = (io) => {
         }
     });
 
-    // Thêm method để đánh dấu đã đọc
     notificationSchema.methods.markAsRead = async function() {
         this.isRead = true;
         return this.save();
     };
 
-    // Thêm method để lấy thông báo theo batch
     notificationSchema.statics.getUnreadBatch = async function(userId, limit = 10) {
         return this.find({
             userId,

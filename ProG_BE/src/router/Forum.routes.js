@@ -15,6 +15,7 @@ import {
 } from "../Controller/Forum.Controller.js";
 import { checkPostType } from "../Middlewares/checkPostType.js";
 import { uploadPostImages } from "../Middlewares/uploadMiddleware.js";
+import favoriteListRoute from "./Favourite.routes.js";
 
 const forumRoutes = Router();
 
@@ -27,7 +28,7 @@ forumRoutes.get('/', (req, res) => {
 // Post-related routes
 forumRoutes.get('/GET/posts', getForumPosts);
 forumRoutes.get('/GET/posts/:Post_id', getPostById);
-forumRoutes.post('/posts/new', [uploadPostImages(),checkPostType ], createNewForumPost);
+forumRoutes.post('/posts/new', [uploadPostImages(), checkPostType], createNewForumPost);
 forumRoutes.put('/posts/:post_id', updateForumPost);
 
 // Comment-related routes
@@ -39,7 +40,7 @@ forumRoutes.put('/comments/:commentId', updateComment);     // Cập nhật comm
 forumRoutes.get('/comments/GET-ReplyComments/:commentId', getRepliesByParent); // Lấy danh sách comment reply của 1 comment id
 
 // Reaction-related routes
-forumRoutes.post('/reactions/post', handlerReaction);          // Thêm/sửa reaction cho post   // Thêm/sửa reaction cho comment              // Xóa reaction
+forumRoutes.post('/reactions/post', handlerReaction);          // Thêm/sửa reaction cho post   // Thêm/sửa reaction cho comment    // Xóa reaction
 forumRoutes.get('/reactions/:postId/:targetId', getReactionsByPost); // Lấy thông tin reactions
-
+forumRoutes.use('/favorite', favoriteListRoute)
 export default forumRoutes;

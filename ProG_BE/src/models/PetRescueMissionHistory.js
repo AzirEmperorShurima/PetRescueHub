@@ -8,12 +8,8 @@ const rescueMissionHistorySchema = new mongoose.Schema({
     },
     requester: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Có thể là user thật hoặc user guest
-        required: false
-    },
-    guestInfo: {
-        fullname: String,
-        phone: String,
+        ref: "User",
+        required: true
     },
     location: {
         type: {
@@ -22,13 +18,13 @@ const rescueMissionHistorySchema = new mongoose.Schema({
             default: 'Point',
         },
         coordinates: {
-            type: [Number], // [longitude, latitude]
+            type: [Number], 
             required: true,
         }
     },
     radius: {
         type: Number,
-        required: true, // bán kính người dùng chọn
+        required: true,
     },
     selectedVolunteers: [{
         type: mongoose.Schema.Types.ObjectId,

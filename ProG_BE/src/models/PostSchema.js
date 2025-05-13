@@ -65,7 +65,20 @@ export const Question = PostModel.discriminator(
 export const FindLostPetPost = PostModel.discriminator(
     "FindLostPetPost",
     new mongoose.Schema({
-        lostPetInfo: { type: String }
+        lostPetInfo: { type: String },
+        contactInfo: {
+            type: {
+                phoneNumber: { type: String },
+                email: { type: String },
+                address: { type: String },
+                breed: { type: String },
+                breedName: { type: String },
+                petColor: { type: String },
+                petAge: { type: Number },
+                petGender: { type: String },
+                petDetails: { type: String },
+            }
+        },
     })
 );
 export const EventPost = PostModel.discriminator(

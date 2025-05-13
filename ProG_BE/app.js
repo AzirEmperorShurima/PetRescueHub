@@ -16,8 +16,8 @@ import path from 'path';
 import adminRouter from './src/router/Admin.routes.js';
 import volunteerRouter from './src/router/Volunteer.routes.js';
 import PetRescueRouter from './src/router/PetRescue.routes.js';
-import favoriteListRoute from './src/router/Favourite.routes.js';
 import { scheduleCleanupJob } from './src/Jobs/Delete_not_Activate_Account_BullMQ.js';
+import privateRoute from './src/Controller/private/Private.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,7 +49,6 @@ app.use(apiLimiter);
 
 app.use('/api/auth', authRouter);
 app.use('/api/forum', forumRoutes)
-app.use('/api', favoriteListRoute);
 app.use('/api/user', userRoute)
 app.use('/api/volunteer', volunteerRouter)
 app.use('/api/pet', petRoute)
@@ -57,7 +56,8 @@ app.use('/api/admin', adminRouter)
 app.use('/api/PetRescue', PetRescueRouter)
 
 app.use('/api/root', express.static(path.join(__dirname, 'src/root/image')));
-
+//Test
+app.use('/api/private/test', privateRoute)
 // app.get('/api/avatar', (req, res) => {
 //     const { type } = req.query;
 
