@@ -8,10 +8,11 @@ import TransactionHistory from "./TransactionHistory.js";
 import Package from "./Package.js";
 import FavouriteList from "./FavouriteList.js";
 import PetProfile from "./PetProfile.js";
-import  { ForumPost, Question, FindLostPetPost, EventPost, PostModel } from "./PostSchema.js";
+import { ForumPost, Question, FindLostPetPost, EventPost, PostModel } from "./PostSchema.js";
 import { CommentModel } from "./CommentsSchema.js";
 import Reaction from "./ReactionSchema.js";
 import PetRescueMissionHistory from "./PetRescueMissionHistory.js";
+import PetGuideSchema from "./PetGuideSchema.js";
 
 const models_list = {
     user,
@@ -21,7 +22,8 @@ const models_list = {
     PetProfile,
     FavouriteList,
     TransactionHistory,
-    Package,
+    // Package,
+    PetGuideSchema,
     PostModel,
     CommentModel,
     Reaction,
