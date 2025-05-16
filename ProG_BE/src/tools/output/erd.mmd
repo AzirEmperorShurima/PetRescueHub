@@ -1,0 +1,247 @@
+erDiagram
+USER {
+    string id
+    string username
+    string fullname
+    date birthdate
+    string gender
+    string biography
+    string email
+    string avatar
+    array phonenumber
+    string address
+    string password
+    string secondaryPassword
+    array tokens
+    array roles
+    boolean isPrivate
+    boolean isActive
+    boolean isCompromised
+    string volunteerStatus
+    string volunteerRequestStatus
+    boolean isVIP
+    date premiumExpiresAt
+    date lastLoginAt
+    objectid _id
+    date createdAt
+    date updatedAt
+}
+ROLE {
+    string name
+    objectid _id
+}
+MESSAGE {
+    objectid sender
+    objectid receiver
+    string type
+    string content
+    boolean isRead
+    date createdAt
+    objectid _id
+}
+REPORT {
+    objectid reporter
+    objectid targetId
+    string reason
+    string status
+    string actionTaken
+    string adminNote
+    objectid _id
+    date createdAt
+    date updatedAt
+}
+PETPROFILE {
+    string name
+    number age
+    date petDob
+    string breed
+    string breedName
+    string petState
+    boolean isDeleted
+    string gender
+    string petDetails
+    number weight
+    number height
+    string reproductiveStatus
+    array vaccinationStatus
+    objectid ownerId
+    string avatar
+    string microchipId
+    array petAlbum
+    objectid _id
+    date createdAt
+    date updatedAt
+}
+FAVOURITELIST {
+    string name
+    objectid user
+    array items
+    objectid _id
+    date createdAt
+    date updatedAt
+}
+TRANSACTIONHISTORY {
+    objectid user_id
+    string package_id
+    string app_trans_id
+    number amount
+    string payment_method
+    string status
+    string description
+    date created_at
+    date updated_at
+    objectid _id
+}
+PETGUIDE {
+    array petGuideDocs
+    array petGuideVideos
+    objectid _id
+    date createdAt
+    date updatedAt
+}
+POST {
+    string title
+    string content
+    objectid author
+    array tags
+    array imgUrl
+    number commentCount
+    number favoriteCount
+    map reactions
+    number reactions___
+    string postStatus
+    date createdAt
+    date updatedAt
+    objectid _id
+    string postType
+}
+COMMENT {
+    objectid author
+    objectid post
+    string content
+    array imgUrl
+    objectid parentComment
+    array replies
+    boolean isDeleted
+    date createdAt
+    date updatedAt
+    date deletedAt
+    map reactions
+    number reactions___
+    objectid _id
+}
+REACTION {
+    objectid authReaction
+    string reactionType
+    string targetType
+    objectid targetId
+    objectid _id
+    date createdAt
+    date updatedAt
+}
+FORUMPOST {
+    objectid _id
+    string title
+    string content
+    objectid author
+    array tags
+    array imgUrl
+    number commentCount
+    number favoriteCount
+    map reactions
+    number reactions___
+    string postStatus
+    date createdAt
+    date updatedAt
+    string postType
+}
+QUESTION {
+    string questionDetails
+    objectid _id
+    string title
+    string content
+    objectid author
+    array tags
+    array imgUrl
+    number commentCount
+    number favoriteCount
+    map reactions
+    number reactions___
+    string postStatus
+    date createdAt
+    date updatedAt
+    string postType
+}
+FINDLOSTPETPOST {
+    string lostPetInfo
+    embedded contactInfo
+    objectid _id
+    string title
+    string content
+    objectid author
+    array tags
+    array imgUrl
+    number commentCount
+    number favoriteCount
+    map reactions
+    number reactions___
+    string postStatus
+    date createdAt
+    date updatedAt
+    string postType
+}
+EVENTPOST {
+    date eventStartDate
+    date eventEndDate
+    string eventLongitude
+    string eventLatitude
+    string eventLocation
+    objectid _id
+    string title
+    string content
+    objectid author
+    array tags
+    array imgUrl
+    number commentCount
+    number favoriteCount
+    map reactions
+    number reactions___
+    string postStatus
+    date createdAt
+    date updatedAt
+    string postType
+}
+RESCUEMISSIONHISTORY {
+    string missionId
+    objectid requester
+    string location_type
+    array location_coordinates
+    number radius
+    array selectedVolunteers
+    objectid acceptedVolunteer
+    date startedAt
+    date endedAt
+    string status
+    string notes
+    objectid _id
+    date createdAt
+    date updatedAt
+}
+USER ||--o{ ROLE : has
+MESSAGE ||--o{ USER : has
+REPORT ||--o{ USER : has
+PETPROFILE ||--o{ USER : has
+FAVOURITELIST ||--o{ USER : has
+FAVOURITELIST ||--o{ POST : has
+TRANSACTIONHISTORY ||--o{ USER : has
+TRANSACTIONHISTORY ||--o{ PACKAGEINFORMATION  : has
+POST ||--o{ USER : has
+COMMENT ||--o{ USER : has
+COMMENT ||--o{ POST : has
+COMMENT ||--o{ COMMENT : has
+REACTION ||--o{ USER : has
+FORUMPOST ||--o{ USER : has
+QUESTION ||--o{ USER : has
+FINDLOSTPETPOST ||--o{ USER : has
+EVENTPOST ||--o{ USER : has
+RESCUEMISSIONHISTORY ||--o{ USER : has
