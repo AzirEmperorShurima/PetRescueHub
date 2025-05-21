@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types'; // Add this import
 import {
   Container,
   Box,
@@ -17,12 +18,15 @@ import {
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import forumService from '../../services/forum.service';
 import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
 import './ForumForms.css'; // Cập nhật import
 
-const CreatePost = () => {
+// Define the component before any potential exports
+// Change the default value from 'Post' to 'ForumPost'
+const CreatePost = ({ postType = 'ForumPost', onClose }) => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -37,6 +41,22 @@ const CreatePost = () => {
     'chăm sóc', 'huấn luyện', 'dinh dưỡng', 'sức khỏe', 'tiêm phòng',
     'cứu hộ', 'nhận nuôi', 'thức ăn', 'đồ chơi', 'phụ kiện'
   ]);
+  
+  // Xác định tiêu đề form dựa trên postType
+  // Update the getFormTitle function to use 'ForumPost' instead of default case
+  const getFormTitle = () => {
+    switch(postType) {
+      case 'Question':
+        return 'Đặt câu hỏi mới';
+      case 'EventPost':
+        return 'Tạo sự kiện mới';
+      case 'FindLostPetPost':
+        return 'Đăng tin tìm thú cưng';
+      case 'ForumPost':
+      default:
+        return 'Tạo bài viết mới';
+    }
+  };
   
   const handleImageUpload = (files) => {
     // Tạo URL preview cho các file ảnh
@@ -92,8 +112,8 @@ const CreatePost = () => {
         console.log('Tags:', tags);
       }
       
-      formData.append('postType', 'Post'); // Mặc định là loại Post
-      console.log('Loại bài viết:', 'Post');
+      formData.append('postType', postType); // Sử dụng postType từ props
+      console.log('Loại bài viết:', postType);
       
       // Thêm tất cả các hình ảnh vào formData
       if (images && images.length > 0) {
@@ -114,7 +134,11 @@ const CreatePost = () => {
         console.log('Kết quả API:', response);
         
         if (response && response.success) {
-          navigate('/forum');
+          if (onClose) {
+            onClose();
+          } else {
+            navigate('/forum');
+          }
         } else {
           setError(response?.message || 'Đã xảy ra lỗi khi tạo bài viết');
         }
@@ -124,7 +148,7 @@ const CreatePost = () => {
           title,
           content,
           tags: tags.length > 0 ? tags : [],
-          postType: 'Post'
+          postType: postType
         };
         
         console.log('Gọi API tạo bài viết mới không có hình ảnh...');
@@ -133,7 +157,11 @@ const CreatePost = () => {
         console.log('Kết quả API:', response);
         
         if (response && response.success) {
-          navigate('/forum');
+          if (onClose) {
+            onClose();
+          } else {
+            navigate('/forum');
+          }
         } else {
           setError(response?.message || 'Đã xảy ra lỗi khi tạo bài viết');
         }
@@ -149,13 +177,21 @@ const CreatePost = () => {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
-            Tạo bài viết mới
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {onClose ? (
+              <IconButton onClick={onClose} sx={{ mr: 1 }}>
+                <CloseIcon />
+              </IconButton>
+            ) : (
+              <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
+                <ArrowBackIcon />
+              </IconButton>
+            )}
+            <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
+              {getFormTitle()}
+            </Typography>
+          </Box>
         </Box>
         
         <Divider sx={{ mb: 4 }} />
@@ -228,7 +264,7 @@ const CreatePost = () => {
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button
               variant="outlined"
-              onClick={() => navigate('/forum')}
+              onClick={onClose || (() => navigate('/forum'))}
               disabled={loading}
             >
               Hủy
@@ -249,4 +285,11 @@ const CreatePost = () => {
   );
 };
 
+// Define propTypes after the component definition
+CreatePost.propTypes = {
+  postType: PropTypes.string,
+  onClose: PropTypes.func
+};
+
+// Export the component at the end
 export default CreatePost;

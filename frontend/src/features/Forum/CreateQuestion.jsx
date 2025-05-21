@@ -16,13 +16,14 @@ import {
   Divider
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon
+  ArrowBack as ArrowBackIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import forumService from '../../services/forum.service';
 import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
 import './ForumForms.css'; // Cập nhật import
 
-const CreateQuestion = () => {
+const CreateQuestion = ({ onClose }) => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -123,7 +124,11 @@ const CreateQuestion = () => {
       console.log('Kết quả API:', response);
       
       if (response && response.success) {
-        navigate('/forum');
+        if (onClose) {
+          onClose();
+        } else {
+          navigate('/forum');
+        }
       } else {
         setError(response?.message || 'Đã xảy ra lỗi khi tạo câu hỏi');
       }
@@ -138,13 +143,21 @@ const CreateQuestion = () => {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
-            Đặt câu hỏi mới
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {onClose ? (
+              <IconButton onClick={onClose} sx={{ mr: 1 }}>
+                <CloseIcon />
+              </IconButton>
+            ) : (
+              <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
+                <ArrowBackIcon />
+              </IconButton>
+            )}
+            <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
+              Đặt câu hỏi mới
+            </Typography>
+          </Box>
         </Box>
         
         <Divider sx={{ mb: 4 }} />
@@ -217,7 +230,7 @@ const CreateQuestion = () => {
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button
               variant="outlined"
-              onClick={() => navigate('/forum')}
+              onClick={onClose || (() => navigate('/forum'))}
               disabled={loading}
             >
               Hủy
@@ -229,7 +242,7 @@ const CreateQuestion = () => {
               disabled={loading}
               startIcon={loading && <CircularProgress size={20} color="inherit" />}
             >
-              {loading ? 'Đang tạo...' : 'Đăng câu hỏi'}
+              {loading ? 'Đang tạo...' : 'Đặt câu hỏi'}
             </Button>
           </Stack>
         </Box>

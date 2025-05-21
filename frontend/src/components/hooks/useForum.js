@@ -46,16 +46,16 @@ export const useForum = () => {
       };
 
       const [postsRes, questionsRes, eventsRes, petPostRes] = await Promise.all([
-        apiService.forum.posts.getAll({ ...params, postType: 'Post' }),
-        apiService.forum.posts.getAll({ ...params, postType: 'Question' }),
-        apiService.forum.posts.getAll({ ...params, postType: 'Event' }),
-        apiService.forum.posts.getAll({ ...params, postType: 'FindLostPetPost' })
+        apiService.forum.posts.getAll({ ...params, postType: '' }),
+        // apiService.forum.posts.getAll({ ...params, postType: 'Question' }),
+        // apiService.forum.posts.getAll({ ...params, postType: 'Event' }),
+        // apiService.forum.posts.getAll({ ...params, postType: 'FindLostPetPost' })
       ]);
 
       setPosts(postsRes.data?.data || []);
-      setQuestions(questionsRes.data?.data || []);
-      setEvents(eventsRes.data?.data || []);
-      setFindLostPet(petPostRes.data?.data || []); // Fix the undefined setPetPost
+      // setQuestions(questionsRes.data?.data || []);
+      // setEvents(eventsRes.data?.data || []);
+      // setFindLostPet(petPostRes.data?.data || []); // Fix the undefined setPetPost
     } catch (err) {
       console.error('Error fetching posts:', err);
       setPosts([]);

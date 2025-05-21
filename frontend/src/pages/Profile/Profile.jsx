@@ -592,9 +592,9 @@ const Profile = () => {
 
                               <Box className="profile-field">
                                 <Typography variant="subtitle2" className="field-label">
-                                  <LocationOn fontSize="small" /> Địa chỉ
+                                  <LocationOn fontSize="small" /> Địa chỉ 
                                 </Typography>
-                                {isEditing ? (
+                                {/* {isEditing ? (
                                   <MapboxAutocomplete
                                     publicKey="YOUR_MAPBOX_PUBLIC_KEY"
                                     inputClass="edit-field"
@@ -613,7 +613,7 @@ const Profile = () => {
                                   <Typography variant="body1" className="field-value">
                                     {user.address || 'Chưa cập nhật'}
                                   </Typography>
-                                )}
+                                )} */}
                               </Box>
 
                               <Box className="profile-field">
