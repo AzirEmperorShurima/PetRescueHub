@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Menu, MenuItem, IconButton, Divider, ListItemIcon, ListItemText } from '@mui/material';
 import { AccountCircle, Settings, ExitToApp, Notifications, Favorite, Pets, Help } from '@mui/icons-material';
@@ -13,63 +13,68 @@ const UserMenu = ({ user }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
-  const handleClick = (event) => {
+  // Sử dụng useCallback để tối ưu hóa các hàm xử lý sự kiện
+  const handleClick = useCallback((event) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleClose = useCallback(() => {
+    if (anchorEl) {
+      setAnchorEl(null);
+    }
+  }, [anchorEl]);
+  
 
-  const handleProfile = () => {
-    // Đóng menu trước khi chuyển hướng
+  // Tạo hàm điều hướng chung để giảm lặp code
+  const handleNavigation = useCallback((path) => {
     handleClose();
-    navigate('/profile');
-  };
+    setTimeout(() => {
+      navigate(path);
+    }, 100);
+  }, [handleClose, navigate]);
 
-  const handleSettings = () => {
-    // Đóng menu trước khi chuyển hướng
+  // Các hàm xử lý sự kiện sử dụng hàm điều hướng chung
+  const handleProfile = useCallback(() => {
     handleClose();
-    navigate('/settings');
-  };
+    setTimeout(() => {
+      navigate('/profile');
+    }, 100); // Chờ 100ms để menu đóng
+  }, [handleClose, navigate]);
+  
+  const handleSettings = useCallback(() => handleNavigation('/settings'), [handleNavigation]);
+  const handleMyPets = useCallback(() => handleNavigation('/my-pets'), [handleNavigation]);
+  const handleMyFavorites = useCallback(() => handleNavigation('/favorites'), [handleNavigation]);
+  const handleHelp = useCallback(() => handleNavigation('/help'), [handleNavigation]);
 
-  const handleMyPets = () => {
-    // Đóng menu trước khi chuyển hướng
-    handleClose();
-    navigate('/my-pets');
-  };
-
-  const handleMyFavorites = () => {
-    // Đóng menu trước khi chuyển hướng
-    handleClose();
-    navigate('/favorites');
-  };
-
-  const handleHelp = () => {
-    // Đóng menu trước khi chuyển hướng
-    handleClose();
-    navigate('/help');
-  };
-
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
-      // Đảm bảo đóng menu trước khi đăng xuất
       handleClose();
-
-      // Chỉ gọi hàm logout từ AuthContext, không gọi API trực tiếp
       await logout();
       showSuccess('Đăng xuất thành công!');
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
-      // Hiển thị thông báo lỗi cụ thể nếu có
       const errorMessage = error?.response?.data?.message || 
                           error?.message || 
                           'Đăng xuất thất bại. Vui lòng thử lại.';
       showSuccess('Đăng xuất thất bại: ' + errorMessage);
       navigate('/');
     }
-  };
+  }, [handleClose, logout, navigate, showSuccess]);
+
+  // Tạo mảng các mục menu để dễ dàng quản lý và mở rộng
+  const menuItems = [
+    { icon: <AccountCircle fontSize="small" />, text: 'Hồ sơ cá nhân', onClick: handleProfile },
+    { icon: <Pets fontSize="small" />, text: 'Thú cưng của tôi', onClick: handleMyPets },
+    { icon: <Favorite fontSize="small" />, text: 'Yêu thích', onClick: handleMyFavorites },
+    { icon: <Settings fontSize="small" />, text: 'Cài đặt', onClick: handleSettings },
+    { icon: <Help fontSize="small" />, text: 'Trợ giúp', onClick: handleHelp },
+    { divider: true },
+    { icon: <ExitToApp fontSize="small" />, text: 'Đăng xuất', onClick: handleLogout }
+  ];
+
+  const defaultAvatar = `${process.env.REACT_APP_API_URL}/root/Default_Avatar_Non_Align.jpg`;
 
   return (
     <div className="user-menu-container">
@@ -88,7 +93,7 @@ const UserMenu = ({ user }) => {
             aria-expanded={open ? 'true' : undefined}
           >
             <Avatar 
-              src={user?.avatar || `${process.env.REACT_APP_API_URL}/root/Default_Avatar_Non_Align.jpg`}
+              src={user?.avatar || defaultAvatar}
               alt={user?.fullname || 'User Avatar'}
               sx={{ width: 32, height: 32 }}
             />
@@ -101,7 +106,7 @@ const UserMenu = ({ user }) => {
         id="account-menu"
         open={open}
         onClose={handleClose}
-        disableScrollLock={true} // Thêm thuộc tính này để ngăn chặn việc khóa cuộn
+        disableScrollLock={true}
         PaperProps={{
           elevation: 0,
           sx: {
@@ -121,7 +126,7 @@ const UserMenu = ({ user }) => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <div className="user-info">
-          <Avatar src={user?.avatar} alt={user?.name || 'User'} />
+          <Avatar src={user?.avatar || defaultAvatar} alt={user?.name || 'User'} />
           <div className="user-details">
             <div className="user-name">{user?.fullname || user?.name || 'User'}</div>
             <div className="user-email">{user?.email || ''}</div>
@@ -130,49 +135,18 @@ const UserMenu = ({ user }) => {
         
         <Divider />
         
-        <MenuItem onClick={handleProfile}>
-          <ListItemIcon>
-            <AccountCircle fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Hồ sơ cá nhân</ListItemText>
-        </MenuItem>
-        
-        <MenuItem onClick={handleMyPets}>
-          <ListItemIcon>
-            <Pets fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Thú cưng của tôi</ListItemText>
-        </MenuItem>
-        
-        <MenuItem onClick={handleMyFavorites}>
-          <ListItemIcon>
-            <Favorite fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Yêu thích</ListItemText>
-        </MenuItem>
-        
-        <MenuItem onClick={handleSettings}>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Cài đặt</ListItemText>
-        </MenuItem>
-        
-        <MenuItem onClick={handleHelp}>
-          <ListItemIcon>
-            <Help fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Trợ giúp</ListItemText>
-        </MenuItem>
-        
-        <Divider />
-        
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <ExitToApp fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Đăng xuất</ListItemText>
-        </MenuItem>
+        {menuItems.map((item, index) => (
+          item.divider ? (
+            <Divider key={`divider-${index}`} />
+          ) : (
+            <MenuItem key={item.text} onClick={item.onClick}>
+              <ListItemIcon>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText>{item.text}</ListItemText>
+            </MenuItem>
+          )
+        ))}
       </Menu>
     </div>
   );

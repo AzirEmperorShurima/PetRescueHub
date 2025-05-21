@@ -2,7 +2,8 @@ import React, { useCallback } from 'react';
 import { Box, Button } from '@mui/material';
 import { Add as AddIcon, QuestionAnswer as QuestionIcon, Event as EventIcon, Pets as PetsIcon } from '@mui/icons-material';
 
-const ForumActions = ({ isAuthenticated, onCreatePost, onCreateQuestion, onCreateEvent, onFindLostPet }) => {
+
+const ForumActions = ({ isAuthenticated, onCreatePost, onCreateQuestion, onCreateEvent, onFindLostPet,postTYpe }) => {
   // Sử dụng useCallback để tối ưu các hàm xử lý sự kiện
   const handleCreatePost = useCallback(() => {
     if (isAuthenticated) {

@@ -592,24 +592,8 @@ const Profile = () => {
 
                               <Box className="profile-field">
                                 <Typography variant="subtitle2" className="field-label">
-                                  <LocationOn fontSize="small" /> Địa chỉ
+                                  <LocationOn fontSize="small" /> Địa chỉ 
                                 </Typography>
-                                {isEditing ? (
-                                  <TextField
-                                    fullWidth
-                                    name="address"
-                                    value={editedUser.address || ''}
-                                    onChange={handleInputChange}
-                                    variant="outlined"
-                                    size="small"
-                                    className="edit-field"
-                                    placeholder="Nhập địa chỉ của bạn"
-                                  />
-                                ) : (
-                                  <Typography variant="body1" className="field-value">
-                                    {user.address || 'Chưa cập nhật'}
-                                  </Typography>
-                                )}
                               </Box>
 
                               <Box className="profile-field">

@@ -9,12 +9,12 @@ const PostSticker = ({ type }) => {
           backgroundColor: '#FF9800',
           color: '#fff'
         };
-      case 'Event':
+      case 'EventPost':
         return {
           backgroundColor: '#4CAF50',
           color: '#fff'
         };
-      case 'Post':
+      case 'ForumPost':
       default:
         return {
           backgroundColor: '#2196F3',
@@ -27,9 +27,9 @@ const PostSticker = ({ type }) => {
     switch (type) {
       case 'Question':
         return 'Câu hỏi';
-      case 'Event':
+      case 'EventPost':
         return 'Sự kiện';
-      case 'Post':
+      case 'ForumPost':
       default:
         return 'Bài viết';
     }
