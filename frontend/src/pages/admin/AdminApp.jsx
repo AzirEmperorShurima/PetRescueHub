@@ -6,7 +6,7 @@ import UserManagement from './components/UserManagement';
 import PetManagement from './components/PetManagement';
 import VolunteerManagement from './components/VolunteerManagement';
 import EventManagement from './components/EventManagement';
-import DonationManagement from './components/DonationManagement';
+import DonationHistory from './components/DonationHistory';
 import AdminProfile from './components/AdminProfile';
 import AdminLogin from './components/AdminLogin';
 import RescueManagement from './components/RescueManagement';
@@ -70,7 +70,7 @@ const AdminApp = () => {
           <Route path="pets" element={<PetManagement />} />
           <Route path="volunteers" element={<VolunteerManagement />} />
           <Route path="events" element={<EventManagement />} />
-          <Route path="donations" element={<DonationManagement />} />
+          <Route path="donations" element={<DonationHistory />} />
           <Route path="rescues" element={<RescueManagement />} /> {/* Thêm route mới */}
           <Route path="profile" element={<AdminProfile />} />
         </Route>

@@ -61,12 +61,6 @@ const ForumSearch = ({
       >
         Nhiều bình luận nhất
       </MenuItem>
-      <MenuItem 
-        onClick={() => onSortChange('mostViewed')}
-        selected={sortBy === 'mostViewed'}
-      >
-        Nhiều lượt xem nhất
-      </MenuItem>
     </Menu>
   );
 

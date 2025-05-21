@@ -8,8 +8,12 @@ import {
     getPetsByOwner,
     petFilters,
     getPetDetails,
-    getAllPets
+    getAllPets,
+    updatePetState
 } from "../Controller/Pet.Controller.js";
+import { uploadPostImages } from "../Middlewares/uploadMiddleware.js";
+import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.js";
+import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
 
 const petRoute = Router()
 
@@ -22,8 +26,13 @@ petRoute.get("/", (req, res) => {
 });
 
 // 📌 Routes liên quan đến Pet
-petRoute.post("/portfolio/create", createPet);
-petRoute.put("/portfolio/update/:petId", updatePetProfile);
+petRoute.post("/portfolio/create", 
+    avatarUploadMiddleware('pet_avatars'),
+    uploadPostImages('petAlbum', 'petAlbum'),
+    createPet
+);
+petRoute.put("/portfolio/update/:petId", [checkUserAuth], updatePetProfile);
+petRoute.patch("/portfolio/update-state/:petId", [checkUserAuth], updatePetState);
 petRoute.delete("/portfolio/delete/:petId", deletePet);
 
 // 📌 Upload files (Avatar & Certificate)

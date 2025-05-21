@@ -57,43 +57,38 @@ const findFolder = async (name, parentId = null) => {
     return res.data.files[0] || null;
 };
 
-/**
- * Tạo hoặc lấy các thư mục lồng nhau theo user
- */
-// export const getOrCreateNestedFolders = async (userId) => {
-//     // 1. Parent Folder 
-//     let rootFolder = await findFolder(parentFolder);
-//     if (!rootFolder) rootFolder = { id: await createFolder(parentFolder) };
-
-//     // 2. Folder {Parent}/userId/
-//     let userFolder = await findFolder(userId, rootFolder.id);
-//     if (!userFolder) userFolder = { id: await createFolder(userId, rootFolder.id) };
-
-//     // 3. Subfolders 
-//     const subfolderNames = ['album', 'postImage', 'petAlbum'];
-//     const subfolderIds = {};
-//     for (const name of subfolderNames) {
-//         let folder = await findFolder(name, userFolder.id);
-//         if (!folder) folder = { id: await createFolder(name, userFolder.id) };
-//         subfolderIds[name] = folder.id;
-//     }
-
-//     return {
-//         rootId: rootFolder.id,
-//         userId: userFolder.id,
-//         ...subfolderIds
-//     };
-// };
 export const getOrCreateNestedFolders = async (userId) => {
     let rootFolder;
-    // Kiểm tra xem parentFolderId có tồn tại không
     if (parentFolderId) {
         const folderExists = await checkFolderExists(parentFolderId);
         if (folderExists) {
             rootFolder = { id: parentFolderId };
             console.log(`✅ Sử dụng thư mục gốc hiện có: ${parentFolderId}`);
         } else {
-            console.warn(`⚠️ Thư mục với ID ${parentFolderId} không tồn tại, tạo mới thư mục ${parentFolder}`);
+            let existingParentFolder = await findFolder(parentFolder);
+            if (existingParentFolder) {
+                rootFolder = existingParentFolder;
+                console.log(`✅ Sử dụng thư mục ${parentFolder} hiện có`);
+            } else {
+                console.warn(`⚠️ Tạo mới thư mục ${parentFolder}`);
+                rootFolder = { id: await createFolder(parentFolder) };
+                await drive.permissions.create({
+                    fileId: rootFolder.id,
+                    requestBody: {
+                        role: 'writer',
+                        type: 'user',
+                        emailAddress: 'tranvantri352@gmail.com',
+                    },
+                });
+            }
+        }
+    } else {
+        let existingParentFolder = await findFolder(parentFolder);
+        if (existingParentFolder) {
+            rootFolder = existingParentFolder;
+            console.log(`✅ Sử dụng thư mục ${parentFolder} hiện có`);
+        } else {
+            console.warn(`⚠️ Tạo mới thư mục ${parentFolder}`);
             rootFolder = { id: await createFolder(parentFolder) };
             await drive.permissions.create({
                 fileId: rootFolder.id,
@@ -104,9 +99,6 @@ export const getOrCreateNestedFolders = async (userId) => {
                 },
             });
         }
-    } else {
-        console.warn(`⚠️ parentFolderId không được cung cấp, tạo mới thư mục ${parentFolder}`);
-        rootFolder = { id: await createFolder(parentFolder) };
     }
 
     // 2. Folder {Parent}/userId/
@@ -161,8 +153,6 @@ export const uploadToFolder = async (file, folderId) => {
                 type: 'anyone',
             },
         });
-
-        // Tạo URL hiển thị ảnh trực tiếp
         const fileId = response.data.id;
         const directImageUrl = `https://drive.google.com/uc?id=${fileId}`;
 
@@ -232,5 +222,28 @@ export const uploadToGoogleDrive = async (file) => {
             message: 'Lỗi khi upload file lên Google Drive',
             error: error.message,
         };
+    }
+};
+
+/**
+ * Tạo hoặc lấy thư mục con theo loại bài viết
+ * @param {String} parentId - ID thư mục cha (postImage)
+ * @param {String} postType - Loại bài viết
+ * @returns {Promise<String>} - ID thư mục con
+ */
+export const getOrCreatePostTypeFolder = async (parentId, postType) => {
+    try {
+        let folder = await findFolder(postType, parentId);
+        
+        if (!folder) {
+            const folderId = await createFolder(postType, parentId);
+            folder = { id: folderId };
+            console.log(`✅ Đã tạo thư mục mới cho ${postType}`);
+        }
+
+        return folder.id;
+    } catch (error) {
+        console.error(`❌ Lỗi khi tạo/lấy thư mục cho ${postType}:`, error);
+        return null;
     }
 };

@@ -71,11 +71,12 @@ export const volunteerUpdateStatus = async (req, res) => {
             return res.status(StatusCodes.BAD_REQUEST).json({ error: "volunteerStatus is required" });
         }
         if (!['alreadyRescue', 'not ready'].includes(volunteerStatus)) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid volunteerStatus. Must be 'alreadyRescue', 'not ready', or 'none'" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid volunteerStatus. Must be 'alreadyRescue', 'not ready'" });
         }
         if (volunteerStatus === 'alreadyRescue') {
-            if ((!longitude || !latitude))
+            if (!longitude || !latitude) {
                 return res.status(StatusCodes.BAD_REQUEST).json({ error: "longitude and latitude are required for alreadyRescue status" });
+            }
             if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
                 return res.status(400).json({ error: 'Invalid coordinates' });
             }
@@ -93,18 +94,19 @@ export const volunteerUpdateStatus = async (req, res) => {
 
         userFound.volunteerStatus = volunteerStatus;
         await userFound.save();
-        if (volunteerStatus === 'alreadyRescue') {
+
+        if (userFound.volunteerStatus === 'alreadyRescue') {
             if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
                 return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid coordinates" });
             }
-            // Lưu vị trí vào Redis Geo Set
-            await redisClient.geoAdd('volunteers', {
-                longitude,
-                latitude,
-                member: userId
-            });
+            const result = await redisClient.sendCommand(['GEOADD', 'volunteers', longitude.toString(), latitude.toString(), userId.toString()]);
+            console.log('Result of GEOADD:', result);
+            if (!result) {
+                console.error('GEOADD không thêm được vị trí cho userId:', userId);
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Không thể cập nhật vị trí trong Redis" });
+            }
         } else {
-            await redisClient.zRem('volunteers', userId);
+            await redisClient.sendCommand(['ZREM', 'volunteers', userId.toString()]);
         }
 
         return res.status(StatusCodes.OK).json({
@@ -112,7 +114,11 @@ export const volunteerUpdateStatus = async (req, res) => {
             user: {
                 id: userFound.id,
                 username: userFound.username,
-                volunteerStatus: userFound.volunteerStatus
+                volunteerStatus: userFound.volunteerStatus,
+                location: {
+                    longitude: longitude,
+                    latitude: latitude
+                }
             }
         });
     } catch (error) {
@@ -120,5 +126,4 @@ export const volunteerUpdateStatus = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Server error" });
     }
 };
-
 

@@ -1,3 +1,5 @@
+import { StatusCodes } from "http-status-codes";
+import { COOKIE_PATHS, TOKEN_TYPE } from "../../config.js";
 import Role from "../models/Role.js";
 import User from "../models/user.js";
 import { getUserFieldFromToken } from "../services/User/User.service.js";
@@ -68,50 +70,59 @@ export const buyPremium = async (req, res) => {
     }
 };
 
-
-
 export const updateUserProfile = async (req, res) => {
     try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
-        if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
-        }
         const updateData = req.body;
-
-        const allowedUpdates = new Set(["fullname", "avatar", "phonenumber", "address"]);
+        const allowedUpdates = new Set(["fullname", "avatar", "phonenumber", "address", "biography", "gender", "birthdate"]);
         const updates = Object.keys(updateData)
             .filter(key => allowedUpdates.has(key) && updateData[key] !== undefined);
 
-        if (updates.length === 0) {
-            return res.status(400).json({ success: false, message: "No valid fields to update!" });
+        if (req.avatarUrl) {
+            updateData.avatar = req.avatarUrl;
+            updates.push("avatar");
         }
 
-        // Kiểm tra email trùng lặp (chỉ nếu email khác với hiện tại)
-        // if (updateData.email) {
-        //     const emailExists = await User.exists({ email: updateData.email, id: { $ne: userId } });
-        //     if (emailExists) {
-        //         return res.status(400).json({ success: false, message: "Email is already in use!" });
-        //     }
-        // }
+        if (updates.length === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ 
+                success: false, 
+                message: "Không có thông tin cần cập nhật!" 
+            });
+        }
 
-        // Chỉ cập nhật nếu có thay đổi
         const updateFields = Object.fromEntries(
             updates.map(key => [key, updateData[key]])
         );
 
-        const user = await User.findOneAndUpdate(
-            { id: userId },
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
             { $set: updateFields },
             { new: true, runValidators: true }
         );
 
-        if (!user) {
-            return res.status(404).json({ success: false, message: "User not found!" });
-        }
-
-        return res.status(200).json({ success: true, message: "Profile updated successfully", user });
+        // Trả về thông tin đã được lọc
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Cập nhật thông tin thành công",
+            user: {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                fullname: updatedUser.fullname,
+                email: updatedUser.email,
+                avatar: updatedUser.avatar,
+                gender: updatedUser.gender,
+                birthdate: updatedUser.birthdate,
+                biography: updatedUser.biography,
+                phonenumber: updatedUser.phonenumber,
+                address: updatedUser.address,
+                isVIP: updatedUser.isVIP,
+                volunteerStatus: updatedUser.volunteerStatus
+            }
+        });
     } catch (error) {
-        console.error("Update user profile error:", error);
-        return res.status(500).json({ success: false, message: "An error occurred while updating profile" });
+        console.error("Lỗi cập nhật thông tin:", error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+            success: false, 
+            message: "Đã xảy ra lỗi khi cập nhật thông tin" 
+        });
     }
 };

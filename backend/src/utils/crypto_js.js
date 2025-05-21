@@ -1,64 +1,70 @@
-import CryptoJS from "crypto-js";
+
 import crypto from "crypto";
 
-export const MASTER_PRIVARE_KEY = process.env.MASTER_PRIVARE_KEY
+export const MASTER_PRIVATE_KEY = process.env.MASTER_PRIVATE_KEY;
 
-export const hashValue = (value) => {
-    return CryptoJS.SHA256(value).toString(CryptoJS.enc.Hex);
+export const generateSocketKey = (userId) => {
+
+    const salt = crypto.randomBytes(32).toString('hex');
+    const dataToHash = `${MASTER_PRIVATE_KEY}:${userId}:${salt}:${Date.now()}`;
+    const hash = crypto.createHash('sha512').update(dataToHash).digest('hex');
+    return {
+        key: hash,
+        salt: salt
+    };
 };
 
-export const encrypt1 = async (message, key) => {
-    const cipherText = CryptoJS.AES.encrypt(message, key).toString();
-    console.log(cipherText)
-    return cipherText;
-}
 
-export const decrypt1 = async (cipherText, key) => {
-    const bytes = CryptoJS.AES.decrypt(cipherText, key);
-    const originalText = bytes.toString(CryptoJS.enc.Utf8);
-    return originalText;
-}
-
-export const encrypt = async (message, key) => {
-    const iv = CryptoJS.enc.Utf8.parse('0000000000000000'); // IV cố định, 16 byte
-    const cipherText = CryptoJS.AES.encrypt(message, MASTER_PRIVARE_KEY, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }).toString();
-    console.log(cipherText);
-    return cipherText;
-}
-
-export const decrypt = async (cipherText, key) => {
-    const iv = CryptoJS.enc.Utf8.parse('0000000000000000'); // IV cố định
-    const bytes = CryptoJS.AES.decrypt(cipherText, MASTER_PRIVARE_KEY, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
-    const originalText = bytes.toString(CryptoJS.enc.Utf8);
-    return originalText;
-}
-
-export const createHash256 = (input, PRIVATE_KEY) => {
-    const dataWithKey = `${PRIVATE_KEY}:${input}`;
-    return crypto.createHash('sha256').update(dataWithKey).digest('hex');
-};
-export const compareCryptoJS = (planText, encryptedText) => {
+export const verifySocketKey = (userId, providedKey, salt) => {
     try {
-        if (encryptedText === encrypt(planText), MASTER_PRIVARE_KEY) {
-            return true;
-        }
-        return false;
+        const dataToHash = `${MASTER_PRIVATE_KEY}:${userId}:${salt}:${Date.now()}`;
+        const hash = crypto.createHash('sha512').update(dataToHash).digest('hex');
+        
+        return crypto.timingSafeEqual(
+            Buffer.from(hash, 'hex'),
+            Buffer.from(providedKey, 'hex')
+        );
     } catch (error) {
-        throw new Error(error.message)
+        console.error('Socket key verification failed:', error);
+        return false;
     }
-}
-
-
-export const encryptWithIV = (message, key) => {
-    const iv = CryptoJS.lib.WordArray.random(16); // Tạo IV ngẫu nhiên
-    const encrypted = CryptoJS.AES.encrypt(message, key, { iv: iv }).toString();
-    return `${iv.toString(CryptoJS.enc.Hex)}:${encrypted}`; // Lưu IV kèm dữ liệu mã hóa
 };
 
-// Giải mã với IV
-export const decryptWithIV = (cipherText, key) => {
-    const [ivHex, encrypted] = cipherText.split(':');
-    const iv = CryptoJS.enc.Hex.parse(ivHex);
-    const bytes = CryptoJS.AES.decrypt(encrypted, key, { iv: iv });
-    return bytes.toString(CryptoJS.enc.Utf8);
+// Mã hóa dữ liệu socket với AES-256-GCM
+export const encryptSocketData = (data, key) => {
+    try {
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(key, 'hex').slice(0, 32), iv);
+        let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        const authTag = cipher.getAuthTag();
+        return {
+            encrypted: encrypted,
+            iv: iv.toString('hex'),
+            authTag: authTag.toString('hex')
+        };
+    } catch (error) {
+        throw new Error('Encryption failed: ' + error.message);
+    }
+};
+
+// Giải mã dữ liệu socket
+export const decryptSocketData = (encryptedData, key, iv, authTag) => {
+    try {
+
+        const decipher = crypto.createDecipheriv(
+            'aes-256-gcm',
+            Buffer.from(key, 'hex').slice(0, 32),
+            Buffer.from(iv, 'hex')
+        );
+        
+        decipher.setAuthTag(Buffer.from(authTag, 'hex'));
+        
+        let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        
+        return JSON.parse(decrypted);
+    } catch (error) {
+        throw new Error('Decryption failed: ' + error.message);
+    }
 };

@@ -1,8 +1,9 @@
-import { redisClient } from "../Cache/User_Cache";
+import { redisClient } from "../Cache/User_Cache.js";
 import geolib from 'geolib';
 import { v4 as uuidv4 } from 'uuid';
-import RescueMissionHistory from "../Models/RescueMissionHistory";
-import user from "../models/user";
+import { getUserFieldFromToken } from "../services/User/User.service.js"
+import user from "../models/user.js";
+import PetRescueMissionHistory from "../models/PetRescueMissionHistory.js";
 
 
 export const requestRescue = async (req, res) => {
@@ -12,17 +13,16 @@ export const requestRescue = async (req, res) => {
 
         const missionId = uuidv4();
 
-        // Save to Redis for fast access
         await redisClient.set(`rescue:${missionId}`, JSON.stringify({
             coordinates,
             radius,
             userId: userId || 'guest',
             guestInfo
         }), {
-            EX: 600 // expires after 10 minutes
+            EX: 600
         });
 
-        // Find volunteers from Redis (they update their realtime location)
+
         const allVolunteerKeys = await redisClient.keys('volunteer:*');
         const volunteers = [];
         for (const key of allVolunteerKeys) {
@@ -46,7 +46,7 @@ export const requestRescue = async (req, res) => {
             .select('fullname phonenumber');
 
         // Save mission history
-        await RescueMissionHistory.create({
+        await PetRescueMissionHistory.create({
             missionId,
             requester: userId || undefined,
             guestDetails: userId ? undefined : guestInfo,
@@ -130,7 +130,6 @@ export const requestToRescue = async (req, res) => {
         }).select('fullname phonenumber');
 
         if (!autoAssign) {
-            // Nếu user muốn tự chọn tình nguyện viên
             return res.json({
                 selectVolunteers: true,
                 volunteers: volunteerUsers,
@@ -141,7 +140,7 @@ export const requestToRescue = async (req, res) => {
         // Tự động ghép: chọn người gần nhất
         const selectedVolunteerIds = volunteerUsers.map(v => v._id);
 
-        await RescueMissionHistory.create({
+        await PetRescueMissionHistory.create({
             missionId,
             requester: isGuest ? undefined : userId,
             guestDetails: isGuest ? guestInfo : undefined,
@@ -164,13 +163,13 @@ export const confirmSelectedVolunteers = async (req, res) => {
         const { missionId, selectedVolunteerIds } = req.body;
         const userId = req.user?._id;
 
-        // Validate
+
         if (!missionId || !Array.isArray(selectedVolunteerIds) || selectedVolunteerIds.length === 0) {
             return res.status(400).json({ error: 'missionId and selectedVolunteerIds are required' });
         }
 
-        // Tìm nhiệm vụ cứu hộ
-        const mission = await RescueMissionHistory.findOne({ missionId });
+
+        const mission = await PetRescueMissionHistory.findOne({ missionId });
         if (!mission) {
             return res.status(404).json({ error: 'Mission not found' });
         }
@@ -184,7 +183,26 @@ export const confirmSelectedVolunteers = async (req, res) => {
 
         const volunteerUsers = await user.find({
             _id: { $in: selectedVolunteerIds }
-        }).select('fullname phonenumber');
+        }).select('fullname phonenumber email');
+        const requester = await user.findById(userId).select('fullname email');
+
+        for (const volunteer of volunteerUsers) {
+            await sendMailNotification({
+                email: volunteer.email,
+                subject: 'Yêu Cầu Cứu Hộ Mới',
+                text: `Bạn đã được chọn cho một nhiệm vụ cứu hộ mới`,
+                html: `
+                    <p>Xin chào ${volunteer.fullname},</p>
+                    <p>Bạn đã được chọn cho một nhiệm vụ cứu hộ mới. Chi tiết nhiệm vụ:</p>
+                    <ul>
+                        <li>Mã nhiệm vụ: ${missionId}</li>
+                        <li>Người yêu cầu: ${requester ? requester.fullname : 'Khách vãng lai'}</li>
+                        <li>Vị trí: [${mission.location.coordinates.join(', ')}]</li>
+                    </ul>
+                    <p>Vui lòng xác nhận hoặc từ chối nhiệm vụ trong hệ thống.</p>
+                `
+            });
+        }
 
         return res.json({
             message: 'Volunteers confirmed successfully',
@@ -199,46 +217,96 @@ export const confirmSelectedVolunteers = async (req, res) => {
 
 export const acceptRescueMission = async (req, res) => {
     try {
-        const { missionId } = req.params;
+        const { missionId } = req.body;
         const volunteerId = req.user._id;
 
-        const mission = await RescueMissionHistory.findOne({ missionId }).populate('requester');
-
+        const mission = await PetRescueMissionHistory.findOne({ missionId });
         if (!mission) {
             return res.status(404).json({ error: 'Mission not found' });
         }
 
-        if (mission.acceptedVolunteer) {
-            return res.status(400).json({ error: 'Mission already accepted by another volunteer' });
-        }
-
-        const isSelected = mission.selectedVolunteers.some(
-            v => v.toString() === volunteerId.toString()
-        );
-        if (!isSelected) {
+        if (!mission.selectedVolunteers.includes(volunteerId)) {
             return res.status(403).json({ error: 'You are not selected for this mission' });
         }
 
         mission.acceptedVolunteer = volunteerId;
         mission.status = 'in_progress';
-        mission.startedAt = new Date();
         await mission.save();
 
-        // Tạo thông báo
-        if (mission.requester) {
+        // Gửi email thông báo cho người yêu cầu và volunteer
+        const [requester, volunteer] = await Promise.all([
+            mission.requester ? user.findById(mission.requester).select('fullname email') : null,
+            user.findById(volunteerId).select('fullname email')
+        ]);
+
+        // Gửi email và thông báo cho người yêu cầu
+        if (requester) {
+            // Tạo thông báo trong app
             await Notification.create({
-                userId: mission.requester.toString(),
+                userId: requester._id.toString(),
                 type: 'success',
-                title: 'Cứu hộ đã được xác nhận',
-                message: 'Một tình nguyện viên đã xác nhận tham gia cứu hộ của bạn.'
+                title: 'Đã có người nhận yêu cầu cứu hộ ✅',
+                message: `Tình nguyện viên ${volunteer.fullname} đã nhận yêu cầu cứu hộ của bạn và sẽ sớm đến hỗ trợ.`,
+                priority: 'high',
+                relatedTo: 'rescue_mission',
+                relatedId: missionId,
+                metadata: {
+                    missionId,
+                    acceptedAt: new Date(),
+                    volunteerId: volunteerId.toString(),
+                    volunteerName: volunteer.fullname,
+                    location: mission.location
+                },
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            });
+
+            await sendMailNotification({
+                email: requester.email,
+                subject: 'Tình Nguyện Viên Đã Chấp Nhận Nhiệm Vụ',
+                text: `Tình nguyện viên đã chấp nhận yêu cầu cứu hộ của bạn`,
+                html: `
+                    <p>Xin chào ${requester.fullname},</p>
+                    <p>Tình nguyện viên ${volunteer.fullname} đã chấp nhận yêu cầu cứu hộ của bạn.</p>
+                    <p>Mã nhiệm vụ: ${missionId}</p>
+                    <p>Bạn sẽ nhận được thông báo khi nhiệm vụ hoàn thành.</p>
+                `
             });
         }
+        await Notification.create({
+            userId: volunteerId.toString(),
+            type: 'info',
+            title: 'Xác nhận nhận nhiệm vụ cứu hộ 🚀',
+            message: 'Bạn đã nhận một nhiệm vụ cứu hộ mới. Hãy nhanh chóng đến địa điểm để hỗ trợ.',
+            priority: 'high',
+            relatedTo: 'rescue_mission',
+            relatedId: missionId,
+            metadata: {
+                missionId,
+                acceptedAt: new Date(),
+                location: mission.location
+            },
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        });
+        await sendMailNotification({
+            email: volunteer.email,
+            subject: 'Xác Nhận Chấp Nhận Nhiệm Vụ',
+            text: `Xác nhận bạn đã chấp nhận nhiệm vụ cứu hộ`,
+            html: `
+                <p>Xin chào ${volunteer.fullname},</p>
+                <p>Bạn đã chấp nhận nhiệm vụ cứu hộ (Mã: ${missionId}).</p>
+                <p>Vui lòng cập nhật trạng thái khi hoàn thành nhiệm vụ.</p>
+            `
+        });
 
-        return res.json({ message: 'You have accepted the rescue mission.' });
+        return res.json({
+            message: 'Mission accepted successfully',
+            missionId,
+            status: mission.status
+        });
 
     } catch (err) {
-        console.error('Accept Rescue Mission Error:', err);
-        return res.status(500).json({ error: 'Server error while accepting mission' });
+        console.error('Accept Mission Error:', err);
+        return res.status(500).json({ error: 'Server error during mission acceptance' });
     }
 };
 
@@ -249,7 +317,12 @@ export const rejectRescueMission = async (req, res) => {
         const { missionId } = req.params;
         const volunteerId = req.user._id;
 
-        const mission = await RescueMissionHistory.findOne({ missionId }).populate('requester');
+        const mission = await PetRescueMissionHistory.findOne({ missionId })
+            .populate('requester')
+            .populate({
+                path: 'selectedVolunteers',
+                select: 'fullname email'
+            });
 
         if (!mission) {
             return res.status(404).json({ error: 'Mission not found' });
@@ -263,12 +336,20 @@ export const rejectRescueMission = async (req, res) => {
             v => v.toString() !== volunteerId.toString()
         );
         await mission.save();
+
+        // Gửi email thông báo cho người yêu cầu
         if (mission.requester) {
-            await Notification.create({
-                userId: mission.requester.toString(),
-                type: 'warning',
-                title: 'Tình nguyện viên đã từ chối',
-                message: 'Một tình nguyện viên đã từ chối tham gia cứu hộ của bạn.'
+            const volunteer = await user.findById(volunteerId).select('fullname email');
+            await sendMailNotification({
+                email: mission.requester.email,
+                subject: 'Tình Nguyện Viên Đã Từ Chối Nhiệm Vụ',
+                text: `Một tình nguyện viên đã từ chối nhiệm vụ cứu hộ của bạn`,
+                html: `
+                    <p>Xin chào ${mission.requester.fullname},</p>
+                    <p>Tình nguyện viên ${volunteer.fullname} đã từ chối nhiệm vụ cứu hộ của bạn.</p>
+                    <p>Mã nhiệm vụ: ${missionId}</p>
+                    <p>Hệ thống sẽ tiếp tục tìm kiếm tình nguyện viên khác cho bạn.</p>
+                `
             });
         }
 
@@ -286,13 +367,12 @@ export const cancelRescueMission = async (req, res) => {
         const { missionId } = req.params;
         const volunteerId = req.user._id;
 
-        const mission = await RescueMissionHistory.findOne({ missionId }).populate('requester');
+        const mission = await PetRescueMissionHistory.findOne({ missionId }).populate('requester');
 
         if (!mission) {
             return res.status(404).json({ error: 'Nhiệm vụ không tồn tại' });
         }
 
-        // Nếu đã hoàn thành hoặc hủy thì không được phép từ chối nữa
         if (mission.status === 'completed' || mission.status === 'cancelled') {
             return res.status(400).json({ error: 'Không thể hủy nhiệm vụ đã kết thúc hoặc đã bị hủy' });
         }
@@ -301,19 +381,16 @@ export const cancelRescueMission = async (req, res) => {
             return res.status(403).json({ error: 'Bạn không thuộc nhiệm vụ này' });
         }
 
-        // Loại volunteer ra khỏi danh sách
         mission.selectedVolunteers = mission.selectedVolunteers.filter(
             v => v.toString() !== volunteerId.toString()
         );
 
-        // Nếu không còn ai nhận, tự động hủy mission
         if (mission.selectedVolunteers.length === 0) {
             mission.status = 'cancelled';
         }
 
         await mission.save();
 
-        // Gửi thông báo cho người yêu cầu
         if (mission.requester) {
             await Notification.create({
                 userId: mission.requester._id,
@@ -321,16 +398,6 @@ export const cancelRescueMission = async (req, res) => {
                 title: 'Tình nguyện viên đã từ chối',
                 message: `Một tình nguyện viên đã từ chối nhiệm vụ cứu hộ.`,
             });
-
-            // Gửi realtime nếu có io
-            if (req.io) {
-                req.io.to(mission.requester._id.toString()).emit("notification", {
-                    type: 'warning',
-                    title: 'Tình nguyện viên đã từ chối',
-                    message: 'Một tình nguyện viên đã từ chối tham gia cứu hộ của bạn.',
-                    createdAt: new Date()
-                });
-            }
         }
 
         return res.json({
@@ -341,5 +408,155 @@ export const cancelRescueMission = async (req, res) => {
     } catch (err) {
         console.error('Lỗi khi từ chối nhiệm vụ cứu hộ:', err);
         return res.status(500).json({ error: 'Lỗi server khi hủy nhiệm vụ' });
+    }
+};
+
+export const cancelRescueRequest = async (req, res) => {
+    try {
+        const { missionId } = req.body;
+        const userId = req.user?._id;
+
+        const mission = await PetRescueMissionHistory.findOne({ missionId })
+            .populate('requester')
+            .populate('acceptedVolunteer');
+
+        if (!mission) {
+            return res.status(404).json({ error: 'Nhiệm vụ không tồn tại' });
+        }
+
+        if (mission.requester && mission.requester._id.toString() !== userId?.toString()) {
+            return res.status(403).json({ error: 'Bạn không có quyền hủy yêu cầu cứu hộ này' });
+        }
+
+        if (mission.status !== 'pending') {
+            return res.status(400).json({ error: 'Không thể hủy nhiệm vụ đã bắt đầu hoặc đã kết thúc' });
+        }
+
+        mission.status = 'cancelled';
+        mission.endedAt = new Date();
+        await mission.save();
+
+        // Nếu có volunteer đã nhận nhiệm vụ, gửi email thông báo
+        if (mission.acceptedVolunteer) {
+            await sendMailNotification({
+                email: mission.acceptedVolunteer.email,
+                subject: 'Yêu Cầu Cứu Hộ Đã Bị Hủy',
+                text: `Người yêu cầu đã hủy nhiệm vụ cứu hộ`,
+                html: `
+                    <p>Xin chào ${mission.acceptedVolunteer.fullname},</p>
+                    <p>Người yêu cầu đã hủy nhiệm vụ cứu hộ (Mã: ${missionId}).</p>
+                    <p>Bạn không cần tiếp tục thực hiện nhiệm vụ này nữa.</p>
+                    <p>Cảm ơn bạn đã sẵn sàng hỗ trợ.</p>
+                `
+            });
+        }
+
+        // Gửi email cho tất cả các volunteer được chọn
+        if (mission.selectedVolunteers && mission.selectedVolunteers.length > 0) {
+            const volunteers = await user.find({
+                _id: { $in: mission.selectedVolunteers }
+            }).select('fullname email');
+
+            for (const volunteer of volunteers) {
+                if (mission.acceptedVolunteer &&
+                    volunteer._id.toString() === mission.acceptedVolunteer._id.toString()) {
+                    continue; // Bỏ qua volunteer đã nhận nhiệm vụ vì đã gửi email ở trên
+                }
+
+                await sendMailNotification({
+                    email: volunteer.email,
+                    subject: 'Yêu Cầu Cứu Hộ Đã Bị Hủy',
+                    text: `Người yêu cầu đã hủy nhiệm vụ cứu hộ`,
+                    html: `
+                        <p>Xin chào ${volunteer.fullname},</p>
+                        <p>Người yêu cầu đã hủy nhiệm vụ cứu hộ (Mã: ${missionId}).</p>
+                        <p>Bạn không cần phải xem xét nhiệm vụ này nữa.</p>
+                    `
+                });
+            }
+        }
+
+        return res.json({
+            message: 'Đã hủy yêu cầu cứu hộ thành công',
+            missionStatus: mission.status
+        });
+
+    } catch (err) {
+        console.error('Lỗi khi hủy yêu cầu cứu hộ:', err);
+        return res.status(500).json({ error: 'Lỗi server khi hủy yêu cầu cứu hộ' });
+    }
+};
+
+
+export const completeRescueMission = async (req, res) => {
+    try {
+        const { missionId } = req.params;
+        const volunteerId = req.user._id;
+
+        const mission = await PetRescueMissionHistory.findOne({ missionId })
+            .populate('requester')
+            .populate('acceptedVolunteer');
+
+        if (!mission) {
+            return res.status(404).json({ error: 'Nhiệm vụ không tồn tại' });
+        }
+        if (!mission.acceptedVolunteer || mission.acceptedVolunteer._id.toString() !== volunteerId.toString()) {
+            return res.status(403).json({ error: 'Bạn không phải là tình nguyện viên được chấp nhận cho nhiệm vụ này' });
+        }
+
+        if (mission.status !== 'in_progress') {
+            return res.status(400).json({ error: 'Chỉ có thể hoàn thành nhiệm vụ đang trong tiến trình' });
+        }
+
+        mission.status = 'completed';
+        mission.endedAt = new Date();
+        await mission.save();
+
+        if (mission.requester) {
+            const volunteer = await user.findById(volunteerId).select('fullname');
+            await Notification.create({
+                userId: mission.requester._id.toString(),
+                type: 'success',
+                title: 'Nhiệm vụ cứu hộ đã hoàn thành ✅',
+                message: `Tình nguyện viên ${volunteer.fullname} đã hoàn thành nhiệm vụ cứu hộ của bạn.`,
+                priority: 'high',
+                relatedTo: 'rescue_mission',
+                relatedId: missionId,
+                metadata: {
+                    missionId,
+                    completedAt: new Date(),
+                    volunteerId: volunteerId.toString(),
+                    volunteerName: volunteer.fullname,
+                    location: mission.location
+                },
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Hết hạn sau 7 ngày
+            });
+
+            // Thông báo cho volunteer
+            await Notification.create({
+                userId: volunteerId.toString(),
+                type: 'success',
+                title: 'Hoàn thành nhiệm vụ cứu hộ 🎉',
+                message: 'Cảm ơn bạn đã hoàn thành nhiệm vụ cứu hộ. Hãy tiếp tục giúp đỡ cộng đồng!',
+                priority: 'medium',
+                relatedTo: 'rescue_mission',
+                relatedId: missionId,
+                metadata: {
+                    missionId,
+                    completedAt: new Date(),
+                    location: mission.location
+                },
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            });
+        }
+
+        return res.json({
+            message: 'Đã hoàn thành nhiệm vụ cứu hộ thành công',
+            missionStatus: mission.status
+        });
+
+    } catch (err) {
+        console.error('Lỗi khi hoàn thành nhiệm vụ cứu hộ:', err);
+        return res.status(500).json({ error: 'Lỗi server khi hoàn thành nhiệm vụ cứu hộ' });
     }
 };

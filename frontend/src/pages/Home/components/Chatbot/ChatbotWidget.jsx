@@ -234,7 +234,7 @@ const ChatbotWidget = () => {
         >
           <div className="chatbot-header">
             <Avatar className="chatbot-avatar" src={logo}/>
-            <Typography variant="subtitle1" className="chatbot-name">Pet Rescue AI Assistant</Typography>
+            <Typography variant="subtitle1" className="chatbot-name">Pet Assistant</Typography>
             <IconButton className="chatbot-close-btn" onClick={() => setIsOpen(false)}>
               <CloseIcon />
             </IconButton>
@@ -291,7 +291,7 @@ const ChatbotWidget = () => {
             </Box>
 
             <Box className="chatbot-footer">
-              <Typography variant="caption">Powered by Pet Rescue AI - Hỗ trợ 24/7</Typography>
+              <Typography variant="caption">Powered by Pet Assistant - 24/7 Support</Typography>
             </Box>
           </div>
         )}

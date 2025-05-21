@@ -64,7 +64,6 @@ const Footer = ({ darkLight }) => {
                                     <li><a href="/about">Giới thiệu</a></li>
                                     <li><a href="/mission">Sứ mệnh</a></li>
                                     <li><a href="/team">Đội ngũ</a></li>
-                                    <li><a href="/volunteer">Tình nguyện viên</a></li>
                                     <li><a href="/donate">Quyên góp</a></li>
                                 </ul>
                             </div>

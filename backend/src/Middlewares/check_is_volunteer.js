@@ -5,17 +5,17 @@ import { COOKIE_PATHS, TOKEN_TYPE } from "../../config.js";
 import { redisClient } from "../Cache/User_Cache.js";
 import { StatusCodes } from "http-status-codes";
 
-export const clearAdminCache = async (userId) => {
+export const clearvolunteerCache = async (userId) => {
     try {
-        const redisKey = `admin:${userId}`;
+        const redisKey = `volunteer:${userId}`;
         await redisClient.del(redisKey);
-        console.log(`🧹 Cache Redis quyền admin đã được xóa cho user ${userId}`);
+        console.log(`🧹 Cache Redis quyền volunteer đã được xóa cho user ${userId}`);
     } catch (error) {
         console.error("❌ Lỗi khi xóa cache Redis:", error);
     }
 };
 
-export const isAdmin = async (req, res, next) => {
+export const isVolunteer = async (req, res, next) => {
     try {
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "id");
         const userEmail = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "email");
@@ -28,18 +28,18 @@ export const isAdmin = async (req, res, next) => {
             });
         }
 
-        const primaryCheckIsAdmin = userRoles.includes('admin') || userRoles.includes('super_admin');
-        if (!primaryCheckIsAdmin) {
+        const primaryCheckIsVolunteer = userRoles.includes('volunteer');
+        if (!primaryCheckIsVolunteer) {
             return res.status(StatusCodes.FORBIDDEN).json({ 
                 message: "Access Denied: Bạn không có quyền truy cập tài nguyên này" 
             });
         }
 
-        const redisKey = `admin:permission:${userId}`;
+        const redisKey = `volunteer:permission:${userId}`;
         const cached = await redisClient.get(redisKey);
         
         if (cached === "true") {
-            console.log("✅ Đã xác thực quyền admin từ Redis cache!");
+            console.log("✅ Đã xác thực quyền volunteer từ Redis cache!");
             req.user = {
                 _id: userId,
                 email: userEmail,
@@ -61,15 +61,15 @@ export const isAdmin = async (req, res, next) => {
             });
         }
 
-        const isAdmin = foundUser.roles.some(r => r.name === "admin" || r.name === "super_admin");
-        if (!isAdmin) {
+        const isVolunteer = foundUser.roles.some(r => r.name === "volunteer");
+        if (!isVolunteer) {
             return res.status(StatusCodes.FORBIDDEN).json({ 
-                message: "Access Denied: Không có quyền admin!" 
+                message: "Access Denied: Bạn không có quyền volunteer!" 
             });
         }
 
         await redisClient.setEx(redisKey, 900, "true");
-        console.log("✅ Xác thực quyền admin từ DB và ghi vào Redis!");
+        console.log("✅ Xác thực quyền volunteer từ DB và ghi vào Redis!");
         
         req.user = {
             _id: userId,
@@ -79,14 +79,14 @@ export const isAdmin = async (req, res, next) => {
         
         next();
     } catch (error) {
-        console.error("❌ Lỗi trong middleware isAdmin:", error);
+        console.error("❌ Lỗi trong middleware isVolunteer:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
-            message: "Lỗi máy chủ khi xác thực quyền admin!" 
+            message: "Lỗi máy chủ khi xác thực quyền volunteer!" 
         });
     }
 };
 
-export const checkAdminLogin = async (req, res, next) => {
+export const checkVolunteer = async (req, res, next) => {
     try {
         const { emailOrUsername, password } = req.body;
 
@@ -115,22 +115,19 @@ export const checkAdminLogin = async (req, res, next) => {
             });
         }
 
-        const hasAdminRole = foundUser.roles.some(role => 
-            role.name === 'admin' || role.name === 'super_admin'
-        );
-
-        if (!hasAdminRole) {
+        const hasVolunteerRole = foundUser.roles.some(role => role.name === 'volunteer');
+        if (!hasVolunteerRole) {
             return res.status(StatusCodes.FORBIDDEN).json({ 
-                message: "Bạn không phải admin nên không có quyền đăng nhập vào hệ thống quản trị!" 
+                message: "Bạn không phải volunteer nên không có quyền truy cập vào tài nguyên này!" 
             });
         }
 
         req.user = foundUser;
         next();
     } catch (error) {
-        console.error("❌ Lỗi trong middleware checkAdminLogin:", error);
+        console.error("❌ Lỗi trong middleware checkVolunteer:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
-            message: "Lỗi máy chủ khi xác thực vai trò admin!" 
+            message: "Lỗi máy chủ khi xác thực vai trò volunteer!" 
         });
     }
 };

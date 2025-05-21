@@ -93,7 +93,8 @@ const userSchema = new mongoose.Schema(
             default: "none"
         },
         isVIP: { type: Boolean, default: false },
-        premiumExpiresAt: { type: Date }
+        premiumExpiresAt: { type: Date },
+        lastLoginAt: { type: Date },
     },
     {
         timestamps: true,
@@ -109,12 +110,10 @@ userSchema.pre("save", async function (next) {
         const hasVolunteerRole = user.roles.some(role => role.name.toLowerCase() === "volunteer");
 
         if (hasVolunteerRole) {
-            // Nếu có role volunteer, đảm bảo volunteerStatus là alreadyRescue hoặc not ready
             if (!["alreadyRescue", "not ready"].includes(user.volunteerStatus)) {
-                user.volunteerStatus = "not ready"; // Mặc định khi mới thêm role volunteer
+                user.volunteerStatus = "not ready";
             }
         } else {
-            // Nếu không có role volunteer, đặt volunteerStatus là none
             user.volunteerStatus = "none";
         }
     }
@@ -169,6 +168,25 @@ userSchema.pre("save", async function (next) {
 
     const hash = await bcrypt.hash(user.password, 10);
     user.password = hash;
+    if (user.isModified("gender")) {
+        const defaultMaleAvatar = avatarConfig.defaultAvatars.male;
+        const defaultFemaleAvatar = avatarConfig.defaultAvatars.female;
+        const defaultNeutralAvatar = avatarConfig.defaultAvatars.neutral;
+
+        const isUsingDefaultAvatar = user.avatar === defaultMaleAvatar ||
+            user.avatar === defaultFemaleAvatar ||
+            user.avatar === defaultNeutralAvatar;
+
+        if (isUsingDefaultAvatar && !user.isModified("avatar")) {
+            if (user.gender === "male") {
+                user.avatar = defaultMaleAvatar;
+            } else if (user.gender === "female") {
+                user.avatar = defaultFemaleAvatar;
+            } else {
+                user.avatar = defaultNeutralAvatar;
+            }
+        }
+    }
     next();
 });
 

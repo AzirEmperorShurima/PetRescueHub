@@ -133,9 +133,16 @@ export const updateForumPost = async (req, res) => {
 
 export const createNewForumPost = async (req, res) => {
     try {
-        const { title, content, tags, postType } = req.body;
+        const {
+            title, content, tags,
+            postType, questionDetails, lostPetInfo,
+            eventStartDate, eventEndDate,
+            eventLongitude, eventLatitude, eventLocation
+        } = req.body;
+
         const imgUrl = req.uploadedImageUrls || [];
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -144,13 +151,44 @@ export const createNewForumPost = async (req, res) => {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Tiêu đề và nội dung không được để trống" });
         }
 
+        const postTypeHandlers = {
+            'Question': () => questionDetails && { questionDetails },
+            'FindLostPetPost': () => lostPetInfo && { lostPetInfo },
+            'EventPost': () => ({
+                ...(eventStartDate && { eventStartDate: new Date(eventStartDate) }),
+                ...(eventEndDate && { eventEndDate: new Date(eventEndDate) }),
+                ...(eventLongitude && { eventLongitude }),
+                ...(eventLatitude && { eventLatitude }),
+                ...(eventLocation && { eventLocation })
+            })
+        };
+
+        const additionalFields = postTypeHandlers[postType] ? postTypeHandlers[postType]() || {} : {};
+
+        switch (postType) {
+            case 'Question':
+                if (questionDetails) additionalFields.questionDetails = questionDetails;
+                break;
+            case 'FindLostPetPost':
+                if (lostPetInfo) additionalFields.lostPetInfo = lostPetInfo;
+                break;
+            case 'EventPost':
+                if (eventStartDate) additionalFields.eventStartDate = new Date(eventStartDate);
+                if (eventEndDate) additionalFields.eventEndDate = new Date(eventEndDate);
+                if (eventLongitude) additionalFields.eventLongitude = eventLongitude;
+                if (eventLatitude) additionalFields.eventLatitude = eventLatitude;
+                if (eventLocation) additionalFields.eventLocation = eventLocation;
+                break;
+        }
+
         const result = await forumService.createPost(
             title,
             content,
             tags,
             imgUrl,
             userId,
-            postType
+            postType,
+            additionalFields
         );
 
         if (result.success) {
