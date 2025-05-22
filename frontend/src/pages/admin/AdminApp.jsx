@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Spinner, Center } from '@chakra-ui/react';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import Dashboard from './components/Dashboard';
 import UserManagement from './components/UserManagement';
@@ -54,7 +55,17 @@ const AdminApp = () => {
   }, [navigate, location.pathname]);
   
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <Center h="100vh">
+        <Spinner
+          thickness="4px"
+          speed="0.65s"
+          emptyColor="gray.200"
+          color="blue.500"
+          size="xl"
+        />
+      </Center>
+    );
   }
 
   // Sử dụng Routes và Route trực tiếp thay vì useRoutes

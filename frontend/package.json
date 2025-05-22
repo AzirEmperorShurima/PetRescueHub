@@ -2,62 +2,45 @@
   "name": "petrescuehub_fe",
   "version": "1.0.0",
   "private": true,
-  "proxy": "http://localhost:4000",
   "author": "Phạm Minh Thiện",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "lint": "eslint src/**/*.{js,jsx}",
-    "lint:fix": "eslint --fix src/**/*.{js,jsx}",
-    "format": "prettier --write src/**/*.{js,jsx,css,md,json}"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/AzirEmperorShurima/PetRescueHub.git"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src/**/*.{js,jsx,ts,tsx}",
+    "lint:fix": "eslint --fix src/**/*.{js,jsx,ts,tsx}",
+    "format": "prettier --write src/**/*.{js,jsx,ts,tsx,css,md,json}"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
-    "@chakra-ui/react": "^2.10.7",
+    "@chakra-ui/react": "^2.10.9",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource-variable/dm-sans": "^5.0.7",
-    "@fortawesome/free-brands-svg-icons": "^6.7.2",
-    "@fortawesome/react-fontawesome": "^0.2.2",
-    "@mui/icons-material": "^5.17.1",
-    "@mui/material": "^5.17.1",
-    "@mui/x-date-pickers": "^7.28.0",
     "axios": "^1.4.0",
-    "bootstrap": "^5.3.3",
-    "country-flag-icons": "^1.5.18",
-    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
-    "framer-motion": "^6.5.1",
+    "framer-motion": "^10.18.0",
     "js-cookie": "^3.0.5",
-    "lucide-react": "^0.503.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.16.0",
     "react-responsive": "^10.0.1",
-    "react-router-dom": "^6.30.0",
-    "react-scripts": "5.0.1",
-    "react-toastify": "^11.0.5"
+    "react-router-dom": "^6.30.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-webpack-plugin": "^5.0.1",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "vite": "^5.2.0"
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "prettier"
     ]
   },
   "browserslist": {

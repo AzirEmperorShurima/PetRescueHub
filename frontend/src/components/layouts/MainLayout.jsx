@@ -1,39 +1,31 @@
 import React from 'react';
-import { useLocation, Outlet } from 'react-router-dom';
-import TopBar from '../common/TopBar';
-import Navigation from '../common/Navigation';
-import Footer from '../common/Footers';
-import { Box } from '@mui/material';
+import { Flex, Spinner, Text, Box } from '@chakra-ui/react';
 
-const MainLayout = () => {
-  const location = useLocation();
-  const isAuthPage = location.pathname.includes('/auth');
-
+const LoadingScreen = ({ message = 'Đang tải...' }) => {
   return (
-    <Box 
-      className={isAuthPage ? 'auth-page' : ''}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        paddingTop: isAuthPage ? 0 : '40px' // Thêm padding-top cho non-auth pages
-      }}
+    <Flex
+      direction="column"
+      align="center"
+      justify="center"
+      height="100vh"
+      width="100%"
     >
-      {!isAuthPage && <TopBar />}
-      {!isAuthPage && <Navigation />}
-      <Box 
-        component="main"
-        sx={{ 
-          flex: 1,
-          marginTop: isAuthPage ? 0 : '80px', // Không cần margin-top cho trang auth
-          paddingTop: isAuthPage ? 0 : '20px'
-        }}
+      <Spinner
+        thickness="4px"
+        speed="0.65s"
+        emptyColor="gray.200"
+        color="blue.500"
+        size="xl"
+      />
+      <Text 
+        fontSize="xl" 
+        fontWeight="medium" 
+        mt={4}
       >
-        <Outlet />
-      </Box>
-      {!isAuthPage && <Footer />}
-    </Box>
+        {message}
+      </Text>
+    </Flex>
   );
 };
 
-export default MainLayout;
+export default LoadingScreen;

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Home } from 'lucide-react';
+import { Home as HomeIcon } from '@mui/icons-material';
 import './NotFound.css';
 import buffaloImg from '../../../assets/images/buffalo.svg';
 
@@ -62,7 +62,7 @@ const NotFound = () => {
         </div>
 
         <button className="btn-home" onClick={() => window.location.href = '/'}>
-          <Home /> Về Trang Chủ
+          <HomeIcon /> Về Trang Chủ
         </button>
 
         <div className="footer-note">

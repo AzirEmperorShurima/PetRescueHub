@@ -1,46 +1,40 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Snackbar, Alert } from '@mui/material';
+import { useToast } from '@chakra-ui/react';
 
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-  const [notification, setNotification] = useState({
-    open: false,
-    message: '',
-    severity: 'info', // 'error', 'warning', 'info', 'success'
-    autoHideDuration: 6000
-  });
+  const toast = useToast();
 
-  const showNotification = useCallback((message, severity = 'info', autoHideDuration = 6000) => {
-    setNotification({
-      open: true,
-      message,
-      severity,
-      autoHideDuration
+  const showNotification = useCallback((message, status = 'info', duration = 6000) => {
+    toast({
+      title: message,
+      status,
+      duration,
+      isClosable: true,
+      position: 'bottom-right'
     });
-  }, []);
+  }, [toast]);
 
   const hideNotification = useCallback(() => {
-    setNotification(prev => ({
-      ...prev,
-      open: false
-    }));
+    // Trong Chakra UI, không cần phải đóng toast theo cách thủ công
+    // Toast sẽ tự động đóng sau khi hết thời gian duration
   }, []);
 
-  const showSuccess = useCallback((message, autoHideDuration) => {
-    showNotification(message, 'success', autoHideDuration);
+  const showSuccess = useCallback((message, duration) => {
+    showNotification(message, 'success', duration);
   }, [showNotification]);
 
-  const showError = useCallback((message, autoHideDuration) => {
-    showNotification(message, 'error', autoHideDuration);
+  const showError = useCallback((message, duration) => {
+    showNotification(message, 'error', duration);
   }, [showNotification]);
 
-  const showWarning = useCallback((message, autoHideDuration) => {
-    showNotification(message, 'warning', autoHideDuration);
+  const showWarning = useCallback((message, duration) => {
+    showNotification(message, 'warning', duration);
   }, [showNotification]);
 
-  const showInfo = useCallback((message, autoHideDuration) => {
-    showNotification(message, 'info', autoHideDuration);
+  const showInfo = useCallback((message, duration) => {
+    showNotification(message, 'info', duration);
   }, [showNotification]);
 
   return (
@@ -55,21 +49,6 @@ export const NotificationProvider = ({ children }) => {
       }}
     >
       {children}
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={notification.autoHideDuration}
-        onClose={hideNotification}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={hideNotification}
-          severity={notification.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {notification.message}
-        </Alert>
-      </Snackbar>
     </NotificationContext.Provider>
   );
 };

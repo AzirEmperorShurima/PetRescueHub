@@ -127,6 +127,7 @@ class AuthService {
       return response.data;
     } catch (error) {
       console.error('Reset Password API error:', error);
+      console.error("Login failed:", error.response?.data || error.message);
       throw error;
     }
   }

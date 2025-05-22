@@ -12,8 +12,8 @@ import PetsIcon from '@mui/icons-material/Pets';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
 
 // Component hiển thị hoạt động cứu hộ của volunteer
 const RescueActivities = ({ rescues = [], user }) => {
@@ -38,7 +38,8 @@ const RescueActivities = ({ rescues = [], user }) => {
 
   const formatDate = (dateString) => {
     try {
-      return format(new Date(dateString), 'dd MMMM yyyy', { locale: vi });
+      // Thay đổi từ date-fns sang dayjs
+      return dayjs(dateString).locale('vi').format('DD MMMM YYYY');
     } catch (error) {
       return 'Không rõ ngày';
     }

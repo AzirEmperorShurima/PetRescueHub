@@ -16,7 +16,7 @@ Pet Rescue Hub is an online platform connecting pet lovers, volunteers, and anim
 ## Technology Stack
 
 - React 18
-- Material UI & Chakra UI
+- Chakra UI
 - React Router v6
 - Axios
 - React Bootstrap

@@ -1,10 +1,9 @@
 import React from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
 
 const LoadingScreen = ({ message = 'Đang tải...' }) => {
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -13,11 +12,40 @@ const LoadingScreen = ({ message = 'Đang tải...' }) => {
         width: '100%',
       }}
     >
-      <CircularProgress color="primary" size={60} thickness={4} />
-      <Typography variant="h6" sx={{ mt: 2 }}>
-        {message}
-      </Typography>
-    </Box>
+      <div className="loading-spinner">
+        <div className="spinner"></div>
+      </div>
+      <h3 style={{ marginTop: '16px' }}>{message}</h3>
+      
+      <style jsx>{`
+        .loading-spinner {
+          display: inline-block;
+          position: relative;
+          width: 60px;
+          height: 60px;
+        }
+        .spinner {
+          box-sizing: border-box;
+          display: block;
+          position: absolute;
+          width: 48px;
+          height: 48px;
+          margin: 6px;
+          border: 4px solid #1976d2;
+          border-radius: 50%;
+          animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+          border-color: #1976d2 transparent transparent transparent;
+        }
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
+    </div>
   );
 };
 

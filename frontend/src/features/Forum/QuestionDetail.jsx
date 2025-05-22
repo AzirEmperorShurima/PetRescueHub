@@ -15,8 +15,10 @@ import {
   CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+// Thay thế date-fns bằng dayjs
+import dayjs from 'dayjs';
+// Thêm locale cho tiếng Việt
+import 'dayjs/locale/vi';
 import { useAuth } from '../../components/contexts/AuthContext';
 import { questionDetailMock, answersMock } from '../../mocks/questionDetailMock';
 
@@ -187,7 +189,7 @@ const QuestionDetail = () => {
           <Box>
             <Typography variant="subtitle1">{question.author}</Typography>
             <Typography variant="caption" color="text.secondary">
-              {format(new Date(question.date), 'dd/MM/yyyy HH:mm', { locale: vi })}
+              {dayjs(new Date(question.date)).locale('vi').format('DD/MM/YYYY HH:mm')}
             </Typography>
           </Box>
         </Box>
@@ -224,7 +226,7 @@ const QuestionDetail = () => {
                 <Box>
                   <Typography variant="subtitle2">{answer.author}</Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {format(new Date(answer.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                    {dayjs(new Date(answer.createdAt)).locale('vi').format('DD/MM/YYYY HH:mm')}
                   </Typography>
                 </Box>
               </Box>

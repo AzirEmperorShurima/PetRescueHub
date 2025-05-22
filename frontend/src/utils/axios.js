@@ -1,6 +1,8 @@
 import axios from 'axios';
+
 // Cấu hình cơ bản
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+console.log('API_URL:', API_URL);
 
 const axiosInstance = axios.create({
   baseURL: API_URL,

@@ -1,11 +1,7 @@
-import React, {useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Pets as PetsIcon, 
-  Favorite as FavoriteIcon, 
-  Event as EventIcon, 
-  Home as HomeIcon 
-} from '@mui/icons-material';
+import { Box, Text, Image, useColorModeValue } from '@chakra-ui/react';
+import { FaPaw, FaHeart, FaCalendarAlt, FaHome } from 'react-icons/fa';
 import vetIcon from '../../assets/images/vet.svg';
 import styles from './RescueButton.module.css';
 
@@ -14,6 +10,7 @@ const RescueButton = () => {
   const rescueBtnRef = useRef(null);
   const isDragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
+  const iconColor = useColorModeValue('#e85fb0', '#e85fb0');
 
   // Rescue button drag handlers with optimized throttling
   const handleMouseDown = (e) => {
@@ -63,29 +60,29 @@ const RescueButton = () => {
   }, []);
 
   return (
-    <div 
+    <Box 
       className={styles.rescueBtn} 
       ref={rescueBtnRef} 
       onMouseDown={handleMouseDown}
       onClick={handleClick}
     >
-      <span className={styles.rescueBtn__text}>Báo cáo cứu hộ</span>
-      <img src={vetIcon} alt="Báo cáo cứu hộ" />
-      <div className={styles.rescueBtn__iconContainer}>
-        <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--1']}`}>
-          <PetsIcon style={{ color: '#e85fb0' }} />
-        </div>
-        <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--2']}`}>
-          <FavoriteIcon style={{ color: '#e85fb0' }} />
-        </div>
-        <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--3']}`}>
-          <EventIcon style={{ color: '#e85fb0' }} />
-        </div>
-        <div className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--4']}`}>
-          <HomeIcon style={{ color: '#e85fb0' }} />
-        </div>
-      </div>
-    </div>
+      <Text className={styles.rescueBtn__text}>Báo cáo cứu hộ</Text>
+      <Image src={vetIcon} alt="Báo cáo cứu hộ" />
+      <Box className={styles.rescueBtn__iconContainer}>
+        <Box className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--1']}`}>
+          <FaPaw color={iconColor} />
+        </Box>
+        <Box className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--2']}`}>
+          <FaHeart color={iconColor} />
+        </Box>
+        <Box className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--3']}`}>
+          <FaCalendarAlt color={iconColor} />
+        </Box>
+        <Box className={`${styles.rescueBtn__icon} ${styles['rescueBtn__icon--4']}`}>
+          <FaHome color={iconColor} />
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

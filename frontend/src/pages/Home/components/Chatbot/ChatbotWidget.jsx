@@ -1,10 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, TextField, Button, IconButton, Avatar, Chip } from '@mui/material';
-import { Close as CloseIcon, Send as SendIcon, Chat as ChatIcon } from '@mui/icons-material';
+import {
+  Box,
+  Text,
+  Input,
+  Button,
+  IconButton,
+  Avatar,
+  Flex,
+  Tag,
+  useColorModeValue,
+  InputGroup,
+  InputRightElement
+} from '@chakra-ui/react';
+import { CloseIcon, ChatIcon } from '@chakra-ui/icons';
+import { FiSend } from 'react-icons/fi';
 import { useAuth } from '../../../../components/contexts/AuthContext';
-import './ChatbotWidget.css';
 import axios from 'axios';
 import logo from '../../../../assets/images/logo.svg';
+import './ChatbotWidget.css';
 
 const ChatbotWidget = () => {
   const { user } = useAuth();
@@ -16,6 +29,13 @@ const ChatbotWidget = () => {
   const chatbotRef = useRef(null);
   const isDragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
+
+  // Colors
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const headerBgColor = useColorModeValue('blue.500', 'blue.400');
+  const headerTextColor = 'white';
+  const botMessageBg = useColorModeValue('gray.100', 'gray.700');
+  const userMessageBg = useColorModeValue('blue.100', 'blue.700');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -217,85 +237,207 @@ const ChatbotWidget = () => {
   return (
     <>
       {!isOpen && (
-        <div 
-          className="chatbot-button" 
+        <Box
+          position="fixed"
+          bottom="20px"
+          right="20px"
+          zIndex="999"
           onClick={() => setIsOpen(true)}
+          className="chatbot-button"
         >
-          <ChatIcon className="chatbot-icon" />
-          <span className="chatbot-tooltip">Cần giúp đỡ? Chat với trợ lý AI 24/7</span>
-        </div>
+          <IconButton
+            icon={<ChatIcon />}
+            colorScheme="blue"
+            isRound
+            size="lg"
+            _hover={{ transform: 'scale(1.1)' }}
+            transition="all 0.2s"
+            aria-label="Open chat"
+          />
+          <Box
+            position="absolute"
+            right="60px"
+            bottom="10px"
+            bg="white"
+            boxShadow="md"
+            p="2"
+            borderRadius="md"
+            className="chatbot-tooltip"
+            display="none"
+            _groupHover={{ display: 'block' }}
+            maxWidth="200px"
+          >
+            <Text fontSize="sm">Cần giúp đỡ? Chat với trợ lý AI 24/7</Text>
+          </Box>
+        </Box>
       )}
 
       {isOpen && (
-        <div 
-          className="chatbot-widget"
+        <Box
+          position="fixed"
+          bottom="20px"
+          right="20px"
+          width="350px"
+          height="500px"
+          bg={bgColor}
+          borderRadius="lg"
+          boxShadow="xl"
+          zIndex="999"
+          display="flex"
+          flexDirection="column"
+          overflow="hidden"
           ref={chatbotRef}
           onMouseDown={handleMouseDown}
+          className="chatbot-widget"
         >
-          <div className="chatbot-header">
-            <Avatar className="chatbot-avatar" src={logo}/>
-            <Typography variant="subtitle1" className="chatbot-name">Pet Assistant</Typography>
-            <IconButton className="chatbot-close-btn" onClick={() => setIsOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </div>
+          <Flex
+            p="3"
+            align="center"
+            bg={headerBgColor}
+            color={headerTextColor}
+            className="chatbot-header"
+            cursor="grab"
+          >
+            <Avatar src={logo} size="sm" />
+            <Text ml="2" fontWeight="bold" flex="1">
+              Pet Assistant
+            </Text>
+            <IconButton
+              icon={<CloseIcon />}
+              size="sm"
+              variant="ghost"
+              colorScheme="whiteAlpha"
+              onClick={() => setIsOpen(false)}
+              aria-label="Close chat"
+            />
+          </Flex>
 
-            <Box className="chatbot-messages">
-              {messages.map((message) => (
-                <Box key={message.id} className={`message-container ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}>
-                  {message.sender === 'bot' && <Avatar className="message-avatar" src={logo} />}
-                  <Box className="message-content">
-                    {message.text && <Typography className="message-text">{message.text}</Typography>}
-                    {message.suggestions && (
-                      <Box className="message-suggestions">
-                        {message.suggestions.map((suggestion, index) => (
-                          <Chip key={index} label={suggestion} onClick={() => handleSuggestionClick(suggestion)} clickable />
-                        ))}
-                      </Box>
-                    )}
-                    <Typography variant="caption" className="message-time">{formatTime(message.timestamp)}</Typography>
-                  </Box>
-                  {message.sender === 'user' && <Avatar className="message-avatar user-avatar">U</Avatar>}
-                </Box>
-              ))}
-
-              {isTyping && (
-                <Box className="message-container bot-message">
-                  <Avatar className="message-avatar" src={logo} />
-                  <Box className="message-content typing-content">
-                    <Box className="typing-indicator">
-                      <span></span><span></span><span></span>
+          <Box
+            flex="1"
+            overflowY="auto"
+            p="3"
+            className="chatbot-messages"
+          >
+            {messages.map((message) => (
+              <Flex
+                key={message.id}
+                justify={message.sender === 'user' ? 'flex-end' : 'flex-start'}
+                mb="4"
+                className={`message-container ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}
+              >
+                {message.sender === 'bot' && (
+                  <Avatar src={logo} size="sm" mr="2" />
+                )}
+                <Box maxWidth="80%">
+                  {message.text && (
+                    <Box
+                      bg={message.sender === 'user' ? userMessageBg : botMessageBg}
+                      p="3"
+                      borderRadius="lg"
+                      className="message-text"
+                    >
+                      <Text>{message.text}</Text>
                     </Box>
-                  </Box>
+                  )}
+                  {message.suggestions && (
+                    <Flex wrap="wrap" mt="2" gap="2" className="message-suggestions">
+                      {message.suggestions.map((suggestion, index) => (
+                        <Tag
+                          key={index}
+                          size="md"
+                          variant="subtle"
+                          colorScheme="blue"
+                          cursor="pointer"
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          _hover={{ bg: 'blue.100' }}
+                        >
+                          {suggestion}
+                        </Tag>
+                      ))}
+                    </Flex>
+                  )}
+                  <Text fontSize="xs" color="gray.500" mt="1" textAlign={message.sender === 'user' ? 'right' : 'left'}>
+                    {formatTime(message.timestamp)}
+                  </Text>
                 </Box>
-              )}
-              <div ref={messagesEndRef} />
-            </Box>
+                {message.sender === 'user' && (
+                  <Avatar size="sm" ml="2" name="User" bg="blue.500" />
+                )}
+              </Flex>
+            ))}
 
-            <Box className="chatbot-input">
-              <TextField
-                fullWidth
+            {isTyping && (
+              <Flex mb="4" align="flex-start">
+                <Avatar src={logo} size="sm" mr="2" />
+                <Box
+                  bg={botMessageBg}
+                  p="3"
+                  borderRadius="lg"
+                  className="typing-content"
+                >
+                  <Flex gap="1" className="typing-indicator">
+                    <Box
+                      h="2"
+                      w="2"
+                      borderRadius="full"
+                      bg="blue.500"
+                      animation="bounce 1s infinite"
+                      style={{ animationDelay: '0s' }}
+                    />
+                    <Box
+                      h="2"
+                      w="2"
+                      borderRadius="full"
+                      bg="blue.500"
+                      animation="bounce 1s infinite"
+                      style={{ animationDelay: '0.2s' }}
+                    />
+                    <Box
+                      h="2"
+                      w="2"
+                      borderRadius="full"
+                      bg="blue.500"
+                      animation="bounce 1s infinite"
+                      style={{ animationDelay: '0.4s' }}
+                    />
+                  </Flex>
+                </Box>
+              </Flex>
+            )}
+            <Box ref={messagesEndRef} />
+          </Box>
+
+          <Box p="3" borderTop="1px" borderColor="gray.200" className="chatbot-input">
+            <InputGroup>
+              <Input
                 placeholder="Nhập tin nhắn..."
-                variant="outlined"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton color="primary" onClick={handleSendMessage} disabled={inputValue.trim() === ''}>
-                      <SendIcon />
-                    </IconButton>
-                  )
-                }}
+                pr="10"
               />
-            </Box>
+              <InputRightElement>
+                <IconButton
+                  icon={<FiSend />}
+                  size="sm"
+                  colorScheme="blue"
+                  variant="ghost"
+                  isDisabled={inputValue.trim() === ''}
+                  onClick={handleSendMessage}
+                  aria-label="Send message"
+                />
+              </InputRightElement>
+            </InputGroup>
+          </Box>
 
-            <Box className="chatbot-footer">
-              <Typography variant="caption">Powered by Pet Assistant - 24/7 Support</Typography>
-            </Box>
-          </div>
-        )}
-      </>
+          <Box p="2" textAlign="center" borderTop="1px" borderColor="gray.200" className="chatbot-footer">
+            <Text fontSize="xs" color="gray.500">
+              Powered by Pet Assistant - 24/7 Support
+            </Text>
+          </Box>
+        </Box>
+      )}
+    </>
   );
 };
 

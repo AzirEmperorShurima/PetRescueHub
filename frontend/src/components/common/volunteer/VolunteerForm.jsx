@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import {
   Box,
   Button,
@@ -13,10 +13,11 @@ import {
   Text,
   Textarea,
   VStack,
-  CloseButton
+  CloseButton,
+  FormControl,
+  FormLabel
 } from '@chakra-ui/react';
 import { ChevronRightIcon } from '@chakra-ui/icons';
-import { FormControl, FormLabel } from '@mui/material';
 import { useNotification } from '../../contexts/NotificationContext';
 import './VolunteerForm.css';
 
@@ -32,7 +33,6 @@ const VolunteerForm = ({ isOpen, onClose }) => {
     termsAccepted: false
   });
 
-  // Danh sách kỹ năng
   const skillsList = [
     { id: 'skill1', value: 'chăm sóc thú cưng', label: 'Chăm sóc thú cưng' },
     { id: 'skill2', value: 'y tế', label: 'Y tế' },
@@ -47,53 +47,35 @@ const VolunteerForm = ({ isOpen, onClose }) => {
     { id: 'skill11', value: 'kỹ năng mềm', label: 'Kỹ năng mềm & cộng tác' },
   ];
 
-  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-  
-  // Handle checkbox changes for skills
-  const handleSkillChange = (e) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setFormData({
-        ...formData,
-        skills: [...formData.skills, value]
-      });
-    } else {
-      setFormData({
-        ...formData,
-        skills: formData.skills.filter(skill => skill !== value)
-      });
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle terms checkbox
-  const handleTermsChange = (e) => {
-    setFormData({
-      ...formData,
-      termsAccepted: e.target.checked
-    });
+  const handleSkillChange = (e) => {
+    const { value, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      skills: checked
+        ? [...prev.skills, value]
+        : prev.skills.filter(skill => skill !== value)
+    }));
   };
-  
-  // Handle volunteer form submission
+
+  const handleTermsChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      termsAccepted: e.target.checked
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Volunteer form submitted:', formData);
-    
-    // Hiển thị thông báo thành công
+
     showSuccess('Cảm ơn bạn đã đăng ký làm tình nguyện viên! Chúng tôi sẽ liên hệ với bạn sớm.');
-    
-    // Đóng modal
     onClose();
-    
-    // Reset form
     setFormData({
-      // Reset form data
       name: '',
       email: '',
       phone: '',
@@ -110,7 +92,7 @@ const VolunteerForm = ({ isOpen, onClose }) => {
         <Flex justifyContent="flex-end">
           <CloseButton size="lg" onClick={onClose} className="volunteer-modal-close" />
         </Flex>
-        
+
         <VStack spacing={4} align="center" mb={6}>
           <Heading as="h3" size="xl" className="volunteer-form-title">
             Đăng ký làm tình nguyện viên
@@ -119,65 +101,55 @@ const VolunteerForm = ({ isOpen, onClose }) => {
             Hãy tham gia cùng chúng tôi để giúp đỡ các thú cưng cần được cứu trợ
           </Text>
         </VStack>
-        
+
         <Box as="form" onSubmit={handleSubmit} className="volunteer-form">
-          {/* Phần name */}
-          <FormControl>
+          <FormControl mb={4} isRequired>
             <FormLabel className="name-label">Họ và tên</FormLabel>
             <Input
-              className="name-input"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              required
+              className="name-input"
             />
           </FormControl>
-          
-          {/* Phần email */}
-          <FormControl>
+
+          <FormControl mb={4} isRequired>
             <FormLabel className="email-label">Email</FormLabel>
             <Input
-              className="email-input"
               name="email"
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              required
+              className="email-input"
             />
           </FormControl>
-          
-          {/* Phần phone */}
-          <FormControl>
+
+          <FormControl mb={4} isRequired>
             <FormLabel className="phone-label">Số điện thoại</FormLabel>
             <Input
-              className="phone-input"
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              required
+              className="phone-input"
             />
           </FormControl>
-          
-          {/* Phần availability */}
-          <FormControl>
+
+          <FormControl mb={4} isRequired>
             <FormLabel className="availability-label">Thời gian có thể tham gia</FormLabel>
             <Select
-              className="availability-select"
               name="availability"
               value={formData.availability}
               onChange={handleInputChange}
-              required
-              variant="outline"
-              iconSize="0" /* Ẩn icon mặc định của Chakra UI */
+              className="availability-select"
+              placeholder="Chọn thời gian"
             >
-              <option value="">Chọn thời gian</option>
               <option value="Cuối tuần">Cuối tuần</option>
               <option value="Buổi tối">Buổi tối</option>
               <option value="Cả ngày">Cả ngày</option>
               <option value="Linh hoạt">Linh hoạt</option>
             </Select>
           </FormControl>
-          
+
           <FormControl mb={6}>
             <FormLabel className="form-label">Kỹ năng</FormLabel>
             <Box className="skills-container">
@@ -198,20 +170,19 @@ const VolunteerForm = ({ isOpen, onClose }) => {
               </Grid>
             </Box>
           </FormControl>
-          
-          {/* Phần message */}
-          <FormControl>
+
+          <FormControl mb={4}>
             <FormLabel className="message-label">Lời nhắn</FormLabel>
             <Textarea
-              className="message-textarea"
               name="message"
               value={formData.message}
               onChange={handleInputChange}
               placeholder="Chia sẻ lý do bạn muốn trở thành tình nguyện viên..."
+              className="message-textarea"
             />
           </FormControl>
 
-          <FormControl mb={6} required>
+          <FormControl mb={6} isRequired>
             <Checkbox
               id="terms"
               isChecked={formData.termsAccepted}
@@ -221,7 +192,7 @@ const VolunteerForm = ({ isOpen, onClose }) => {
               Tôi đồng ý với <a href="/terms" className="terms-link">điều khoản và điều kiện</a> của Pet Rescue Hub
             </Checkbox>
           </FormControl>
-          
+
           <Button
             type="submit"
             rightIcon={<ChevronRightIcon />}
