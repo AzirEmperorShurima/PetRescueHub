@@ -1,22 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Box,
-  Text,
-  Input,
-  Button,
-  IconButton,
-  Avatar,
-  Flex,
-  Tag,
-  useColorModeValue,
-  InputGroup,
-  InputRightElement
-} from '@chakra-ui/react';
-import { CloseIcon, ChatIcon } from '@chakra-ui/icons';
+import { CloseIcon } from '@chakra-ui/icons';
 import { FiSend } from 'react-icons/fi';
 import { useAuth } from '../../../../components/contexts/AuthContext';
 import axios from 'axios';
 import logo from '../../../../assets/images/logo.svg';
+import chatIcon from '../../../../assets/images/chaticon.svg';
 import './ChatbotWidget.css';
 
 const ChatbotWidget = () => {
@@ -27,15 +15,10 @@ const ChatbotWidget = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const chatbotRef = useRef(null);
+  const chatButtonRef = useRef(null);
   const isDragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
-
-  // Colors
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const headerBgColor = useColorModeValue('blue.500', 'blue.400');
-  const headerTextColor = 'white';
-  const botMessageBg = useColorModeValue('gray.100', 'gray.700');
-  const userMessageBg = useColorModeValue('blue.100', 'blue.700');
+  const startTime = useRef(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,43 +51,108 @@ const ChatbotWidget = () => {
     setMessages([welcomeMessage, suggestionMessage]);
   }, []);
 
-  // Xử lý kéo thả chatbot
-  const handleMouseDown = (e) => {
+  // Xử lý kéo thả chatbot widget
+  const handleWidgetMouseDown = (e) => {
     if (e.target.closest('.chatbot-header')) {
-      isDragging.current = true;
+      isDragging.current = false;
+      startTime.current = Date.now();
       const rect = chatbotRef.current.getBoundingClientRect();
       offset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       e.preventDefault();
+
+      // Thêm event listeners khi bắt đầu kéo widget
+      document.addEventListener('mousemove', handleWidgetMouseMove);
+      document.addEventListener('mouseup', handleWidgetMouseUp);
     }
   };
 
-  const handleMouseMove = (e) => {
-    if (isDragging.current && chatbotRef.current) {
-      requestAnimationFrame(() => {
-        if (!isDragging.current) return;
-        const x = Math.max(0, Math.min(e.clientX - offset.current.x, window.innerWidth - chatbotRef.current.offsetWidth));
-        const y = Math.max(0, Math.min(e.clientY - offset.current.y, window.innerHeight - chatbotRef.current.offsetHeight));
-        chatbotRef.current.style.left = `${x}px`;
-        chatbotRef.current.style.top = `${y}px`;
-        chatbotRef.current.style.right = 'auto';
-        chatbotRef.current.style.bottom = 'auto';
-      });
+  const handleWidgetMouseMove = (e) => {
+    if (startTime.current && chatbotRef.current) {
+      // Chỉ bắt đầu kéo nếu đã giữ chuột quá 100ms hoặc đã di chuyển
+      if (!isDragging.current) {
+        const timeDiff = Date.now() - startTime.current;
+        const moveX = Math.abs(e.clientX - (chatbotRef.current.getBoundingClientRect().left + offset.current.x));
+        const moveY = Math.abs(e.clientY - (chatbotRef.current.getBoundingClientRect().top + offset.current.y));
+
+        if (timeDiff > 100 || moveX > 5 || moveY > 5) {
+          isDragging.current = true;
+        }
+      }
+
+      if (isDragging.current) {
+        requestAnimationFrame(() => {
+          const x = Math.max(0, Math.min(e.clientX - offset.current.x, window.innerWidth - chatbotRef.current.offsetWidth));
+          const y = Math.max(0, Math.min(e.clientY - offset.current.y, window.innerHeight - chatbotRef.current.offsetHeight));
+          chatbotRef.current.style.left = `${x}px`;
+          chatbotRef.current.style.top = `${y}px`;
+          chatbotRef.current.style.right = 'auto';
+          chatbotRef.current.style.bottom = 'auto';
+        });
+      }
     }
   };
 
-  const handleMouseUp = () => {
+  const handleWidgetMouseUp = () => {
+    startTime.current = 0;
     isDragging.current = false;
+    
+    // Xóa event listeners khi kết thúc kéo widget
+    document.removeEventListener('mousemove', handleWidgetMouseMove);
+    document.removeEventListener('mouseup', handleWidgetMouseUp);
   };
 
-  useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+  // Xử lý kéo thả nút chat
+  const handleButtonMouseDown = (e) => {
+    startTime.current = Date.now();
+    isDragging.current = false;
+    const rect = chatButtonRef.current.getBoundingClientRect();
+    offset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    e.preventDefault();
     
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, []);
+    // Thêm event listeners khi bắt đầu kéo nút chat
+    document.addEventListener('mousemove', handleButtonMouseMove);
+    document.addEventListener('mouseup', handleButtonMouseUp);
+  };
+
+  const handleButtonMouseMove = (e) => {
+    if (startTime.current && chatButtonRef.current) {
+      // Chỉ bắt đầu kéo nếu đã giữ chuột quá 100ms hoặc đã di chuyển
+      if (!isDragging.current) {
+        const timeDiff = Date.now() - startTime.current;
+        const moveX = Math.abs(e.clientX - (chatButtonRef.current.getBoundingClientRect().left + offset.current.x));
+        const moveY = Math.abs(e.clientY - (chatButtonRef.current.getBoundingClientRect().top + offset.current.y));
+
+        if (timeDiff > 100 || moveX > 5 || moveY > 5) {
+          isDragging.current = true;
+        }
+      }
+
+      if (isDragging.current) {
+        requestAnimationFrame(() => {
+          const x = Math.max(0, Math.min(e.clientX - offset.current.x, window.innerWidth - chatButtonRef.current.offsetWidth));
+          const y = Math.max(0, Math.min(e.clientY - offset.current.y, window.innerHeight - chatButtonRef.current.offsetHeight));
+          chatButtonRef.current.style.left = `${x}px`;
+          chatButtonRef.current.style.top = `${y}px`;
+          chatButtonRef.current.style.right = 'auto';
+          chatButtonRef.current.style.bottom = 'auto';
+        });
+      }
+    }
+  };
+
+  const handleButtonMouseUp = (e) => {
+    if (!isDragging.current && Date.now() - startTime.current < 200) {
+      setIsOpen(true);
+    }
+    startTime.current = 0;
+    isDragging.current = false;
+    
+    // Xóa event listeners khi kết thúc kéo nút chat
+    document.removeEventListener('mousemove', handleButtonMouseMove);
+    document.removeEventListener('mouseup', handleButtonMouseUp);
+  };
+
+  // Xóa useEffect cho document event listeners vì chúng được thêm và xóa trong các hàm xử lý sự kiện
 
   const handleSendMessage = async () => {
     if (inputValue.trim() === '') return;
@@ -237,205 +285,113 @@ const ChatbotWidget = () => {
   return (
     <>
       {!isOpen && (
-        <Box
-          position="fixed"
-          bottom="20px"
-          right="20px"
-          zIndex="999"
-          onClick={() => setIsOpen(true)}
-          className="chatbot-button"
+        <div 
+          className="chatbot-button" 
+          ref={chatButtonRef}
+          onMouseDown={handleButtonMouseDown}
         >
-          <IconButton
-            icon={<ChatIcon />}
-            colorScheme="blue"
-            isRound
-            size="lg"
-            _hover={{ transform: 'scale(1.1)' }}
-            transition="all 0.2s"
-            aria-label="Open chat"
-          />
-          <Box
-            position="absolute"
-            right="60px"
-            bottom="10px"
-            bg="white"
-            boxShadow="md"
-            p="2"
-            borderRadius="md"
-            className="chatbot-tooltip"
-            display="none"
-            _groupHover={{ display: 'block' }}
-            maxWidth="200px"
-          >
-            <Text fontSize="sm">Cần giúp đỡ? Chat với trợ lý AI 24/7</Text>
-          </Box>
-        </Box>
+          <img src={chatIcon} alt="Chat" className="chatbot-icon" style={{ pointerEvents: 'none' }} />
+          <div className="chatbot-tooltip">
+            <span>Cần giúp đỡ? Chat với trợ lý AI 24/7</span>
+          </div>
+        </div>
       )}
 
       {isOpen && (
-        <Box
-          position="fixed"
-          bottom="20px"
-          right="20px"
-          width="350px"
-          height="500px"
-          bg={bgColor}
-          borderRadius="lg"
-          boxShadow="xl"
-          zIndex="999"
-          display="flex"
-          flexDirection="column"
-          overflow="hidden"
-          ref={chatbotRef}
-          onMouseDown={handleMouseDown}
+        <div 
           className="chatbot-widget"
+          ref={chatbotRef}
+          onMouseDown={handleWidgetMouseDown}
         >
-          <Flex
-            p="3"
-            align="center"
-            bg={headerBgColor}
-            color={headerTextColor}
-            className="chatbot-header"
-            cursor="grab"
-          >
-            <Avatar src={logo} size="sm" />
-            <Text ml="2" fontWeight="bold" flex="1">
-              Pet Assistant
-            </Text>
-            <IconButton
-              icon={<CloseIcon />}
-              size="sm"
-              variant="ghost"
-              colorScheme="whiteAlpha"
-              onClick={() => setIsOpen(false)}
-              aria-label="Close chat"
-            />
-          </Flex>
+          <div className="chatbot-header">
+            <img src={logo} alt="Pet Assistant" className="chatbot-avatar" />
+            <span className="chatbot-name">Pet Assistant</span>
+            <button className="chatbot-close-btn" onClick={() => setIsOpen(false)}>
+              <CloseIcon />
+            </button>
+          </div>
 
-          <Box
-            flex="1"
-            overflowY="auto"
-            p="3"
-            className="chatbot-messages"
-          >
+          <div className="chatbot-messages">
             {messages.map((message) => (
-              <Flex
+              <div
                 key={message.id}
-                justify={message.sender === 'user' ? 'flex-end' : 'flex-start'}
-                mb="4"
                 className={`message-container ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}
               >
                 {message.sender === 'bot' && (
-                  <Avatar src={logo} size="sm" mr="2" />
+                  <img src={logo} alt="Bot" className="message-avatar" />
                 )}
-                <Box maxWidth="80%">
+                <div className="message-content-wrapper">
                   {message.text && (
-                    <Box
-                      bg={message.sender === 'user' ? userMessageBg : botMessageBg}
-                      p="3"
-                      borderRadius="lg"
-                      className="message-text"
-                    >
-                      <Text>{message.text}</Text>
-                    </Box>
+                    <div className="message-content">
+                      <p className="message-text">{message.text}</p>
+                    </div>
                   )}
                   {message.suggestions && (
-                    <Flex wrap="wrap" mt="2" gap="2" className="message-suggestions">
+                    <div className="message-suggestions">
                       {message.suggestions.map((suggestion, index) => (
-                        <Tag
+                        <span
                           key={index}
-                          size="md"
-                          variant="subtle"
-                          colorScheme="blue"
-                          cursor="pointer"
+                          className="suggestion-tag"
                           onClick={() => handleSuggestionClick(suggestion)}
-                          _hover={{ bg: 'blue.100' }}
                         >
                           {suggestion}
-                        </Tag>
+                        </span>
                       ))}
-                    </Flex>
+                    </div>
                   )}
-                  <Text fontSize="xs" color="gray.500" mt="1" textAlign={message.sender === 'user' ? 'right' : 'left'}>
+                  <span className="message-time">
                     {formatTime(message.timestamp)}
-                  </Text>
-                </Box>
+                  </span>
+                </div>
                 {message.sender === 'user' && (
-                  <Avatar size="sm" ml="2" name="User" bg="blue.500" />
+                  <div className="user-avatar message-avatar">
+                    {user.displayName ? user.displayName.charAt(0) : 'U'}
+                  </div>
                 )}
-              </Flex>
+              </div>
             ))}
 
             {isTyping && (
-              <Flex mb="4" align="flex-start">
-                <Avatar src={logo} size="sm" mr="2" />
-                <Box
-                  bg={botMessageBg}
-                  p="3"
-                  borderRadius="lg"
-                  className="typing-content"
-                >
-                  <Flex gap="1" className="typing-indicator">
-                    <Box
-                      h="2"
-                      w="2"
-                      borderRadius="full"
-                      bg="blue.500"
-                      animation="bounce 1s infinite"
-                      style={{ animationDelay: '0s' }}
-                    />
-                    <Box
-                      h="2"
-                      w="2"
-                      borderRadius="full"
-                      bg="blue.500"
-                      animation="bounce 1s infinite"
-                      style={{ animationDelay: '0.2s' }}
-                    />
-                    <Box
-                      h="2"
-                      w="2"
-                      borderRadius="full"
-                      bg="blue.500"
-                      animation="bounce 1s infinite"
-                      style={{ animationDelay: '0.4s' }}
-                    />
-                  </Flex>
-                </Box>
-              </Flex>
+              <div className="message-container bot-message">
+                <img src={logo} alt="Bot" className="message-avatar" />
+                <div className="message-content typing-content">
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              </div>
             )}
-            <Box ref={messagesEndRef} />
-          </Box>
+            <div ref={messagesEndRef} />
+          </div>
 
-          <Box p="3" borderTop="1px" borderColor="gray.200" className="chatbot-input">
-            <InputGroup>
-              <Input
+          <div className="chatbot-input">
+            <div className="input-group">
+              <input
+                type="text"
                 placeholder="Nhập tin nhắn..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                pr="10"
+                className="message-input"
               />
-              <InputRightElement>
-                <IconButton
-                  icon={<FiSend />}
-                  size="sm"
-                  colorScheme="blue"
-                  variant="ghost"
-                  isDisabled={inputValue.trim() === ''}
-                  onClick={handleSendMessage}
-                  aria-label="Send message"
-                />
-              </InputRightElement>
-            </InputGroup>
-          </Box>
+              <button 
+                className={`send-button ${inputValue.trim() === '' ? 'disabled' : ''}`}
+                disabled={inputValue.trim() === ''}
+                onClick={handleSendMessage}
+              >
+                <FiSend />
+              </button>
+            </div>
+          </div>
 
-          <Box p="2" textAlign="center" borderTop="1px" borderColor="gray.200" className="chatbot-footer">
-            <Text fontSize="xs" color="gray.500">
+          <div className="chatbot-footer">
+            <span className="footer-text">
               Powered by Pet Assistant - 24/7 Support
-            </Text>
-          </Box>
-        </Box>
+            </span>
+          </div>
+        </div>
       )}
     </>
   );

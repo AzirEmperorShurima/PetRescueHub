@@ -1,6 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import apiService from '../../services/api.service';
-import debounce from 'lodash.debounce';
+
+// Custom debounce function
+const debounce = (func, delay) => {
+  let timeoutId;
+  const debounced = (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+  
+  debounced.cancel = () => {
+    clearTimeout(timeoutId);
+  };
+  
+  return debounced;
+};
 
 export const useForum = () => {
   const [loading, setLoading] = useState(true);

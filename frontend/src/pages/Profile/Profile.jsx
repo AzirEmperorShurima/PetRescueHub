@@ -1,30 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Container, Grid, Box, Tabs, Tab, Divider, Typography,
-  Card, CardContent, TextField, Button, Avatar,
-  FormControl, InputLabel, Select, MenuItem, CircularProgress, Chip,
-  Snackbar, Alert, IconButton, Paper
-} from '@mui/material';
+  Box, Container, Grid, GridItem, Tabs, TabList, TabPanels, Tab, TabPanel,
+  Divider, Text, Card, CardBody, Input, Button, Avatar,
+  FormControl, FormLabel, Select, Spinner, Tag,
+  useToast, IconButton, VStack, HStack, Flex, Heading,
+  Radio, RadioGroup, Stack, Textarea, Badge, SimpleGrid
+} from '@chakra-ui/react';
 import {
-  Person, Email, Phone, LocationOn, Cake,
-  Badge, Pets, Article, EmojiEvents, VolunteerActivism,
-  Edit, Save, Cancel, Male, Female, QuestionMark
-} from '@mui/icons-material';
+  FiUser, FiMail, FiPhone, FiMapPin, FiCalendar,
+  FiUserCheck, FiHeart, FiFileText, FiAward, FiUsers,
+  FiEdit, FiSave, FiX, FiUserPlus, FiUserMinus, FiHelpCircle
+} from 'react-icons/fi';
 import PetGrid from './components/PetGrid';
 import PostGrid from './components/PostGrid';
 import Achievements from './components/Achievements';
 import RescueActivities from './components/RescueActivities';
 import ActivityTimeline from './components/ActivityTimeline';
 import VolunteerBadges from './components/VolunteerBadges';
-import TabPanel from './components/TabPanel';
 import './Profile.css';
 import { pets as mockPets } from '../../mocks/pets';
 import { forumPosts as mockPosts } from '../../mocks/forum';
 import { testimonials as mockAchievements } from '../../mocks/homeMock';
 import { rescues as mockRescues } from '../../mocks/rescues';
 import apiService from '../../services/api.service';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -41,11 +41,12 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+  
+  const toast = useToast();
 
   // Xử lý thay đổi tab
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
+  const handleTabChange = (index) => {
+    setActiveTab(index);
   };
 
   // Xử lý bắt đầu chỉnh sửa
@@ -96,10 +97,12 @@ const Profile = () => {
           updatedAt: new Date().toISOString()
         });
 
-        setNotification({
-          open: true,
-          message: 'Cập nhật thông tin thành công!',
-          severity: 'success'
+        toast({
+          title: 'Thành công',
+          description: 'Cập nhật thông tin thành công!',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
         });
         setIsEditing(false);
       } else {
@@ -107,55 +110,17 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật thông tin:', error);
-      setNotification({
-        open: true,
-        message: error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin!',
-        severity: 'error'
+      toast({
+        title: 'Lỗi',
+        description: error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin!',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
       });
     } finally {
       setIsSaving(false);
     }
   };
-
-  // Xử lý tải lên avatar mới
-  //  const handleAvatarUpload = async (file) => {
-  //   try {
-  //     setIsSaving(true);
-
-  //     // Tạo FormData để gửi file
-  //     const formData = new FormData();
-  //     formData.append('avatar', file);
-
-  //     // Gọi API để tải lên avatar
-  //     const response = await apiService.auth.uploadAvatar(formData);
-
-  //     if (response && response.data && response.data.avatarUrl) {
-  //       // Cập nhật avatar trong state
-  //       setUser({
-  //         ...user,
-  //         avatar: response.data.avatarUrl
-  //       });
-
-  //       setNotification({
-  //         open: true,
-  //         message: 'Cập nhật ảnh đại diện thành công!',
-  //         severity: 'success'
-  //       });
-  //     } else {
-  //       throw new Error('Không nhận được URL avatar từ server');
-  //     }
-  //   } catch (error) {
-  //     console.error('Lỗi khi tải lên avatar:', error);
-  //     setNotification({
-  //       open: true,
-  //       message: error.response?.data?.message || 'Có lỗi xảy ra khi tải lên ảnh đại diện!',
-  //       severity: 'error'
-  //     });
-  //   } finally {
-  //     setIsSaving(false);
-  //   }
-  // };
-
 
   // Kiểm tra tính hợp lệ của form
   const isFormValid = () => {
@@ -175,11 +140,6 @@ const Profile = () => {
     }
 
     return true;
-  };
-
-  // Đóng thông báo
-  const handleCloseNotification = () => {
-    setNotification(prev => ({ ...prev, open: false }));
   };
 
   useEffect(() => {
@@ -231,17 +191,16 @@ const Profile = () => {
   // Thêm tab "Thông tin cá nhân"
   const getTabs = () => {
     const tabs = [
-      { label: 'Thông tin cá nhân', icon: <Person /> },
-      { label: 'Thú cưng', icon: <Pets /> },
-      { label: 'Bài viết', icon: <Article /> }
+      { label: 'Thông tin cá nhân', icon: <FiUser /> },
+      { label: 'Thú cưng', icon: <FiHeart /> },
+      { label: 'Bài viết', icon: <FiFileText /> }
     ];
 
     const userRoles = Array.isArray(user?.roles) ? user.roles : [];
     if (userRoles.includes('volunteer')) {
       tabs.push(
-        { label: 'Hoạt động cứu hộ', icon: <VolunteerActivism /> },
-        { label: 'Thành tích', icon: <EmojiEvents /> }
-        
+        { label: 'Hoạt động cứu hộ', icon: <FiUsers /> },
+        { label: 'Thành tích', icon: <FiAward /> }
       );
     }
 
@@ -252,11 +211,11 @@ const Profile = () => {
   const renderGenderIcon = (gender) => {
     switch (gender) {
       case 'male':
-        return <Male color="primary" />;
+        return <FiUserPlus color="blue" />;
       case 'female':
-        return <Female color="secondary" />;
+        return <FiUserMinus color="pink" />;
       default:
-        return <QuestionMark color="action" />;
+        return <FiHelpCircle color="gray" />;
     }
   };
 
@@ -264,7 +223,7 @@ const Profile = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa cập nhật';
     try {
-      return format(new Date(dateString), 'dd/MM/yyyy', { locale: vi });
+      return dayjs(dateString).locale('vi').format('DD/MM/YYYY');
     } catch (error) {
       return 'Định dạng không hợp lệ';
     }
@@ -280,442 +239,448 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="profile-loading">
-        <div className="loading-spinner"></div>
-        <p>Đang tải thông tin...</p>
-      </div>
+      <Box className="profile-loading" display="flex" flexDirection="column" alignItems="center" justifyContent="center" minH="60vh">
+        <Spinner size="xl" color="pink.500" thickness="4px" />
+        <Text mt={4} fontSize="lg">Đang tải thông tin...</Text>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="profile-loading">
-        <p>{error}</p>
-        <p>Vui lòng đăng nhập lại hoặc thử lại sau.</p>
-      </div>
+      <Box className="profile-loading" display="flex" flexDirection="column" alignItems="center" justifyContent="center" minH="60vh">
+        <Text color="red.500" fontSize="lg">{error}</Text>
+        <Text mt={2}>Vui lòng đăng nhập lại hoặc thử lại sau.</Text>
+      </Box>
     );
   }
 
   if (!user) {
     return (
-      <div className="profile-loading">
-        <p>Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.</p>
-      </div>
+      <Box className="profile-loading" display="flex" flexDirection="column" alignItems="center" justifyContent="center" minH="60vh">
+        <Text>Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.</Text>
+      </Box>
     );
   }
 
   return (
-    <div className="profile-page">
-      <Container maxWidth="lg">
-        <Grid container spacing={4} className="profile-content-container">
-          <Grid container item spacing={3}>
-            {/* Sidebar - Thông tin người dùng */}
-            <Grid item xs={12} md={4}>
-              <Card className="profile-sidebar" elevation={3}>
-                <CardContent className="profile-avatar-container">
+    <Box className="profile-page" py={8}>
+      <Container maxW="6xl">
+        <Grid templateColumns={{ base: "1fr", md: "1fr 2fr" }} gap={6} className="profile-content-container">
+          {/* Sidebar - Thông tin người dùng */}
+          <GridItem>
+            <Card className="profile-sidebar" shadow="lg">
+              <CardBody className="profile-avatar-container">
+                <VStack spacing={4} align="center">
                   <Avatar
                     src={user.avatar}
-                    imgProps={{ crossOrigin: 'anonymous' }}
-                    alt={user.fullname || user.username}
+                    name={user.fullname || user.username}
+                    size="2xl"
                     className="profile-avatar"
                   />
-                  <Typography variant="h5" className="profile-name">
-                    {user.fullname || 'Anonymous'}
-                  </Typography>
-                  <Typography variant="body2" className="profile-username">
-                    @{user.username}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {(() => {
-                      const roles = user.roles.map(role => typeof role === 'object' ? role.name : role);
-                      const matchedRole = roles.find(r => r.toLowerCase() === 'volunteer') || roles.find(r => r.toLowerCase() === 'user');
-                      if (!matchedRole) return null;
+                  <VStack spacing={1} align="center">
+                    <Heading as="h3" size="lg" className="profile-name">
+                      {user.fullname || 'Anonymous'}
+                    </Heading>
+                    <Text fontSize="sm" color="gray.600" className="profile-username">
+                      @{user.username}
+                    </Text>
+                    <HStack spacing={2} flexWrap="wrap" justify="center">
+                      {(() => {
+                        const roles = user.roles.map(role => typeof role === 'object' ? role.name : role);
+                        const matchedRole = roles.find(r => r.toLowerCase() === 'volunteer') || roles.find(r => r.toLowerCase() === 'user');
+                        if (!matchedRole) return null;
 
-                      return (
-                        <Chip
-                          key={matchedRole}
-                          label={matchedRole}
-                          color="primary"
-                          size="small"
-                        />
-                      );
-                    })()}
+                        return (
+                          <Tag
+                            key={matchedRole}
+                            colorScheme="pink"
+                            size="sm"
+                          >
+                            {matchedRole}
+                          </Tag>
+                        );
+                      })()}
+                    </HStack>
+                  </VStack>
+                </VStack>
+
+                <Divider my={6} className="sidebar-divider" />
+
+                <VStack spacing={6} align="stretch">
+                  <Box className="sidebar-section">
+                    <Heading as="h4" size="md" mb={3} className="sidebar-title">
+                      Thông tin liên hệ
+                    </Heading>
+
+                    <VStack spacing={3} align="stretch">
+                      <Box className="info-item">
+                        <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
+                          Email
+                        </Text>
+                        <Text className="profile-email">
+                          {user.email}
+                        </Text>
+                      </Box>
+
+                      {user.phonenumber && (
+                        <Box className="info-item">
+                          <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
+                            Số điện thoại
+                          </Text>
+                          <Text>
+                            {user.phonenumber}
+                          </Text>
+                        </Box>
+                      )}
+
+                      {user.address && (
+                        <Box className="info-item">
+                          <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
+                            Địa chỉ
+                          </Text>
+                          <Text>
+                            {user.address}
+                          </Text>
+                        </Box>
+                      )}
+                    </VStack>
                   </Box>
 
-                </CardContent>
+                  <Divider className="sidebar-divider" />
 
-                <Divider className="sidebar-divider" />
+                  <Box className="sidebar-section">
+                    <Heading as="h4" size="md" mb={3} className="sidebar-title">
+                      Thông tin khác
+                    </Heading>
 
-                <div className="sidebar-section">
-                  <Typography variant="h6" className="sidebar-title">
-                    Thông tin liên hệ
-                  </Typography>
+                    <VStack spacing={3} align="stretch">
+                      <Box className="info-item">
+                        <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
+                          Ngày tham gia
+                        </Text>
+                        <Text>
+                          {formatDate(user.createdAt)}
+                        </Text>
+                      </Box>
 
-                  <div className="info-item">
-                    <Typography variant="subtitle2" color="textSecondary">
-                      Email
-                    </Typography>
-                    <Typography variant="body1" className="profile-email">
-                      {user.email}
-                    </Typography>
-                  </div>
+                      <Box className="info-item">
+                        <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
+                          Giới tính
+                        </Text>
+                        <HStack>
+                          {renderGenderIcon(user.gender)}
+                          <Text>
+                            {user.gender === 'male' ? 'Nam' :
+                              user.gender === 'female' ? 'Nữ' : 
+                              user.gender === 'not provided' ? 'Chưa cung cấp' : 'Chưa cung cấp'}
+                          </Text>
+                        </HStack>
+                      </Box>
 
-                  {user.phonenumber && (
-                    <div className="info-item">
-                      <Typography variant="subtitle2" color="textSecondary">
-                        Số điện thoại
-                      </Typography>
-                      <Typography variant="body1">
-                        {user.phonenumber}
-                      </Typography>
-                    </div>
-                  )}
-
-                  {user.address && (
-                    <div className="info-item">
-                      <Typography variant="subtitle2" color="textSecondary">
-                        Địa chỉ
-                      </Typography>
-                      <Typography variant="body1">
-                        {user.address}
-                      </Typography>
-                    </div>
-                  )}
-                </div>
-
-                <Divider className="sidebar-divider" />
-
-                <div className="sidebar-section">
-                  <Typography variant="h6" className="sidebar-title">
-                    Thông tin khác
-                  </Typography>
-
-                  <div className="info-item">
-                    <Typography variant="subtitle2" color="textSecondary">
-                      Ngày tham gia
-                    </Typography>
-                    <Typography variant="body1">
-                      {formatDate(user.createdAt)}
-                    </Typography>
-                  </div>
-
-                  <div className="info-item">
-                    <Typography variant="subtitle2" color="textSecondary">
-                      Giới tính
-                    </Typography>
-                    <Box display="flex" alignItems="center">
-                      {renderGenderIcon(user.gender)}
-                      <Typography variant="body1" sx={{ ml: 1 }}>
-                        {user.gender === 'male' ? 'Nam' :
-                          user.gender === 'female' ? 'Nữ' : 
-                          user.gender === 'not provided' ? 'Chưa cung cấp' : 'Chưa cung cấp'}
-                      </Typography>
-                    </Box>
-                  </div>
-
-                  {user.birthdate && (
-                    <div className="info-item">
-                      <Typography variant="subtitle2" color="textSecondary">
-                        Ngày sinh
-                      </Typography>
-                      <Typography variant="body1">
-                        {formatDate(user.birthdate)}
-                      </Typography>
-                    </div>
-                  )}
-                </div>
-
-                <div className="profile-actions">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<Edit />}
-                    fullWidth
-                    onClick={handleEditProfile}
-                    className="edit-profile-button"
-                  >
-                    Chỉnh sửa hồ sơ
-                  </Button>
-                </div>
-              </Card>
-            </Grid>
-
-            {/* Main Content */}
-            <Grid item xs={12} md={8}>
-              <Paper elevation={3} className="profile-content">
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <Tabs
-                    value={activeTab}
-                    onChange={handleTabChange}
-                    aria-label="profile tabs"
-                    variant="scrollable"
-                    scrollButtons="auto"
-                    className="profile-tabs"
-                  >
-                    {getTabs().map((tab, index) => (
-                      <Tab
-                        key={index}
-                        label={tab.label}
-                        icon={tab.icon}
-                        iconPosition="start"
-                        className="profile-tab"
-                      />
-                    ))}
-                  </Tabs>
-                </Box>
-
-                <Box className="profile-tab-content">
-                  {/* Tab 0: Thông tin cá nhân */}
-                  <TabPanel value={activeTab} index={0}>
-                    <div className="tab-header">
-                      <Typography variant="h5" className="tab-title">
-                        Thông tin cá nhân
-                      </Typography>
-
-                      {isEditing ? (
-                        <Box className="profile-edit-actions">
-                          <Button
-                            variant="contained"
-                            color="success"
-                            startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save />}
-                            onClick={handleSaveProfile}
-                            disabled={isSaving || !isFormValid()} // Thêm kiểm tra tính hợp lệ của form
-                            className="save-profile-button"
-                          >
-                            {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            startIcon={<Cancel />}
-                            onClick={handleCancelEdit}
-                            disabled={isSaving}
-                            className="cancel-button"
-                            sx={{ ml: 1 }}
-                          >
-                            Hủy
-                          </Button>
+                      {user.birthdate && (
+                        <Box className="info-item">
+                          <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
+                            Ngày sinh
+                          </Text>
+                          <Text>
+                            {formatDate(user.birthdate)}
+                          </Text>
                         </Box>
-                      ) : null}
-                    </div>
+                      )}
+                    </VStack>
+                  </Box>
 
-                    <Grid container spacing={3}>
-                      {/* Thông tin cơ bản */}
-                      <Grid item xs={12} md={6}>
+                  <Box className="profile-actions">
+                    <Button
+                      colorScheme="pink"
+                      leftIcon={<FiEdit />}
+                      width="full"
+                      onClick={handleEditProfile}
+                      className="edit-profile-button"
+                    >
+                      Chỉnh sửa hồ sơ
+                    </Button>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
+          </GridItem>
+
+          {/* Main Content */}
+          <GridItem>
+            <Card shadow="lg" className="profile-content">
+              <CardBody>
+                <Tabs index={activeTab} onChange={handleTabChange} variant="enclosed" colorScheme="pink">
+                  <TabList className="profile-tabs" flexWrap="wrap">
+                    {getTabs().map((tab, index) => (
+                      <Tab key={index} className="profile-tab">
+                        <HStack spacing={2}>
+                          {tab.icon}
+                          <Text>{tab.label}</Text>
+                        </HStack>
+                      </Tab>
+                    ))}
+                  </TabList>
+
+                  <TabPanels className="profile-tab-content">
+                    {/* Tab 0: Thông tin cá nhân */}
+                    <TabPanel>
+                      <VStack spacing={6} align="stretch">
+                        <Flex justify="space-between" align="center" className="tab-header">
+                          <Heading as="h3" size="lg" className="tab-title">
+                            Thông tin cá nhân
+                          </Heading>
+
+                          {isEditing && (
+                            <HStack className="profile-edit-actions">
+                              <Button
+                                colorScheme="green"
+                                leftIcon={isSaving ? <Spinner size="sm" /> : <FiSave />}
+                                onClick={handleSaveProfile}
+                                isLoading={isSaving}
+                                isDisabled={!isFormValid()}
+                                className="save-profile-button"
+                              >
+                                {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                colorScheme="red"
+                                leftIcon={<FiX />}
+                                onClick={handleCancelEdit}
+                                isDisabled={isSaving}
+                                className="cancel-button"
+                              >
+                                Hủy
+                              </Button>
+                            </HStack>
+                          )}
+                        </Flex>
+
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                          {/* Thông tin cơ bản */}
+                          <Card className="profile-section-card">
+                            <CardBody>
+                              <VStack spacing={4} align="stretch">
+                                <Box>
+                                  <Heading as="h4" size="md" className="section-title">
+                                    Thông tin cơ bản
+                                  </Heading>
+                                  <Divider mt={2} mb={4} />
+                                </Box>
+
+                                <VStack spacing={4} align="stretch" className="profile-field-container">
+                                  <Box className="profile-field">
+                                    <HStack mb={2} className="field-label">
+                                      <FiUser size={16} />
+                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                                        Họ và tên
+                                      </Text>
+                                    </HStack>
+                                    {isEditing ? (
+                                      <Input
+                                        name="fullname"
+                                        value={editedUser.fullname || ''}
+                                        onChange={handleInputChange}
+                                        size="sm"
+                                        className="edit-field"
+                                      />
+                                    ) : (
+                                      <Text className="field-value highlight-field" fontWeight="medium">
+                                        {user.fullname || 'Chưa cập nhật'}
+                                      </Text>
+                                    )}
+                                  </Box>
+
+                                  <Box className="profile-field">
+                                    <HStack mb={2} className="field-label">
+                                      <FiUserCheck size={16} />
+                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                                        Tên đăng nhập
+                                      </Text>
+                                    </HStack>
+                                    <Text className="field-value">
+                                      {user.username}
+                                    </Text>
+                                  </Box>
+
+                                  <Box className="profile-field">
+                                    <HStack mb={2} className="field-label">
+                                      <FiMail size={16} />
+                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                                        Email
+                                      </Text>
+                                    </HStack>
+                                    <Text className="field-value">
+                                      {user.email}
+                                    </Text>
+                                  </Box>
+                                </VStack>
+                              </VStack>
+                            </CardBody>
+                          </Card>
+
+                          {/* Thông tin liên hệ */}
+                          <Card className="profile-section-card">
+                            <CardBody>
+                              <VStack spacing={4} align="stretch">
+                                <Box>
+                                  <Heading as="h4" size="md" className="section-title">
+                                    Thông tin liên hệ
+                                  </Heading>
+                                  <Divider mt={2} mb={4} />
+                                </Box>
+
+                                <VStack spacing={4} align="stretch" className="profile-field-container">
+                                  <Box className="profile-field">
+                                    <HStack mb={2} className="field-label">
+                                      <FiPhone size={16} />
+                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                                        Số điện thoại
+                                      </Text>
+                                    </HStack>
+                                    {isEditing ? (
+                                      <Input
+                                        name="phonenumber"
+                                        value={editedUser.phonenumber || ''}
+                                        onChange={handleInputChange}
+                                        size="sm"
+                                        className="edit-field"
+                                      />
+                                    ) : (
+                                      <Text className="field-value">
+                                        {user.phonenumber || 'Chưa cập nhật'}
+                                      </Text>
+                                    )}
+                                  </Box>
+
+                                  <Box className="profile-field">
+                                    <HStack mb={2} className="field-label">
+                                      <FiMapPin size={16} />
+                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                                        Địa chỉ
+                                      </Text>
+                                    </HStack>
+                                    {isEditing ? (
+                                      <Input
+                                        name="address"
+                                        value={editedUser.address || ''}
+                                        onChange={handleInputChange}
+                                        size="sm"
+                                        className="edit-field"
+                                      />
+                                    ) : (
+                                      <Text className="field-value">
+                                        {user.address || 'Chưa cập nhật'}
+                                      </Text>
+                                    )}
+                                  </Box>
+
+                                  <Box className="profile-field">
+                                    <HStack mb={2} className="field-label">
+                                      <FiCalendar size={16} />
+                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                                        Ngày sinh
+                                      </Text>
+                                    </HStack>
+                                    {isEditing ? (
+                                      <Input
+                                        name="birthdate"
+                                        type="date"
+                                        value={editedUser.birthdate ? new Date(editedUser.birthdate).toISOString().split('T')[0] : ''}
+                                        onChange={handleInputChange}
+                                        size="sm"
+                                        className="edit-field"
+                                      />
+                                    ) : (
+                                      <Text className="field-value">
+                                        {user.birthdate ? formatDate(user.birthdate) : 'Chưa cập nhật'}
+                                      </Text>
+                                    )}
+                                  </Box>
+                                </VStack>
+                              </VStack>
+                            </CardBody>
+                          </Card>
+                        </SimpleGrid>
+
+                        {/* Thông tin bổ sung */}
                         <Card className="profile-section-card">
-                          <CardContent>
-                            <Typography variant="h6" className="section-title">
-                              Thông tin cơ bản
-                            </Typography>
-                            <Divider sx={{ mb: 2 }} />
-
-                            <Box className="profile-field-container">
-                              <Box className="profile-field">
-                                <Typography variant="subtitle2" className="field-label">
-                                  <Person fontSize="small" /> Họ và tên
-                                </Typography>
-                                {isEditing ? (
-                                  <TextField
-                                    fullWidth
-                                    name="fullname"
-                                    value={editedUser.fullname || ''}
-                                    onChange={handleInputChange}
-                                    variant="outlined"
-                                    size="small"
-                                    className="edit-field"
-                                  />
-                                ) : (
-                                  <Typography variant="body1" className="field-value highlight-field">
-                                    {user.fullname || 'Chưa cập nhật'}
-                                  </Typography>
-                                )}
+                          <CardBody>
+                            <VStack spacing={4} align="stretch">
+                              <Box>
+                                <Heading as="h4" size="md" className="section-title">
+                                  Thông tin bổ sung
+                                </Heading>
+                                <Divider mt={2} mb={4} />
                               </Box>
 
                               <Box className="profile-field">
-                                <Typography variant="subtitle2" className="field-label">
-                                  <Badge fontSize="small" /> Tên đăng nhập
-                                </Typography>
-                                <Typography variant="body1" className="field-value">
-                                  {user.username}
-                                </Typography>
-                              </Box>
-
-                              <Box className="profile-field">
-                                <Typography variant="subtitle2" className="field-label">
-                                  <Email fontSize="small" /> Email
-                                </Typography>
-                                {isEditing ? (
-                                  <Typography variant="body1" className="field-value">
-                                    {editedUser.email || ''}
-                                  </Typography>
-                                ) : (
-                                  <Typography variant="body1" className="field-value">
-                                    {user.email}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Box>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-
-                      {/* Thông tin liên hệ */}
-                      <Grid item xs={12} md={6}>
-                        <Card className="profile-section-card">
-                          <CardContent>
-                            <Typography variant="h6" className="section-title">
-                              Thông tin liên hệ
-                            </Typography>
-                            <Divider sx={{ mb: 2 }} />
-
-                            <Box className="profile-field-container">
-                              <Box className="profile-field">
-                                <Typography variant="subtitle2" className="field-label">
-                                  <Phone fontSize="small" /> Số điện thoại
-                                </Typography>
-                                {isEditing ? (
-                                  <TextField
-                                    fullWidth
-                                    name="phonenumber"
-                                    value={editedUser.phonenumber || ''}
-                                    onChange={handleInputChange}
-                                    variant="outlined"
-                                    size="small"
-                                    className="edit-field"
-                                  />
-                                ) : (
-                                  <Typography variant="body1" className="field-value">
-                                    {user.phonenumber || 'Chưa cập nhật'}
-                                  </Typography>
-                                )}
-                              </Box>
-
-                              <Box className="profile-field">
-                                <Typography variant="subtitle2" className="field-label">
-                                  <LocationOn fontSize="small" /> Địa chỉ 
-                                </Typography>
-                              </Box>
-
-                              <Box className="profile-field">
-                                <Typography variant="subtitle2" className="field-label">
-                                  <Cake fontSize="small" /> Ngày sinh
-                                </Typography>
-                                {isEditing ? (
-                                  <TextField
-                                    fullWidth
-                                    name="birthdate"
-                                    type="date"
-                                    value={editedUser.birthdate ? new Date(editedUser.birthdate).toISOString().split('T')[0] : ''}
-                                    onChange={handleInputChange}
-                                    variant="outlined"
-                                    size="small"
-                                    className="edit-field"
-                                    InputLabelProps={{
-                                      shrink: true,
-                                    }}
-                                  />
-                                ) : (
-                                  <Typography variant="body1" className="field-value">
-                                    {user.birthdate ? formatDate(user.birthdate) : 'Chưa cập nhật'}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Box>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-
-                      {/* Thông tin bổ sung */}
-                      <Grid item xs={12}>
-                        <Card className="profile-section-card">
-                          <CardContent>
-                            <Typography variant="h6" className="section-title">
-                              Thông tin bổ sung
-                            </Typography>
-                            <Divider sx={{ mb: 2 }} />
-
-                            <Box className="profile-field-container">
-                              <Box className="profile-field">
-                                <Typography variant="subtitle2" className="field-label">
+                                <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={2}>
                                   Giới tính
-                                </Typography>
+                                </Text>
                                 {isEditing ? (
-                                  <FormControl fullWidth size="small" className="edit-field">
-                                    <InputLabel id="gender-select-label">Giới tính</InputLabel>
-                                    <Select
-                                      labelId="gender-select-label"
-                                      id="gender-select"
-                                      name="gender"
-                                      value={
-                                        editedUser.gender === 'not provided'
-                                          ? 'not_provided'
-                                          : (editedUser.gender || 'not_provided')
-                                      }
-                                      label="Giới tính"
-                                      onChange={handleInputChange}
-                                    >
-                                      <MenuItem value="male">Nam</MenuItem>
-                                      <MenuItem value="female">Nữ</MenuItem>
-                                      <MenuItem value="not_provided">Không cung cấp</MenuItem>
-                                    </Select>
-                                  </FormControl>
+                                  <RadioGroup
+                                    name="gender"
+                                    value={
+                                      editedUser.gender === 'not provided'
+                                        ? 'not_provided'
+                                        : (editedUser.gender || 'not_provided')
+                                    }
+                                    onChange={(value) => handleInputChange({ target: { name: 'gender', value } })}
+                                  >
+                                    <Stack direction="row" spacing={4}>
+                                      <Radio value="male">Nam</Radio>
+                                      <Radio value="female">Nữ</Radio>
+                                      <Radio value="not_provided">Không cung cấp</Radio>
+                                    </Stack>
+                                  </RadioGroup>
                                 ) : (
-                                  <Box display="flex" alignItems="center">
+                                  <HStack>
                                     {renderGenderIcon(user.gender)}
-                                    <Typography variant="body1" className="field-value" sx={{ ml: 1 }}>
+                                    <Text className="field-value">
                                       {user.gender === 'male' ? 'Nam' :
                                         user.gender === 'female' ? 'Nữ' : 'Chưa cung cấp'}
-                                    </Typography>
-                                  </Box>
+                                    </Text>
+                                  </HStack>
                                 )}
                               </Box>
-                            </Box>
-                          </CardContent>
+                            </VStack>
+                          </CardBody>
                         </Card>
-                      </Grid>
-                    </Grid>
-                  </TabPanel>
+                      </VStack>
+                    </TabPanel>
 
-                  {/* Tab 1: Thú cưng */}
-                  <TabPanel value={activeTab} index={1}>
-                    <PetGrid pets={pets} />
-                  </TabPanel>
+                    {/* Tab 1: Thú cưng */}
+                    <TabPanel>
+                      <PetGrid pets={pets} />
+                    </TabPanel>
 
-                  {/* Tab 2: Bài viết */}
-                  <TabPanel value={activeTab} index={2}>
-                    <PostGrid posts={posts} />
-                  </TabPanel>
+                    {/* Tab 2: Bài viết */}
+                    <TabPanel>
+                      <PostGrid posts={posts} />
+                    </TabPanel>
 
-                  {/* Tab 3: Hoạt động cứu hộ (chỉ hiển thị với volunteer) */}
-                  <TabPanel value={activeTab} index={4}>
-                    <RescueActivities rescues={rescues} user={user} />
-                    <ActivityTimeline user={user} rescues={rescues} donations={donations} posts={posts} />
-                  </TabPanel>
+                    {/* Tab 3: Hoạt động cứu hộ (chỉ hiển thị với volunteer) */}
+                    <TabPanel>
+                      <RescueActivities rescues={rescues} user={user} />
+                      <ActivityTimeline user={user} rescues={rescues} donations={donations} posts={posts} />
+                    </TabPanel>
 
-                  {/* Tab 4: Thành tích (chỉ hiển thị với volunteer) */}
-                  <TabPanel value={activeTab} index={3}>
-                    <Achievements achievements={achievements} />
-                    <VolunteerBadges user={user} achievements={achievements} />
-                  </TabPanel>
-                </Box>
-              </Paper>
-            </Grid>
-          </Grid>
+                    {/* Tab 4: Thành tích (chỉ hiển thị với volunteer) */}
+                    <TabPanel>
+                      <Achievements achievements={achievements} />
+                      <VolunteerBadges user={user} achievements={achievements} />
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
+              </CardBody>
+            </Card>
+          </GridItem>
         </Grid>
       </Container>
-
-      {/* Snackbar thông báo */}
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={6000}
-        onClose={handleCloseNotification}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>
-          {notification.message}
-        </Alert>
-      </Snackbar>
-    </div>
+    </Box>
   );
 };
 

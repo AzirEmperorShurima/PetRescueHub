@@ -2,330 +2,359 @@
 /*         Global Variables      */
 /* ============================= */
 :root {
-    --color-light-bg: #fbfbfd;
-    --color-dark-bg: black;
-    --color-footer-bg: #f5f5f5;
-    --color-text: #D34F81;
-    --color-muted: #666;
-    --color-primary: #D34F81;
-    --color-secondary: #D34F81;
-    --color-social-bg: rgba(211, 79, 149, 0.1);
-    --color-social-hover-bg: #E91E63;
-    --color-social-hover-text: #fff;
-    --font-logo: 'Montserrat', sans-serif;
-    --font-logo-size: 1.5rem;
-    --padding-footer: 20px 0;
+  --color-light-bg: #fbfbfd;
+  --color-dark-bg: black;
+  --color-footer-bg: #f5f5f5;
+  --color-text: #D34F81;
+  --color-muted: #666;
+  --color-primary: #D34F81;
+  --color-secondary: #D34F81;
+  --color-social-bg: rgba(211, 79, 129, 0.1);
+  --color-social-hover-bg: #E91E63;
+  --color-social-hover-text: #fff;
+  --font-logo: 'Montserrat', sans-serif;
+  --font-logo-size: 1.5rem;
+  --padding-footer: 20px 0;
+}
+
+/* ============================= */
+/*      Chế độ sáng/tối footer   */
+/* ============================= */
+.new_footer_area.light-mode {
+  background: var(--color-light-bg);
+}
+.new_footer_area.dark-mode {
+  background: var(--color-dark-bg);
+}
+
+/* ============================= */
+/*        Footer Wrapper         */
+/* ============================= */
+.new_footer_area {
+  flex-shrink: 0;
+  background-color: var(--color-footer-bg);
+  color: var(--color-text);
+  padding: var(--padding-footer);
+  text-align: center;
+  /* Đảm bảo không bị override bởi Chakra */
+  position: relative !important;
+  z-index: 1;
+}
+
+.new_footer_top {
+  padding: 50px 0 300px;
+  position: relative;
+  overflow: visible; /* Thay đổi từ overflow-x: hidden */
+  width: 100%;
+  /* Đảm bảo animation container có đủ không gian */
+}
+
+/* ============================= */
+/*       Animation Background    */
+/* ============================= */
+.new_footer_top .footer_bg {
+  position: absolute;
+  bottom: 0;
+  background: url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigB8iI5tb8WSVBuVUGc9UjjB8O0708X7Fdic_4O1LT4CmLHoiwhanLXiRhe82yw0R7LgACQ2IhZaTY0hhmGi0gYp_Ynb49CVzfmXtYHUVKgXXpWvJ_oYT8cB4vzsnJLe3iCwuzj-w6PeYq_JaHmy_CoGoa6nw0FBo-2xLdOPvsLTh_fmYH2xhkaZ-OGQ/s16000/footer_bg.png") no-repeat center 0;
+  width: 100%;
+  height: 266px;
+  /* Đảm bảo không bị ẩn */
+  overflow: visible;
+  z-index: 1;
+}
+
+.new_footer_top .footer_bg .footer_bg_one {
+  background: url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEia0PYPxwT5ifToyP3SNZeQWfJEWrUENYA5IXM6sN5vLwAKvaJS1pQVu8mOFFUa_ET4JuHNTFAxKURFerJYHDUWXLXl1vDofYXuij45JZelYOjEFoCOn7E6Vxu0fwV7ACPzArcno1rYuVxGB7JY6G7__e4_KZW4lTYIaHSLVaVLzklZBLZnQw047oq5-Q/s16000/volks.gif") no-repeat center center;
+  width: 330px;
+  height: 105px;
+  background-size: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 30%;
+  animation: slide 22s linear infinite !important;
+  /* Đảm bảo animation không bị override */
+  will-change: transform;
+  z-index: 2;
+}
+
+.new_footer_top .footer_bg .footer_bg_two {
+  background: url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhyLGwEUVwPK6Vi8xXMymsc-ZXVwLWyXhogZxbcXQYSY55REw_0D4VTQnsVzCrL7nsyjd0P7RVOI5NKJbQ75koZIalD8mqbMquP20fL3DxsWngKkOLOzoOf9sMuxlbyfkIBTsDw5WFUj-YJiI50yzgVjF8cZPHhEjkOP_PRTQXDHEq8AyWpBiJdN9SfQA/s16000/cyclist.gif") no-repeat center center;
+  width: 88px;
+  height: 100px;
+  background-size: 100%;
+  bottom: 0;
+  left: 38%;
+  position: absolute;
+  animation: slide 30s linear infinite !important;
+  /* Đảm bảo animation không bị override */
+  will-change: transform;
+  z-index: 2;
+}
+
+@keyframes slide {
+  0% { 
+    left: -25%; 
+    transform: translateX(0);
   }
-  
-  /* ============================= */
-  /*      Chế độ sáng/tối footer   */
-  /* ============================= */
-  .new_footer_area.light-mode {
-    background: var(--color-light-bg);
+  100% { 
+    left: 100%; 
+    transform: translateX(0);
   }
-  .new_footer_area.dark-mode {
-    background: var(--color-dark-bg);
-  }
-  
-  /* ============================= */
-  /*        Footer Wrapper         */
-  /* ============================= */
-  .new_footer_area {
-    flex-shrink: 0;
-    background-color: var(--color-footer-bg);
-    color: var(--color-text);
-    padding: var(--padding-footer);
-    text-align: center;
-  }
-  
-  .new_footer_top {
-    padding: 50px 0 300px;
-    position: relative;
-    overflow-x: hidden;
-  }
-  
-  .footer-container {
-    width: 100%;
-    max-width: 1250px;
-    margin: 0 auto;
-    padding: 0 15px;
-  }
-  
-  .footer-content {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  
-  /* ============================= */
-  /*    Logo & Mô tả Footer        */
-  /* ============================= */
-  .footer-logo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .footer-logo-img {
-    height: 60px;
-    width: auto;
-    margin-bottom: 10px;
-  }
-  
-  .footer-logo-text {
-    font-family: var(--font-logo);
-    font-weight: 700;
-    font-size: var(--font-logo-size);
-    margin: 10px 0;
-  }
-  
-  .pet {
-    color: #000;
-  }
-  .rescuehub {
-    color: var(--color-primary);
-  }
-  
-  .footer-description {
-    font-weight: 500;
-    color: var(--color-muted);
-    margin: 20px auto 20px 20px;
-    line-height: 1.6;
-    max-width: 85%;
-    text-align: center;
-  }
-  
-  /* ============================= */
-  /*         Social Icons          */
-  /* ============================= */
-  .social-icons {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 20px;
-  }
-  
-  .f_social_icon a {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-secondary);
-    background: var(--color-social-bg);
-    font-size: 18px;
-    transition: all 0.3s ease;
-  }
-  
-  .f_social_icon a:hover {
-    background: var(--color-social-hover-bg);
-    color: var(--color-social-hover-text);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3);
-  }
-  
-  /* ============================= */
-  /*    Tiêu đề & Liên kết chung   */
-  /* ============================= */
-  .f-title {
-    margin-bottom: 25px;
-    color: var(--color-text);
-    position: relative;
-    padding-bottom: 10px;
-  }
-  
-  .f_list li {
-    margin-bottom: 12px;
-    line-height: 1.5;
-  }
-  .f_list li a {
-    color: var(--color-muted);
-    transition: all 0.3s ease;
-    display: inline-block;
-    text-decoration: none;
-    align-items: center;
-  }
-  .f_list li a:hover {
-    color: var(--color-primary);
-    transform: translateX(5px);
-  }
-  
-  /* ============================= */
-  /*      Thông tin liên hệ        */
-  /* ============================= */
+}
+
+/* Đảm bảo animation chạy ngay cả khi có CSS conflicts */
+.footer_bg_one,
+.footer_bg_two {
+  animation-play-state: running !important;
+  animation-fill-mode: none !important;
+}
+.footer-container {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* ============================= */
+/*    Logo & Mô tả Footer        */
+/* ============================= */
+.footer-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.footer-logo-img {
+  height: 60px;
+  width: auto;
+  margin-bottom: 10px;
+}
+
+.footer-logo-text {
+  font-family: var(--font-logo);
+  font-weight: 700;
+  font-size: var(--font-logo-size);
+  margin: 10px 0;
+}
+
+.pet {
+  color: #000;
+}
+.rescuehub {
+  color: var(--color-primary);
+}
+
+.footer-description {
+  font-weight: 500;
+  color: var(--color-muted);
+  margin: 20px auto 20px 20px;
+  line-height: 1.6;
+  max-width: 85%;
+  text-align: center;
+}
+
+/* ============================= */
+/*         Social Icons          */
+/* ============================= */
+.social-icons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.f_social_icon a {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-secondary);
+  background: var(--color-social-bg);
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.f_social_icon a:hover {
+  background: var(--color-social-hover-bg);
+  color: var(--color-social-hover-text);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3);
+}
+
+/* ============================= */
+/*    Tiêu đề & Liên kết chung   */
+/* ============================= */
+.f-title {
+  margin-bottom: 25px;
+  color: var(--color-text);
+  position: relative;
+  padding-bottom: 10px;
+  /* text-decoration: underline;  Nếu muốn gạch chân */
+}
+
+.f_list li {
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.f_list li a {
+  color: var(--color-muted);
+  transition: all 0.3s ease;
+  display: inline-block;
+  text-decoration: none;
+  align-items: center;
+}
+.f_list li a:hover {
+  color: var(--color-primary);
+  transform: translateX(5px);
+}
+
+/* ============================= */
+/*      Thông tin liên hệ        */
+/* ============================= */
+.contact-list {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.contact-list li {
+  width: 100%;
+  max-width: 255px;
+}
+
+.contact-list li a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-left: 0;
+  width: 100%;
+}
+
+.contact-list li a .contact-icon {
+  margin-right: 10px;
+  color: var(--color-primary);
+  min-width: 16px;
+  margin-top: 3px;
+}
+
+.contact-list li a span {
+  display: inline-block;
+  line-height: 1.5;
+}
+
+/* Căn giữa tiêu đề nếu cần */
+.f_widget.about-widget.pl_70 h3.f-title {
+  text-align: center;
+}
+
+/* Responsive cho contact-list */
+@media (max-width: 767px) {
   .contact-list {
-    text-align: left;
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    width: 100%;
   }
-  
   .contact-list li {
-    width: 100%;
-    max-width: 255px;
+    max-width: 280px;
   }
-  
-  .contact-list li a {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-left: 0;
-    width: 100%;
+}
+
+/* ============================= */
+/*  Padding đồng nhất cho cột    */
+/* ============================= */
+.f_widget.about-widget.pl_70 {
+  padding-left: 40px;
+}
+@media (max-width: 991px) {
+  .f_widget.about-widget.pl_70 {
+    padding-left: 0;
   }
+}
+
+.col-lg-4 {
+  padding: 0 15px;
+}
+
+/* ============================= */
+/*         Footer Bottom         */
+/* ============================= */
+.footer_bottom {
+  padding: 20px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.footer-bottom-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.footer_bottom p {
+  font-weight: 600;
+  color: var(--color-muted);
+}
+.footer_bottom p .copyright-text,
+.footer_bottom p .team-credit {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+/* ============================= */
+/*        Heartbeat Animation    */
+/* ============================= */
+.heart {
+  color: #eb8fb2;
+  animation: heartbeat 1.5s infinite;
+  display: inline-block;
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1);}
+  50% { transform: scale(1.2); }
   
-  .contact-list li a .contact-icon {
-    margin-right: 10px;
-    color: var(--color-primary);
-    min-width: 16px;
-    margin-top: 3px;
+}
+
+/* ============================= */
+/*         Responsive            */
+/* ============================= */
+@media (max-width: 991px) {
+  .new_footer_top {
+    padding: 60px 0 250px;
   }
-  
-  .contact-list li a span {
-    display: inline-block;
-    line-height: 1.5;
+  .col-lg-4 {
+    margin-bottom: 30px;
   }
-  
-  /* Căn giữa tiêu đề nếu cần */
-  .f_widget.about-widget.pl_70 h3.f-title {
+}
+
+@media (max-width: 767px) {
+  .new_footer_top {
+    padding: 40px 0 200px;
+  }
+  .footer-logo {
+    justify-content: center;
+  }
+  .f-title,
+  .f_list,
+  .social-icons,
+  .footer-description {
     text-align: center;
   }
-  
-  /* Responsive cho contact-list */
-  @media (max-width: 767px) {
-    .contact-list {
-      align-items: center;
-    }
-    .contact-list li {
-      max-width: 280px;
-    }
+  .f-title:after {
+    left: 50%;
+    transform: translateX(-50%);
   }
-  
-  /* ============================= */
-  /*  Padding đồng nhất cho cột    */
-  /* ============================= */
-  .f_widget.about-widget.pl_70 {
-    padding-left: 40px;
+  .contact-list li a {
+    justify-content: flex-start;
   }
-  @media (max-width: 991px) {
-    .f_widget.about-widget.pl_70 {
-      padding-left: 0;
-    }
-  }
-  
-  .col-lg-4 {
-    padding: 0 15px;
-  }
-  
-  /* ============================= */
-  /*         Footer Bottom         */
-  /* ============================= */
-  .footer_bottom {
-    padding: 20px 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-  }
-  
-  .footer-bottom-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
-  }
-  
-  .footer_bottom p {
-    font-weight: 600;
-    color: var(--color-muted);
-  }
-  .footer_bottom p .copyright-text,
-  .footer_bottom p .team-credit {
-    color: var(--color-primary);
-    font-weight: 500;
-  }
-  
-  /* ============================= */
-  /*        Heartbeat Animation    */
-  /* ============================= */
-  .heart {
-    color: #eb8fb2;
-    animation: heartbeat 1.5s infinite;
-    display: inline-block;
-  }
-  @keyframes heartbeat {
-    0%, 100% { transform: scale(1);}
-    50% { transform: scale(1.2); }
-    
-  }
-  
-  /* ============================= */
-  /*       Animation Background    */
-  /* ============================= */
-  .new_footer_top .footer_bg {
-    position: absolute;
-    bottom: 0;
-    background: url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigB8iI5tb8WSVBuVUGc9UjjB8O0708X7Fdic_4O1LT4CmLHoiwhanLXiRhe82yw0R7LgACQ2IhZaTY0hhmGi0gYp_Ynb49CVzfmXtYHUVKgXXpWvJ_oYT8cB4vzsnJLe3iCwuzj-w6PeYq_JaHmy_CoGoa6nw0FBo-2xLdOPvsLTh_fmYH2xhkaZ-OGQ/s16000/footer_bg.png") no-repeat center 0;
-    width: 100%;
-    height: 266px;
-  }
-  .new_footer_top .footer_bg .footer_bg_one {
-    background: url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEia0PYPxwT5ifToyP3SNZeQWfJEWrUENYA5IXM6sN5vLwAKvaJS1pQVu8mOFFUa_ET4JuHNTFAxKURFerJYHDUWXLXl1vDofYXuij45JZelYOjEFoCOn7E6Vxu0fwV7ACPzArcno1rYuVxGB7JY6G7__e4_KZW4lTYIaHSLVaVLzklZBLZnQw047oq5-Q/s16000/volks.gif") no-repeat center center;
-    width: 330px;
-    height: 105px;
-    background-size: 100%;
-    position: absolute;
-    bottom: 0;
-    left: 30%;
-    animation: slide 22s linear infinite;
-  }
-  .new_footer_top .footer_bg .footer_bg_two {
-    background: url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhyLGwEUVwPK6Vi8xXMymsc-ZXVwLWyXhogZxbcXQYSY55REw_0D4VTQnsVzCrL7nsyjd0P7RVOI5NKJbQ75koZIalD8mqbMquP20fL3DxsWngKkOLOzoOf9sMuxlbyfkIBTsDw5WFUj-YJiI50yzgVjF8cZPHhEjkOP_PRTQXDHEq8AyWpBiJdN9SfQA/s16000/cyclist.gif") no-repeat center center;
-    width: 88px;
-    height: 100px;
-    background-size: 100%;
-    bottom: 0;
-    left: 38%;
-    position: absolute;
-    animation: slide 30s linear infinite;
-  }
-  @keyframes slide {
-    0% { left: -25%; }
-    100% { left: 100%; }
-  }
-  
-  /* ============================= */
-  /*         Responsive            */
-  /* ============================= */
-  @media (max-width: 991px) {
-    .new_footer_top {
-      padding: 60px 0 250px;
-    }
-    .col-lg-4 {
-      margin-bottom: 30px;
-    }
-  }
-  
-  @media (max-width: 767px) {
-    .new_footer_top {
-      padding: 40px 0 200px;
-    }
-    .footer-logo {
-      justify-content: center;
-    }
-    .f-title,
-    .f_list,
-    .social-icons,
-    .footer-description {
-      text-align: center;
-    }
-    .f-title:after {
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    .contact-list li a {
-      justify-content: flex-start;
-    }
-  }
-  
+}

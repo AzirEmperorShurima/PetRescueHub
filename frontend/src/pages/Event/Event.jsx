@@ -2,44 +2,56 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Container, 
-  Typography, 
+  Heading, 
+  Text,
   Box, 
-  Grid, 
+  SimpleGrid, 
   Button, 
-  Pagination,
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
-  Chip,
-  Paper,
-  InputBase,
+  Image,
+  Badge,
+  Input,
+  InputGroup,
+  InputRightElement,
   IconButton,
-  useTheme,
-  useMediaQuery
-} from '@mui/material';
+  useBreakpointValue,
+  useColorModeValue,
+  VStack,
+  HStack,
+  Flex,
+  Skeleton,
+  SkeletonText,
+  Center,
+  Stack,
+  Spacer
+} from '@chakra-ui/react';
 import { 
-  Add as AddIcon,
-  Search as SearchIcon,
-  CalendarToday as CalendarIcon,
-  LocationOn as LocationIcon,
-  People as PeopleIcon,
-  ArrowForward as ArrowForwardIcon
-} from '@mui/icons-material';
+  FaPlus,
+  FaSearch,
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaUsers,
+  FaArrowRight
+} from 'react-icons/fa';
 import './Event.css';
 
 // Thay đổi import để sử dụng dữ liệu mock từ file events.js
 import { events } from '../../mocks/events';
 
 const Event = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointValue({ base: true, sm: false });
   const navigate = useNavigate();
   const [eventsList, setEventsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [featuredEvent, setFeaturedEvent] = useState(null);
+
+  // Color mode values
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textSecondary = useColorModeValue('gray.600', 'gray.400');
+  const searchBg = useColorModeValue('white', 'gray.700');
+  const shadowColor = useColorModeValue('lg', 'dark-lg');
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -77,12 +89,6 @@ const Event = () => {
     setPage(1);
   };
 
-  const handlePageChange = (event, value) => {
-    setPage(value);
-    // Cuộn lên đầu trang khi chuyển trang
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleCreateEvent = () => {
     navigate('/event/create');
   };
@@ -101,254 +107,343 @@ const Event = () => {
     return new Date(dateString).toLocaleDateString('vi-VN', options);
   };
 
+  // Custom Pagination Component
+  const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+    const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+    
+    return (
+      <HStack spacing={2} justify="center">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Trước
+        </Button>
+        
+        {pages.map(pageNum => (
+          <Button
+            key={pageNum}
+            size="sm"
+            variant={pageNum === currentPage ? "solid" : "outline"}
+            colorScheme={pageNum === currentPage ? "blue" : "gray"}
+            onClick={() => onPageChange(pageNum)}
+          >
+            {pageNum}
+          </Button>
+        ))}
+        
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Sau
+        </Button>
+      </HStack>
+    );
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    // Cuộn lên đầu trang khi chuyển trang
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <Box className="event-page">
-      <Container maxWidth="lg">
+    <Box className="event-page" py={8}>
+      <Container maxW="6xl">
         {/* Header */}
-        <Box textAlign="center" mb={4} className="event-header">
-          <Typography variant="h3" component="h1" className="event-title" gutterBottom>
+        <VStack spacing={4} textAlign="center" mb={8} className="event-header">
+          <Heading as="h1" size="2xl" className="event-title">
             Sự kiện
-          </Typography>
-          <Typography variant="subtitle1" className="event-subtitle">
+          </Heading>
+          <Text fontSize="lg" color={textSecondary} className="event-subtitle">
             Tham gia các sự kiện của chúng tôi để gặp gỡ cộng đồng yêu thú cưng
-          </Typography>
-        </Box>
+          </Text>
+        </VStack>
 
         {/* Search and Create */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} flexWrap="wrap" gap={2} className="event-actions">
-          <Paper
-            component="form"
-            className="event-search"
-            sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: { xs: '100%', sm: 'auto', md: 900 } }}
-          >
-            <InputBase
-              sx={{ ml: 1, flex: 1 }}
+        <Flex 
+          justify="space-between" 
+          align="center" 
+          mb={8} 
+          flexWrap="wrap" 
+          gap={4} 
+          className="event-actions"
+        >
+          <InputGroup maxW={{ base: "100%", md: "400px" }} className="event-search">
+            <Input
               placeholder="Tìm kiếm sự kiện..."
               value={searchTerm}
               onChange={handleSearchChange}
+              bg={searchBg}
+              borderColor={borderColor}
+              _hover={{ borderColor: 'blue.300' }}
+              _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px blue.500' }}
             />
-            <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
-              <SearchIcon />
-            </IconButton>
-          </Paper>
+            <InputRightElement>
+              <IconButton
+                aria-label="search"
+                icon={<FaSearch />}
+                size="sm"
+                variant="ghost"
+              />
+            </InputRightElement>
+          </InputGroup>
           
           <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
+            colorScheme="blue"
+            leftIcon={<FaPlus />}
             onClick={handleCreateEvent}
             className="create-event-btn"
           >
             Tạo sự kiện
           </Button>
-        </Box>
+        </Flex>
 
         {/* Featured Event */}
         {featuredEvent && (
-          <Box mb={6}>
-            <Typography variant="h5" component="h2" gutterBottom className="section-title no-underline">
+          <Box mb={12}>
+            <Heading as="h2" size="lg" mb={4} className="section-title">
               Sự kiện nổi bật
-            </Typography>
-            <Card className="featured-event-card">
-              <Grid container>
-                <Grid item xs={12} md={6} className="featured-event-image-container">
-                  <CardMedia
-                    component="img"
-                    height="300"
-                    image={featuredEvent.imageUrl}
+            </Heading>
+            <Box
+              bg={cardBg}
+              borderWidth="1px"
+              borderColor={borderColor}
+              borderRadius="lg"
+              overflow="hidden"
+              shadow={shadowColor}
+              className="featured-event-card"
+            >
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={0}>
+                <Box className="featured-event-image-container">
+                  <Image
+                    src={featuredEvent.imageUrl}
                     alt={featuredEvent.title}
+                    w="100%"
+                    h="300px"
+                    objectFit="cover"
                     className="featured-event-image"
                   />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <CardContent className="featured-event-content">
-                    <Typography variant="h5" component="h3" gutterBottom className="featured-event-title">
+                </Box>
+                <Box p={6}>
+                  <VStack align="start" spacing={4} className="featured-event-content">
+                    <Heading as="h3" size="md" className="featured-event-title">
                       {featuredEvent.title}
-                    </Typography>
+                    </Heading>
                     
-                    <Box display="flex" alignItems="center" mb={1} className="event-info-item">
-                      <CalendarIcon fontSize="small" color="primary" />
-                      <Typography variant="body2" color="textSecondary" ml={1}>
-                        {formatDate(featuredEvent.date)}
-                      </Typography>
-                    </Box>
+                    <VStack align="start" spacing={2}>
+                      <HStack className="event-info-item">
+                        <FaCalendarAlt color="blue" />
+                        <Text fontSize="sm" color={textSecondary}>
+                          {formatDate(featuredEvent.date)}
+                        </Text>
+                      </HStack>
+                      
+                      <HStack className="event-info-item">
+                        <FaMapMarkerAlt color="blue" />
+                        <Text fontSize="sm" color={textSecondary}>
+                          {featuredEvent.location}
+                        </Text>
+                      </HStack>
+                      
+                      <HStack className="event-info-item">
+                        <FaUsers color="blue" />
+                        <Text fontSize="sm" color={textSecondary}>
+                          {featuredEvent.participants} người tham gia
+                        </Text>
+                      </HStack>
+                    </VStack>
                     
-                    <Box display="flex" alignItems="center" mb={1} className="event-info-item">
-                      <LocationIcon fontSize="small" color="primary" />
-                      <Typography variant="body2" color="textSecondary" ml={1}>
-                        {featuredEvent.location}
-                      </Typography>
-                    </Box>
-                    
-                    <Box display="flex" alignItems="center" mb={2} className="event-info-item">
-                      <PeopleIcon fontSize="small" color="primary" />
-                      <Typography variant="body2" color="textSecondary" ml={1}>
-                        {featuredEvent.participants} người tham gia
-                      </Typography>
-                    </Box>
-                    
-                    <Typography variant="body2" paragraph className="featured-event-description">
+                    <Text fontSize="sm" className="featured-event-description">
                       {featuredEvent.description}
-                    </Typography>
+                    </Text>
                     
-                    <Box mt={1} mb={2} display="flex" flexWrap="wrap" gap={0.5} className="event-tags">
+                    <Flex flexWrap="wrap" gap={2} className="event-tags">
                       {featuredEvent.tags.map((tag, index) => (
-                        <Chip 
+                        <Badge 
                           key={index} 
-                          label={tag} 
-                          size="small" 
-                          className="event-tag-chip" 
-                        />
+                          colorScheme="blue" 
+                          variant="subtle"
+                          className="event-tag-chip"
+                        >
+                          {tag}
+                        </Badge>
                       ))}
-                    </Box>
+                    </Flex>
                     
-                    <Box display="flex" gap={2}>
+                    <HStack spacing={4}>
                       <Button 
-                        variant="contained" 
-                        color="primary" 
-                        endIcon={<ArrowForwardIcon />}
-                        component={Link}
+                        colorScheme="blue"
+                        rightIcon={<FaArrowRight />}
+                        as={Link}
                         to={`/event/${featuredEvent.id}`}
                         className="event-details-btn"
                       >
                         Xem chi tiết
                       </Button>
                       <Button 
-                        variant="outlined" 
-                        color="primary"
+                        variant="outline" 
+                        colorScheme="blue"
                         className="event-register-btn"
                       >
                         Tham gia
                       </Button>
-                    </Box>
-                  </CardContent>
-                </Grid>
-              </Grid>
-            </Card>
+                    </HStack>
+                  </VStack>
+                </Box>
+              </SimpleGrid>
+            </Box>
           </Box>
         )}
 
         {/* Event List */}
-        <Box mb={4}>
-          <Typography variant="h5" component="h2" gutterBottom className="section-title no-underline">
+        <Box mb={8}>
+          <Heading as="h2" size="lg" mb={6} className="section-title">
             Tất cả sự kiện
-          </Typography>
+          </Heading>
           
           {loading ? (
-            <Box className="event-skeleton-container">
-              <Grid container spacing={3}>
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <Grid item xs={12} sm={6} md={4} key={item}>
-                    <Card className="event-card skeleton">
-                      <Box className="event-card-media-skeleton"></Box>
-                      <CardContent>
-                        <Box className="skeleton-text-lg"></Box>
-                        <Box className="skeleton-text-sm"></Box>
-                        <Box className="skeleton-text-sm"></Box>
-                        <Box className="skeleton-text-block"></Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={6} className="event-skeleton-container">
+              {[1, 2, 3, 4, 5, 6].map((item) => (
+                <Box
+                  key={item}
+                  bg={cardBg}
+                  borderWidth="1px"
+                  borderColor={borderColor}
+                  borderRadius="lg"
+                  overflow="hidden"
+                  className="event-card skeleton"
+                >
+                  <Skeleton height="200px" />
+                  <Box p={4}>
+                    <SkeletonText mt={2} noOfLines={4} spacing={2} />
+                  </Box>
+                </Box>
+              ))}
+            </SimpleGrid>
           ) : displayedEvents.length > 0 ? (
-            <Grid container spacing={3}>
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={6}>
               {displayedEvents.map((event) => (
-                <Grid item xs={12} sm={6} md={4} key={event.id}>
-                  <Card className="event-card">
-                    <div className="event-card-media-container">
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={event.imageUrl}
-                        alt={event.title}
-                        className="event-card-media"
-                      />
-                    </div>
-                    <CardContent className="event-card-content">
-                      <Typography variant="h6" component="h3" className="event-card-title">
+                <Box
+                  key={event.id}
+                  bg={cardBg}
+                  borderWidth="1px"
+                  borderColor={borderColor}
+                  borderRadius="lg"
+                  overflow="hidden"
+                  shadow="md"
+                  transition="all 0.2s"
+                  _hover={{ 
+                    transform: 'translateY(-5px)', 
+                    shadow: shadowColor 
+                  }}
+                  className="event-card"
+                >
+                  <Box className="event-card-media-container">
+                    <Image
+                      src={event.imageUrl}
+                      alt={event.title}
+                      w="100%"
+                      h="200px"
+                      objectFit="cover"
+                      className="event-card-media"
+                    />
+                  </Box>
+                  <Box p={4} className="event-card-content">
+                    <VStack align="start" spacing={3}>
+                      <Heading as="h3" size="sm" className="event-card-title">
                         {event.title}
-                      </Typography>
+                      </Heading>
                       
-                      <Box display="flex" alignItems="center" mt={1} mb={1} className="event-info-item">
-                        <CalendarIcon fontSize="small" color="primary" />
-                        <Typography variant="body2" color="textSecondary" ml={1}>
-                          {formatDate(event.date)}
-                        </Typography>
-                      </Box>
+                      <VStack align="start" spacing={1}>
+                        <HStack className="event-info-item">
+                          <FaCalendarAlt size={12} color="blue" />
+                          <Text fontSize="xs" color={textSecondary}>
+                            {formatDate(event.date)}
+                          </Text>
+                        </HStack>
+                        
+                        <HStack className="event-info-item">
+                          <FaMapMarkerAlt size={12} color="blue" />
+                          <Text fontSize="xs" color={textSecondary}>
+                            {event.location}
+                          </Text>
+                        </HStack>
+                        
+                        <HStack className="event-info-item">
+                          <FaUsers size={12} color="blue" />
+                          <Text fontSize="xs" color={textSecondary}>
+                            {event.participants} người tham gia
+                          </Text>
+                        </HStack>
+                      </VStack>
                       
-                      <Box display="flex" alignItems="center" mb={1} className="event-info-item">
-                        <LocationIcon fontSize="small" color="primary" />
-                        <Typography variant="body2" color="textSecondary" ml={1}>
-                          {event.location}
-                        </Typography>
-                      </Box>
-                      
-                      <Box display="flex" alignItems="center" mb={2} className="event-info-item">
-                        <PeopleIcon fontSize="small" color="primary" />
-                        <Typography variant="body2" color="textSecondary" ml={1}>
-                          {event.participants} người tham gia
-                        </Typography>
-                      </Box>
-                      
-                      <Typography variant="body2" color="textSecondary" className="event-card-description">
+                      <Text fontSize="sm" color={textSecondary} className="event-card-description">
                         {event.description.length > 120 
                           ? `${event.description.substring(0, 120)}...` 
                           : event.description}
-                      </Typography>
+                      </Text>
                       
-                      <Box mt={2} mb={1} display="flex" flexWrap="wrap" gap={0.5} className="event-tags">
+                      <Flex flexWrap="wrap" gap={1} className="event-tags">
                         {event.tags.slice(0, 3).map((tag, index) => (
-                          <Chip 
+                          <Badge 
                             key={index} 
-                            label={tag} 
-                            size="small" 
-                            className="event-tag-chip" 
-                          />
+                            size="sm"
+                            colorScheme="blue"
+                            variant="subtle"
+                            className="event-tag-chip"
+                          >
+                            {tag}
+                          </Badge>
                         ))}
-                      </Box>
-                    </CardContent>
-                    <CardActions className="event-card-actions">
+                      </Flex>
+                    </VStack>
+                  </Box>
+                  <Box p={4} pt={0} className="event-card-actions">
+                    <HStack spacing={2}>
                       <Button 
-                        size="small" 
-                        color="primary"
-                        component={Link}
+                        size="sm" 
+                        colorScheme="blue"
+                        variant="ghost"
+                        as={Link}
                         to={`/event/${event.id}`}
                         className="event-details-btn"
                       >
                         Xem chi tiết
                       </Button>
+                      <Spacer />
                       <Button 
-                        size="small" 
-                        variant="outlined"
-                        color="primary"
+                        size="sm" 
+                        variant="outline"
+                        colorScheme="blue"
                         className="event-register-btn"
                       >
                         Tham gia
                       </Button>
-                    </CardActions>
-                  </Card>
-                </Grid>
+                    </HStack>
+                  </Box>
+                </Box>
               ))}
-            </Grid>
+            </SimpleGrid>
           ) : (
-            <Box className="no-events-message">
-              <Typography align="center">Không tìm thấy sự kiện nào phù hợp.</Typography>
-            </Box>
+            <Center py={12} className="no-events-message">
+              <Text color={textSecondary}>Không tìm thấy sự kiện nào phù hợp.</Text>
+            </Center>
           )}
         </Box>
 
         {/* Pagination */}
         {pageCount > 1 && (
-          <Box display="flex" justifyContent="center" mb={4} className="event-pagination">
-            <Pagination 
-              count={pageCount} 
-              page={page} 
-              onChange={handlePageChange} 
-              color="primary"
-              size={isMobile ? "small" : "medium"}
-              className="pagination"
+          <Box className="event-pagination">
+            <Pagination
+              currentPage={page}
+              totalPages={pageCount}
+              onPageChange={handlePageChange}
             />
           </Box>
         )}

@@ -1,64 +1,66 @@
 import React from 'react';
-import { Typography, Box, Chip, Tooltip } from '@mui/material';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import PetsIcon from '@mui/icons-material/Pets';
+import { Box, Heading, Tag, Tooltip, HStack } from '@chakra-ui/react';
+import { FaHeart, FaPaw } from 'react-icons/fa';
+import { GiTrophy } from 'react-icons/gi';
+import { Icon } from '@chakra-ui/icons';
 
 const Achievements = ({ achievements, user }) => {
-  // Nếu không phải volunteer thì không hiển thị
   if (user?.role !== 'volunteer') {
     return null;
   }
-  
-  // Thành tích cố định + thành tích động từ props
+
   const allAchievements = [
     {
       id: 'rescue-5',
-      icon: <VolunteerActivismIcon className="achievement-icon" />,
+      icon: <Icon as={FaHeart} className="achievement-icon" />,
       label: 'Đã cứu trợ 5 thú cưng',
-      tooltip: 'Đã tham gia cứu trợ thành công 5 thú cưng'
+      tooltip: 'Đã tham gia cứu trợ thành công 5 thú cưng',
     },
     {
       id: 'donate-10',
-      icon: <FavoriteIcon className="achievement-icon" />,
+      icon: <Icon as={FaHeart} className="achievement-icon" />,
       label: 'Nhà hảo tâm',
-      tooltip: 'Đã quyên góp 10 lần cho các hoạt động cứu trợ'
+      tooltip: 'Đã quyên góp 10 lần cho các hoạt động cứu trợ',
     },
     {
       id: 'pet-lover',
-      icon: <PetsIcon className="achievement-icon" />,
+      icon: <Icon as={FaPaw} className="achievement-icon" />,
       label: 'Người yêu thú cưng',
-      tooltip: 'Đã đăng ký 3 hồ sơ thú cưng'
+      tooltip: 'Đã đăng ký 3 hồ sơ thú cưng',
     },
-    ...(achievements || []).map(a => ({
+    ...(achievements || []).map((a) => ({
       id: a.id || `achievement-${Math.random()}`,
-      icon: <EmojiEventsIcon className="achievement-icon" />,
+      icon: <Icon as={GiTrophy} className="achievement-icon" />,
       label: a.title || 'Thành tích',
-      tooltip: a.content || 'Đã đạt được thành tích'
-    }))
+      tooltip: a.content || 'Đã đạt được thành tích',
+    })),
   ];
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>Thành tích</Typography>
-      
-      <div className="achievements-container">
+      <Heading as="h5" size="lg" mb={4}>
+        Thành tích
+      </Heading>
+      <HStack spacing={3} className="achievements-container" wrap="wrap">
         {allAchievements.map((achievement) => (
-          <Tooltip 
+          <Tooltip
             key={achievement.id}
-            title={achievement.tooltip} 
-            arrow 
+            label={achievement.tooltip}
+            hasArrow
             placement="top"
           >
-            <Chip
-              icon={achievement.icon}
-              label={achievement.label}
+            <Tag
+              size="lg"
+              variant="solid"
+              colorScheme="blue"
               className="achievement-chip"
-            />
+            >
+              {achievement.icon}
+              <Box ml={2}>{achievement.label}</Box>
+            </Tag>
           </Tooltip>
         ))}
-      </div>
+      </HStack>
     </Box>
   );
 };

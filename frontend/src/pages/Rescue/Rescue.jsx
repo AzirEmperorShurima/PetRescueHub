@@ -292,10 +292,6 @@ const Rescue = () => {
     }
   };
 
-  useEffect(() => {
-    throw new Error("Test ErrorBoundary");
-  }, []);
-
   return (
     <Container maxW="container.lg" py={8}>
       <Heading as="h1" mb={6} textAlign="center">

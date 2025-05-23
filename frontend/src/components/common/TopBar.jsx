@@ -1,46 +1,62 @@
 import React, { useContext } from 'react';
-import { GB, VN } from 'country-flag-icons/react/3x2';
 import { LanguageContext } from '../contexts/LanguageContext';
 import translations from '../../utils/translations';
+import { FaPhone, FaEnvelope, FaSearch, FaFacebookF, FaTwitter, FaInstagram } from 'react-icons/fa';
 import '../../assets/styles/components/TopBar.css';
 
 const TopBar = () => {
   const { language, toggleLanguage } = useContext(LanguageContext);
   const t = translations[language];
 
+  const flagSrc = language === 'vi'
+    ? 'https://flagcdn.com/gb.svg'
+    : 'https://flagcdn.com/vn.svg';
+  const flagAlt = language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt';
+
   return (
     <div className="top-bar">
-      <div className="container">
-        <div className="top-bar-content">
-          <div className="contact-info">
-            <span><i className="fas fa-phone"></i> {t.hotline}</span>
-            <span><i className="fas fa-envelope"></i> {t.email}</span>
+      <div className="top-bar-content">
+        <div className="contact-info">
+          <div className="contact-item">
+            <FaPhone />
+            <span>{t.hotline}</span>
           </div>
-          
-          <div className="top-bar-right">
-            <div className="search-container">
-              <i className="fas fa-search search-icon"></i>
-              <input type="text" className="search-input" placeholder={t.search} />
-              <button className="btn-icon">
-                <i className="fas fa-search"></i>
-              </button>
-            </div>
+          <div className="contact-item">
+            <FaEnvelope />
+            <span>{t.email}</span>
+          </div>
+        </div>
 
-            <button 
-              className="btn-icon lang-switch" 
-              onClick={toggleLanguage}
-            >
-              {language === 'vi' ? 
-                <GB className="flag-icon" title="Switch to English" /> : 
-                <VN className="flag-icon" title="Chuyển sang Tiếng Việt" />
-              }
+        <div className="top-bar-right">
+          <div className="search-container">
+            <input 
+              type="text" 
+              className="search-input" 
+              placeholder={t.search} 
+            />
+            <button className="search-button" aria-label="Search">
+              <FaSearch />
             </button>
+          </div>
 
-            <div className="social-links">
-              <a href="#"><i className="fab fa-facebook-f"></i></a>
-              <a href="#"><i className="fab fa-twitter"></i></a>
-              <a href="#"><i className="fab fa-instagram"></i></a>
-            </div>
+          <button 
+            className="lang-switch" 
+            onClick={toggleLanguage} 
+            title={flagAlt}
+          >
+            <img src={flagSrc} alt={flagAlt} />
+          </button>
+
+          <div className="social-links">
+            <a href="#" aria-label="Facebook">
+              <FaFacebookF />
+            </a>
+            <a href="#" aria-label="Twitter">
+              <FaTwitter />
+            </a>
+            <a href="#" aria-label="Instagram">
+              <FaInstagram />
+            </a>
           </div>
         </div>
       </div>

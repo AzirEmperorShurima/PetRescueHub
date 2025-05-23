@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Grid, Typography, Box, Button } from '@mui/material';
-import './AboutSection.css';
+import {
+  Container,
+  Grid,
+  Box,
+  Button,
+  Heading,
+  Text,
+  useBreakpointValue,
+  Image,
+  HStack
+} from '@chakra-ui/react';
 import { images } from '../../../../config/LinkImage.config';
 
 const AboutSection = () => {
@@ -9,12 +18,10 @@ const AboutSection = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000); // Change image every 5 seconds
-
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Sử dụng useCallback để tối ưu hàm này
   const scrollToImpact = useCallback((e) => {
     e.preventDefault();
     const impactSection = document.getElementById('impact-counter');
@@ -23,59 +30,58 @@ const AboutSection = () => {
     }
   }, []);
 
+  const imageSize = useBreakpointValue({ base: '100%', md: 'auto' });
+
   return (
-    <Container maxWidth="lg">
-      <Box className="about-section animate-fadeIn">
-        <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} md={6}>
-            <Box className="about-image-container">
+    <Box py={10} bg="gray.50">
+      <Container maxW="6xl">
+        <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={8} alignItems="center">
+          <Box position="relative">
+            <Box borderRadius="md" overflow="hidden">
               {images.map((image, index) => (
-                <img
+                <Image
                   key={index}
                   src={image.url}
                   alt={image.alt}
-                  className={`about-image ${index === currentImageIndex ? 'active' : ''}`}
+                  display={index === currentImageIndex ? 'block' : 'none'}
+                  w={imageSize}
+                  borderRadius="md"
+                  transition="opacity 0.5s ease-in-out"
                 />
               ))}
-              <div className="image-indicators">
-                {images.map((_, index) => (
-                  <span
-                    key={index}
-                    className={`indicator ${index === currentImageIndex ? 'active' : ''}`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  />
-                ))}
-              </div>
             </Box>
-          </Grid>
+            <HStack spacing={2} justify="center" mt={4}>
+              {images.map((_, index) => (
+                <Box
+                  key={index}
+                  w={3}
+                  h={3}
+                  borderRadius="full"
+                  bg={index === currentImageIndex ? 'blue.500' : 'gray.300'}
+                  cursor="pointer"
+                  onClick={() => setCurrentImageIndex(index)}
+                />
+              ))}
+            </HStack>
+          </Box>
 
-          <Grid item xs={12} md={6}>
-            <Box className="about-content">
-              <Typography variant="h3" className="about-title">
-                Về Pet Rescue Hub
-              </Typography>
-
-              <Typography variant="body1" className="about-description">
-                Pet Rescue Hub là nền tảng kết nối cộng đồng yêu thương động vật, nơi mọi người có thể cùng nhau giúp đỡ, cứu hộ và chăm sóc những thú cưng gặp khó khăn.
-              </Typography>
-
-              <Typography variant="body1" className="about-description">
-                Chúng tôi tin rằng mỗi thú cưng đều xứng đáng có một mái ấm hạnh phúc và được yêu thương. Với sứ mệnh đó, chúng tôi xây dựng một cộng đồng kết nối những người yêu động vật, tình nguyện viên và các tổ chức cứu hộ.
-              </Typography>
-
-              <Button
-                onClick={scrollToImpact}
-                variant="outlined"
-                color="primary"
-                className="learn-more-btn"
-              >
-                Xem Tác Động Của Chúng Tôi
-              </Button>
-            </Box>
-          </Grid>
+          <Box>
+            <Heading as="h3" size="lg" mb={4}>
+              Về Pet Rescue Hub
+            </Heading>
+            <Text fontSize="md" mb={4}>
+              Pet Rescue Hub là nền tảng kết nối cộng đồng yêu thương động vật, nơi mọi người có thể cùng nhau giúp đỡ, cứu hộ và chăm sóc những thú cưng gặp khó khăn.
+            </Text>
+            <Text fontSize="md" mb={6}>
+              Chúng tôi tin rằng mỗi thú cưng đều xứng đáng có một mái ấm hạnh phúc và được yêu thương. Với sứ mệnh đó, chúng tôi xây dựng một cộng đồng kết nối những người yêu động vật, tình nguyện viên và các tổ chức cứu hộ.
+            </Text>
+            <Button onClick={scrollToImpact} variant="outline" colorScheme="blue">
+              Xem Tác Động Của Chúng Tôi
+            </Button>
+          </Box>
         </Grid>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

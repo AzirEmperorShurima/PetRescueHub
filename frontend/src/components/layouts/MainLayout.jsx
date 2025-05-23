@@ -1,31 +1,49 @@
 import React from 'react';
-import { Flex, Spinner, Text, Box } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
+import { Outlet, useLocation } from 'react-router-dom';
+import TopBar from '../common/TopBar';
+import Navigation from '../common/Navigation';
+import Footer from '../common/Footers';
 
-const LoadingScreen = ({ message = 'Đang tải...' }) => {
+const MainLayout = () => {
+  const location = useLocation();
+  const isAuthPage = location.pathname.includes('/auth');
+
   return (
-    <Flex
-      direction="column"
-      align="center"
-      justify="center"
-      height="100vh"
-      width="100%"
+    <Box
+      className={isAuthPage ? 'auth-page' : ''}
+      display="flex"
+      flexDirection="column"
+      minH="100vh"
+      pt={isAuthPage ? 0 : '40px'}
     >
-      <Spinner
-        thickness="4px"
-        speed="0.65s"
-        emptyColor="gray.200"
-        color="blue.500"
-        size="xl"
-      />
-      <Text 
-        fontSize="xl" 
-        fontWeight="medium" 
-        mt={4}
+      {!isAuthPage && <TopBar />}
+      {!isAuthPage && <Navigation />}
+
+      <Box
+        as="main"
+        flex="1"
+        mt={isAuthPage ? 0 : '60px'}
+        pt={isAuthPage ? 0 : '20px'}
+        overflow="visible"
+        position="relative" // Thêm để đảm bảo layout ổn định
       >
-        {message}
-      </Text>
-    </Flex>
+        <Outlet />
+      </Box>
+
+      {/* Wrapper cho Footer để tránh CSS conflicts */}
+      {!isAuthPage && (
+        <Box 
+          as="footer" 
+          position="relative"
+          overflow="visible" // Đảm bảo animation không bị ẩn
+          zIndex={1}
+        >
+          <Footer />
+        </Box>
+      )}
+    </Box>
   );
 };
 
-export default LoadingScreen;
+export default MainLayout;

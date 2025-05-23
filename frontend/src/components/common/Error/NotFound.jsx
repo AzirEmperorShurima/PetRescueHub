@@ -1,11 +1,18 @@
 import React, { useEffect } from 'react';
-import { Home as HomeIcon } from '@mui/icons-material';
-import './NotFound.css';
+import {
+  Box,
+  Button,
+  Heading,
+  Image,
+  Text,
+  Icon,
+} from '@chakra-ui/react';
+import { ArrowBackIcon } from '@chakra-ui/icons';
 import buffaloImg from '../../../assets/images/buffalo.svg';
+import './NotFound.css'; // Giữ nguyên CSS gốc
 
 const NotFound = () => {
   useEffect(() => {
-    // Hiệu ứng di chuyển mây
     const clouds = document.querySelectorAll('.cloud');
     clouds.forEach(cloud => {
       const speed = parseFloat(cloud.getAttribute('data-speed'));
@@ -19,57 +26,64 @@ const NotFound = () => {
   }, []);
 
   return (
-    <div className="not-found404-container">
+    <Box className="not-found404-container">
       {/* Cờ Việt Nam */}
-      <div className="flag-background">
-        <div className="flag-star">★</div>
-      </div>
+      <Box className="flag-background">
+        <Box className="flag-star">★</Box>
+      </Box>
 
       {/* Cảnh đồng quê */}
-      <div className="rice-field-scene">
-        <div className="cloud" data-speed="0.05" data-start="10" style={{ top: '10%', left: '10%' }} />
-        <div className="cloud" data-speed="0.03" data-start="30" style={{ top: '15%', left: '30%' }} />
-        <div className="cloud" data-speed="0.07" data-start="70" style={{ top: '8%', left: '70%' }} />
-        <div className="mountains" />
-        <div className="rice-field" />
-        {/* Trâu + nông dân */}
-        <div className="farmer-buffalo-scene">
-
-    </div>
-        <div className="foreground-grass" />
-      </div>
+      <Box className="rice-field-scene">
+        <Box className="cloud" data-speed="0.05" data-start="10" style={{ top: '10%', left: '10%' }} />
+        <Box className="cloud" data-speed="0.03" data-start="30" style={{ top: '15%', left: '30%' }} />
+        <Box className="cloud" data-speed="0.07" data-start="70" style={{ top: '8%', left: '70%' }} />
+        <Box className="mountains" />
+        <Box className="rice-field" />
+        <Box className="farmer-buffalo-scene" />
+        <Box className="foreground-grass" />
+      </Box>
 
       {/* Card 404 */}
-      <div className="not-found-card">
-        <h1 className="code">404</h1>
-        <h2 className="notfound-title">Trang không tìm thấy</h2>
+      <Box className="not-found-card">
+        <Heading className="code" as="h1" size="4xl">
+          404
+        </Heading>
+        <Heading className="notfound-title" as="h2" size="lg">
+          Trang không tìm thấy
+        </Heading>
 
-        <div className="animal-message">
-          {/* Hiển thị inline SVG trong message */}
-          <img src={buffaloImg} alt="Buffalo" className="buffalo-svg" />
-          <p className="message">
-            <span className="highlight">Ôi!</span> Con trâu đã lạc mất trang này trên cánh đồng!<br/>
+        <Box className="animal-message">
+          <Image src={buffaloImg} alt="Buffalo" className="buffalo-svg" />
+          <Text className="message">
+            <span className="highlight">Ôi!</span> Con trâu đã lạc mất trang này trên cánh đồng!
+            <br />
             Hãy quay về trang chủ để tiếp tục hành trình.
-          </p>
-        </div>
+          </Text>
+        </Box>
 
-        <div className="animal-footprints">
-          <div className="footprint fp1" />
-          <div className="footprint fp2" />
-          <div className="footprint fp3" />
-          <div className="footprint fp4" />
-          <div className="footprint fp5" />
-        </div>
+        <Box className="animal-footprints">
+          <Box className="footprint fp1" />
+          <Box className="footprint fp2" />
+          <Box className="footprint fp3" />
+          <Box className="footprint fp4" />
+          <Box className="footprint fp5" />
+        </Box>
 
-        <button className="btn-home" onClick={() => window.location.href = '/'}>
-          <HomeIcon /> Về Trang Chủ
-        </button>
+        <Button
+          className="btn-home"
+          leftIcon={<ArrowBackIcon />}
+          colorScheme="green"
+          onClick={() => (window.location.href = '/')}
+          mt={4}
+        >
+          Về Trang Chủ
+        </Button>
 
-        <div className="footer-note">
-          Hồn quê Việt Nam vẹn nguyên trên từng bước cày
-        </div>
-      </div>
-    </div>
+        <Text className="footer-note" mt={4}>
+          PetRescueHub
+        </Text>
+      </Box>
+    </Box>
   );
 };
 

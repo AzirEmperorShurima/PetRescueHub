@@ -3,7 +3,7 @@ import '../../assets/styles/components/Footer.css';
 import { FaFacebook, FaInstagram, FaYoutube, FaPhone, FaEnvelope, FaMapMarkerAlt, FaTiktok, FaHeart } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import PropTypes from 'prop-types';
-import logo from '../../assets/images/logo.svg';
+import logo from '../../assets/images/logo.svg'; // Đảm bảo đường dẫn đến logo của bạn
 
 const Footer = ({ darkLight }) => {
     return (
@@ -64,6 +64,7 @@ const Footer = ({ darkLight }) => {
                                     <li><a href="/about">Giới thiệu</a></li>
                                     <li><a href="/mission">Sứ mệnh</a></li>
                                     <li><a href="/team">Đội ngũ</a></li>
+                                    <li><a href="/volunteer">Tình nguyện viên</a></li>
                                     <li><a href="/donate">Quyên góp</a></li>
                                 </ul>
                             </div>

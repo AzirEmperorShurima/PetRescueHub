@@ -1,32 +1,36 @@
 import React from 'react';
-import { 
-  Typography, 
-  Button, 
-  Box
-} from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import CommentIcon from '@mui/icons-material/Comment';
-import ShareIcon from '@mui/icons-material/Share';
-import ArticleIcon from '@mui/icons-material/Article';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import {
+  Text,
+  Button,
+  Box,
+  VStack,
+  HStack,
+  Image,
+  Card,
+  CardBody,
+  Flex,
+} from '@chakra-ui/react';
+import { FiEye, FiHeart, FiMessageCircle, FiShare2, FiFileText } from 'react-icons/fi';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
 
 const PostGrid = ({ posts }) => {
   if (!posts || posts.length === 0) {
     return (
       <Box className="empty-posts">
-        <Typography variant="h5" gutterBottom>Bài viết</Typography>
-        <Typography variant="body1" color="textSecondary">
+        <Text fontSize="xl" fontWeight="bold" mb={4}>
+          Bài viết
+        </Text>
+        <Text color="gray.600">
           Bạn chưa có bài viết nào. Hãy chia sẻ câu chuyện đầu tiên của bạn!
-        </Typography>
+        </Text>
       </Box>
     );
   }
 
   const formatDate = (dateString) => {
     try {
-      return format(new Date(dateString), 'dd MMMM yyyy', { locale: vi });
+      return dayjs(dateString).locale('vi').format('DD MMMM YYYY');
     } catch (error) {
       return 'Không rõ ngày';
     }
@@ -34,69 +38,88 @@ const PostGrid = ({ posts }) => {
 
   return (
     <Box>
-      <Typography variant="h5" className="tab-title" gutterBottom>Bài viết</Typography>
-      
-      <div className="activities-timeline">
+      <Text fontSize="xl" fontWeight="bold" className="tab-title" mb={6}>
+        Bài viết
+      </Text>
+      <VStack spacing={6} className="activities-timeline">
         {posts.map((post) => (
-          <div className="activity-item" key={post.id}>
-            <div className="activity-icon-container">
-              <ArticleIcon className="activity-icon" />
-            </div>
-            
-            <div className="activity-content">
-              <div className="activity-header">
-                <Typography variant="h6" className="activity-title">
-                  {post.title}
-                </Typography>
-                <Typography variant="body2" className="activity-date">
-                  {formatDate(post.createdAt)}
-                </Typography>
-              </div>
-              
-              {post.image && (
-                <div className="activity-image-container">
-                  <img 
-                    src={post.image} 
-                    alt={post.title} 
-                    className="activity-image" 
-                  />
-                </div>
-              )}
-              
-              <Typography variant="body1" paragraph>
-                {post.content}
-              </Typography>
-              
-              <div className="activity-actions">
-                <Button 
-                  startIcon={<VisibilityIcon />} 
-                  className="activity-action-button"
+          <Card key={post.id} className="activity-item" width="100%" shadow="md">
+            <CardBody p={6}>
+              <HStack spacing={4} align="flex-start">
+                <Box
+                  className="activity-icon-container"
+                  p={3}
+                  bg="pink.100"
+                  borderRadius="full"
+                  color="pink.500"
                 >
-                  Xem chi tiết
-                </Button>
-                <Button 
-                  startIcon={<FavoriteIcon />} 
-                  className="activity-action-button"
-                >
-                  {post.likes} Thích
-                </Button>
-                <Button 
-                  startIcon={<CommentIcon />} 
-                  className="activity-action-button"
-                >
-                  {post.comments} Bình luận
-                </Button>
-                <Button 
-                  startIcon={<ShareIcon />} 
-                  className="activity-action-button"
-                >
-                  Chia sẻ
-                </Button>
-              </div>
-            </div>
-          </div>
+                  <FiFileText size={20} className="activity-icon" />
+                </Box>
+                <VStack spacing={4} align="stretch" flex={1} className="activity-content">
+                  <Flex justify="space-between" align="flex-start" className="activity-header">
+                    <Text fontSize="lg" fontWeight="bold" className="activity-title">
+                      {post.title}
+                    </Text>
+                    <Text fontSize="sm" color="gray.600" className="activity-date">
+                      {formatDate(post.createdAt)}
+                    </Text>
+                  </Flex>
+                  {post.image && (
+                    <Box className="activity-image-container">
+                      <Image
+                        src={post.image}
+                        alt={post.title}
+                        className="activity-image"
+                        borderRadius="md"
+                        maxH="300px"
+                        objectFit="cover"
+                      />
+                    </Box>
+                  )}
+                  <Text>{post.content}</Text>
+                  <HStack spacing={4} className="activity-actions" flexWrap="wrap">
+                    <Button
+                      leftIcon={<FiEye />}
+                      variant="ghost"
+                      size="sm"
+                      className="activity-action-button"
+                    >
+                      Xem chi tiết
+                    </Button>
+                    <Button
+                      leftIcon={<FiHeart />}
+                      variant="ghost"
+                      size="sm"
+                      className="activity-action-button"
+                      colorScheme="red"
+                    >
+                      {post.likes} Thích
+                    </Button>
+                    <Button
+                      leftIcon={<FiMessageCircle />}
+                      variant="ghost"
+                      size="sm"
+                      className="activity-action-button"
+                      colorScheme="blue"
+                    >
+                      {post.comments} Bình luận
+                    </Button>
+                    <Button
+                      leftIcon={<FiShare2 />}
+                      variant="ghost"
+                      size="sm"
+                      className="activity-action-button"
+                      colorScheme="green"
+                    >
+                      Chia sẻ
+                    </Button>
+                  </HStack>
+                </VStack>
+              </HStack>
+            </CardBody>
+          </Card>
         ))}
-      </div>
+      </VStack>
     </Box>
   );
 };

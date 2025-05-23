@@ -1,20 +1,48 @@
+/* UserMenu.css */
 .user-menu-container {
   display: flex;
   align-items: center;
-  position: relative; /* Thêm position relative */
+  gap: 0.5rem;
 }
 
-/* Thêm style mới cho Menu */
-#account-menu {
-  position: absolute;
-  right: 0;
-  top: 100%;
+.notification-button {
+  color: #555;
+  transition: all 0.3s ease;
+}
+
+.notification-button:hover {
+  background-color: rgba(211, 79, 129, 0.1);
+  color: #D34F81;
+}
+
+.user-info {
+  padding: 0.75rem;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Đảm bảo menu nằm đúng vị trí */
+.chakra-menu__menu-list {
   z-index: 1000;
 }
 
-/* Sửa style cho Menu */
-.MuiMenu-paper {
-  position: fixed !important; /* Đảm bảo menu hiển thị đúng vị trí */
+/* Đảm bảo UserMenu phù hợp với cấu trúc của Navigation */
+.nav-buttons {
+  display: flex;
+  align-items: center;
 }
 
 .user-menu-icons {

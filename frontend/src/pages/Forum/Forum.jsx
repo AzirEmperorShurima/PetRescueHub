@@ -3,17 +3,27 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/styles/animations.css';
 import {
-  Container,
-  Typography,
   Box,
+  Container,
+  Heading,
+  Text,
   Grid,
+  GridItem,
   Tabs,
+  TabList,
+  TabPanels,
   Tab,
+  TabPanel,
   Divider,
-  Paper,
-  useTheme,
-  Button
-} from '@mui/material';
+  VStack,
+  HStack,
+  Button,
+  useColorModeValue,
+  Card,
+  CardBody,
+} from '@chakra-ui/react'
+import CreatePost from '../../features/Forum/CreatePost';
+import CreateQuestion from '../../features/Forum/CreateQuestion';
 import { useAuth } from '../../components/contexts/AuthContext';
 import ForumSkeleton from '../../features/Forum/components/ForumSkeleton';
 import ForumCard from '../../features/Forum/components/ForumCard';
@@ -21,14 +31,16 @@ import ForumSearch from '../../features/Forum/components/ForumSearch';
 import ForumActions from '../../features/Forum/components/ForumActions';
 import { useForum } from '../../components/hooks/useForum';
 import './Forum.css';
-import CreatePost from '../../features/Forum/CreatePost';
-import CreateQuestion from '../../features/Forum/CreateQuestion';
 
 const Forum = () => {
-  // Theme & Navigation
-  const theme = useTheme();
+  // Navigation
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Chakra UI color mode
+  const bg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
 
   // Add missing state variables
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -99,8 +111,9 @@ const Forum = () => {
   };
 
   const getPostType = () => {
-    
+    // Implementation needed
   };
+
   // Data loading functions
   const loadPosts = async () => {
     // Implement loadPosts logic
@@ -117,12 +130,14 @@ const Forum = () => {
   const loadFindLostPet = async () => {
     // Implement loadFindLostPet logic
   };
-const listPostType = {
-  Questions: "Question",
-  Events: "EventPost",
-  FindLostPet: "FindLostPetPost",
-  ForumPost: "ForumPost"
-}
+
+  const listPostType = {
+    Questions: "Question",
+    Events: "EventPost",
+    FindLostPet: "FindLostPetPost",
+    ForumPost: "ForumPost"
+  }
+
   // Effects
   useEffect(() => {
     return () => {
@@ -167,8 +182,8 @@ const listPostType = {
 
   // JSX
   return (
-    <Box className="forum-page">
-      <Container maxWidth="lg">
+    <Box className="forum-page" minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
+      <Container maxW="container.xl" py={6}>
         {showCreatePost && (
           <CreatePost postType={currentPostType} onClose={handleCloseCreateForms} />
         )}
@@ -178,87 +193,100 @@ const listPostType = {
         
         {!showCreatePost && !showCreateQuestion && (
           <>
-            <Box className="forum-header animate-fadeIn" textAlign="center" mb={4}>
-              <Typography variant="h3" component="h1" gutterBottom className="forum-title">
+            <Box className="forum-header animate-fadeIn" textAlign="center" mb={8}>
+              <Heading as="h1" size="2xl" mb={4} className="forum-title">
                 Diễn đàn thú cưng
-              </Typography>
-              <Typography variant="subtitle1" color="textSecondary">
+              </Heading>
+              <Text fontSize="lg" color={textColor}>
                 Chia sẻ kinh nghiệm, đặt câu hỏi và tham gia các sự kiện về thú cưng
-              </Typography>
+              </Text>
             </Box>
 
-            <Grid container spacing={3}>
+            <Grid templateColumns={{ base: "1fr", md: "300px 1fr" }} gap={6}>
               {/* Sidebar */}
-              <Grid item xs={12} md={3}>
-                <Paper elevation={1} className="forum-sidebar animate-slideInLeft">
-                  <Box p={2}>
-                    <Typography variant="h6" gutterBottom>
-                      Danh mục
-                    </Typography>
-                    <Box className="forum-categories">
-                      {safeCategories.map(category => (
-                        <Button
-                          key={category.id}
-                          fullWidth
-                          variant={categoryFilter === category.id ? 'containedFCB' : 'text'}
-                          color={categoryFilter === category.id ? 'primary' : 'inherit'}
-                          size="small"
-                          onClick={() => handleCategoryChange(category.id)}
-                          sx={{ justifyContent: 'flex-start', textAlign: 'left', mb: 1 }}
-                        >
-                          {category.name}
-                        </Button>
-                      ))}
-                    </Box>
+              <GridItem>
+                <Card className="forum-sidebar animate-slideInLeft" bg={bg} shadow="sm">
+                  <CardBody>
+                    <VStack spacing={6} align="stretch">
+                      {/* Categories Section */}
+                      <Box>
+                        <Heading size="md" mb={4}>
+                          Danh mục
+                        </Heading>
+                        <VStack spacing={2} align="stretch" className="forum-categories">
+                          {safeCategories.map(category => (
+                            <Button
+                              key={category.id}
+                              variant={categoryFilter === category.id ? 'solid' : 'ghost'}
+                              colorScheme={categoryFilter === category.id ? 'blue' : 'gray'}
+                              size="sm"
+                              justifyContent="flex-start"
+                              onClick={() => handleCategoryChange(category.id)}
+                            >
+                              {category.name}
+                            </Button>
+                          ))}
+                        </VStack>
+                      </Box>
 
-                    <Divider sx={{ my: 2 }} />
+                      <Divider />
 
-                    <Typography variant="h6" gutterBottom>
-                      Tạo mới
-                    </Typography>
-                    <Box className="forum-create-buttons">
-                      <ForumActions
-                        isAuthenticated={user}
-                        onCreatePost={() => handleShowCreatePost('ForumPost')}
-                        onCreateQuestion={() => handleShowCreateQuestion('Question')}
-                        onCreateEvent={() => handleShowCreatePost('EventPost')}
-                        onFindLostPet={() => handleShowCreatePost('FindLostPetPost')}
-                        PostType={listPostType}
-                      />
-                    </Box>
-                    
-                    <Divider sx={{ my: 2 }} />
+                      {/* Create Actions Section */}
+                      <Box>
+                        <Heading size="md" mb={4}>
+                          Tạo mới
+                        </Heading>
+                        <Box className="forum-create-buttons">
+                          <ForumActions
+                            isAuthenticated={user}
+                            onCreatePost={() => handleShowCreatePost('ForumPost')}
+                            onCreateQuestion={() => handleShowCreateQuestion('Question')}
+                            onCreateEvent={() => handleShowCreatePost('EventPost')}
+                            onFindLostPet={() => handleShowCreatePost('FindLostPetPost')}
+                            PostType={listPostType}
+                          />
+                        </Box>
+                      </Box>
+                      
+                      <Divider />
 
-                    <Typography variant="h6" gutterBottom>
-                      Thống kê
-                    </Typography>
-                    <Box className="forum-stats">
-                      <Typography variant="body2">
-                        <strong>Bài viết:</strong> {safePosts.length}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Câu hỏi:</strong> {safeQuestions.length}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Sự kiện:</strong> {safeEvents.length}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Grid>
+                      {/* Stats Section */}
+                      <Box>
+                        <Heading size="md" mb={4}>
+                          Thống kê
+                        </Heading>
+                        <VStack spacing={2} align="stretch" className="forum-stats">
+                          <HStack justify="space-between">
+                            <Text fontWeight="semibold">Bài viết:</Text>
+                            <Text>{safePosts.length}</Text>
+                          </HStack>
+                          <HStack justify="space-between">
+                            <Text fontWeight="semibold">Câu hỏi:</Text>
+                            <Text>{safeQuestions.length}</Text>
+                          </HStack>
+                          <HStack justify="space-between">
+                            <Text fontWeight="semibold">Sự kiện:</Text>
+                            <Text>{safeEvents.length}</Text>
+                          </HStack>
+                        </VStack>
+                      </Box>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              </GridItem>
               
               {/* Main content */}
-              <Grid item xs={12} md={9}>
+              <GridItem>
                 <Box className="forum-main">
-                  {/* Search and filter */}
+                  {/* Search and filter - commented out as in original */}
                   {/* <ForumSearch
                     searchTerm={searchTerm}
-                    onSearchChange={handleSearchChange} // Sử dụng hàm debounced
+                    onSearchChange={handleSearchChange}
                     filterAnchorEl={filterAnchorEl}
                     onFilterClick={handleFilterClick}
                     onFilterClose={handleFilterClose}
-                    onSortChange={handleSortChange} // Sử dụng hàm debounced
-                    onCategoryChange={handleCategoryChange} // Sử dụng hàm debounced
+                    onSortChange={handleSortChange}
+                    onCategoryChange={handleCategoryChange}
                     sortBy={sortBy}
                     categoryFilter={categoryFilter}
                     categories={safeCategories}
@@ -266,114 +294,136 @@ const listPostType = {
                   /> */}
 
                   {/* Tabs */}
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                    <Tabs value={tabValue} onChange={handleTabChange} aria-label="forum tabs">
-                      <Tab label={`Bài viết (${safePosts.length})`} />
-                      <Tab label={`Câu hỏi (${safeQuestions.length})`} />
-                      <Tab label={`Sự kiện (${safeEvents.length})`} />
-                      <Tab label={`Thú đi lạc (${safeFindPet.length})`} />
-                    </Tabs>
-                  </Box>
+                  <Tabs 
+                    index={tabValue} 
+                    onChange={handleTabChange} 
+                    variant="line" 
+                    colorScheme="blue"
+                    mb={6}
+                  >
+                    <TabList borderBottom="1px" borderColor={borderColor}>
+                      <Tab>Bài viết ({safePosts.length})</Tab>
+                      <Tab>Câu hỏi ({safeQuestions.length})</Tab>
+                      <Tab>Sự kiện ({safeEvents.length})</Tab>
+                      <Tab>Thú đi lạc ({safeFindPet.length})</Tab>
+                    </TabList>
 
-                  {/* Tab content */}
-                  {loading ? (
-                    <ForumSkeleton />
-                  ) : (
-                    <>
-                      {tabValue === 0 && (
-                        <Box className="forum-posts">
-                          {safePosts.length > 0 ? (
-                            safePosts.map(post => (
-                              <ForumCard
-                                key={post._id}
-                                item={post}
-                                type={post.postType}
-                                categories={safeCategories}
-                                onToggleLike={() => handleToggleLike(post._id, 'post')}
-                                onToggleFavorite={() => handleToggleFavorite(post._id, 'post')}
-                                formatDate={formatDate}
-                                onClick={() => navigate(`/forum/post/${post._id}`)}
-                              />
-                            ))
-                          ) : (
-                            <Typography variant="body1" textAlign="center" py={4}>
-                              Không có bài viết nào phù hợp với tìm kiếm của bạn.
-                            </Typography>
-                          )}
-                        </Box>
-                      )}
+                    <TabPanels>
+                      {/* Posts Tab */}
+                      <TabPanel p={0} pt={6}>
+                        {loading ? (
+                          <ForumSkeleton />
+                        ) : (
+                          <VStack spacing={4} className="forum-posts">
+                            {safePosts.length > 0 ? (
+                              safePosts.map(post => (
+                                <ForumCard
+                                  key={post._id}
+                                  item={post}
+                                  type={post.postType}
+                                  categories={safeCategories}
+                                  onToggleLike={() => handleToggleLike(post._id, 'post')}
+                                  onToggleFavorite={() => handleToggleFavorite(post._id, 'post')}
+                                  formatDate={formatDate}
+                                  onClick={() => navigate(`/forum/post/${post._id}`)}
+                                />
+                              ))
+                            ) : (
+                              <Text textAlign="center" py={8} color={textColor}>
+                                Không có bài viết nào phù hợp với tìm kiếm của bạn.
+                              </Text>
+                            )}
+                          </VStack>
+                        )}
+                      </TabPanel>
 
-                      {tabValue === 1 && (
-                        <Box className="forum-questions">
-                          {safeQuestions.length > 0 ? (
-                            safeQuestions.map(question => (
-                              <ForumCard
-                                key={question._id}
-                                item={question}
-                                type="question"
-                                categories={safeCategories}
-                                onToggleLike={() => handleToggleLike(question._id, 'question')}
-                                onToggleFavorite={() => handleToggleFavorite(question._id, 'question')}
-                                formatDate={formatDate}
-                                onClick={() => navigate(`/forum/question/${question._id}`)}
-                              />
-                            ))
-                          ) : (
-                            <Typography variant="body1" textAlign="center" py={4}>
-                              Không có câu hỏi nào phù hợp với tìm kiếm của bạn.
-                            </Typography>
-                          )}
-                        </Box>
-                      )}
+                      {/* Questions Tab */}
+                      <TabPanel p={0} pt={6}>
+                        {loading ? (
+                          <ForumSkeleton />
+                        ) : (
+                          <VStack spacing={4} className="forum-questions">
+                            {safeQuestions.length > 0 ? (
+                              safeQuestions.map(question => (
+                                <ForumCard
+                                  key={question._id}
+                                  item={question}
+                                  type="question"
+                                  categories={safeCategories}
+                                  onToggleLike={() => handleToggleLike(question._id, 'question')}
+                                  onToggleFavorite={() => handleToggleFavorite(question._id, 'question')}
+                                  formatDate={formatDate}
+                                  onClick={() => navigate(`/forum/question/${question._id}`)}
+                                />
+                              ))
+                            ) : (
+                              <Text textAlign="center" py={8} color={textColor}>
+                                Không có câu hỏi nào phù hợp với tìm kiếm của bạn.
+                              </Text>
+                            )}
+                          </VStack>
+                        )}
+                      </TabPanel>
 
-                      {tabValue === 2 && (
-                        <Box className="forum-events">
-                          {safeEvents.length > 0 ? (
-                            safeEvents.map(event => (
-                              <ForumCard
-                                key={event._id}
-                                item={event}
-                                type="event"
-                                categories={safeCategories}
-                                onToggleLike={() => handleToggleLike(event._id, 'event')}
-                                onToggleFavorite={() => handleToggleFavorite(event._id, 'event')}
-                                formatDate={formatDate}
-                                onClick={() => navigate(`/forum/event/${event._id}`)}
-                              />
-                            ))
-                          ) : (
-                            <Typography variant="body1" textAlign="center" py={4}>
-                              Không có sự kiện nào phù hợp với tìm kiếm của bạn.
-                            </Typography>
-                          )}
-                        </Box>
-                      )}
-                      {tabValue === 3 && (
-                        <Box className="forum-findpets">
-                          {safeFindPet.length > 0 ? (
-                            safeFindPet.map(findPet => (
-                              <ForumCard
-                                key={findPet._id}
-                                item={findPet}
-                                type="findLostPet"
-                                categories={safeCategories}
-                                onToggleLike={() => handleToggleLike(findPet._id, 'findLostPet')}
-                                onToggleFavorite={() => handleToggleFavorite(findPet._id, 'findLostPet')}
-                                formatDate={formatDate}
-                                onClick={() => navigate(`/forum/findLostPet/${findPet._id}`)}
-                              />
-                            ))
-                          ) : (
-                            <Typography variant="body1" textAlign="center" py={4}>
-                              Không có bài viết tìm thú cưng nào phù hợp với tìm kiếm của bạn.
-                            </Typography>
-                          )}
-                        </Box>
-                      )}
-                    </>
-                  )}
+                      {/* Events Tab */}
+                      <TabPanel p={0} pt={6}>
+                        {loading ? (
+                          <ForumSkeleton />
+                        ) : (
+                          <VStack spacing={4} className="forum-events">
+                            {safeEvents.length > 0 ? (
+                              safeEvents.map(event => (
+                                <ForumCard
+                                  key={event._id}
+                                  item={event}
+                                  type="event"
+                                  categories={safeCategories}
+                                  onToggleLike={() => handleToggleLike(event._id, 'event')}
+                                  onToggleFavorite={() => handleToggleFavorite(event._id, 'event')}
+                                  formatDate={formatDate}
+                                  onClick={() => navigate(`/forum/event/${event._id}`)}
+                                />
+                              ))
+                            ) : (
+                              <Text textAlign="center" py={8} color={textColor}>
+                                Không có sự kiện nào phù hợp với tìm kiếm của bạn.
+                              </Text>
+                            )}
+                          </VStack>
+                        )}
+                      </TabPanel>
+
+                      {/* Find Lost Pet Tab */}
+                      <TabPanel p={0} pt={6}>
+                        {loading ? (
+                          <ForumSkeleton />
+                        ) : (
+                          <VStack spacing={4} className="forum-findpets">
+                            {safeFindPet.length > 0 ? (
+                              safeFindPet.map(findPet => (
+                                <ForumCard
+                                  key={findPet._id}
+                                  item={findPet}
+                                  type="findLostPet"
+                                  categories={safeCategories}
+                                  onToggleLike={() => handleToggleLike(findPet._id, 'findLostPet')}
+                                  onToggleFavorite={() => handleToggleFavorite(findPet._id, 'findLostPet')}
+                                  formatDate={formatDate}
+                                  onClick={() => navigate(`/forum/findLostPet/${findPet._id}`)}
+                                />
+                              ))
+                            ) : (
+                              <Text textAlign="center" py={8} color={textColor}>
+                                Không có bài viết tìm thú cưng nào phù hợp với tìm kiếm của bạn.
+                              </Text>
+                            )}
+                          </VStack>
+                        )}
+                      </TabPanel>
+                    </TabPanels>
+                  </Tabs>
                 </Box>
-              </Grid>
+              </GridItem>
             </Grid>
           </>
         )}

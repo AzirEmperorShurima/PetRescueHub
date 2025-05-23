@@ -3,22 +3,37 @@ import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
-  Typography,
-  TextField,
+  Heading,
+  Text,
+  Input,
   Button,
-  Paper,
-  Chip,
+  Card,
+  CardBody,
+  Tag,
+  TagLabel,
+  TagCloseButton,
   IconButton,
-  Autocomplete,
-  Stack,
+  VStack,
+  HStack,
   Alert,
-  CircularProgress,
-  Divider
-} from '@mui/material';
+  AlertIcon,
+  Spinner,
+  Divider,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  Textarea,
+  Wrap,
+  WrapItem,
+  Flex,
+  useColorModeValue,
+  InputGroup,
+  InputRightElement
+} from '@chakra-ui/react';
 import {
-  ArrowBack as ArrowBackIcon,
-  Close as CloseIcon
-} from '@mui/icons-material';
+  ArrowBackIcon,
+  CloseIcon
+} from '@chakra-ui/icons';
 import forumService from '../../services/forum.service';
 import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
 import './ForumForms.css'; // Cập nhật import
@@ -28,6 +43,7 @@ const CreateQuestion = ({ onClose }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState([]);
+  const [currentTag, setCurrentTag] = useState('');
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,6 +54,10 @@ const CreateQuestion = ({ onClose }) => {
     'chăm sóc', 'huấn luyện', 'dinh dưỡng', 'sức khỏe', 'tiêm phòng',
     'cứu hộ', 'nhận nuôi', 'thức ăn', 'đồ chơi', 'phụ kiện'
   ]);
+
+  // Color mode values
+  const bg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
 
   const handleImageUpload = (files) => {
     // Tạo URL preview cho các file ảnh
@@ -56,6 +76,29 @@ const CreateQuestion = ({ onClose }) => {
     
     setImages(newImages);
     setImagePreviews(newPreviews);
+  };
+
+  const handleAddTag = (tagValue) => {
+    const trimmedTag = tagValue.trim();
+    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 5) {
+      setTags([...tags, trimmedTag]);
+      setCurrentTag('');
+    }
+  };
+
+  const handleTagKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag(currentTag);
+    }
+  };
+
+  const handleRemoveTag = (indexToRemove) => {
+    setTags(tags.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    handleAddTag(suggestion);
   };
 
   const handleSubmit = async (e) => {
@@ -140,113 +183,189 @@ const CreateQuestion = ({ onClose }) => {
     }
   };
 
+  const filteredSuggestions = tagSuggestions.filter(
+    suggestion => 
+      !tags.includes(suggestion) && 
+      suggestion.toLowerCase().includes(currentTag.toLowerCase())
+  );
+
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {onClose ? (
-              <IconButton onClick={onClose} sx={{ mr: 1 }}>
-                <CloseIcon />
-              </IconButton>
-            ) : (
-              <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
-                <ArrowBackIcon />
-              </IconButton>
-            )}
-            <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
-              Đặt câu hỏi mới
-            </Typography>
+    <Container maxW="container.md" py={6}>
+      <Card bg={bg} shadow="sm" borderRadius="lg">
+        <CardBody p={6}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack>
+              {onClose ? (
+                <IconButton
+                  icon={<CloseIcon />}
+                  onClick={onClose}
+                  variant="ghost"
+                  size="sm"
+                />
+              ) : (
+                <IconButton
+                  icon={<ArrowBackIcon />}
+                  onClick={() => navigate('/forum')}
+                  variant="ghost"
+                  size="sm"
+                />
+              )}
+              <Heading size="lg" fontWeight="bold">
+                Đặt câu hỏi mới
+              </Heading>
+            </HStack>
+          </Flex>
+          
+          <Divider mb={6} />
+          
+          {error && (
+            <Alert status="error" mb={6} borderRadius="md">
+              <AlertIcon />
+              {error}
+            </Alert>
+          )}
+          
+          <Box as="form" onSubmit={handleSubmit}>
+            <VStack spacing={6} align="stretch">
+              {/* Title Input */}
+              <FormControl isRequired>
+                <FormLabel>Tiêu đề câu hỏi</FormLabel>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Nhập tiêu đề câu hỏi của bạn..."
+                />
+              </FormControl>
+              
+              {/* Tags Input */}
+              <FormControl>
+                <FormLabel>Thẻ (tối đa 5 thẻ)</FormLabel>
+                <VStack align="stretch" spacing={3}>
+                  {/* Current Tags */}
+                  {tags.length > 0 && (
+                    <Wrap>
+                      {tags.map((tag, index) => (
+                        <WrapItem key={index}>
+                          <Tag size="md" colorScheme="blue" variant="solid">
+                            <TagLabel>{tag}</TagLabel>
+                            <TagCloseButton onClick={() => handleRemoveTag(index)} />
+                          </Tag>
+                        </WrapItem>
+                      ))}
+                    </Wrap>
+                  )}
+                  
+                  {/* Tag Input */}
+                  {tags.length < 5 && (
+                    <InputGroup>
+                      <Input
+                        value={currentTag}
+                        onChange={(e) => setCurrentTag(e.target.value)}
+                        onKeyPress={handleTagKeyPress}
+                        placeholder="Nhập thẻ và nhấn Enter"
+                      />
+                      {currentTag && (
+                        <InputRightElement>
+                          <Button
+                            size="sm"
+                            onClick={() => handleAddTag(currentTag)}
+                            variant="ghost"
+                          >
+                            Thêm
+                          </Button>
+                        </InputRightElement>
+                      )}
+                    </InputGroup>
+                  )}
+                  
+                  {/* Tag Suggestions */}
+                  {currentTag && filteredSuggestions.length > 0 && (
+                    <Box
+                      border="1px"
+                      borderColor={borderColor}
+                      borderRadius="md"
+                      p={3}
+                      maxH="120px"
+                      overflowY="auto"
+                    >
+                      <Text fontSize="sm" color="gray.600" mb={2}>
+                        Gợi ý:
+                      </Text>
+                      <Wrap>
+                        {filteredSuggestions.slice(0, 10).map((suggestion, index) => (
+                          <WrapItem key={index}>
+                            <Tag
+                              size="sm"
+                              variant="outline"
+                              cursor="pointer"
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
+                            >
+                              {suggestion}
+                            </Tag>
+                          </WrapItem>
+                        ))}
+                      </Wrap>
+                    </Box>
+                  )}
+                </VStack>
+                <FormHelperText>
+                  Thẻ giúp người dùng tìm kiếm câu hỏi của bạn dễ dàng hơn
+                </FormHelperText>
+              </FormControl>
+              
+              {/* Content Textarea */}
+              <FormControl isRequired>
+                <FormLabel>Nội dung câu hỏi</FormLabel>
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Mô tả chi tiết câu hỏi của bạn..."
+                  rows={10}
+                  resize="vertical"
+                />
+              </FormControl>
+              
+              {/* Image Uploader */}
+              <FormControl>
+                <FormLabel>Hình ảnh (không bắt buộc)</FormLabel>
+                <Box className="forum-image-uploader">
+                  <ImageUploader
+                    images={images}
+                    previews={imagePreviews}
+                    onUpload={handleImageUpload}
+                    onRemove={handleRemoveImage}
+                    maxImages={3}
+                    label="Hình ảnh (không bắt buộc)"
+                    required={false}
+                    acceptTypes="image/*"
+                  />
+                </Box>
+              </FormControl>
+              
+              {/* Action Buttons */}
+              <HStack justify="flex-end" spacing={4}>
+                <Button
+                  variant="outline"
+                  onClick={onClose || (() => navigate('/forum'))}
+                  isDisabled={loading}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  colorScheme="blue"
+                  isLoading={loading}
+                  loadingText="Đang tạo..."
+                  spinner={<Spinner size="sm" />}
+                >
+                  Đặt câu hỏi
+                </Button>
+              </HStack>
+            </VStack>
           </Box>
-        </Box>
-        
-        <Divider sx={{ mb: 4 }} />
-        
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
-        
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            label="Tiêu đề câu hỏi"
-            variant="outlined"
-            fullWidth
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            sx={{ mb: 3 }}
-          />
-          
-          <Autocomplete
-            multiple
-            freeSolo
-            options={tagSuggestions}
-            value={tags}
-            onChange={(event, newValue) => setTags(newValue.slice(0, 5))}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip key={index} label={option} {...getTagProps({ index })} />
-              ))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                label="Thẻ (tối đa 5 thẻ)"
-                placeholder="Nhập thẻ và nhấn Enter"
-                helperText="Thẻ giúp người dùng tìm kiếm câu hỏi của bạn dễ dàng hơn"
-              />
-            )}
-            sx={{ mb: 3 }}
-          />
-          
-          <TextField
-            label="Nội dung câu hỏi"
-            variant="outlined"
-            fullWidth
-            multiline
-            rows={10}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required
-            sx={{ mb: 3 }}
-          />
-          
-          <Box className="forum-image-uploader" sx={{ mb: 3 }}>
-            <ImageUploader
-              images={images}
-              previews={imagePreviews}
-              onUpload={handleImageUpload}
-              onRemove={handleRemoveImage}
-              maxImages={3}
-              label="Hình ảnh (không bắt buộc)"
-              required={false}
-              acceptTypes="image/*"
-            />
-          </Box>
-          
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button
-              variant="outlined"
-              onClick={onClose || (() => navigate('/forum'))}
-              disabled={loading}
-            >
-              Hủy
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              startIcon={loading && <CircularProgress size={20} color="inherit" />}
-            >
-              {loading ? 'Đang tạo...' : 'Đặt câu hỏi'}
-            </Button>
-          </Stack>
-        </Box>
-      </Paper>
+        </CardBody>
+      </Card>
     </Container>
   );
 };

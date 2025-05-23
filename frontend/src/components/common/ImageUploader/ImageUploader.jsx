@@ -1,7 +1,16 @@
 import React from 'react';
-import { Box, IconButton, Typography, Button } from '@mui/material';
-import { AddPhotoAlternate as AddPhotoAlternateIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import './ImageUploader.css';
+import { 
+  Box, 
+  IconButton, 
+  Text, 
+  Button, 
+  FormLabel,
+  Flex,
+  Image,
+  useColorModeValue,
+  useToast
+} from '@chakra-ui/react';
+import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 
 /**
  * Component tải lên và hiển thị hình ảnh với chức năng xóa
@@ -26,13 +35,28 @@ const ImageUploader = ({
   required = false,
   acceptTypes = "image/*"
 }) => {
+  const toast = useToast();
+  
+  // Color mode values
+  const borderColor = useColorModeValue('gray.300', 'gray.600');
+  const bgColor = useColorModeValue('white', 'gray.700');
+  const hoverBgColor = useColorModeValue('gray.50', 'gray.600');
+  const removeButtonBg = useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(0, 0, 0, 0.6)');
+  const removeButtonHoverBg = useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(0, 0, 0, 0.8)');
+
   const handleImageChange = (e) => {
     if (onUpload && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       
       // Kiểm tra số lượng ảnh tối đa
       if (images.length + files.length > maxImages) {
-        alert(`Chỉ được tải lên tối đa ${maxImages} ảnh`);
+        toast({
+          title: 'Vượt quá giới hạn',
+          description: `Chỉ được tải lên tối đa ${maxImages} ảnh`,
+          status: 'warning',
+          duration: 3000,
+          isClosable: true,
+        });
         return;
       }
       
@@ -47,31 +71,77 @@ const ImageUploader = ({
   };
 
   return (
-    <Box className="image-uploader-container">
-      <Typography variant="subtitle1" gutterBottom>
-        {label} {required && <span className="required-mark">*</span>}
-      </Typography>
+    <Box mb={5}>
+      <FormLabel mb={3} fontSize="md" fontWeight="medium">
+        {label} 
+        {required && (
+          <Text as="span" color="red.500" ml={1}>
+            *
+          </Text>
+        )}
+      </FormLabel>
       
-      <Box className="image-preview-container">
+      <Flex
+        flexWrap="wrap"
+        gap={3}
+        mb={3}
+      >
         {previews.map((preview, index) => (
-          <Box key={index} className="image-preview-item">
-            <img src={preview} alt={`Ảnh ${index + 1}`} className="preview-image" />
-            <IconButton 
-              className="remove-image-button"
+          <Box
+            key={index}
+            position="relative"
+            w="100px"
+            h="100px"
+            borderRadius="md"
+            overflow="hidden"
+            border="1px solid"
+            borderColor={borderColor}
+            bg={bgColor}
+          >
+            <Image
+              src={preview}
+              alt={`Ảnh ${index + 1}`}
+              w="full"
+              h="full"
+              objectFit="cover"
+            />
+            <IconButton
+              icon={<DeleteIcon />}
+              position="absolute"
+              top={1}
+              right={1}
+              size="xs"
+              bg={removeButtonBg}
+              _hover={{ 
+                bg: removeButtonHoverBg,
+                color: 'red.500'
+              }}
               onClick={() => handleRemoveImage(index)}
-              size="small"
-            >
-              <DeleteIcon />
-            </IconButton>
+              borderRadius="sm"
+            />
           </Box>
         ))}
         
         {images.length < maxImages && (
           <Button
-            variant="outlined"
-            component="label"
-            startIcon={<AddPhotoAlternateIcon />}
-            className="upload-button"
+            as="label"
+            leftIcon={<AddIcon />}
+            variant="outline"
+            w="100px"
+            h="100px"
+            borderStyle="dashed"
+            borderWidth="2px"
+            borderColor={borderColor}
+            bg={bgColor}
+            _hover={{ 
+              bg: hoverBgColor,
+              borderColor: 'blue.300'
+            }}
+            cursor="pointer"
+            display="flex"
+            flexDirection="column"
+            fontSize="sm"
+            fontWeight="normal"
           >
             Tải lên
             <input
@@ -83,11 +153,11 @@ const ImageUploader = ({
             />
           </Button>
         )}
-      </Box>
+      </Flex>
       
-      <Typography variant="caption" color="textSecondary">
+      <Text fontSize="sm" color="gray.500">
         {`Tối đa ${maxImages} ảnh. ${previews.length}/${maxImages} đã tải lên.`}
-      </Typography>
+      </Text>
     </Box>
   );
 };

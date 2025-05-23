@@ -43,7 +43,7 @@ input[type="password"]::-ms-reveal {
   padding: 30px 40px;
   border: 5px solid var(--input-bg);
   box-shadow: var(--shadow);
-  margin: 40px auto;
+  margin: 23px auto;
   transition: 0.3s all;
   display: flex;
   flex-wrap: wrap;

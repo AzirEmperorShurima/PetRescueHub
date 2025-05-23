@@ -1,92 +1,109 @@
 import React from 'react';
 import { 
-  Typography, 
+  Text, 
   Box, 
   Button, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
-  ListItemText,
+  VStack,
+  HStack,
   Divider,
-  Paper
-} from '@mui/material';
-import EmailIcon from '@mui/icons-material/Email';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import EditIcon from '@mui/icons-material/Edit';
-import LogoutIcon from '@mui/icons-material/Logout';
-import SettingsIcon from '@mui/icons-material/Settings';
+  Card,
+  CardBody
+} from '@chakra-ui/react';
+import { 
+  FiMail, FiMapPin, FiCalendar, FiEdit, 
+  FiLogOut, FiSettings 
+} from 'react-icons/fi';
 
 const ProfileActions = ({ user }) => {
   return (
-    <Paper className="profile-sidebar" elevation={0}>
-      <Typography variant="h6" className="sidebar-title">
-        Thông tin cá nhân
-      </Typography>
-      
-      <List>
-        <ListItem className="info-item">
-          <ListItemIcon>
-            <EmailIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText 
-            primary="Email" 
-            secondary={user.email || 'example@petrescuehub.com'} 
-            className="profile-email"
-          />
-        </ListItem>
+    <Card className="profile-sidebar" shadow="none">
+      <CardBody>
+        <Text fontSize="lg" fontWeight="bold" className="sidebar-title" mb={4}>
+          Thông tin cá nhân
+        </Text>
         
-        <ListItem className="info-item">
-          <ListItemIcon>
-            <LocationOnIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText 
-            primary="Địa chỉ" 
-            secondary={user.location || 'TP. Hồ Chí Minh, Việt Nam'} 
-          />
-        </ListItem>
+        <VStack spacing={4} align="stretch">
+          <Box className="info-item">
+            <HStack spacing={3}>
+              <Box color="pink.500">
+                <FiMail size={20} />
+              </Box>
+              <VStack align="flex-start" spacing={0}>
+                <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                  Email
+                </Text>
+                <Text fontSize="sm" className="profile-email">
+                  {user.email || 'example@petrescuehub.com'}
+                </Text>
+              </VStack>
+            </HStack>
+          </Box>
+          
+          <Box className="info-item">
+            <HStack spacing={3}>
+              <Box color="pink.500">
+                <FiMapPin size={20} />
+              </Box>
+              <VStack align="flex-start" spacing={0}>
+                <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                  Địa chỉ
+                </Text>
+                <Text fontSize="sm">
+                  {user.location || 'TP. Hồ Chí Minh, Việt Nam'}
+                </Text>
+              </VStack>
+            </HStack>
+          </Box>
+          
+          <Box className="info-item">
+            <HStack spacing={3}>
+              <Box color="pink.500">
+                <FiCalendar size={20} />
+              </Box>
+              <VStack align="flex-start" spacing={0}>
+                <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                  Tham gia từ
+                </Text>
+                <Text fontSize="sm">
+                  {user.joinDate || 'Tháng 1, 2023'}
+                </Text>
+              </VStack>
+            </HStack>
+          </Box>
+        </VStack>
         
-        <ListItem className="info-item">
-          <ListItemIcon>
-            <CalendarTodayIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText 
-            primary="Tham gia từ" 
-            secondary={user.joinDate || 'Tháng 1, 2023'} 
-          />
-        </ListItem>
-      </List>
-      
-      <Divider className="sidebar-divider" />
-      
-      <div className="profile-actions">
-        <Button 
-          variant="contained" 
-          fullWidth 
-          className="edit-profile-button"
-          startIcon={<EditIcon />}
-        >
-          Chỉnh sửa hồ sơ
-        </Button>
+        <Divider className="sidebar-divider" my={6} />
         
-        <Button 
-          variant="outlined" 
-          fullWidth 
-          startIcon={<SettingsIcon />}
-        >
-          Cài đặt tài khoản
-        </Button>
-        
-        <Button 
-          variant="text" 
-          fullWidth 
-          className="cancel-button"
-          startIcon={<LogoutIcon />}
-        >
-          Đăng xuất
-        </Button>
-      </div>
-    </Paper>
+        <VStack spacing={3} className="profile-actions">
+          <Button 
+            colorScheme="pink"
+            width="full"
+            className="edit-profile-button"
+            leftIcon={<FiEdit />}
+          >
+            Chỉnh sửa hồ sơ
+          </Button>
+          
+          <Button 
+            variant="outline"
+            width="full"
+            leftIcon={<FiSettings />}
+          >
+            Cài đặt tài khoản
+          </Button>
+          
+          <Button 
+            variant="ghost"
+            width="full"
+            className="cancel-button"
+            leftIcon={<FiLogOut />}
+            colorScheme="red"
+          >
+            Đăng xuất
+          </Button>
+        </VStack>
+      </CardBody>
+    </Card>
   );
 };
 

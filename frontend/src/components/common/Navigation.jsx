@@ -13,17 +13,16 @@ const Navigation = () => {
   const t = translations[language];
   const [isSticky, setIsSticky] = useState(false);
   const [isLogoVisible, setIsLogoVisible] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);              // ← Thêm dòng này
+  const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef(null);
   const { user, loading } = useAuth();
   const [showAdoptDropdown, setShowAdoptDropdown] = useState(false);
 
-  // Hiệu ứng hiển thị logo
   useEffect(() => {
     setIsLogoVisible(true);
   }, []);
 
-  const toggleMenu = () => {                                     // ← Thêm hàm này
+  const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
@@ -53,19 +52,6 @@ const Navigation = () => {
           </span>
         </Link>
 
-        {/* ↓ Nút hamburger toggle chỉ hiện ở mobile */}
-        <button 
-          className="navbar-toggler"
-          type="button"
-          onClick={toggleMenu}                                  // ← Gọi toggleMenu
-          aria-controls="navbarNav"
-          aria-expanded={menuOpen}
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-
-        {/* ↓ Thay đổi class collapse để dùng state menuOpen */}
         <div className={`collapse navbar-collapse ${menuOpen ? 'show' : ''}`} id="navbarNav">
           <ul className="navbar-nav mx-auto">
             <li className="nav-item">
@@ -131,8 +117,10 @@ const Navigation = () => {
               </NavLink>
             </li>
           </ul>
+        </div>
 
-          {loading ? (
+        <div>
+        {loading ? (
             <div className="nav-buttons">
               <div className="loading-indicator">Đang tải...</div>
             </div>

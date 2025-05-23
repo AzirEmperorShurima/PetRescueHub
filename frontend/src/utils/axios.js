@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000, // 15 giây timeout
+  // timeout: 15000, // 15 giây timeout
   withCredentials: true, // Gửi cookie với mỗi request
 });
 

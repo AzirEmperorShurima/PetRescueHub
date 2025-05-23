@@ -2,7 +2,7 @@
 .chatbot-button {
   position: fixed;
   bottom: 30px;
-  right: 7px;
+  left: 7px; /* Thay đổi từ right sang left */
   width: 80px;
   height: 80px;
   border-radius: 50%;
@@ -29,7 +29,7 @@
 .chatbot-tooltip {
   position: absolute;
   top: -40px;
-  right: 0;
+  left: 15%;
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 8px 12px;
@@ -51,7 +51,7 @@
   content: '';
   position: absolute;
   bottom: -5px;
-  right: 25px;
+  left: 25px;
   width: 10px;
   height: 10px;
   background-color: rgba(0, 0, 0, 0.8);
@@ -88,22 +88,35 @@
 }
 
 .chatbot-avatar {
-  width: 40px !important;
-  height: 40px !important;
-  margin-right: 15px !important;
-  border: 2px solid white !important;
+  width: 40px;
+  height: 40px;
+  margin-right: 15px;
+  border: 2px solid white;
+  border-radius: 50%;
 }
 
 .chatbot-name {
-  font-weight: 600 !important;
-  color: white !important;
+  font-weight: 600;
+  color: white;
   flex-grow: 1;
-  margin-left: 10px !important;
+  margin-left: 10px;
 }
 
 .chatbot-close-btn {
-  color: white !important;
-  padding: 8px !important;
+  color: white;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.chatbot-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .chatbot-messages {
@@ -132,14 +145,25 @@
 }
 
 .message-avatar {
-  width: 36px !important;
-  height: 36px !important;
-  margin: 0 8px !important;
+  width: 36px;
+  height: 36px;
+  margin: 0 8px;
+  border-radius: 50%;
 }
 
 .user-avatar {
-  background-color: #E91E63 !important;
-  color: white !important;
+  background-color: #E91E63;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.message-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
 }
 
 .message-content {
@@ -161,18 +185,19 @@
 }
 
 .message-text {
-  font-size: 0.95rem !important;
-  line-height: 1.5 !important;
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: #333;
   white-space: pre-wrap;
+  margin: 0;
 }
 
 .message-time {
-  display: block !important;
-  text-align: right !important;
-  margin-top: 5px !important;
-  color: #999 !important;
-  font-size: 0.75rem !important;
+  display: block;
+  text-align: right;
+  margin-top: 5px;
+  color: #999;
+  font-size: 0.75rem;
 }
 
 .message-suggestions {
@@ -182,16 +207,18 @@
   margin-top: 10px;
 }
 
-/* Style for Material UI Chip component */
-.message-suggestions .MuiChip-root {
+.suggestion-tag {
   background-color: #f0f0f0;
   border: 1px solid #E91E63;
   color: #E91E63;
   font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 16px;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.message-suggestions .MuiChip-root:hover {
+.suggestion-tag:hover {
   background-color: rgba(233, 30, 99, 0.1);
 }
 
@@ -245,34 +272,51 @@
   background-color: white;
 }
 
-/* Material UI TextField customization */
-.chatbot-input .MuiOutlinedInput-root {
+.input-group {
+  display: flex;
+  position: relative;
+}
+
+.message-input {
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #e0e0e0;
   border-radius: 25px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.3s;
 }
 
-.chatbot-input .MuiOutlinedInput-notchedOutline {
-  border-color: #e0e0e0;
-}
-
-.chatbot-input .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+.message-input:focus {
   border-color: #E91E63;
 }
 
-.chatbot-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: #E91E63;
-  border-width: 2px;
-}
-
-/* Send button style */
-.chatbot-input .MuiIconButton-root {
+.send-button {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
   color: #E91E63;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.3s;
 }
 
-.chatbot-input .MuiIconButton-root.Mui-disabled {
+.send-button:hover {
+  background-color: rgba(233, 30, 99, 0.1);
+}
+
+.send-button.disabled {
   color: rgba(0, 0, 0, 0.26);
+  cursor: default;
 }
 
-/* New footer section */
 .chatbot-footer {
   padding: 10px 15px;
   background-color: #f9f9f9;
@@ -280,12 +324,12 @@
   text-align: center;
 }
 
-.chatbot-footer .MuiTypography-caption {
+.footer-text {
   color: #777;
   font-size: 0.75rem;
 }
 
-/* Animation classes for Framer Motion */
+/* Animation classes */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -331,21 +375,21 @@
   }
   
   .chatbot-avatar {
-    width: 36px !important;
-    height: 36px !important;
+    width: 36px;
+    height: 36px;
   }
   
   .chatbot-name {
-    font-size: 1rem !important;
+    font-size: 1rem;
   }
   
   .chatbot-messages {
     padding: 15px;
   }
   
-  .message-suggestions .MuiChip-root {
+  .suggestion-tag {
     font-size: 0.8rem;
-    height: 28px;
+    padding: 4px 8px;
   }
   
   .chatbot-input {
@@ -388,4 +432,79 @@
   .chatbot-footer {
     padding: 5px;
   }
+}
+/* Thêm vào cuối file hoặc cập nhật các styles hiện có */
+.chatbot-button {
+  position: fixed;
+  bottom: 30px;
+  left: 7px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(to right, rgba(255, 192, 203, 0.993), rgba(102, 51, 153, 0.33));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  user-select: none; /* Ngăn chọn text khi kéo */
+}
+
+.chatbot-button:active {
+  cursor: grabbing;
+}
+
+.chatbot-icon {
+  color: white;
+  font-size: 36px !important;
+  pointer-events: none; /* Đảm bảo sự kiện chuột không bị icon chặn */
+}
+
+.chatbot-button:active {
+  cursor: grabbing;
+}
+
+.chatbot-button img {
+  pointer-events: none; /* Đảm bảo sự kiện chuột không bị ảnh hưởng bởi hình ảnh */
+}
+
+/* Thêm hiệu ứng pulse tương tự như RescueButton */
+.chatbot-button::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  z-index: -1;
+  opacity: 0;
+  transform: scale(0.8);
+  animation: chatbot-pulse 2s infinite;
+}
+
+@keyframes chatbot-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Cải thiện header của chatbot widget */
+.chatbot-header {
+  cursor: grab;
+  user-select: none;
+}
+
+.chatbot-header:active {
+  cursor: grabbing;
 }

@@ -117,7 +117,7 @@
   .btn-home:active { transform:translateY(-2px); }
   
   /* Footer note */
-  .footer-note { margin-top:2rem; font-size:1rem; color:#555; font-style:italic;
+  .footer-note { margin-top:2rem; font-size:1.3rem; font-weight: 800; color:#D34F81; font-style:unset;
     border-top:1px dashed #ccc; padding-top:1rem;
   }
   

@@ -1,24 +1,27 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Text } from '@chakra-ui/react';
 
 const PostSticker = ({ type }) => {
   const getTypeStyle = () => {
     switch (type) {
       case 'Question':
+      case 'question':
         return {
-          backgroundColor: '#FF9800',
-          color: '#fff'
+          bg: 'orange.400',
+          color: 'white'
         };
       case 'EventPost':
+      case 'event':
         return {
-          backgroundColor: '#4CAF50',
-          color: '#fff'
+          bg: 'green.400',
+          color: 'white'
         };
       case 'ForumPost':
+      case 'post':
       default:
         return {
-          backgroundColor: '#2196F3',
-          color: '#fff'
+          bg: 'blue.400',
+          color: 'white'
         };
     }
   };
@@ -26,10 +29,13 @@ const PostSticker = ({ type }) => {
   const getTypeLabel = () => {
     switch (type) {
       case 'Question':
+      case 'question':
         return 'Câu hỏi';
       case 'EventPost':
+      case 'event':
         return 'Sự kiện';
       case 'ForumPost':
+      case 'post':
       default:
         return 'Bài viết';
     }
@@ -37,18 +43,21 @@ const PostSticker = ({ type }) => {
 
   return (
     <Box
-      sx={{
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        padding: '4px 12px',
-        borderRadius: '4px',
-        ...getTypeStyle(),
-      }}
+      position="absolute"
+      top={2.5}
+      right={2.5}
+      px={3}
+      py={1}
+      borderRadius="md"
+      fontSize="xs"
+      fontWeight="bold"
+      zIndex={1}
+      shadow="sm"
+      {...getTypeStyle()}
     >
-      <Typography variant="caption" fontWeight="bold">
+      <Text fontSize="xs" fontWeight="bold">
         {getTypeLabel()}
-      </Typography>
+      </Text>
     </Box>
   );
 };

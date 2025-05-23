@@ -12,15 +12,15 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        {/* <LanguageProvider> */}
-          {/* <AuthProvider> */}
-            {/* <NotificationProvider> */}
+        <LanguageProvider>
+          <AuthProvider>
+            <NotificationProvider>
               <AppRoutes />
-              {/* <ChatbotWidget /> */}
-              {/* <RescueButton /> */}
-            {/* </NotificationProvider> */}
-          {/* </AuthProvider> */}
-        {/* </LanguageProvider> */}
+              <ChatbotWidget />
+              <RescueButton />
+            </NotificationProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </Router>
     </ErrorBoundary>
   );

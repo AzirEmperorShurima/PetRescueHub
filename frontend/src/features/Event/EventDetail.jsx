@@ -1,21 +1,24 @@
 import React, { useCallback } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Paper, 
-  Box, 
-  Button, 
-  Divider, 
-  IconButton
-} from '@mui/material';
-import { 
-  ArrowBack as ArrowBackIcon,
-  CalendarMonth as CalendarIcon,
-  LocationOn as LocationIcon
-} from '@mui/icons-material';
+import {
+  Container,
+  Heading,
+  Text,
+  Box,
+  Button,
+  Divider,
+  Image,
+  HStack,
+  VStack,
+  Flex,
+  useColorModeValue,
+  Spinner,
+  Center,
+} from '@chakra-ui/react';
+import { FaArrowLeft, FaCalendarAlt, FaMapMarkerAlt, FaThumbtack   } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fDate, fDateTime } from '../../utils/format-time';
 import { useAuth } from '../../components/contexts/AuthContext';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
 
 // Import custom hook
 import { useEventDetail } from '../../components/hooks/useEventDetail';
@@ -23,23 +26,29 @@ import { useEventDetail } from '../../components/hooks/useEventDetail';
 // Import components
 import CommentForm from '../../components/common/interactions/CommentForm';
 import CommentList from '../../components/common/interactions/CommentList';
-import LikeButton from '../../components/common/interactions/LikeButton';
+import Reaction from '../../components/common/interactions/Reaction';
 import ShareButton from '../../components/common/interactions/ShareButton';
 
 const EventDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
+  // Color mode values
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textSecondary = useColorModeValue('gray.600', 'gray.400');
+  const shadowColor = useColorModeValue('lg', 'dark-lg');
+
   // Sử dụng custom hook
-  const { 
-    event, 
-    loading, 
-    liked, 
-    likeCount, 
-    comments, 
-    handleLike, 
-    handleCommentSubmit 
+  const {
+    event,
+    loading,
+    liked,
+    likeCount,
+    comments,
+    handleLike,
+    handleCommentSubmit,
   } = useEventDetail(id);
 
   // Sử dụng useCallback cho hàm điều hướng
@@ -47,11 +56,25 @@ const EventDetail = () => {
     navigate('/events');
   }, [navigate]);
 
+  // Format date with day.js
+  const formatDateTime = (dateString) => {
+    try {
+      return dayjs(dateString).locale('vi').format('DD MMMM YYYY HH:mm');
+    } catch (error) {
+      return 'Không rõ ngày';
+    }
+  };
+
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ py: 4 }}>
-          <Typography>Đang tải thông tin sự kiện...</Typography>
+      <Container maxW="6xl">
+        <Box py={8}>
+          <Center>
+            <VStack spacing={4}>
+              <Spinner size="xl" color="blue.500" />
+              <Text>Đang tải thông tin sự kiện...</Text>
+            </VStack>
+          </Center>
         </Box>
       </Container>
     );
@@ -59,104 +82,146 @@ const EventDetail = () => {
 
   if (!event) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ py: 4 }}>
-          <Typography>Không tìm thấy sự kiện</Typography>
-          <Button 
-            startIcon={<ArrowBackIcon />} 
-            onClick={() => navigate('/events')}
-          >
-            Quay lại danh sách sự kiện
-          </Button>
+      <Container maxW="6xl">
+        <Box py={8}>
+          <VStack spacing={4} align="start">
+            <Text fontSize="lg">Không tìm thấy sự kiện</Text>
+            <Button
+              leftIcon={<FaArrowLeft />}
+              onClick={() => navigate('/events')}
+              colorScheme="blue"
+              variant="outline"
+            >
+              Quay lại danh sách sự kiện
+            </Button>
+          </VStack>
         </Box>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ py: 4 }}>
-        <Button 
-          startIcon={<ArrowBackIcon />} 
+    <Container maxW="6xl">
+      <Box py={8}>
+        <Button
+          leftIcon={<FaArrowLeft />}
           onClick={() => navigate('/events')}
-          sx={{ mb: 2 }}
+          mb={6}
+          variant="ghost"
+          colorScheme="blue"
         >
           Quay lại danh sách sự kiện
         </Button>
-        
-        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+
+        <Box
+          bg={cardBg}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="lg"
+          shadow={shadowColor}
+          p={6}
+          mb={6}
+        >
           {/* Event header */}
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Heading as="h1" size="xl" mb={4}>
             {event.title}
-          </Typography>
-          
+          </Heading>
+
           {/* Event metadata */}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <CalendarIcon sx={{ mr: 1 }} />
-              <Typography variant="body2">
-                {fDateTime(event.startDate)} - {fDateTime(event.endDate)}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <LocationIcon sx={{ mr: 1 }} />
-              <Typography variant="body2">{event.location}</Typography>
-            </Box>
-          </Box>
-          
+          <Flex flexWrap="wrap" gap={6} mb={6}>
+            <HStack spacing={2}>
+              <FaCalendarAlt color="blue" />
+              <Text fontSize="sm" color={textSecondary}>
+                {formatDateTime(event.startDate)} - {formatDateTime(event.endDate)}
+              </Text>
+            </HStack>
+            <HStack spacing={2}>
+              <FaMapMarkerAlt color="blue" />
+              <Text fontSize="sm" color={textSecondary}>
+                {event.location}
+              </Text>
+            </HStack>
+          </Flex>
+
           {/* Event image */}
           {event.imageUrl && (
-            <Box sx={{ mb: 3 }}>
-              <img 
-                src={event.imageUrl} 
-                alt={event.title} 
-                style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '4px' }} 
+            <Box mb={6}>
+              <Image
+                src={event.imageUrl}
+                alt={event.title}
+                w="100%"
+                maxH="400px"
+                objectFit="cover"
+                borderRadius="md"
               />
             </Box>
           )}
-          
+
           {/* Event description */}
-          <Typography variant="body1" paragraph>
+          <Text fontSize="md" lineHeight="tall" mb={6}>
             {event.description}
-          </Typography>
-          
+          </Text>
+
           {/* Event interactions */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <LikeButton 
-                liked={liked} 
-                likeCount={likeCount} 
-                onLike={handleLike} 
+          <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+            <HStack spacing={4}>
+              <Reaction
+                liked={liked}
+                likeCount={likeCount}
+                onLike={handleLike}
               />
               <ShareButton url={window.location.href} title={event.title} />
-            </Box>
-            
+            </HStack>
+
             {event.status === 'upcoming' && (
-              <Button variant="contained" color="primary">
+              <Button colorScheme="blue" size="md">
                 Đăng ký tham gia
               </Button>
             )}
-          </Box>
-        </Paper>
-        
+          </Flex>
+        </Box>
+
         {/* Comments section */}
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
+        <Box
+          bg={cardBg}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="lg"
+          shadow={shadowColor}
+          p={6}
+        >
+          <Heading as="h2" size="md" mb={4}>
             Bình luận ({comments.length})
-          </Typography>
-          
+          </Heading>
+
           {user ? (
-            <CommentForm onSubmit={handleCommentSubmit} />
+            <Box mb={6}>
+              <CommentForm onSubmit={handleCommentSubmit} />
+            </Box>
           ) : (
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              Vui lòng <Button onClick={() => navigate('/auth/login')}>đăng nhập</Button> để bình luận
-            </Typography>
+            <Box mb={6}>
+              <Text fontSize="sm" color={textSecondary}>
+                Vui lòng{' '}
+                <Button
+                  variant="link"
+                  colorScheme="blue"
+                  size="sm"
+                  onClick={() => navigate('/auth/login')}
+                  p={0}
+                  h="auto"
+                  minH="auto"
+                >
+                  đăng nhập
+                </Button>{' '}
+                để bình luận
+              </Text>
+            </Box>
           )}
-          
-          <Divider sx={{ my: 3 }} />
-          
+
+          <Divider mb={6} />
+
           <CommentList comments={comments} />
-        </Paper>
+        </Box>
       </Box>
     </Container>
   );

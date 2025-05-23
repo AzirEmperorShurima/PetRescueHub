@@ -1,71 +1,96 @@
 import React from 'react';
-import { 
-  Typography, 
-  Grid, 
-  Box, 
-  Button
-} from '@mui/material';
-import { motion } from 'framer-motion';
+import { Box, Heading, Text, SimpleGrid, Button, Image, VStack, useColorModeValue } from '@chakra-ui/react';
+import { motion } from 'framer-motion'; // Giữ framer-motion cho hiệu ứng hover
 
-const RescueStories = ({ rescueImages }) => {
+// Dữ liệu mẫu (có thể lấy từ API hoặc props)
+const stories = [
+  {
+    id: 1,
+    title: 'Câu chuyện của Lucky',
+    excerpt: 'Lucky được tìm thấy trong tình trạng bị bỏ rơi bên đường. Sau 3 tháng chăm sóc, Lucky đã tìm được gia đình mới...',
+    image: 'https://via.placeholder.com/400x300?text=Lucky', // Thay bằng URL thực
+  },
+  {
+    id: 2,
+    title: 'Hành trình của Mèo Mun',
+    excerpt: 'Mèo Mun bị bỏ rơi khi chỉ mới 2 tháng tuổi. Nhờ sự giúp đỡ của cộng đồng, Mun đã vượt qua...',
+    image: 'https://via.placeholder.com/400x300?text=Mèo+Mun',
+  },
+  {
+    id: 3,
+    title: 'Phép màu cho Bông',
+    excerpt: 'Bông được tìm thấy trong tình trạng bị thương nặng. Sau nhiều tháng điều trị, Bông đã hồi phục...',
+    image: 'https://via.placeholder.com/400x300?text=Bông',
+  },
+];
+
+const RescueStories = ({ rescueImages = stories.map(s => s.image) }) => {
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('gray.700', 'gray.200');
+  const titleColor = useColorModeValue('pink.600', 'pink.300');
+
   return (
-    <Box className="rescue-stories-section">
-      <Typography variant="h4" className="rescue-section-title">
+    <Box
+      py={{ base: 8, md: 12 }}
+      px={{ base: 4, md: 8 }}
+      bg={useColorModeValue('gray.50', 'gray.900')}
+      borderRadius="lg"
+      boxShadow="md"
+      mx="auto"
+      maxW="7xl"
+    >
+      <Heading
+        as="h2"
+        size="xl"
+        textAlign="center"
+        mb={{ base: 6, md: 10 }}
+        color={titleColor}
+      >
         Câu chuyện cứu hộ
-      </Typography>
-      
-      <Grid container spacing={3} className="rescue-stories-container">
-        <Grid item xs={12} md={4}>
-          <motion.div 
-            className="rescue-story-card"
+      </Heading>
+
+      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 4, md: 6 }}>
+        {stories.map((story, index) => (
+          <motion.div
+            key={story.id}
             whileHover={{ y: -10 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            transition={{ type: 'spring', stiffness: 300 }}
           >
-            <Box className="rescue-story-image" style={{ backgroundImage: `url(${rescueImages[0]})` }} />
-            <Box className="rescue-story-content">
-              <Typography variant="h6" className="rescue-story-title">Câu chuyện của Lucky</Typography>
-              <Typography variant="body2" className="rescue-story-excerpt">
-                Lucky được tìm thấy trong tình trạng bị bỏ rơi bên đường. Sau 3 tháng chăm sóc, Lucky đã tìm được gia đình mới...
-              </Typography>
-              <Button variant="outlined" className="read-more-btn">Đọc tiếp</Button>
-            </Box>
+            <VStack
+              bg={bgColor}
+              borderRadius="md"
+              boxShadow="lg"
+              overflow="hidden"
+              transition="all 0.3s"
+              _hover={{ boxShadow: 'xl' }}
+            >
+              <Image
+                src={rescueImages[index] || story.image}
+                alt={story.title}
+                objectFit="cover"
+                w="full"
+                h={{ base: '200px', md: '250px' }}
+              />
+              <VStack p={4} align="start" spacing={3}>
+                <Heading as="h3" size="md" color={titleColor}>
+                  {story.title}
+                </Heading>
+                <Text fontSize="sm" color={textColor} noOfLines={3}>
+                  {story.excerpt}
+                </Text>
+                <Button
+                  colorScheme="pink"
+                  variant="outline"
+                  size="sm"
+                  _hover={{ bg: 'pink.500', color: 'white' }}
+                >
+                  Đọc tiếp
+                </Button>
+              </VStack>
+            </VStack>
           </motion.div>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <motion.div 
-            className="rescue-story-card"
-            whileHover={{ y: -10 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <Box className="rescue-story-image" style={{ backgroundImage: `url(${rescueImages[1]})` }} />
-            <Box className="rescue-story-content">
-              <Typography variant="h6" className="rescue-story-title">Hành trình của Mèo Mun</Typography>
-              <Typography variant="body2" className="rescue-story-excerpt">
-                Mèo Mun bị bỏ rơi khi chỉ mới 2 tháng tuổi. Nhờ sự giúp đỡ của cộng đồng, Mun đã vượt qua...
-              </Typography>
-              <Button variant="outlined" className="read-more-btn">Đọc tiếp</Button>
-            </Box>
-          </motion.div>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <motion.div 
-            className="rescue-story-card"
-            whileHover={{ y: -10 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <Box className="rescue-story-image" style={{ backgroundImage: `url(${rescueImages[2]})` }} />
-            <Box className="rescue-story-content">
-              <Typography variant="h6" className="rescue-story-title">Phép màu cho Bông</Typography>
-              <Typography variant="body2" className="rescue-story-excerpt">
-                Bông được tìm thấy trong tình trạng bị thương nặng. Sau nhiều tháng điều trị, Bông đã hồi phục...
-              </Typography>
-              <Button variant="outlined" className="read-more-btn">Đọc tiếp</Button>
-            </Box>
-          </motion.div>
-        </Grid>
-      </Grid>
+        ))}
+      </SimpleGrid>
     </Box>
   );
 };

@@ -1,30 +1,29 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Card, 
-  CardContent, 
-  CardActions, 
-  Typography, 
   Box, 
   Avatar, 
-  Chip, 
+  Text, 
+  Image,
+  Badge,
   IconButton,
-  useTheme,
-  alpha
-} from '@mui/material';
+  HStack,
+  VStack,
+  Flex,
+  useColorModeValue,
+  useTheme
+} from '@chakra-ui/react';
 import { 
-  Favorite as FavoriteIcon, 
-  FavoriteBorder as FavoriteBorderIcon,
-  Comment as CommentIcon,
-  Visibility as VisibilityIcon,
-  MoreVert as MoreVertIcon,
-  Bookmark as BookmarkIcon,
-  BookmarkBorder as BookmarkBorderIcon
-} from '@mui/icons-material';
+  FaHeart, 
+  FaRegHeart,
+  FaComment,
+  FaEye,
+  FaEllipsisV,
+  FaBookmark,
+  FaRegBookmark
+} from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import PostSticker from './PostSticker';
-
-// Remove duplicate Card and CardContent imports
 
 const ForumCard = ({ 
   item, 
@@ -36,6 +35,14 @@ const ForumCard = ({
   onClick
 }) => {
   const theme = useTheme();
+  
+  // Color mode values
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textSecondary = useColorModeValue('gray.600', 'gray.400');
+  const tagBg = useColorModeValue('blue.50', 'blue.900');
+  const tagColor = useColorModeValue('blue.600', 'blue.200');
+  const shadowColor = useColorModeValue('lg', 'dark-lg');
   
   // Sử dụng categories được truyền vào hoặc sử dụng categoryObj từ item
   const category = item.categoryObj || (categories && categories.find(cat => cat.id === item.category));
@@ -54,136 +61,188 @@ const ForumCard = ({
   };
 
   return (
-    <Card 
-      sx={{ 
-        mb: 3,
-        position: 'relative', // Thêm position relative
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-        '&:hover': {
-          transform: 'translateY(-5px)',
-          boxShadow: 6,
-        }
+    <Box 
+      bg={cardBg}
+      borderWidth="1px"
+      borderColor={borderColor}
+      borderRadius="lg"
+      shadow="md"
+      mb={6}
+      position="relative"
+      transition="all 0.2s ease-in-out"
+      cursor={onClick ? "pointer" : "default"}
+      _hover={{
+        transform: 'translateY(-5px)',
+        shadow: shadowColor,
       }}
       onClick={onClick ? () => onClick(item.id) : undefined}
     >
-      <PostSticker type={type} /> {/* Thêm PostSticker component */}
-      <CardContent>
-        <Box display="flex" alignItems="center" mb={2}>
+      <PostSticker type={type} />
+      
+      <Box p={4}>
+        {/* Author Section */}
+        <HStack mb={4} spacing={3}>
           <Avatar 
             src={item.author?.avatar} 
-            alt={item.author?.name}
-            sx={{ mr: 1 }}
+            name={item.author?.name}
+            size="sm"
           />
-          <Box>
-            <Typography variant="subtitle2" component="span">
+          <VStack align="start" spacing={0}>
+            <Text fontSize="sm" fontWeight="medium">
               {item.author?.name}
-            </Typography>
-            <Typography variant="caption" display="block" color="text.secondary">
+            </Text>
+            <Text fontSize="xs" color={textSecondary}>
               {formatDate ? formatDate(item.createdAt) : new Date(item.createdAt).toLocaleDateString()}
-            </Typography>
-          </Box>
-          {/* Xóa phần hiển thị category cũ */}
-        </Box>
-        
-        <Link to={getDetailUrl()} style={{ textDecoration: 'none', color: 'inherit' }}>
-          <Typography variant="h6" component="h2" gutterBottom>
+            </Text>
+          </VStack>
+        </HStack>
+
+        {/* Content Section */}
+        <Box as={Link} to={getDetailUrl()} _hover={{ textDecoration: 'none' }}>
+          <Text 
+            fontSize="lg" 
+            fontWeight="semibold" 
+            mb={3}
+            lineHeight="shorter"
+            _hover={{ color: 'blue.500' }}
+          >
             {item.title}
-          </Typography>
+          </Text>
           
-          <Typography variant="body2" color="text.secondary" paragraph>
+          <Text 
+            fontSize="sm" 
+            color={textSecondary} 
+            mb={4}
+            lineHeight="base"
+          >
             {item.content?.substring(0, 150)}
             {item.content?.length > 150 ? '...' : ''}
-          </Typography>
-        </Link>
-        
+          </Text>
+        </Box>
+
+        {/* Image Section */}
         {item.image && (
-          <Box 
-            component="img"
+          <Image
             src={item.image}
             alt={item.title}
-            sx={{ 
-              width: '100%', 
-              borderRadius: 1,
-              maxHeight: 450,
-              objectFit: 'cover',
-              mb: 2
-            }}
+            w="100%"
+            borderRadius="md"
+            maxH="450px"
+            objectFit="cover"
+            mb={4}
           />
         )}
-        
+
+        {/* Tags Section */}
         {item.tags && item.tags.length > 0 && (
-          <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
+          <Flex flexWrap="wrap" gap={2} mb={4}>
             {item.tags.map((tag, index) => (
-              <Chip 
-                key={index} 
-                label={tag} 
-                size="small" 
-                sx={{ 
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  color: theme.palette.primary.main,
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.2),
-                  }
-                }} 
-              />
+              <Badge
+                key={index}
+                px={2}
+                py={1}
+                bg={tagBg}
+                color={tagColor}
+                borderRadius="md"
+                fontSize="xs"
+                fontWeight="medium"
+                _hover={{
+                  bg: useColorModeValue('blue.100', 'blue.800'),
+                  cursor: 'pointer'
+                }}
+              >
+                {tag}
+              </Badge>
             ))}
-          </Box>
+          </Flex>
         )}
-      </CardContent>
-      
-      <CardActions disableSpacing>
-        <Box display="flex" width="100%" justifyContent="space-between">
-          <Box display="flex">
-            <IconButton 
-              aria-label="like" 
+      </Box>
+
+      {/* Actions Section */}
+      <Box 
+        px={4} 
+        pb={4}
+        borderTop="1px"
+        borderColor={borderColor}
+        pt={3}
+      >
+        <Flex justify="space-between" w="100%">
+          <HStack spacing={1}>
+            {/* Like Button */}
+            <IconButton
+              aria-label="like"
+              icon={item.isLiked ? <FaHeart /> : <FaRegHeart />}
+              size="sm"
+              variant="ghost"
+              colorScheme={item.isLiked ? "red" : "gray"}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onToggleLike && onToggleLike(item.id);
               }}
-              color={item.isLiked ? "primary" : "default"}
-            >
-              {item.isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-              <Typography variant="caption" sx={{ ml: 0.5 }}>
-                {item.likes || 0}
-              </Typography>
-            </IconButton>
-            
-            <IconButton aria-label="comments">
-              <CommentIcon />
-              <Typography variant="caption" sx={{ ml: 0.5 }}>
-                {item.comments || 0}
-              </Typography>
-            </IconButton>
-            
-            <IconButton aria-label="views">
-              <VisibilityIcon />
-              <Typography variant="caption" sx={{ ml: 0.5 }}>
-                {item.views || 0}
-              </Typography>
-            </IconButton>
-          </Box>
-          
-          <Box display="flex">
-            <IconButton 
+              rightIcon={
+                <Text fontSize="xs" ml={1}>
+                  {item.likes || 0}
+                </Text>
+              }
+            />
+
+            {/* Comment Button */}
+            <IconButton
+              aria-label="comments"
+              icon={<FaComment />}
+              size="sm"
+              variant="ghost"
+              colorScheme="gray"
+              rightIcon={
+                <Text fontSize="xs" ml={1}>
+                  {item.comments || 0}
+                </Text>
+              }
+            />
+
+            {/* Views Button */}
+            <IconButton
+              aria-label="views"
+              icon={<FaEye />}
+              size="sm"
+              variant="ghost"
+              colorScheme="gray"
+              rightIcon={
+                <Text fontSize="xs" ml={1}>
+                  {item.views || 0}
+                </Text>
+              }
+            />
+          </HStack>
+
+          <HStack spacing={1}>
+            {/* Favorite Button */}
+            <IconButton
               aria-label="favorite"
+              icon={item.isFavorited ? <FaBookmark /> : <FaRegBookmark />}
+              size="sm"
+              variant="ghost"
+              colorScheme={item.isFavorited ? "blue" : "gray"}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onToggleFavorite && onToggleFavorite(item.id);
               }}
-              color={item.isFavorited ? "primary" : "default"}
-            >
-              {item.isFavorited ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-            </IconButton>
-            
-            <IconButton aria-label="more options">
-              <MoreVertIcon />
-            </IconButton>
-          </Box>
-        </Box>
-      </CardActions>
-    </Card>
+            />
+
+            {/* More Options Button */}
+            <IconButton
+              aria-label="more options"
+              icon={<FaEllipsisV />}
+              size="sm"
+              variant="ghost"
+              colorScheme="gray"
+            />
+          </HStack>
+        </Flex>
+      </Box>
+    </Box>
   );
 };
 

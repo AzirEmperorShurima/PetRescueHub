@@ -3,16 +3,29 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "../components/layouts/MainLayout";
 import LoadingScreen from "../components/common/display/LoadingScreen";
 import ProtectedRoute from "../components/guards/ProtectedRoute";
+// Import trực tiếp Home để trang chủ load nhanh hơn
+import Home from "../pages/Home/Home";
 
-// Lazy-load toàn bộ pages/features
+// Thêm một fallback đơn giản
+const SimpleFallback = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    fontSize: '20px'
+  }}>
+    Đang tải...
+  </div>
+);
+
+// Lazy-load các pages/features khác
 const Login = lazy(() => import("../features/Auth/Login"));
 const Register = lazy(() => import("../features/Auth/Register"));
 const ForgotPassword = lazy(() => import("../features/Auth/ForgotPassword"));
 
 const Rescue = lazy(() => import("../pages/Rescue/Rescue"));
 const RescueSuccess = lazy(() => import("../pages/Rescue/RescueSuccess"));
-
-const Home = lazy(() => import("../pages/Home/Home"));
 
 const Forum = lazy(() => import("../pages/Forum/Forum"));
 const PostDetail = lazy(() => import("../features/Forum/PostDetail"));
@@ -32,8 +45,6 @@ const PetGuide = lazy(() => import("../pages/PetGuide/PetGuide"));
 
 const Profile = lazy(() => import("../pages/Profile/Profile"));
 
-// const Chatbot = lazy(() => import("../services/Chatbot.service.js"));
-
 const NotFound = lazy(() => import("../components/common/Error/NotFound"));
 
 const AdminApp = lazy(() => import("../pages/admin/AdminApp"));
@@ -42,13 +53,13 @@ const Terms = lazy(() => import("../pages/Terms/Terms"));
 
 const AppRoutes = () => {
   return (
-    <Suspense fallback={<LoadingScreen />}>
+    <Suspense fallback={<SimpleFallback />}>
       <Routes>
         {/* Main site với MainLayout */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
           
-          {/* Adopt, Donate */}
+          {/* Các route khác */}
           <Route path="findhome" element={<FindHome />} />
           <Route path="adopt" element={<Adopt />} />
           <Route path="donate" element={<Donate />} />

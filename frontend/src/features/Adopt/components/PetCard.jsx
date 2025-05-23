@@ -1,151 +1,337 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  Card,
-  CardMedia,
-  CardContent,
-  Typography,
   Box,
-  Chip,
+  Card,
+  CardBody,
+  CardFooter,
+  Image,
+  Text,
+  Badge,
   Button,
-  CardActions
-} from '@mui/material';
-import {
-  Pets as PetsIcon,
-  Cake as CakeIcon,
-  Male as MaleIcon,
-  Female as FemaleIcon
-} from '@mui/icons-material';
+  VStack,
+  HStack,
+  Icon,
+  useColorModeValue,
+  Tooltip,
+  Tag,
+  TagLabel,
+  TagLeftIcon,
+  Flex,
+  AspectRatio,
+} from '@chakra-ui/react';
+import { 
+  FaHeart, 
+  FaCalendarAlt, 
+  FaUser, 
+  FaAward, 
+  FaEye, 
+  FaMapMarkerAlt 
+} from 'react-icons/fa';
 
-const PetCard = ({ pet, onClick }) => {
-  // Xác định icon giới tính
-  const GenderIcon = pet.gender === 'male' ? MaleIcon : FemaleIcon;
+const PetCard = ({ 
+  pet = {}, 
+  onClick = () => {}, 
+  onFavorite, 
+  isFavorited = false 
+}) => {
+  const [imageError, setImageError] = useState(false);
+  
+  // Early return nếu không có pet data
+  if (!pet || typeof pet !== 'object') {
+    console.warn('PetCard: Invalid pet data provided');
+    return (
+      <Card p={4} bg="gray.50">
+        <Text color="gray.500" textAlign="center">
+          Không có thông tin thú cưng
+        </Text>
+      </Card>
+    );
+  }
 
-  // Xác định màu sắc cho trạng thái
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'available':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'adopted':
-        return 'error';
-      default:
-        return 'default';
-    }
+  // Destructure với default values
+  const {
+    name = 'Chưa có tên',
+    breed = '',
+    image = '',
+    status = 'unknown',
+    gender = 'unknown',
+    age = '',
+    size = '',
+    description = '',
+    location = '',
+    specialNeeds = false
+  } = pet;
+  
+  // Color mode values
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const headingColor = useColorModeValue('gray.800', 'white');
+
+  // Status color mapping
+  const getStatusColorScheme = (status) => {
+    const statusMap = {
+      'available': 'green',
+      'pending': 'orange',
+      'adopted': 'red'
+    };
+    return statusMap[status] || 'gray';
   };
 
-  // Chuyển đổi trạng thái sang tiếng Việt
+  // Status text mapping
   const getStatusText = (status) => {
-    switch (status) {
-      case 'available':
-        return 'Sẵn sàng nhận nuôi';
-      case 'pending':
-        return 'Đang xử lý';
-      case 'adopted':
-        return 'Đã được nhận nuôi';
-      default:
-        return status;
+    const statusTextMap = {
+      'available': '✅ Sẵn sàng nhận nuôi',
+      'pending': '⏳ Đang xử lý',
+      'adopted': '❤️ Đã được nhận nuôi'
+    };
+    return statusTextMap[status] || '❓ Chưa rõ trạng thái';
+  };
+
+  // Gender icon and color
+  const getGenderInfo = (gender) => {
+    const genderMap = {
+      'male': { icon: '♂️', color: 'blue', text: 'Đực' },
+      'female': { icon: '♀️', color: 'pink', text: 'Cái' }
+    };
+    return genderMap[gender] || { icon: '❓', color: 'gray', text: 'Chưa rõ' };
+  };
+
+  // Size mapping
+  const getSizeInfo = (size) => {
+    const sizeMap = {
+      'small': { emoji: '🐕', text: 'Nhỏ' },
+      'medium': { emoji: '🐕', text: 'Trung bình' },
+      'large': { emoji: '🐕', text: 'Lớn' }
+    };
+    return sizeMap[size] || { emoji: '🐾', text: 'Chưa rõ' };
+  };
+
+  const handleImageError = () => {
+    console.warn('Image load error for pet:', name);
+    setImageError(true);
+  };
+
+  const handleCardClick = () => {
+    try {
+      if (typeof onClick === 'function') {
+        onClick(pet);
+      }
+    } catch (error) {
+      console.error('Error in onClick handler:', error);
     }
   };
 
-  // Xử lý lỗi tải ảnh
-  const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/300x200?text=Image+Error';
+  const handleFavoriteClick = (e) => {
+    e.stopPropagation();
+    try {
+      if (typeof onFavorite === 'function') {
+        onFavorite(pet);
+      }
+    } catch (error) {
+      console.error('Error in onFavorite handler:', error);
+    }
   };
+
+  const genderInfo = getGenderInfo(gender);
+  const sizeInfo = getSizeInfo(size);
+  const defaultImage = 'https://via.placeholder.com/400x300?text=🐾+Pet+Image';
+  const fallbackImage = 'https://via.placeholder.com/400x300?text=🐾+No+Image';
 
   return (
     <Card
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'transform 0.3s, box-shadow 0.3s',
-        '&:hover': {
-          transform: 'translateY(-5px)',
-          boxShadow: 6,
-        }
+      bg={cardBg}
+      borderColor={borderColor}
+      borderWidth="1px"
+      shadow="md"
+      borderRadius="xl"
+      overflow="hidden"
+      h="full"
+      display="flex"
+      flexDirection="column"
+      position="relative"
+      _hover={{
+        shadow: 'xl',
+        transform: 'translateY(-4px)',
+        borderColor: 'blue.300',
       }}
+      transition="all 0.3s ease"
+      cursor="pointer"
+      onClick={handleCardClick}
     >
-      <Box sx={{ position: 'relative', paddingTop: '75%', overflow: 'hidden' }}>
-        <CardMedia
-          component="img"
-          image={pet.image || 'https://via.placeholder.com/300x200?text=No+Image'}
-          alt={pet.name}
-          onError={handleImageError}
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-        />
-        <Chip
-          label={getStatusText(pet.status)}
-          color={getStatusColor(pet.status)}
-          size="small"
-          sx={{
-            position: 'absolute',
-            top: 10,
-            right: 10,
-            zIndex: 1
-          }}
-        />
+      {/* Image Container */}
+      <Box position="relative" w="full" bg="gray.100">
+        <AspectRatio ratio={4/3}>
+          <Image
+            src={imageError ? fallbackImage : (image || defaultImage)}
+            alt={`Ảnh của ${name}`}
+            objectFit="cover"
+            w="full"
+            h="full"
+            onError={handleImageError}
+            fallbackSrc={fallbackImage}
+            loading="lazy"
+          />
+        </AspectRatio>
+
+        {/* Status Badge */}
+        <Badge
+          position="absolute"
+          top={3}
+          right={3}
+          colorScheme={getStatusColorScheme(status)}
+          variant="solid"
+          borderRadius="full"
+          px={3}
+          py={1}
+          fontSize="xs"
+          fontWeight="bold"
+          shadow="md"
+        >
+          {getStatusText(status)}
+        </Badge>
+
+        {/* Favorite Button */}
+        {onFavorite && (
+          <Tooltip label={isFavorited ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}>
+            <Box
+              position="absolute"
+              top={3}
+              left={3}
+              as="button"
+              onClick={handleFavoriteClick}
+              bg="white"
+              borderRadius="full"
+              p={2}
+              shadow="md"
+              _hover={{
+                bg: 'gray.50',
+                transform: 'scale(1.1)',
+              }}
+              transition="all 0.2s"
+              aria-label={isFavorited ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
+            >
+              <Icon
+                as={FaHeart}
+                w={4}
+                h={4}
+                color={isFavorited ? 'red.500' : 'gray.400'}
+              />
+            </Box>
+          </Tooltip>
+        )}
+
+        {/* Location Badge */}
+        {location && (
+          <Badge
+            position="absolute"
+            bottom={3}
+            left={3}
+            bg="blackAlpha.700"
+            color="white"
+            borderRadius="full"
+            px={2}
+            py={1}
+            fontSize="xs"
+          >
+            <HStack spacing={1}>
+              <Icon as={FaMapMarkerAlt} w={3} h={3} />
+              <Text>{location}</Text>
+            </HStack>
+          </Badge>
+        )}
       </Box>
 
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" component="h2" gutterBottom>
-          {pet.name}
-        </Typography>
+      <CardBody flex="1" p={4}>
+        <VStack spacing={3} align="stretch">
+          {/* Pet Name and Type */}
+          <Box>
+            <Text
+              fontSize="xl"
+              fontWeight="bold"
+              color={headingColor}
+              mb={1}
+              noOfLines={1}
+              title={name} // Tooltip khi hover
+            >
+              {name}
+            </Text>
+            {breed && (
+              <Text 
+                fontSize="sm" 
+                color={textColor} 
+                noOfLines={1}
+                title={breed}
+              >
+                {breed}
+              </Text>
+            )}
+          </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <GenderIcon fontSize="small" color={pet.gender === 'male' ? 'primary' : 'secondary'} />
-          <Typography variant="body2" sx={{ ml: 1 }}>
-            {pet.gender === 'male' ? 'Đực' : 'Cái'}
-          </Typography>
-        </Box>
+          {/* Pet Details Tags */}
+          <Flex wrap="wrap" gap={2}>
+            {/* Gender Tag */}
+            <Tag size="sm" colorScheme={genderInfo.color} variant="subtle">
+              <TagLabel>{genderInfo.icon} {genderInfo.text}</TagLabel>
+            </Tag>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <CakeIcon fontSize="small" />
-          <Typography variant="body2" sx={{ ml: 1 }}>
-            {pet.age}
-          </Typography>
-        </Box>
+            {/* Age Tag */}
+            {age && (
+              <Tag size="sm" colorScheme="purple" variant="subtle">
+                <TagLeftIcon as={FaCalendarAlt} />
+                <TagLabel>{age}</TagLabel>
+              </Tag>
+            )}
 
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <PetsIcon fontSize="small" />
-          <Typography variant="body2" sx={{ ml: 1 }}>
-            {pet.breed}
-          </Typography>
-        </Box>
+            {/* Size Tag */}
+            {size && (
+              <Tag size="sm" colorScheme="teal" variant="subtle">
+                <TagLabel>{sizeInfo.emoji} {sizeInfo.text}</TagLabel>
+              </Tag>
+            )}
+          </Flex>
 
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            mt: 2,
-            display: '-webkit-box',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical'
-          }}
-        >
-          {pet.description}
-        </Typography>
-      </CardContent>
+          {/* Description */}
+          {description && (
+            <Text
+              fontSize="sm"
+              color={textColor}
+              noOfLines={3}
+              lineHeight="1.4"
+              title={description} // Full text on hover
+            >
+              {description}
+            </Text>
+          )}
 
-      <CardActions>
+          {/* Special Tags */}
+          {specialNeeds && (
+            <Tag size="sm" colorScheme="orange" variant="outline">
+              <TagLeftIcon as={FaAward} />
+              <TagLabel>Cần chăm sóc đặc biệt</TagLabel>
+            </Tag>
+          )}
+        </VStack>
+      </CardBody>
+
+      <CardFooter p={4} pt={0}>
         <Button
-          size="small"
-          variant="contained"
-          fullWidth
-          onClick={() => onClick(pet)}
+          w="full"
+          colorScheme="blue"
+          variant="solid"
+          onClick={handleCardClick}
+          leftIcon={<Icon as={FaEye} />}
+          _hover={{
+            transform: 'translateY(-1px)',
+            shadow: 'md',
+          }}
+          transition="all 0.2s"
+          borderRadius="lg"
+          isDisabled={!onClick || typeof onClick !== 'function'}
         >
           Xem chi tiết
         </Button>
-      </CardActions>
+      </CardFooter>
     </Card>
   );
 };

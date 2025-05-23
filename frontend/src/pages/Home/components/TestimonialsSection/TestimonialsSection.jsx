@@ -1,81 +1,108 @@
-import React from 'react';
-import { Container, Grid, Typography, Box, Card, CardContent, Avatar, Rating } from '@mui/material';
-import styles from './TestimonialsSection.module.css';
+import React from "react";
+import { 
+  Container, 
+  Grid, 
+  GridItem, 
+  Heading, 
+  Text, 
+  Box, 
+  Card, 
+  CardBody, 
+  Avatar, 
+  Flex, 
+  Stack,
+  Icon
+} from "@chakra-ui/react";
+import { FaStar } from "react-icons/fa";
+import styles from "./TestimonialsSection.module.css";
+
+// Component Rating tự tạo để thay thế Rating của MUI
+const Rating = ({ value, max = 5 }) => {
+  return (
+    <Flex>
+      {[...Array(max)].map((_, index) => (
+        <Icon 
+          key={index} 
+          as={FaStar} 
+          color={index < value ? "yellow.400" : "gray.300"} 
+          mr={1}
+        />
+      ))}
+    </Flex>
+  );
+};
 
 const TestimonialsSection = ({ testimonials = [] }) => {
-  // Nếu không có dữ liệu testimonials, sử dụng dữ liệu mẫu
-  const defaultTestimonials = [
-    {
-      id: 1,
-      content: 'Pet Rescue Hub đã giúp tôi tìm được một người bạn bốn chân tuyệt vời. Cảm ơn đội ngũ đã kết nối chúng tôi!',
-      name: 'Nguyễn Văn A',
-      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-      rating: 5
-    },
-    {
-      id: 2,
-      content: 'Tôi rất ấn tượng với sự nhiệt tình và chuyên nghiệp của các tình nguyện viên. Họ thực sự quan tâm đến từng thú cưng.',
-      name: 'Trần Thị B',
-      avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-      rating: 5
-    },
-    {
-      id: 3,
-      content: 'Nền tảng dễ sử dụng và cộng đồng rất thân thiện. Tôi đã tham gia làm tình nguyện viên và đó là trải nghiệm tuyệt vời!',
-      name: 'Lê Văn C',
-      avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-      rating: 4
-    }
-  ];
-
-  const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTestimonials;
-
   return (
-    <section className={styles.testimonials}>
-      <Container className={styles.testimonials__container}>
-        <Box textAlign="center" mb={6}>
-          <Typography variant="h2" className={styles.testimonials__title}>
-            Đánh giá từ cộng đồng
-          </Typography>
-          <Typography variant="subtitle1" className={styles.testimonials__subtitle}>
-            Những chia sẻ từ người nhận nuôi và tình nguyện viên
-          </Typography>
+    <Box as="section" py={10} bg="gray.50" className={styles.testimonials}>
+      <Container maxW="container.xl">
+        <Box textAlign="center" mb={10}>
+          <Heading as="h2" size="xl" mb={3} className={styles.testimonials__title}>
+            Đánh Giá Từ Cộng Đồng
+          </Heading>
+          <Text fontSize="lg" color="gray.600" className={styles.testimonials__subtitle}>
+            Những chia sẻ từ người dùng đã tham gia vào cộng đồng Pet Rescue Hub
+          </Text>
         </Box>
-        
-        <Grid container spacing={4}>
-          {displayTestimonials.map((testimonial) => (
-            <Grid item lg={4} md={6} sm={12} key={testimonial.id}>
-              <Card className={styles.testimonials__card}>
-                <CardContent className={styles.testimonials__cardContent}>
-                  <Typography className={styles.testimonials__content}>
-                    {testimonial.content}
-                  </Typography>
-                  
-                  <Box className={styles.testimonials__author}>
+
+        <Grid 
+          templateColumns={{ 
+            base: "1fr", 
+            md: "repeat(2, 1fr)", 
+            lg: "repeat(3, 1fr)" 
+          }} 
+          gap={6}
+        >
+          {testimonials.map((testimonial) => (
+            <GridItem key={testimonial.id}>
+              <Card 
+                h="100%" 
+                boxShadow="md" 
+                borderRadius="lg" 
+                overflow="hidden"
+                className={styles.testimonials__card}
+              >
+                <CardBody>
+                  <Rating value={testimonial.rating} />
+                  <Text 
+                    mt={4} 
+                    fontSize="md" 
+                    className={styles.testimonials__content}
+                  >
+                    "{testimonial.content}"
+                  </Text>
+                  <Flex mt={4} align="center">
                     <Avatar 
                       src={testimonial.avatar} 
-                      alt={testimonial.name}
+                      name={testimonial.name} 
+                      size="md" 
+                      mr={3}
                       className={styles.testimonials__avatar}
                     />
-                    <Box className={styles.testimonials__info}>
-                      <Typography className={styles.testimonials__name}>
+                    <Stack spacing={0}>
+                      <Text 
+                        fontWeight="bold" 
+                        fontSize="md"
+                        className={styles.testimonials__name}
+                      >
                         {testimonial.name}
-                      </Typography>
-                      <Rating 
-                        value={testimonial.rating} 
-                        readOnly 
-                        size="small"
-                        className={styles.testimonials__rating}
-                      />
-                    </Box>
-                  </Box>
-                </CardContent>
+                      </Text>
+                      <Text 
+                        fontSize="sm" 
+                        color="gray.600"
+                        className={styles.testimonials__role}
+                      >
+                        {testimonial.role}
+                      </Text>
+                    </Stack>
+                  </Flex>
+                </CardBody>
               </Card>
-            </Grid>
+            </GridItem>
           ))}
         </Grid>
       </Container>
-    </section>
+    </Box>
   );
 };
 

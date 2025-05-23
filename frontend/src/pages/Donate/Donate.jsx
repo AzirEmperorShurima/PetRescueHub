@@ -1,30 +1,26 @@
 import React, { useEffect } from 'react';
 import {
   Container,
-  Typography,
+  Heading,
   Grid,
-  Snackbar,
-  Alert,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
+  useBreakpointValue,
+  useToast,
+  Box,
+  VStack,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import './Donate.css';
-// Import custom hooks
-// Import custom hooks
 import { useDonation } from '../../components/hooks/useDonation';
-// Import components
 import DonationInfo from './components/DonationInfo';
 import AnimalShowcase from './components/AnimalShowcase';
 import PaymentMethods from './components/PaymentMethods';
 import RescueStories from './components/RescueStories';
 
+// Motion components
+const MotionBox = motion(Box);
+const MotionVStack = motion(VStack);
+
 const Donate = () => {
-  // Use theme for responsive design
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  // Use the custom hook to manage all donation-related state and logic
   const {
     copySuccess,
     activeTab,
@@ -36,108 +32,183 @@ const Donate = () => {
     handleCopy,
     handleChangeTab,
     setCopySuccess,
-    setCurrentImageIndex
+    setCurrentImageIndex,
   } = useDonation();
- 
-  // Animation variants with responsiveness in mind
+
+  // Theme colors
+  const bgGradient = useColorModeValue(
+    'linear(to-br, blue.50, teal.50, green.50)',
+    'linear(to-br, gray.900, teal.900, blue.900)'
+  );
+  const headingColor = useColorModeValue('teal.600', 'teal.200');
+
+  // Responsive values
+  const staggerChildren = useBreakpointValue({ base: 0.15, md: 0.2, lg: 0.25 });
+  const containerPadding = useBreakpointValue({ base: 4, md: 6, lg: 8 });
+  const spacing = useBreakpointValue({ base: 6, md: 8, lg: 10 });
+
+  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: isMobile ? 0.2 : 0.3,
-        delayChildren: 0.2
-      }
-    }
+        staggerChildren: staggerChildren,
+        delayChildren: 0.3,
+        duration: 0.6,
+      },
+    },
   };
- 
+
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { 
+      y: 30, 
+      opacity: 0,
+      scale: 0.95
+    },
     visible: {
       y: 0,
       opacity: 1,
-      transition: { type: "spring", stiffness: 100 }
-    }
+      scale: 1,
+      transition: { 
+        type: 'spring', 
+        stiffness: 100,
+        damping: 15,
+        duration: 0.6
+      },
+    },
   };
 
-  // Cleanup function for any event listeners or timers
+  const headingVariants = {
+    hidden: { 
+      y: -20, 
+      opacity: 0,
+      scale: 0.9
+    },
+    visible: {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      transition: { 
+        type: 'spring', 
+        stiffness: 120,
+        damping: 20,
+        duration: 0.8
+      },
+    },
+  };
+
+  // Toast notification
+  const toast = useToast();
   useEffect(() => {
-    return () => {
-      // Cleanup logic here if needed
-    };
-  }, []);
+    if (copySuccess) {
+      toast({
+        title: 'Thành công!',
+        description: 'Đã sao chép thông tin vào clipboard',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+        position: 'top-right',
+        variant: 'subtle',
+      });
+      const timer = setTimeout(() => setCopySuccess(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [copySuccess, setCopySuccess, toast]);
 
   return (
-    <Container 
-      maxWidth={false} 
-      className="donate-container" 
-      sx={{ 
-        px: { xs: 2, sm: 3, md: 5 }, 
-        maxWidth: '1600px', 
-        mx: 'auto',
-        py: { xs: 3, md: 5 } // Add responsive padding
-      }}
+    <Box
+      minH="100vh"
+      bgGradient={bgGradient}
+      py={containerPadding}
     >
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="donate-content-wrapper"
+      <Container
+        maxW="1400px"
+        px={containerPadding}
       >
-        <motion.div variants={itemVariants} className="donate-header">
-          <Typography variant="h2" component="h1" className="donate-title">
-            Chia Sẻ Yêu Thương
-          </Typography>
-        </motion.div>
-       
-        <Grid container spacing={{ xs: 2, md: 4 }} className="donate-content">
-          {/* Donation information section */}
-          <Grid item xs={12} md={6}>
-            <motion.div variants={itemVariants}>
-              <DonationInfo rescueStats={rescueStats} />
-            </motion.div>
-          </Grid>
-         
-          {/* Animal showcase section */}
-          <Grid item xs={12} md={6}>
-            <motion.div variants={itemVariants}>
-              <AnimalShowcase
-                rescueImages={rescueImages}
-                currentImageIndex={currentImageIndex}
-                setCurrentImageIndex={setCurrentImageIndex}
-              />
-            </motion.div>
-          </Grid>
-        </Grid>
-       
-        {/* Payment methods section */}
-        <motion.div variants={itemVariants}>
-          <PaymentMethods
-            activeTab={activeTab}
-            handleChangeTab={handleChangeTab}
-            qrCodes={qrCodes}
-            accountDetails={accountDetails}
-            handleCopy={handleCopy}
-          />
-        </motion.div>
-       
-        {/* Rescue stories section */}
-        <motion.div variants={itemVariants}>
-          <RescueStories rescueImages={rescueImages} />
-        </motion.div>
-      </motion.div>
-     
-      <Snackbar 
-        open={copySuccess} 
-        autoHideDuration={2000} 
-        onClose={() => setCopySuccess(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="success" sx={{ width: '100%' }}>
-          Đã sao chép vào clipboard!
-        </Alert>
-      </Snackbar>
-    </Container>
+        <MotionVStack
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          spacing={spacing}
+          align="stretch"
+        >
+          {/* Header Section */}
+          <MotionBox 
+            variants={headingVariants}
+            textAlign="center"
+          >
+            <Heading
+              as="h1"
+              size={{ base: 'xl', md: '2xl', lg: '3xl' }}
+              color={headingColor}
+              fontWeight="bold"
+              letterSpacing="tight"
+              mb={4}
+            >
+              🐾 Chia Sẻ Yêu Thương 🐾
+            </Heading>
+            <Box
+              w={{ base: '60px', md: '80px' }}
+              h="4px"
+              bg="teal.400"
+              mx="auto"
+              borderRadius="full"
+              bgGradient="linear(to-r, teal.400, blue.400)"
+            />
+          </MotionBox>
+
+          {/* Main Content Grid */}
+          <MotionBox variants={itemVariants}>
+            <Grid
+              templateColumns={{ 
+                base: '1fr', 
+                lg: '1fr 1fr' 
+              }}
+              gap={{ base: 6, md: 8 }}
+              alignItems="start"
+            >
+              <MotionBox
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+              >
+                <DonationInfo rescueStats={rescueStats} />
+              </MotionBox>
+              
+              <MotionBox
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+              >
+                <AnimalShowcase
+                  rescueImages={rescueImages}
+                  currentImageIndex={currentImageIndex}
+                  setCurrentImageIndex={setCurrentImageIndex}
+                />
+              </MotionBox>
+            </Grid>
+          </MotionBox>
+
+          {/* Payment Methods */}
+          <MotionBox 
+            variants={itemVariants}
+            id="payment-methods"
+          >
+            <PaymentMethods
+              activeTab={activeTab}
+              handleChangeTab={handleChangeTab}
+              qrCodes={qrCodes}
+              accountDetails={accountDetails}
+              handleCopy={handleCopy}
+            />
+          </MotionBox>
+
+          {/* Rescue Stories */}
+          <MotionBox variants={itemVariants}>
+            <RescueStories rescueImages={rescueImages} />
+          </MotionBox>
+        </MotionVStack>
+      </Container>
+    </Box>
   );
 };
 

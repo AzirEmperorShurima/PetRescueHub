@@ -1,5 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Container, Typography, Box, Grid, Card, CardMedia, CardContent, Avatar, Button } from '@mui/material';
+import { 
+  Container, 
+  Box, 
+  Grid, 
+  GridItem, 
+  Heading, 
+  Text, 
+  Card, 
+  CardBody, 
+  Image, 
+  Avatar, 
+  Button, 
+  Flex, 
+  Stack 
+} from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { testimonials, recentRescues } from '../../../../mocks';
 import styles from './SuccessStories.module.css';
@@ -37,23 +51,23 @@ const SuccessStories = () => {
   }), []);
 
   return (
-    <section className={styles.successStories}>
-      <Container maxWidth="lg">
+    <Box as="section" className={styles.successStories}>
+      <Container maxW="container.lg">
         <Box className={styles.successStories__header}>
-          <Typography variant="h2" className={styles.successStories__title}>
+          <Heading as="h2" className={styles.successStories__title}>
             Câu Chuyện Thành Công
-          </Typography>
-          <Typography variant="subtitle1" className={styles.successStories__subtitle}>
+          </Heading>
+          <Text className={styles.successStories__subtitle}>
             Những câu chuyện cảm động về hành trình cứu hộ và tìm mái ấm mới cho thú cưng
-          </Typography>
+          </Text>
         </Box>
         
-        <Grid container spacing={6}>
+        <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
           {/* Recent Rescues */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="h5" className={styles.successStories__subsectionTitle}>
+          <GridItem>
+            <Heading as="h5" size="md" className={styles.successStories__subsectionTitle}>
               Cứu Hộ Gần Đây
-            </Typography>
+            </Heading>
             
             <motion.div 
               variants={containerVariants}
@@ -64,29 +78,29 @@ const SuccessStories = () => {
               {recentRescues.map((rescue) => (
                 <motion.div key={rescue.id} variants={itemVariants}>
                   <Card className={styles.successStories__rescueCard}>
-                    <Grid container>
-                      <Grid item xs={4}>
-                        <CardMedia
-                          component="img"
-                          height="100%"
-                          image={rescue.image}
+                    <Grid templateColumns={{ base: "1fr", sm: "1fr 2fr" }}>
+                      <GridItem>
+                        <Image
+                          src={rescue.image}
                           alt={rescue.title}
+                          objectFit="cover"
+                          height="100%"
                           className={styles.successStories__rescueImage}
                         />
-                      </Grid>
-                      <Grid item xs={8}>
-                        <CardContent className={styles.successStories__rescueContent}>
-                          <Typography variant="h6" className={styles.successStories__rescueTitle}>
+                      </GridItem>
+                      <GridItem>
+                        <CardBody className={styles.successStories__rescueContent}>
+                          <Heading as="h6" size="sm" className={styles.successStories__rescueTitle}>
                             {rescue.title}
-                          </Typography>
-                          <Typography variant="body2" className={styles.successStories__rescueDescription}>
+                          </Heading>
+                          <Text fontSize="sm" className={styles.successStories__rescueDescription}>
                             {rescue.description}
-                          </Typography>
-                          <Typography variant="caption" className={styles.successStories__rescueDate}>
+                          </Text>
+                          <Text fontSize="xs" className={styles.successStories__rescueDate}>
                             {rescue.date}
-                          </Typography>
-                        </CardContent>
-                      </Grid>
+                          </Text>
+                        </CardBody>
+                      </GridItem>
                     </Grid>
                   </Card>
                 </motion.div>
@@ -94,64 +108,64 @@ const SuccessStories = () => {
               
               <Box className={styles.successStories__viewAllContainer}>
                 <Button 
-                  variant="outlined" 
-                  color="primary" 
+                  variant="outline" 
+                  colorScheme="blue" 
                   className={styles.successStories__viewAllBtn}
                 >
                   Xem tất cả câu chuyện cứu hộ
                 </Button>
               </Box>
             </motion.div>
-          </Grid>
+          </GridItem>
           
           {/* Testimonial Slider */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="h5" className={styles.successStories__subsectionTitle}>
+          <GridItem>
+            <Heading as="h5" size="md" className={styles.successStories__subsectionTitle}>
               Chia Sẻ Từ Người Nhận Nuôi
-            </Typography>
+            </Heading>
             
-            <div className={styles.successStories__testimonialSlider}>
+            <Box className={styles.successStories__testimonialSlider}>
               {testimonials.map((testimonial, index) => (
-                <div 
+                <Box 
                   key={testimonial.id} 
                   className={`${styles.successStories__testimonial} ${index === activeTestimonial ? styles.successStories__testimonial_active : ''}`}
                 >
-                  <div className={styles.successStories__testimonialContent}>
-                    <p>{testimonial.content}</p>
-                  </div>
+                  <Box className={styles.successStories__testimonialContent}>
+                    <Text>{testimonial.content}</Text>
+                  </Box>
                   
-                  <div className={styles.successStories__testimonialAuthor}>
+                  <Flex className={styles.successStories__testimonialAuthor}>
                     <Avatar 
                       src={testimonial.avatar} 
-                      alt={testimonial.name}
+                      name={testimonial.name}
                       className={styles.successStories__testimonialAvatar}
                     />
-                    <div className={styles.successStories__testimonialInfo}>
-                      <Typography variant="subtitle1" className={styles.successStories__testimonialName}>
+                    <Stack spacing={0} className={styles.successStories__testimonialInfo}>
+                      <Text fontWeight="bold" className={styles.successStories__testimonialName}>
                         {testimonial.name}
-                      </Typography>
-                      <Typography variant="body2" className={styles.successStories__testimonialRole}>
+                      </Text>
+                      <Text fontSize="sm" className={styles.successStories__testimonialRole}>
                         {testimonial.role}
-                      </Typography>
-                    </div>
-                  </div>
-                </div>
+                      </Text>
+                    </Stack>
+                  </Flex>
+                </Box>
               ))}
               
-              <div className={styles.successStories__testimonialIndicators}>
+              <Flex className={styles.successStories__testimonialIndicators}>
                 {testimonials.map((_, index) => (
-                  <span 
+                  <Box 
                     key={index} 
                     className={`${styles.successStories__testimonialIndicator} ${index === activeTestimonial ? styles.successStories__testimonialIndicator_active : ''}`}
                     onClick={() => setActiveTestimonial(index)}
                   />
                 ))}
-              </div>
-            </div>
-          </Grid>
+              </Flex>
+            </Box>
+          </GridItem>
         </Grid>
       </Container>
-    </section>
+    </Box>
   );
 };
 
