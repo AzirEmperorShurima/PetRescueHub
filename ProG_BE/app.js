@@ -5,85 +5,44 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import { connectToDatabase } from './mongoConfig.js';
-import authRouter from './src/router/Auth.routes.js';
-import forumRoutes from './src/router/Forum.routes.js';
-import userRoute from './src/router/User.routes.js';
-import petRoute from './src/router/Pet.routes.js';
 import { apiLimiter } from './src/Middlewares/ExpressRateLimit.js';
-import { avatarConfig } from './config.js';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import adminRouter from './src/router/Admin.routes.js';
-import volunteerRouter from './src/router/Volunteer.routes.js';
-import PetRescueRouter from './src/router/PetRescue.routes.js';
 import { scheduleCleanupJob } from './src/Jobs/Delete_not_Activate_Account_BullMQ.js';
-import privateRoute from './src/Controller/private/Private.routes.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import apiRouter from './src/router/api.routes.js';
 
 const app = express();
 
-connectToDatabase()
-scheduleCleanupJob()
-app.set("env", "development");
-app.set("port", process.env.PORT || 4000)
-// app.set('trust proxy', true)
-app.set('json spaces', 4);
-app.set('case sensitive routing', true) // phân biệt Api và api
-app.set('strict routing', true) // phân biệt /user và /user/
+connectToDatabase();
+scheduleCleanupJob();
 
-// app.use(express.static('public')) // thư mục chứa file tĩnh (image, video, ...)
+// App settings
+app.set("env", "development");
+app.set("port", process.env.PORT || 4000);
+app.set('json spaces', 4);
+// app.set('case sensitive routing', true);
+// app.set('strict routing', true);
+
+// Middlewares
 app.use(cors({
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-}))
-app.use(compression())
-app.use(cookieParser())
+}));
+app.use(compression());
+app.use(cookieParser());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(apiLimiter);
 
-app.use('/api/auth', authRouter);
-app.use('/api/forum', forumRoutes)
-app.use('/api/user', userRoute)
-app.use('/api/volunteer', volunteerRouter)
-app.use('/api/pet', petRoute)
-app.use('/api/admin', adminRouter)
-app.use('/api/PetRescue', PetRescueRouter)
 
-app.use('/api/root', express.static(path.join(__dirname, 'src/root/image')));
-//Test
-app.use('/api/private/test', privateRoute)
-// app.get('/api/avatar', (req, res) => {
-//     const { type } = req.query;
+app.use('/api', apiRouter);
 
-//     if (!['male', 'female', 'neutral'].includes(type)) {
-//         return res.status(400).json({
-//             status: 'error',
-//             message: 'Vui lòng cung cấp type hợp lệ (male, female, neutral)',
-//         });
-//     }
-
-//     const avatarPath = `/api${avatarConfig.defaultAvatars[type]}`;
-//     return res.status(200).json({ avatarUrl: avatarPath });
-// });
 app.use('/api/*', (req, res) => {
     res.status(404).json({
         status: 'error',
         path: req.path,
         error: 'Endpoint not found',
-    });
-});
-
-// Định tuyến API gốc (chỉ cho /api)
-app.get('/api', (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        message: 'API for User service',
     });
 });
 

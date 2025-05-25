@@ -3,14 +3,12 @@ import { ForumPost, PostModel } from "../models/PostSchema.js";
 import * as forumService from "../services/Forum/Forum.service.js";
 import * as commentService from "../services/Comments/Comments.service.js"
 import * as reactionService from "../services/Reaction/Reaction.service.js";
-import { getUserFieldFromToken } from "../services/User/User.service.js";
 import { CommentModel } from "../models/CommentsSchema.js";
 import Reaction from "../models/ReactionSchema.js";
-import { COOKIE_PATHS } from "../../config.js";
 
 export const getForumPosts = async (req, res) => {
     try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -48,7 +46,7 @@ export const getForumPosts = async (req, res) => {
 
 
 export const getPostById = async (req, res) => {
-    const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+    const userId = req.user._id
     if (!userId) {
         return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
     }
@@ -63,7 +61,7 @@ export const getPostById = async (req, res) => {
 
 export const updateForumPost = async (req, res) => {
     try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -132,64 +130,60 @@ export const updateForumPost = async (req, res) => {
 };
 
 export const createNewForumPost = async (req, res) => {
+    console.log("req.body", req.body);
+    console.log("req.uploadedImageUrls", req.uploadedImageUrls);
     try {
         const {
-            title, content, tags,
-            postType, questionDetails, lostPetInfo,
+            title, content, tags, postType,
+            questionDetails, lostPetInfo,
             eventStartDate, eventEndDate,
             eventLongitude, eventLatitude, eventLocation
         } = req.body;
 
         const imgUrl = req.uploadedImageUrls || [];
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
-
+        const userId = req.user?._id;
+        console.log("data resolving :"
+            , title, content, tags, postType,
+            questionDetails, lostPetInfo,
+            eventStartDate, eventEndDate,
+            eventLongitude, eventLatitude, eventLocation
+            , imgUrl, userId
+        );
         if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để đăng bài" });
         }
 
-        if (!title || !content) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Tiêu đề và nội dung không được để trống" });
+        if (!title || !content || !postType) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Thiếu thông tin bắt buộc" });
         }
 
-        const postTypeHandlers = {
-            'Question': () => questionDetails && { questionDetails },
-            'FindLostPetPost': () => lostPetInfo && { lostPetInfo },
-            'EventPost': () => ({
-                ...(eventStartDate && { eventStartDate: new Date(eventStartDate) }),
-                ...(eventEndDate && { eventEndDate: new Date(eventEndDate) }),
-                ...(eventLongitude && { eventLongitude }),
-                ...(eventLatitude && { eventLatitude }),
-                ...(eventLocation && { eventLocation })
-            })
+        const baseData = {
+            title: title.trim(),
+            content: content.trim(),
+            tags: Array.isArray(tags) ? tags : tags ? [tags] : [],
+            imgUrl: Array.isArray(imgUrl) ? imgUrl : [],
+            author: userId,
+            postStatus: "public"
         };
 
-        const additionalFields = postTypeHandlers[postType] ? postTypeHandlers[postType]() || {} : {};
+        const postTypeData = {
+            'Question': { questionDetails },
+            'FindLostPetPost': { lostPetInfo },
+            'EventPost': {
+                ...(eventStartDate && { eventStartDate: new Date(eventStartDate) }),
+                ...(eventEndDate && { eventEndDate: new Date(eventEndDate) }),
+                ...(eventLongitude && { eventLongitude: Number(eventLongitude) }),
+                ...(eventLatitude && { eventLatitude: Number(eventLatitude) }),
+                ...(eventLocation && { eventLocation })
+            }
+        };
 
-        switch (postType) {
-            case 'Question':
-                if (questionDetails) additionalFields.questionDetails = questionDetails;
-                break;
-            case 'FindLostPetPost':
-                if (lostPetInfo) additionalFields.lostPetInfo = lostPetInfo;
-                break;
-            case 'EventPost':
-                if (eventStartDate) additionalFields.eventStartDate = new Date(eventStartDate);
-                if (eventEndDate) additionalFields.eventEndDate = new Date(eventEndDate);
-                if (eventLongitude) additionalFields.eventLongitude = eventLongitude;
-                if (eventLatitude) additionalFields.eventLatitude = eventLatitude;
-                if (eventLocation) additionalFields.eventLocation = eventLocation;
-                break;
-        }
+        const fullPostData = {
+            ...baseData,
+            ...(postTypeData[postType] || {})
+        };
 
-        const result = await forumService.createPost(
-            title,
-            content,
-            tags,
-            imgUrl,
-            userId,
-            postType,
-            additionalFields
-        );
+        const result = await forumService.createPost(postType, fullPostData);
 
         if (result.success) {
             return res.status(StatusCodes.CREATED).json({
@@ -199,13 +193,13 @@ export const createNewForumPost = async (req, res) => {
             });
         }
 
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        return res.status(StatusCodes.BAD_REQUEST).json({
             success: false,
-            message: result.message || "Lỗi trong quá trình tạo bài viết"
+            message: result.message || "Lỗi khi tạo bài viết"
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("❌ Lỗi controller:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Lỗi server khi đăng bài"
@@ -213,10 +207,12 @@ export const createNewForumPost = async (req, res) => {
     }
 };
 
+
+
 export const addComment = async (req, res) => {
     try {
         const { postId, content } = req.body;
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -241,7 +237,7 @@ export const addComment = async (req, res) => {
 export const replyComment = async (req, res) => {
     try {
         const { postId, content, parentComment } = req.body;
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -269,7 +265,7 @@ export const replyComment = async (req, res) => {
 // lấy danh sách comment(đã phân trang) của 1 bài post 
 export const getCommentsByPost = async (req, res) => {
     try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -308,7 +304,7 @@ export const getCommentsByPost = async (req, res) => {
 
 // Lấy danh sách reply comments theo commentId của comment cha
 export const getRepliesByParent = async (req, res) => {
-    const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+    const userId = req.user._id
     if (!userId) {
         return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
     }
@@ -349,7 +345,7 @@ export const getRepliesByParent = async (req, res) => {
 export const deleteComment = async (req, res) => {
     try {
         const { commentId } = req.params;
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -376,7 +372,7 @@ export const updateComment = async (req, res) => {
     try {
         const { commentId } = req.params;
         const { content } = req.body;
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -404,62 +400,108 @@ export const updateComment = async (req, res) => {
 export const handlerReaction = async (req, res) => {
     try {
         const { targetId, reactionType, targetType } = req.body;
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id;
+        
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
+        
         if (!reactionType) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Loại reaction không được để trống' });
         }
+        
         if (!targetId) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Target ID không được để trống' });
+        }
+        
+        if (!targetType) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Target Type không được để trống' });
         }
 
         const validTargetTypes = Object.keys(PostModel.discriminators || {}).concat(['Post', 'Comment']);
         if (!validTargetTypes.includes(targetType)) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: `Target type không hợp lệ, phải là một trong: ${validTargetTypes.join(', ')}` });
         }
+        
         const validReactionTypes = Reaction.schema.paths.reactionType.enumValues;
         if (!validReactionTypes.includes(reactionType)) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: `Loại reaction không hợp lệ, phải là một trong: ${validReactionTypes.join(', ')}` });
         }
 
-        const newReaction = await reactionService.addOrUpdateReaction(userId, targetType, targetId, reactionType);
-        if (!newReaction) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi trong quá trình thêm reaction" });
+        const result = await reactionService.addOrUpdateReaction({ userId, targetType, targetId, reactionType });
+        
+        if (!result || !result.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+                message: result?.message || "Lỗi trong quá trình xử lý reaction" 
+            });
         }
-        res.status(StatusCodes.CREATED).json({ message: "Đã thêm reaction", reaction: newReaction });
+        
+        // Trả về response tùy theo action đã thực hiện
+        switch (result.action) {
+            case 'created':
+                return res.status(StatusCodes.CREATED).json({ 
+                    success: true,
+                    message: "Đã thêm reaction", 
+                    reaction: result.reaction,
+                    action: 'created'
+                });
+                
+            case 'updated':
+                return res.status(StatusCodes.OK).json({ 
+                    success: true,
+                    message: "Đã cập nhật loại reaction", 
+                    reaction: result.reaction,
+                    oldReactionType: result.oldReactionType,
+                    action: 'updated'
+                });
+                
+            case 'removed':
+                return res.status(StatusCodes.OK).json({ 
+                    success: true,
+                    message: "Đã hủy reaction", 
+                    reactionType: result.reactionType,
+                    action: 'removed'
+                });
+                
+            default:
+                return res.status(StatusCodes.OK).json({ 
+                    success: true,
+                    message: "Đã xử lý reaction", 
+                    result
+                });
+        }
     } catch (error) {
-        console.error(error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
+        console.error("Lỗi trong handlerReaction:", error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+            success: false,
+            message: error.message || "Lỗi server" 
+        });
     }
 };
 
-export const getReactionsByPost = async (req, res) => {
+// Thêm API endpoint mới để lấy reaction của người dùng cho một đối tượng
+export const getUserReaction = async (req, res) => {
     try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const { targetType, targetId } = req.params;
+        const userId = req.user._id;
+        
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
-        const { postId, targetId } = req.params;
-        if (!postId) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "PostId không được để trống" });
+        
+        const result = await reactionService.getUserReactionService({ userId, targetType, targetId });
+        
+        if (!result.success) {
+            return res.status(StatusCodes.OK).json(result);
         }
-        if (!targetId) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "TargetId không được để trống" });
-        }
-        const reactionCount = await reactionService.getReactionsService({ targetType: "Post", targetId: targetId });
-        if (!reactionCount || Object.keys(reactionCount).length === 0) {
-            return res.status(StatusCodes.NOT_FOUND).json({ message: "Không có reaction nào" });
-        }
-        res.status(StatusCodes.OK).json({
-            message: "Lấy thông tin reaction thành công",
-            reactionCount: reactionCount,
-        });
-
+        
+        return res.status(StatusCodes.OK).json(result);
     } catch (error) {
-        console.error(error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
+        console.error("Lỗi trong getUserReaction:", error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+            success: false,
+            message: error.message || "Lỗi server" 
+        });
     }
 };
 
@@ -471,7 +513,7 @@ export const getReactionsByPost = async (req, res) => {
 */
 export const getUserInteractedPosts = async (req, res) => {
     try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -497,5 +539,38 @@ export const getUserInteractedPosts = async (req, res) => {
             error: error.message,
         });
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi server khi lấy danh sách bài viết' });
+    }
+};
+
+
+export const deleteForumPost = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        if (!userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Bạn cần đăng nhập để thực hiện hành động này"
+            });
+        }
+
+        const postId = req.params.post_id;
+        const result = await forumService.deletePost(postId, userId);
+
+        if (!result.success) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                message: result.message
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Xóa bài viết thành công"
+        });
+
+    } catch (error) {
+        console.error("Error in deleteForumPost:", error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Lỗi server khi xóa bài viết"
+        });
     }
 };

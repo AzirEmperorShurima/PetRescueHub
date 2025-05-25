@@ -2,13 +2,12 @@ import { Server } from "socket.io";
 import http from "http";
 import NotificationSchema, { createNotificationModel } from "./src/models/NotificationSchema.js";
 import User from "./src/models/user.js";
+import { redisClient } from './src/Config/redis.client.js';
 
 
 const server = http.createServer();
 const io = new Server(server, {
     cors: { origin: process.env.CLIENT_URL || 'http://localhost:3000' },
-    pingTimeout: 10000,
-    pingInterval: 5000
 });
 io.Notification = createNotificationModel(io);
 const onlineUsers = new Map();
@@ -37,8 +36,12 @@ const broadcastToRoom = (roomId, event, data, except = null) => {
 };
 
 io.on("connection", (socket) => {
-    // const clientKey = socket.handshake.auth.privateKey;
-    const clientKey = socket.handshake.headers['privatekey'];
+    const clientKey = socket.handshake.auth.privateKey;
+    // const clientKey = socket.handshake.headers['privatekey'];
+    console.log('clientKey: ', clientKey);
+    console.log('process.env.PRIVATE_KEY_SOCKET: ', process.env.PRIVATE_KEY_SOCKET);
+    console.log('clientKey!== process.env.PRIVATE_KEY_SOCKET: ', clientKey!== process.env.PRIVATE_KEY_SOCKET);
+    console.log('clientKey: ', clientKey);
     if (!clientKey || clientKey !== process.env.PRIVATE_KEY_SOCKET) {
         console.error(`[${new Date().toISOString()}] Unauthorized connection attempt: ${socket.id}`);
         socket.disconnect(true);
@@ -229,9 +232,10 @@ export const startSocketServer = (port) => {
         console.log('\x1b[32m%s\x1b[0m', '┌──────────────────────────────────────────┐');
         console.log('\x1b[32m%s\x1b[0m', '│           Socket Server Started           │');
         console.log('\x1b[32m%s\x1b[0m', '├──────────────────────────────────────────┤');
-        console.log('\x1b[32m%s\x1b[0m', `│ Time: ${new Date().toISOString()}    │`);
+        console.log('\x1b[32m%s\x1b[0m', `│ Time: ${new Date().toISOString()}           │`);
         console.log('\x1b[32m%s\x1b[0m', `│ Port: ${port}                            │`);
         console.log('\x1b[32m%s\x1b[0m', '└──────────────────────────────────────────┘');
     });
 };
 export default io;
+// startSocketServer(8080)

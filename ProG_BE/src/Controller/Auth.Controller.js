@@ -6,7 +6,6 @@ import { getCookies } from '../Middlewares/Cookies.js';
 import Role from '../models/Role.js';
 import Notification from '../models/NotificationSchema.js'
 import { _encrypt } from '../utils/_crypto_.js';
-import { redisClient } from '../Cache/User_Cache.js';
 import { otpGenerator } from '../services/Otp/createOTP.js';
 import { sendMailForgotPassword, sendMailNotification, sendMailService } from '../services/sendMailService/nodeMailer.service.js';
 import dayjs from 'dayjs';
@@ -14,6 +13,7 @@ import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import { getUserFieldFromToken } from '../services/User/User.service.js';
 import mongoose from 'mongoose';
+import { redisClient } from '../Config/redis.client.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);

@@ -2,14 +2,14 @@ import { StatusCodes } from "http-status-codes";
 import { COOKIE_PATHS, TOKEN_TYPE } from "../../config.js";
 import { getUserFieldFromToken } from "../services/User/User.service.js";
 import User from "../models/user.js";
-import { redisClient } from "../Cache/User_Cache.js";
+import { redisClient } from "../Config/redis.client.js";
 
 export const requestVolunteer = async (req, res) => {
     try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
-        const userEmail = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'email');
-        const roles = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'roles');
-        const tokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "tokenType");
+        const userId = req.user._id;
+        const userEmail = req.user.email;
+        const roles = req.user.roles;
+        const tokenType = req.token_verified.tokenType
 
         if (!userId || !userEmail || !roles || tokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized: Access Denied You must be login to use this resource " });

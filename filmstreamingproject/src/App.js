@@ -1,9 +1,9 @@
-import React, { useState, useEffect, } from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './Context/AuthContext';
 import LOGIN from './components/Auth/Login';
 import HEADER from './components/Header/Header';
-import ProtectedRoute from './router/Private/PrivateRouter'
+import ProtectedRoute from './router/Private/PrivateRouter';
 import './reset1.css';
 import LOADER from './components/loader/loader';
 import HamsterLoader from './components/loader/HamsterLoader';
@@ -17,6 +17,10 @@ import CreateVideoContent from './components/Media/CreateVideoContent';
 import Register from './components/Auth/Register/Register';
 import EmptyPage from './components/EmptyPage';
 import VideoCall from './api/videocall';
+// import Notification from './components/Notification'; // Import Notification
+// import { registerUser } from './socket'; // Import socket logic
+import Notification from './components/Notification/Notification';
+
 function App() {
   const [isNotFound, setIsNotFound] = useState(false);
   const [mode, setMode] = useState(() => {
@@ -30,27 +34,16 @@ function App() {
     localStorage.setItem('mode', newMode ? 'dark' : 'light');
   };
 
-  // useEffect(() => {
-  //   const a = document.getElementById('wrapper');
-    
-  //   if (mode) {
-  //     a.classList.add('dark-mode');
-  //     a.classList.remove('light-mode');
-  //   } else {
-  //     a.classList.add('light-mode');
-  //     a.classList.remove('dark-mode');
-  //   }
-  // }, [mode]);
-
   const fetchData = async () => {
     setLoading(true);
-    // Giả sử việc tải dữ liệu mất 2 giây
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setLoading(false);
   };
+
   useEffect(() => {
     fetchData();
   }, []);
+
   const videos = [
     { id: '1', title: 'Video 1', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
     { id: '2', title: 'Video 2', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
@@ -64,28 +57,23 @@ function App() {
     { id: '11', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
     { id: '12', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
     { id: '13', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-
   ];
-  // const location = useLocation();
-  // useEffect(() => {
-  //   if (location.pathname === '*' || location.pathname === '/404') {
-  //     setIsNotFound(true);
-  //   } else {
-  //     setIsNotFound(false);
-  //   }
-  // }, [location]);
 
   return (
     <Router>
       <AuthProvider>
-        <div className={`App App-Container ${mode?'dark-mode':"light-mode"}`} id='wrapper'>
+        <div className={`App App-Container ${mode ? 'dark-mode' : 'light-mode'}`} id="wrapper">
           <AuthContext.Consumer>
             {({ auth, logout }) => (
               <>
-
-                <HEADER user={auth?.user} onLogout={logout} Authorization={auth?.Authorization} Authentication={true} />
-                <SIDEBAR mode={mode} handleToggle={handleDarkLightToogleSwitch}></SIDEBAR>
-                <div className='main-body' id='main'>
+                <HEADER
+                  user={auth?.user}
+                  onLogout={logout}
+                  Authorization={auth?.Authorization}
+                  Authentication={true}
+                />
+                <SIDEBAR mode={mode} handleToggle={handleDarkLightToogleSwitch} />
+                <div className="main-body" id="main">
                   {loading ? (
                     <>
                       <div className="loader-container">
@@ -96,31 +84,33 @@ function App() {
                       </div>
                     </>
                   ) : (
-                    <Routes>
-                      <Route exact path='/' element={<EmptyPage />}></Route>
-                      <Route path="/products/action/createvideocontent" element={<ProtectedRoute element={CreateVideoContent} />} />
-                      <Route path='/Auth/register' element={<Register />}></Route>
-                      <Route path="/listVideo/:id" element={<VideoDetail videos={videos} />} />
-                      <Route path="/Auth/login" element={<LOGIN />} />
-                      <Route path="/listVideo" element={<VideoList videos={videos} />}></Route>
-                      <Route path="/callVideo" element={<VideoCall />}></Route>
-                      <Route path='*' element={<NotFound Auth={false} />}></Route>
-                    </Routes>)
-                  }
-
+                    <>
+                      {/* Thêm Notification component */}
+                      {auth?.user?._id && <Notification userId={auth.user._id} />}
+                      <Routes>
+                        <Route exact path="/" element={<EmptyPage />} />
+                        <Route
+                          path="/products/action/createvideocontent"
+                          element={<ProtectedRoute element={CreateVideoContent} />}
+                        />
+                        <Route path="/Auth/register" element={<Register />} />
+                        <Route path="/listVideo/:id" element={<VideoDetail videos={videos} />} />
+                        <Route path="/Auth/login" element={<LOGIN />} />
+                        <Route path="/listVideo" element={<VideoList videos={videos} />} />
+                        <Route path="/callVideo" element={<VideoCall />} />
+                        <Route path="*" element={<NotFound Auth={false} />} />
+                      </Routes>
+                    </>
+                  )}
                 </div>
-                <Footer darkLight={mode}></Footer>
-
+                <Footer darkLight={mode} />
               </>
             )}
-
           </AuthContext.Consumer>
         </div>
-
       </AuthProvider>
     </Router>
   );
-
 }
 
 export default App;

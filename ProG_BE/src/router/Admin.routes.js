@@ -11,42 +11,62 @@ import {
 import { checkAdminLogin, isAdmin } from "../Middlewares/Check_is_Admin.js";
 import { validatePasswordStrength } from "../Middlewares/validatePasswordStrength.js";
 import { loginHandler } from "../Controller/Auth.Controller.js";
+import { verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware } from "../utils/auth/authUtils.js";
 
-const adminRouter = Router()
+const adminRouter = Router();
+
+adminRouter.use(verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware)
+adminRouter.use(isAdmin);
+
 
 adminRouter.get("/", (req, res) => {
-    console.log('Received request at /api/admin');
-    res.status(StatusCodes.OK).json({ message: "Welcome to Admin page" })
-})
-adminRouter.get("/v1", async (req, res) => {
-    console.log('Received request at /api/admin/v1');
+    res.status(StatusCodes.OK).json({
+        status: 'success',
+        message: "Chào mừng đến với trang quản trị",
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Routes cho API v1
+adminRouter.get("/v1", (req, res) => {
     res.status(200).json({
-        message: 'Welcome to Admin API Version 1.0',
+        message: 'Chào mừng đến với Admin API Version 1.0',
         ip: req.ip,
         status: 'success',
         timestamp: new Date().toISOString()
     });
 });
 
-adminRouter.get("/v2", async (req, res) => {
-    console.log('Received request at /api/admin/v2');
+// Routes cho API v2
+adminRouter.get("/v2", (req, res) => {
     res.status(200).json({
-        message: 'Welcome to Admin API Version 2.0',
+        message: 'Chào mừng đến với Admin API Version 2.0',
         ip: req.ip,
         status: 'success',
         timestamp: new Date().toISOString()
     });
 });
-adminRouter.post('/private-access/admin/login', [validatePasswordStrength, checkAdminLogin], loginHandler);
 
-adminRouter.get("/Get/list-users", [isAdmin], getUsers)
-adminRouter.get("/Get/v1/list-volunteers", [isAdmin], getVolunteers)
-adminRouter.get("/Get/v2/list-volunteers", [isAdmin], _getVolunteers)
+adminRouter.post(
+    '/auth/login',
+    [validatePasswordStrength, checkAdminLogin],
+    loginHandler
+);
 
-adminRouter.post("/Volunteer/v1/accept", [isAdmin], acceptApproveVolunteer)
-adminRouter.post("/Volunteer/v1/reject", [isAdmin], rejectVolunteerRequest)
-adminRouter.post("/Volunteer/v1/revoke", [isAdmin], revokeVolunteerRole)
+// Quản lý người dùng
+adminRouter.route('/users')
+    .get(getUsers)
+    .delete(deleteUser);
 
-adminRouter.delete("/Delete/user", [isAdmin], deleteUser)
+// API v1 - Quản lý tình nguyện viên
+adminRouter.get('/v1/volunteers', getVolunteers);
 
-export default adminRouter
+// API v2 - Quản lý tình nguyện viên
+adminRouter.get('/v2/volunteers', _getVolunteers);
+
+// Quản lý yêu cầu tình nguyện viên (v1)
+adminRouter.post('/v1/volunteers/requests/accept', acceptApproveVolunteer);
+adminRouter.post('/v1/volunteers/requests/reject', rejectVolunteerRequest);
+adminRouter.post('/v1/volunteers/requests/revoke', revokeVolunteerRole);
+
+export default adminRouter;

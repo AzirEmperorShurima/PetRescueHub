@@ -43,11 +43,21 @@ const rescueMissionHistorySchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'in_progress', 'completed', 'cancelled'],
+        enum: ['pending', 'in_progress', 'completed', 'cancelled', 'timeout'],
         default: 'pending',
     },
     notes: {
         type: String,
+    },
+    timeoutAt: {
+        type: Date,
+    },
+    isLocked: {
+        type: Boolean,
+        default: false
+    },
+    lockExpiresAt: {
+        type: Date
     }
 }, {
     timestamps: true,

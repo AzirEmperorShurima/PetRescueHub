@@ -190,7 +190,7 @@
 //     next();
 // };
 import { StatusCodes } from "http-status-codes";
-import { redisClient } from "../Cache/User_Cache.js";
+import { redisClient } from "../Config/redis.client.js";
 import User from "../models/user.js";
 import Role from "../models/Role.js";
 

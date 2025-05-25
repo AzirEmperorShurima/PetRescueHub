@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { requestVolunteer, volunteerUpdateStatus } from "../Controller/Volunteer.Controller.js";
+import { isVolunteer } from "../Middlewares/check_is_volunteer.js";
+import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
 
 const volunteerRouter = Router();
 
@@ -75,7 +77,10 @@ volunteerRouter.get("/v2", async (req, res) => {
         });
     }
 });
+volunteerRouter.use(checkUserAuth)
 volunteerRouter.post("/v1/requesting/grow-up/volunteer", requestVolunteer)
-volunteerRouter.post("/v1/updating/volunteer/status", volunteerUpdateStatus)
+
+// volunteerRouter.use(isVolunteer)
+volunteerRouter.post("/v1/updating/volunteer/status", isVolunteer, volunteerUpdateStatus)
 
 export default volunteerRouter;
