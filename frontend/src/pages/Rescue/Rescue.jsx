@@ -40,7 +40,7 @@ import { useAuth } from '../../components/contexts/AuthContext';
 import axios from 'axios';
 import './Rescue.css';
 import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
-
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 const Rescue = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -514,6 +514,7 @@ const Rescue = () => {
           </GridItem>
         </Grid>
       </form>
+      <ScrollToTopButton />
     </Container>
   );
 };

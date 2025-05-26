@@ -30,6 +30,7 @@ import ForumCard from '../../features/Forum/components/ForumCard';
 import ForumSearch from '../../features/Forum/components/ForumSearch';
 import ForumActions from '../../features/Forum/components/ForumActions';
 import { useForum } from '../../components/hooks/useForum';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import './Forum.css';
 
 const Forum = () => {
@@ -56,8 +57,8 @@ const Forum = () => {
     loading,
     posts,
     questions,
-    events,
-    findLostPet,
+    eventspost: eventspost,
+    findLostPet: findlostpetpost,
     tabValue,
     searchTerm,
     filterAnchorEl,
@@ -79,8 +80,10 @@ const Forum = () => {
   const safeCategories = categories || [];
   const safePosts = posts || [];
   const safeQuestions = questions || [];
-  const safeEvents = events || [];
-  const safeFindPet = findLostPet || [];
+  const safeEvents = eventspost || [];
+  const safeFindPet = findlostpetpost || [];
+
+  const allPosts = [...safePosts, ...safeQuestions, ...safeEvents, ...safeFindPet];
 
   // Event handlers
   const handleSearchChange = (e) => {
@@ -190,7 +193,7 @@ const Forum = () => {
         {showCreateQuestion && (
           <CreateQuestion onClose={handleCloseCreateForms} />
         )}
-        
+
         {!showCreatePost && !showCreateQuestion && (
           <>
             <Box className="forum-header animate-fadeIn" textAlign="center" mb={8}>
@@ -201,7 +204,7 @@ const Forum = () => {
                 Chia sẻ kinh nghiệm, đặt câu hỏi và tham gia các sự kiện về thú cưng
               </Text>
             </Box>
-
+            <ForumSearch />
             <Grid templateColumns={{ base: "1fr", md: "300px 1fr" }} gap={6}>
               {/* Sidebar */}
               <GridItem>
@@ -247,7 +250,7 @@ const Forum = () => {
                           />
                         </Box>
                       </Box>
-                      
+
                       <Divider />
 
                       {/* Stats Section */}
@@ -268,44 +271,33 @@ const Forum = () => {
                             <Text fontWeight="semibold">Sự kiện:</Text>
                             <Text>{safeEvents.length}</Text>
                           </HStack>
+                          <HStack justify="space-between">
+                            <Text fontWeight="semibold">Tìm thú đi lạc:</Text>
+                            <Text>{safeFindPet.length}</Text>
+                          </HStack>
                         </VStack>
                       </Box>
                     </VStack>
                   </CardBody>
                 </Card>
               </GridItem>
-              
+
               {/* Main content */}
               <GridItem>
                 <Box className="forum-main">
-                  {/* Search and filter - commented out as in original */}
-                  {/* <ForumSearch
-                    searchTerm={searchTerm}
-                    onSearchChange={handleSearchChange}
-                    filterAnchorEl={filterAnchorEl}
-                    onFilterClick={handleFilterClick}
-                    onFilterClose={handleFilterClose}
-                    onSortChange={handleSortChange}
-                    onCategoryChange={handleCategoryChange}
-                    sortBy={sortBy}
-                    categoryFilter={categoryFilter}
-                    categories={safeCategories}
-                    displayStyle="horizontal"
-                  /> */}
-
                   {/* Tabs */}
-                  <Tabs 
-                    index={tabValue} 
-                    onChange={handleTabChange} 
-                    variant="line" 
+                  <Tabs
+                    index={tabValue}
+                    onChange={handleTabChange}
+                    variant="line"
                     colorScheme="blue"
                     mb={6}
                   >
                     <TabList borderBottom="1px" borderColor={borderColor}>
-                      <Tab>Bài viết ({safePosts.length})</Tab>
-                      <Tab>Câu hỏi ({safeQuestions.length})</Tab>
-                      <Tab>Sự kiện ({safeEvents.length})</Tab>
-                      <Tab>Thú đi lạc ({safeFindPet.length})</Tab>
+                      <Tab>Bài viết</Tab>
+                      <Tab>Câu hỏi</Tab>
+                      <Tab>Sự kiện</Tab>
+                      <Tab>Thú đi lạc</Tab>
                     </TabList>
 
                     <TabPanels>
@@ -314,16 +306,16 @@ const Forum = () => {
                         {loading ? (
                           <ForumSkeleton />
                         ) : (
-                          <VStack spacing={4} className="forum-posts">
-                            {safePosts.length > 0 ? (
-                              safePosts.map(post => (
+                          <VStack spacing={1} className="forum-posts">
+                            {allPosts.length > 0 ? (
+                              allPosts.map(post => (
                                 <ForumCard
                                   key={post._id}
                                   item={post}
                                   type={post.postType}
                                   categories={safeCategories}
-                                  onToggleLike={() => handleToggleLike(post._id, 'post')}
-                                  onToggleFavorite={() => handleToggleFavorite(post._id, 'post')}
+                                  onToggleLike={() => handleToggleLike(post._id)}
+                                  onToggleFavorite={() => handleToggleFavorite(post._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/post/${post._id}`)}
                                 />
@@ -348,10 +340,10 @@ const Forum = () => {
                                 <ForumCard
                                   key={question._id}
                                   item={question}
-                                  type="question"
+                                  type={question.postType}
                                   categories={safeCategories}
-                                  onToggleLike={() => handleToggleLike(question._id, 'question')}
-                                  onToggleFavorite={() => handleToggleFavorite(question._id, 'question')}
+                                  onToggleLike={() => handleToggleLike(question._id)}
+                                  onToggleFavorite={() => handleToggleFavorite(question._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/question/${question._id}`)}
                                 />
@@ -376,10 +368,10 @@ const Forum = () => {
                                 <ForumCard
                                   key={event._id}
                                   item={event}
-                                  type="event"
+                                  type={event.postType}
                                   categories={safeCategories}
-                                  onToggleLike={() => handleToggleLike(event._id, 'event')}
-                                  onToggleFavorite={() => handleToggleFavorite(event._id, 'event')}
+                                  onToggleLike={() => handleToggleLike(event._id)}
+                                  onToggleFavorite={() => handleToggleFavorite(event._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/event/${event._id}`)}
                                 />
@@ -404,10 +396,10 @@ const Forum = () => {
                                 <ForumCard
                                   key={findPet._id}
                                   item={findPet}
-                                  type="findLostPet"
+                                  type={findPet.postType}
                                   categories={safeCategories}
-                                  onToggleLike={() => handleToggleLike(findPet._id, 'findLostPet')}
-                                  onToggleFavorite={() => handleToggleFavorite(findPet._id, 'findLostPet')}
+                                  onToggleLike={() => handleToggleLike(findPet._id)}
+                                  onToggleFavorite={() => handleToggleFavorite(findPet._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/findLostPet/${findPet._id}`)}
                                 />
@@ -427,6 +419,7 @@ const Forum = () => {
             </Grid>
           </>
         )}
+        <ScrollToTopButton />
       </Container>
     </Box>
   );

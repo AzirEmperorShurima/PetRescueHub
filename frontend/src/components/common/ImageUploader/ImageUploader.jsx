@@ -31,7 +31,7 @@ const ImageUploader = ({
   onUpload,
   onRemove,
   maxImages = 5,
-  label = "Hình ảnh",
+  label = "",
   required = false,
   acceptTypes = "image/*"
 }) => {

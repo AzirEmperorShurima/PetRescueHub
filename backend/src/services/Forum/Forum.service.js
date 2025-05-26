@@ -209,34 +209,21 @@ export const getPostById = async (id) => {
  * @param {String} postType - Loại bài viết (mặc định là "ForumPost")
  * @returns {Promise<Object>} - Bài viết mới được tạo
  */
-export const createPost = async (title, content, tags, imgUrl, userId, postType = "ForumPost", additionalFields = {}) => {
+export const createPost = async (postType, postData) => {
     try {
-        if (!title?.trim() || !content?.trim() || !userId) {
-            return { success: false, message: "Thiếu thông tin cần thiết" };
+        const PostSubModel = PostModel.discriminators[postType];
+
+        if (!PostSubModel) {
+            return { success: false, message: `Loại bài viết "${postType}" không hợp lệ.` };
         }
 
-        const normalizedTags = Array.isArray(tags) ? tags : tags ? [tags] : [];
-        const normalizedImgUrl = Array.isArray(imgUrl) ? imgUrl : imgUrl ? [imgUrl] : [];
-
-        // Tạo object chứa thông tin cơ bản của bài viết
-        const postData = {
-            title: title.trim(),
-            content: content.trim(),
-            author: new mongoose.Types.ObjectId(userId),
-            tags: normalizedTags,
-            imgUrl: normalizedImgUrl,
-            postType,
-            postStatus: "public",
-            ...additionalFields 
-        };
-
-        const newPost = new PostModel(postData);
+        const newPost = new PostSubModel(postData);
         await newPost.save();
 
-        return { success: true, message: "Đăng bài thành công!", post: newPost };
+        return { success: true, post: newPost };
     } catch (error) {
         console.error("❌ Lỗi khi tạo bài viết:", error);
-        return { success: false, message: "Lỗi service server khi đăng bài", error };
+        return { success: false, message: "Lỗi khi tạo bài viết", error };
     }
 };
 

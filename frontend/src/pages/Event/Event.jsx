@@ -33,7 +33,7 @@ import {
   FaArrowRight
 } from 'react-icons/fa';
 import './Event.css';
-
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 // Thay đổi import để sử dụng dữ liệu mock từ file events.js
 import { events } from '../../mocks/events';
 
@@ -448,6 +448,7 @@ const Event = () => {
           </Box>
         )}
       </Container>
+      <ScrollToTopButton />
     </Box>
   );
 };

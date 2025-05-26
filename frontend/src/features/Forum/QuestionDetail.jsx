@@ -1,34 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Paper, 
-  Box, 
-  Button, 
-  Divider, 
+import {
+  Container,
+  Card,
+  CardBody,
+  Heading,
+  Text,
   IconButton,
+  Button,
   Avatar,
-  Chip
-} from '@mui/material';
-import { 
-  ArrowBack as ArrowBackIcon,
-  CheckCircle as CheckCircleIcon
-} from '@mui/icons-material';
+  HStack,
+  VStack,
+  Divider,
+  Box,
+  Flex,
+  Badge,
+  useColorModeValue,
+  ChakraProvider,
+  extendTheme,
+  Spinner
+} from '@chakra-ui/react';
+import { ArrowBackIcon } from '@chakra-ui/icons';
+import { FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
-// Thay thế date-fns bằng dayjs
 import dayjs from 'dayjs';
-// Thêm locale cho tiếng Việt
 import 'dayjs/locale/vi';
 import { useAuth } from '../../components/contexts/AuthContext';
 import { questionDetailMock, answersMock } from '../../mocks/questionDetailMock';
+import { motion } from 'framer-motion';
 
-// Import các components dùng chung
+// Custom Components (adapted for Chakra UI)
 import ActionMenu from '../../components/common/interactions/ActionMenu';
 import LikeButton from '../../components/common/interactions/LikeButton';
 import CommentForm from '../../components/common/interactions/CommentForm';
-// import CommentList from '../../components/common/interactions/CommentList';
-import ShareButton from '../../components/common/interactions/ShareButton';
-import TagList from '../../components/common/interactions/TagList';
+import ShareButton from './components/common/ShareButton';
+import TagList from './components/common/TagList';
+
+const colors = {
+  primary: '#D34F81', // From RescueSuccess context
+  secondary: '#757575', // MUI text.secondary
+  success: '#4caf50', // MUI success
+  background: '#f5f5f5', // MUI Paper background
+  border: '#e0e0e0' // MUI Paper border
+};
+
+const theme = extendTheme({
+  colors,
+  components: {
+    Card: {
+      baseStyle: {
+        bg: 'white',
+        borderRadius: 'lg',
+        border: '1px solid',
+        borderColor: 'border'
+      }
+    },
+    Heading: {
+      baseStyle: {
+        fontWeight: 'bold',
+        color: 'gray.800'
+      }
+    },
+    Text: {
+      baseStyle: {
+        color: 'gray.800'
+      }
+    },
+    Button: {
+      baseStyle: {
+        _hover: { transform: 'scale(1.05)', transition: 'all 0.2s' }
+      }
+    }
+  }
+});
+
+const MotionBox = motion(Box);
 
 const QuestionDetail = () => {
   const { id } = useParams();
@@ -40,15 +85,15 @@ const QuestionDetail = () => {
   const [likeCount, setLikeCount] = useState(0);
   const [answers, setAnswers] = useState([]);
 
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const answerBg = useColorModeValue('#f5f5f5', 'gray.700');
+  const acceptedBg = useColorModeValue('#e8f5e9', 'green.900');
+
   useEffect(() => {
     const fetchQuestionDetails = async () => {
       setLoading(true);
       try {
-        // Trong thực tế, bạn sẽ gọi API thực sự
-        // const response = await api.get(`/forum/questions/${id}`);
-        // setQuestion(response.data);
-        
-        // Sử dụng dữ liệu giả từ mock
         setTimeout(() => {
           setQuestion(questionDetailMock);
           setLikeCount(8);
@@ -79,7 +124,6 @@ const QuestionDetail = () => {
       userId: user?.id || 'anonymous',
       isAccepted: false
     };
-    
     setAnswers([...answers, newAnswer]);
   };
 
@@ -88,7 +132,6 @@ const QuestionDetail = () => {
   };
 
   const handleEditAnswer = (answer) => {
-    // Xử lý chỉnh sửa câu trả lời
     console.log('Edit answer:', answer);
   };
 
@@ -97,7 +140,6 @@ const QuestionDetail = () => {
       ...answer,
       isAccepted: answer.id === answerId
     })));
-    
     setQuestion({
       ...question,
       solved: true
@@ -105,45 +147,45 @@ const QuestionDetail = () => {
   };
 
   const handleEditQuestion = () => {
-    // Xử lý chỉnh sửa câu hỏi
     console.log('Edit question:', question);
   };
 
   const handleDeleteQuestion = () => {
-    // Xử lý xóa câu hỏi
     console.log('Delete question:', question);
     navigate('/forum');
   };
 
   const handleReportQuestion = () => {
-    // Xử lý báo cáo câu hỏi
     console.log('Report question:', question);
   };
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <Typography>Đang tải...</Typography>
-        </Box>
+      <Container maxW="container.md" py={6}>
+        <Flex justify="center" my={6}>
+          <Spinner size="lg" color="primary" />
+        </Flex>
       </Container>
     );
   }
 
   if (!question) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ textAlign: 'center', my: 4 }}>
-          <Typography variant="h6">Không tìm thấy câu hỏi</Typography>
-          <Button 
-            variant="contained" 
-            color="primary" 
+      <Container maxW="container.md" py={6}>
+        <VStack spacing={4} textAlign="center" my={6}>
+          <Text fontSize="xl" fontWeight="bold">
+            Không tìm thấy câu hỏi
+          </Text>
+          <Button
+            bg="primary"
+            color="white"
             onClick={() => navigate('/forum')}
-            sx={{ mt: 2 }}
+            _hover={{ bg: '#b71c50' }}
+            size="lg"
           >
             Quay lại diễn đàn
           </Button>
-        </Box>
+        </VStack>
       </Container>
     );
   }
@@ -151,139 +193,157 @@ const QuestionDetail = () => {
   const isOwner = user?.id === question.authorId;
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
-              {question.title}
-            </Typography>
-          </Box>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {question.solved && (
-              <Chip 
-                icon={<CheckCircleIcon />} 
-                label="Đã giải quyết" 
-                color="success" 
-                sx={{ mr: 1 }} 
-              />
-            )}
-            
-            <ActionMenu
-              onEdit={isOwner ? handleEditQuestion : null}
-              onDelete={isOwner ? handleDeleteQuestion : null}
-              onReport={!isOwner ? handleReportQuestion : null}
-              isOwner={isOwner}
-            />
-          </Box>
-        </Box>
-        
-        <Divider sx={{ mb: 3 }} />
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Avatar src={question.authorAvatar} alt={question.author} sx={{ width: 40, height: 40, mr: 1 }} />
-          <Box>
-            <Typography variant="subtitle1">{question.author}</Typography>
-            <Typography variant="caption" color="text.secondary">
-              {dayjs(new Date(question.date)).locale('vi').format('DD/MM/YYYY HH:mm')}
-            </Typography>
-          </Box>
-        </Box>
-        
-        <Typography variant="body1" sx={{ mb: 3, whiteSpace: 'pre-line' }}>
-          {question.content}
-        </Typography>
-        
-        <TagList tags={question.tags} sx={{ mb: 3 }} />
-        
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          <LikeButton 
-            liked={liked} 
-            likeCount={likeCount} 
-            onLike={handleLike} 
-          />
-          <ShareButton 
-            url={window.location.href} 
-            title={question.title} 
-          />
-        </Box>
-        
-        <Divider sx={{ mb: 3 }} />
-        
-        <Typography variant="h6" gutterBottom>
-          {answers.length} Câu trả lời
-        </Typography>
-        
-        {answers.map((answer) => (
-          <Paper key={answer.id} elevation={0} sx={{ p: 2, mb: 2, bgcolor: answer.isAccepted ? '#e8f5e9' : '#f5f5f5', borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Avatar src={answer.avatar} alt={answer.author} sx={{ width: 32, height: 32, mr: 1 }} />
-                <Box>
-                  <Typography variant="subtitle2">{answer.author}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {dayjs(new Date(answer.createdAt)).locale('vi').format('DD/MM/YYYY HH:mm')}
-                  </Typography>
-                </Box>
-              </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {answer.isAccepted && (
-                  <Chip 
-                    icon={<CheckCircleIcon />} 
-                    label="Câu trả lời được chấp nhận" 
-                    color="success" 
-                    size="small"
-                    sx={{ mr: 1 }} 
+    <ChakraProvider theme={theme}>
+      <Container maxW="container.md" py={6}>
+        <Card
+          bg={bgColor}
+          shadow="md"
+          position="relative"
+          _before={{
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '6px',
+            bgGradient: 'linear(to-r, primary, pink.300)',
+            borderTopRadius: 'lg'
+          }}
+        >
+          <CardBody p={{ base: 4, md: 6 }}>
+            <VStack spacing={6} align="stretch">
+              {/* Header */}
+              <Flex justify="space-between" align="center">
+                <HStack>
+                  <IconButton
+                    icon={<FaArrowLeft />}
+                    onClick={() => navigate('/forum')}
+                    variant="ghost"
+                    aria-label="Quay lại diễn đàn"
                   />
-                )}
-                
-                {isOwner && !question.solved && !answer.isAccepted && (
-                  <Button 
-                    variant="outlined" 
-                    color="success" 
-                    size="small" 
-                    startIcon={<CheckCircleIcon />}
-                    onClick={() => handleAcceptAnswer(answer.id)}
-                    sx={{ mr: 1 }}
+                  <Heading size="lg">{question.title}</Heading>
+                </HStack>
+                <HStack>
+                  {question.solved && (
+                    <Badge colorScheme="green" display="flex" alignItems="center">
+                      <FaCheckCircle style={{ marginRight: '4px' }} />
+                      Đã giải quyết
+                    </Badge>
+                  )}
+                  <ActionMenu
+                    onEdit={isOwner ? handleEditQuestion : null}
+                    onDelete={isOwner ? handleDeleteQuestion : null}
+                    onReport={!isOwner ? handleReportQuestion : null}
+                    isOwner={isOwner}
+                  />
+                </HStack>
+              </Flex>
+
+              <Divider borderColor={borderColor} />
+
+              {/* Author Info */}
+              <HStack spacing={3}>
+                <Avatar src={question.authorAvatar} name={question.author} size="md" />
+                <VStack align="start" spacing={0}>
+                  <Text fontSize="md" fontWeight="medium">
+                    {question.author}
+                  </Text>
+                  <Text fontSize="sm" color="secondary">
+                    {dayjs(question.date).locale('vi').format('DD/MM/YYYY HH:mm')}
+                  </Text>
+                </VStack>
+              </HStack>
+
+              {/* Content */}
+              <Text fontSize="md" whiteSpace="pre-line">
+                {question.content}
+              </Text>
+
+              {/* Tags */}
+              <TagList tags={question.tags} />
+
+              {/* Actions */}
+              <HStack spacing={4}>
+                <LikeButton liked={liked} likeCount={likeCount} onLike={handleLike} />
+                <ShareButton url={window.location.href} title={question.title} />
+              </HStack>
+
+              <Divider borderColor={borderColor} />
+
+              {/* Answers */}
+              <VStack align="stretch" spacing={4}>
+                <Heading size="md">{answers.length} Câu trả lời</Heading>
+                {answers.map((answer) => (
+                  <MotionBox
+                    key={answer.id}
+                    bg={answer.isAccepted ? acceptedBg : answerBg}
+                    p={4}
+                    borderRadius="md"
+                    border="1px"
+                    borderColor={borderColor}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    Chấp nhận
-                  </Button>
-                )}
-                
-                <ActionMenu
-                  onEdit={user?.id === answer.userId ? handleEditAnswer.bind(null, answer) : null}
-                  onDelete={user?.id === answer.userId ? handleDeleteAnswer.bind(null, answer.id) : null}
-                  onReport={user?.id !== answer.userId ? () => console.log('Report answer:', answer) : null}
-                  isOwner={user?.id === answer.userId}
+                    <Flex justify="space-between" align="flex-start">
+                      <HStack spacing={3} mb={2}>
+                        <Avatar src={answer.avatar} name={answer.author} size="sm" />
+                        <VStack align="start" spacing={0}>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {answer.author}
+                          </Text>
+                          <Text fontSize="xs" color="secondary">
+                            {dayjs(answer.createdAt).locale('vi').format('DD/MM/YYYY HH:mm')}
+                          </Text>
+                        </VStack>
+                      </HStack>
+                      <HStack>
+                        {answer.isAccepted && (
+                          <Badge colorScheme="green" display="flex" alignItems="center" fontSize="xs">
+                            <FaCheckCircle style={{ marginRight: '4px' }} />
+                            Câu trả lời được chấp nhận
+                          </Badge>
+                        )}
+                        {isOwner && !question.solved && !answer.isAccepted && (
+                          <Button
+                            colorScheme="green"
+                            size="sm"
+                            leftIcon={<FaCheckCircle />}
+                            onClick={() => handleAcceptAnswer(answer.id)}
+                          >
+                            Chấp nhận
+                          </Button>
+                        )}
+                        <ActionMenu
+                          onEdit={user?.id === answer.userId ? () => handleEditAnswer(answer) : null}
+                          onDelete={user?.id === answer.userId ? () => handleDeleteAnswer(answer.id) : null}
+                          onReport={user?.id !== answer.userId ? () => console.log('Report answer:', answer) : null}
+                          isOwner={user?.id === answer.userId}
+                        />
+                      </HStack>
+                    </Flex>
+                    <Text fontSize="md" whiteSpace="pre-line">
+                      {answer.content}
+                    </Text>
+                  </MotionBox>
+                ))}
+              </VStack>
+
+              {/* Answer Form */}
+              <VStack align="stretch" spacing={4}>
+                <Heading size="md">Thêm câu trả lời của bạn</Heading>
+                <CommentForm
+                  onSubmit={handleAnswerSubmit}
+                  userAvatar={user?.avatar}
+                  placeholder="Viết câu trả lời của bạn..."
+                  buttonText="Gửi câu trả lời"
                 />
-              </Box>
-            </Box>
-            
-            <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-line' }}>
-              {answer.content}
-            </Typography>
-          </Paper>
-        ))}
-        
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Thêm câu trả lời của bạn
-          </Typography>
-          
-          <CommentForm 
-            onSubmit={handleAnswerSubmit} 
-            userAvatar={user?.avatar} 
-            placeholder="Viết câu trả lời của bạn..."
-            buttonText="Gửi câu trả lời"
-          />
-        </Box>
-      </Paper>
-    </Container>
+              </VStack>
+            </VStack>
+          </CardBody>
+        </Card>
+      </Container>
+    </ChakraProvider>
   );
 };
 

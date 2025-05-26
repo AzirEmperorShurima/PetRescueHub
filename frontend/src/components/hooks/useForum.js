@@ -8,11 +8,11 @@ const debounce = (func, delay) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
   };
-  
+
   debounced.cancel = () => {
     clearTimeout(timeoutId);
   };
-  
+
   return debounced;
 };
 
@@ -20,62 +20,82 @@ export const useForum = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [postTypeFilter, setPostTypeFilter] = useState('');
+  const [tabValue, setTabValue] = useState(0);
+
   const [posts, setPosts] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [events, setEvents] = useState([]);
-  const [tabValue, setTabValue] = useState(0);
+  const [findLostPet, setFindLostPet] = useState([]);
+
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [findLostPet, setFindLostPet] = useState([]); // Add new state
 
-  // Debounce search để giảm spam API
+  // Mapping tab index → postType
+  const postTypeMap = ['', 'Question', 'EventPost', 'FindLostPetPost'];
+
+  // Debounce fetch
   const debouncedFetch = useCallback(
-    debounce((search, sort, category) => {
-      fetchPosts(search, sort, category);
+    debounce((search, sort, postType) => {
+      fetchPosts(search, sort, postType);
     }, 500),
     []
   );
 
-  // Khi mount hoặc sort/category thay đổi → fetch ngay
+  // Fetch ngay khi mount hoặc sort/postType thay đổi
   useEffect(() => {
-    fetchPosts(searchTerm, sortBy, categoryFilter);
-  }, [sortBy, categoryFilter]);
+    fetchPosts(searchTerm, sortBy, postTypeFilter);
+  }, [sortBy, postTypeFilter]);
 
-  // Khi searchTerm thay đổi → debounce rồi fetch
+  // Debounce khi searchTerm thay đổi
   useEffect(() => {
-    debouncedFetch(searchTerm, sortBy, categoryFilter);
+    debouncedFetch(searchTerm, sortBy, postTypeFilter);
     return debouncedFetch.cancel;
-  }, [searchTerm, sortBy, categoryFilter, debouncedFetch]);
+  }, [searchTerm, sortBy, postTypeFilter, debouncedFetch]);
 
-  // Hàm chính gọi API lấy posts
-  const fetchPosts = async (search, sort, category) => {
+  const fetchPosts = async (search, sort, postType) => {
     setLoading(true);
     try {
       const params = {
         search,
         sort,
-        category,
-        limit: 10
+        postType,
+        limit: 100,
       };
 
-      const [postsRes, questionsRes, eventsRes, petPostRes] = await Promise.all([
-        apiService.forum.posts.getAll({ ...params, postType: '' }),
-        // apiService.forum.posts.getAll({ ...params, postType: 'Question' }),
-        // apiService.forum.posts.getAll({ ...params, postType: 'Event' }),
-        // apiService.forum.posts.getAll({ ...params, postType: 'FindLostPetPost' })
-      ]);
+      const response = await apiService.forum.posts.getAll(params);
+      const data = response.data?.data || [];
 
-      setPosts(postsRes.data?.data || []);
-      // setQuestions(questionsRes.data?.data || []);
-      // setEvents(eventsRes.data?.data || []);
-      // setFindLostPet(petPostRes.data?.data || []); // Fix the undefined setPetPost
+      const newPosts = data;
+      const newQuestions = [];
+      const newEvents = [];
+      const newLostPets = [];
+
+      data.forEach(post => {
+        switch (post.postType) {
+          case 'Question':
+            newQuestions.push(post);
+            break;
+          case 'EventPost':
+            newEvents.push(post);
+            break;
+          case 'FindLostPetPost':
+            newLostPets.push(post);
+            break;
+        }
+      });
+
+      setPosts(newPosts);
+      setQuestions(newQuestions);
+      setEvents(newEvents);
+      setFindLostPet(newLostPets);
+
     } catch (err) {
       console.error('Error fetching posts:', err);
       setPosts([]);
       setQuestions([]);
       setEvents([]);
-      setFindLostPet([]); // Add this line
+      setFindLostPet([]);
     } finally {
       setLoading(false);
     }
@@ -84,28 +104,31 @@ export const useForum = () => {
   // Handlers
   const handleSearchChange = useCallback(e => setSearchTerm(e.target.value), []);
   const handleSortChange = useCallback(val => setSortBy(val), []);
-  const handleCategoryChange = useCallback(cat => setCategoryFilter(prev => prev === cat ? '' : cat), []);
-  const handleTabChange = useCallback((e, newValue) => setTabValue(newValue), []);
+  const handleTabChange = useCallback((e, newValue) => {
+    setTabValue(newValue);
+    setPostTypeFilter(postTypeMap[newValue]);
+  }, []);
+
   const handleFilterClick = useCallback(e => setFilterAnchorEl(e.currentTarget), []);
   const handleFilterClose = useCallback(() => setFilterAnchorEl(null), []);
-  
-  const handleToggleLike = useCallback(async (id, type) => {
+
+  const handleToggleLike = useCallback(async (id) => {
     try {
       await apiService.forum.posts.likePost(id);
-      fetchPosts(searchTerm, sortBy, categoryFilter);
+      fetchPosts(searchTerm, sortBy, postTypeFilter);
     } catch (err) {
       console.error('Error toggling like:', err);
     }
-  }, [searchTerm, sortBy, categoryFilter]);
+  }, [searchTerm, sortBy, postTypeFilter]);
 
-  const handleToggleFavorite = useCallback(async (id, type) => {
+  const handleToggleFavorite = useCallback(async (id) => {
     try {
-      // Implement favorite toggle logic here
-      fetchPosts(searchTerm, sortBy, categoryFilter);
+      // Placeholder for favorite toggle
+      fetchPosts(searchTerm, sortBy, postTypeFilter);
     } catch (err) {
       console.error('Error toggling favorite:', err);
     }
-  }, [searchTerm, sortBy, categoryFilter]);
+  }, [searchTerm, sortBy, postTypeFilter]);
 
   const formatDate = useCallback((date) => {
     return new Date(date).toLocaleDateString('vi-VN');
@@ -115,22 +138,21 @@ export const useForum = () => {
     loading,
     posts,
     questions,
-    events,
-    findLostPet, // Add this to return object
+    eventspost: events,
+    findLostPet,
     searchTerm,
     sortBy,
-    categoryFilter,
+    postTypeFilter,
     tabValue,
     filterAnchorEl,
     categories,
     handleSearchChange,
     handleSortChange,
-    handleCategoryChange,
     handleTabChange,
     handleFilterClick,
     handleFilterClose,
     handleToggleLike,
     handleToggleFavorite,
-    formatDate
+    formatDate,
   };
 };

@@ -11,6 +11,7 @@ import SuccessStories from './components/SuccessStories/SuccessStories';
 import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
 import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider';
 import VolunteerRegistrationButton from '../../components/button/VolunteerRegistrationButton';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -105,6 +106,7 @@ const Home = () => {
       {/* Volunteer Banner Slider */}
       <VolunteerBannerSlider />
 
+      <ScrollToTopButton />
       {/* Volunteer Banner */}
       <section className={styles.volunteerBanner}>
         <div className={styles.volunteerBanner__overlay}></div>
@@ -125,6 +127,7 @@ const Home = () => {
         onClose={() => setShowVolunteerModal(false)}
       />
     </div>
+    
   );
 };
 

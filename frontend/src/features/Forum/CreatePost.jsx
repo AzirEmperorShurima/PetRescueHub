@@ -121,18 +121,16 @@ const CreatePost = ({ postType = 'ForumPost', onClose }) => {
     }
   };
 
+  const submitTextMap = {
+    Question: ['Đang đăng...', 'Đặt câu hỏi'],
+    EventPost: ['Đang tạo...', 'Tạo sự kiện'],
+    FindLostPetPost: ['Đang đăng...', 'Đăng tin'],
+    ForumPost: ['Đang tạo...', 'Tạo bài viết'],
+  };
+  
   const getSubmitButtonText = () => {
-    switch(postType) {
-      case 'Question':
-        return loading ? 'Đang đăng...' : 'Đặt câu hỏi';
-      case 'EventPost':
-        return loading ? 'Đang tạo...' : 'Tạo sự kiện';
-      case 'FindLostPetPost':
-        return loading ? 'Đang đăng...' : 'Đăng tin';
-      case 'ForumPost':
-      default:
-        return loading ? 'Đang tạo...' : 'Tạo bài viết';
-    }
+    const [loadingText, normalText] = submitTextMap[postType] || submitTextMap['ForumPost'];
+    return loading ? loadingText : normalText;
   };
   
   const handleImageUpload = (files) => {
@@ -155,12 +153,19 @@ const CreatePost = ({ postType = 'ForumPost', onClose }) => {
   };
 
   const handleAddTag = (tagValue) => {
-    const trimmedTag = tagValue.trim();
-    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 5) {
-      setTags([...tags, trimmedTag]);
+    let trimmedTag = tagValue.trim();
+  
+    // Xóa hết các dấu '#' ở đầu tag
+    trimmedTag = trimmedTag.replace(/^#+/, '');
+  
+    // Thêm lại 1 dấu '#'
+    const normalizedTag = `#${trimmedTag}`;
+  
+    if (trimmedTag && !tags.includes(normalizedTag) && tags.length < 5) {
+      setTags([...tags, normalizedTag]);
       setCurrentTag('');
     }
-  };
+  };  
 
   const handleTagKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -330,7 +335,7 @@ const CreatePost = ({ postType = 'ForumPost', onClose }) => {
               
               {/* Tags Input */}
               <FormControl>
-                <FormLabel>Thẻ (tối đa 5 thẻ)</FormLabel>
+                <FormLabel>Nhãn</FormLabel>
                 <VStack align="stretch" spacing={3}>
                   {/* Current Tags */}
                   {tags.length > 0 && (
@@ -427,7 +432,7 @@ const CreatePost = ({ postType = 'ForumPost', onClose }) => {
                     onUpload={handleImageUpload}
                     onRemove={handleRemoveImage}
                     maxImages={5}
-                    label="Hình ảnh bài viết"
+                    // label="Hình ảnh bài viết"
                     required={false}
                     acceptTypes="image/*"
                   />

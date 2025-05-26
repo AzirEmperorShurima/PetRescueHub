@@ -1,35 +1,82 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Paper, 
-  Box, 
-  Divider, 
+import {
+  Container,
+  Card,
+  CardBody,
+  Heading,
+  Text,
   IconButton,
   Button,
-  Avatar
-} from '@mui/material';
-import { 
-  ArrowBack as ArrowBackIcon
-} from '@mui/icons-material';
+  Avatar,
+  HStack,
+  VStack,
+  Divider,
+  Box,
+  Image,
+  Flex,
+  useColorModeValue,
+  ChakraProvider,
+  extendTheme,
+  Spinner,
+  Alert,
+  AlertIcon
+} from '@chakra-ui/react';
+import { ArrowBackIcon } from '@chakra-ui/icons';
+import { FaArrowLeft } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
-// Thay thế date-fns bằng dayjs
 import dayjs from 'dayjs';
-// Thêm plugin locale cho dayjs
 import 'dayjs/locale/vi';
 import { useAuth } from '../../components/contexts/AuthContext';
-
-// Import mock data
 import { postDetailMock, postCommentsMock } from '../../mocks/postDetailMock';
+import { motion } from 'framer-motion';
 
-// Import các components dùng chung
-import ActionMenu from '../../components/common/interactions/ActionMenu';
-import LikeButton from '../../components/common/interactions/LikeButton';
+// Custom Components (adapted for Chakra UI)
+// import ActionMenu from '../../components/common/interactions/ActionMenu';
+import Reaction from '../../components/common/interactions/Reaction';
 import CommentForm from '../../components/common/interactions/CommentForm';
 import CommentList from '../../components/common/interactions/CommentList';
 import ShareButton from '../../components/common/interactions/ShareButton';
-import TagList from '../../components/common/interactions/TagList';
-import LazyImage from '../../components/common/interactions/LazyImage';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
+
+// Define theme to match MUI colors
+const colors = {
+  primary: '#D34F81', // From RescueSuccess context
+  secondary: '#757575', // MUI text.secondary
+  background: '#fff',
+  border: '#e0e0e0' // MUI Paper elevation=1 border
+};
+
+const theme = extendTheme({
+  colors,
+  components: {
+    Card: {
+      baseStyle: {
+        bg: 'background',
+        borderRadius: 'lg',
+        border: '1px solid',
+        borderColor: 'border'
+      }
+    },
+    Heading: {
+      baseStyle: {
+        fontWeight: 'bold',
+        color: 'gray.800'
+      }
+    },
+    Text: {
+      baseStyle: {
+        color: 'gray.800'
+      }
+    },
+    Button: {
+      baseStyle: {
+        _hover: { transform: 'scale(1.05)', transition: 'all 0.2s' }
+      }
+    }
+  }
+});
+
+const MotionBox = motion(Box);
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -41,15 +88,14 @@ const PostDetail = () => {
   const [likeCount, setLikeCount] = useState(0);
   const [comments, setComments] = useState([]);
 
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+
   useEffect(() => {
     const fetchPostDetails = async () => {
       setLoading(true);
       try {
-        // Trong thực tế, bạn sẽ gọi API thực sự
-        // const response = await api.get(`/forum/posts/${id}`);
-        // setPost(response.data);
-        
-        // Sử dụng dữ liệu từ mock
+        // Mock API call
         setTimeout(() => {
           setPost(postDetailMock);
           setLikeCount(15);
@@ -79,7 +125,6 @@ const PostDetail = () => {
       createdAt: new Date().toISOString(),
       userId: user?.id || 'anonymous'
     };
-    
     setComments([newComment, ...comments]);
   };
 
@@ -88,50 +133,49 @@ const PostDetail = () => {
   };
 
   const handleEditComment = (comment) => {
-    // Xử lý chỉnh sửa comment
     console.log('Edit comment:', comment);
   };
 
   const handleEditPost = () => {
-    // Xử lý chỉnh sửa bài viết
     console.log('Edit post:', post);
   };
 
   const handleDeletePost = () => {
-    // Xử lý xóa bài viết
     console.log('Delete post:', post);
     navigate('/forum');
   };
 
   const handleReportPost = () => {
-    // Xử lý báo cáo bài viết
     console.log('Report post:', post);
   };
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <Typography>Đang tải...</Typography>
-        </Box>
+      <Container maxW="container.md" py={6}>
+        <Flex justify="center" my={6}>
+          <Spinner size="lg" color="primary" />
+        </Flex>
       </Container>
     );
   }
 
   if (!post) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ textAlign: 'center', my: 4 }}>
-          <Typography variant="h6">Không tìm thấy bài viết</Typography>
-          <Button 
-            variant="contained" 
-            color="primary" 
+      <Container maxW="container.md" py={6}>
+        <VStack spacing={4} textAlign="center" my={6}>
+          <Text fontSize="xl" fontWeight="bold">
+            Không tìm thấy bài viết
+          </Text>
+          <Button
+            bg="primary"
+            color="white"
             onClick={() => navigate('/forum')}
-            sx={{ mt: 2 }}
+            _hover={{ bg: '#b71c50' }}
+            size="lg"
           >
             Quay lại diễn đàn
           </Button>
-        </Box>
+        </VStack>
       </Container>
     );
   }
@@ -139,90 +183,116 @@ const PostDetail = () => {
   const isOwner = user?.id === post.authorId;
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={() => navigate('/forum')} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
-              {post.title}
-            </Typography>
-          </Box>
-          
-          <ActionMenu
-            onEdit={isOwner ? handleEditPost : null}
-            onDelete={isOwner ? handleDeletePost : null}
-            onReport={!isOwner ? handleReportPost : null}
-            isOwner={isOwner}
-          />
-        </Box>
-        
-        <Divider sx={{ mb: 3 }} />
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar src={post.authorAvatar} alt={post.author} sx={{ width: 40, height: 40, mr: 1 }} />
-            <Box>
-              <Typography variant="subtitle1">{post.author}</Typography>
-              <Typography variant="caption" color="text.secondary">
-                {dayjs(post.date).locale('vi').format('DD/MM/YYYY HH:mm')}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-        
-        {post.image && (
-          <Box sx={{ mb: 3 }}>
-            <LazyImage 
-              src={post.image} 
-              alt={post.title} 
-              width="100%" 
-              height="400px" 
-              effect="blur"
-              sx={{ borderRadius: '8px' }}
-            />
-          </Box>
-        )}
-        
-        <Typography variant="body1" sx={{ mb: 3, whiteSpace: 'pre-line' }}>
-          {post.content}
-        </Typography>
-        
-        <TagList tags={post.tags} sx={{ mb: 3 }} />
-        
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          <LikeButton 
-            liked={liked} 
-            likeCount={likeCount} 
-            onLike={handleLike} 
-          />
-          <ShareButton 
-            url={window.location.href} 
-            title={post.title} 
-          />
-        </Box>
-        
-        <Divider sx={{ mb: 3 }} />
-        
-        <Typography variant="h6" gutterBottom>
-          Bình luận ({comments.length})
-        </Typography>
-        
-        <CommentForm 
-          onSubmit={handleCommentSubmit} 
-          userAvatar={user?.avatar} 
-        />
-        
-        <CommentList 
-          comments={comments} 
-          currentUserId={user?.id} 
-          onDelete={handleDeleteComment}
-          onEdit={handleEditComment}
-        />
-      </Paper>
-    </Container>
+    <ChakraProvider theme={theme}>
+      <Container maxW="container.md" py={6}>
+        <Card
+          bg={bgColor}
+          shadow="md"
+          position="relative"
+          _before={{
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '6px',
+            bgGradient: 'linear(to-r, primary, pink.300)',
+            borderTopRadius: 'lg'
+          }}
+        >
+          <CardBody p={{ base: 4, md: 6 }}>
+            <VStack spacing={6} align="stretch">
+              {/* Header */}
+              <Flex justify="space-between" align="center">
+                <HStack>
+                  <IconButton
+                    icon={<FaArrowLeft />}
+                    onClick={() => navigate('/forum')}
+                    variant="ghost"
+                    aria-label="Quay lại diễn đàn"
+                  />
+                  <Heading size="lg">{post.title}</Heading>
+                </HStack>
+                {/* <ActionMenu
+                  onEdit={isOwner ? handleEditPost : null}
+                  onDelete={isOwner ? handleDeletePost : null}
+                  onReport={!isOwner ? handleReportPost : null}
+                  isOwner={isOwner}
+                /> */}
+              </Flex>
+
+              <Divider borderColor={borderColor} />
+
+              {/* Author Info */}
+              <HStack spacing={3}>
+                <Avatar
+                  src={post.authorAvatar}
+                  name={post.author}
+                  size="md"
+                />
+                <VStack align="start" spacing={0}>
+                  <Text fontSize="md" fontWeight="medium">
+                    {post.author}
+                  </Text>
+                  <Text fontSize="sm" color="secondary">
+                    {dayjs(post.date).locale('vi').format('DD/MM/YYYY HH:mm')}
+                  </Text>
+                </VStack>
+              </HStack>
+
+              {/* Image */}
+              {post.image && (
+                <MotionBox
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Image
+                    src={post.image}
+                    alt={post.title}
+                    w="100%"
+                    maxH="400px"
+                    objectFit="cover"
+                    borderRadius="md"
+                    fallbackSrc="/placeholder-image.jpg"
+                    loading="lazy"
+                  />
+                </MotionBox>
+              )}
+
+              {/* Content */}
+              <Text fontSize="md" whiteSpace="pre-line">
+                {post.content}
+              </Text>
+
+              {/* Tags */}
+              {/* <TagList tags={post.tags} /> */}
+
+              {/* Actions */}
+              <HStack spacing={4}>
+                <Reaction liked={liked} likeCount={likeCount} onLike={handleLike} />
+                <ShareButton url={window.location.href} title={post.title} />
+              </HStack>
+
+              <Divider borderColor={borderColor} />
+
+              {/* Comments */}
+              <VStack align="stretch" spacing={4}>
+                <Heading size="md">Bình luận ({comments.length})</Heading>
+                <CommentForm onSubmit={handleCommentSubmit} userAvatar={user?.avatar} />
+                <CommentList
+                  comments={comments}
+                  currentUserId={user?.id}
+                  onDelete={handleDeleteComment}
+                  onEdit={handleEditComment}
+                />
+              </VStack>
+            </VStack>
+          </CardBody>
+          <ScrollToTopButton />
+        </Card>
+      </Container>
+    </ChakraProvider>
   );
 };
 

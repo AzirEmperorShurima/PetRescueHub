@@ -1,13 +1,11 @@
-
 import user from "../models/user.js";
-import { getUserFieldFromToken } from "../services/User/User.service.js";
-import { COOKIE_PATHS, TOKEN_TYPE } from "../../config.js";
-import { redisClient } from "../Cache/User_Cache.js";
+import { redisClient } from "../Config/redis.client.js";
 import { StatusCodes } from "http-status-codes";
+import { RoleChecking } from "../utils/auth/authUtils.js";
 
 export const clearAdminCache = async (userId) => {
     try {
-        const redisKey = `admin:${userId}`;
+        const redisKey = `admin:permission:${userId}`;
         await redisClient.del(redisKey);
         console.log(`🧹 Cache Redis quyền admin đã được xóa cho user ${userId}`);
     } catch (error) {
@@ -15,90 +13,22 @@ export const clearAdminCache = async (userId) => {
     }
 };
 
-export const isAdmin = async (req, res, next) => {
-    try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "id");
-        const userEmail = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "email");
-        const userRoles = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'roles');
-        const tokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "tokenType");
-
-        if (!userId || !userEmail || !userRoles || tokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ 
-                message: "Unauthorized: Token không hợp lệ hoặc bị giả mạo!" 
-            });
-        }
-
-        const primaryCheckIsAdmin = userRoles.includes('admin') || userRoles.includes('super_admin');
-        if (!primaryCheckIsAdmin) {
-            return res.status(StatusCodes.FORBIDDEN).json({ 
-                message: "Access Denied: Bạn không có quyền truy cập tài nguyên này" 
-            });
-        }
-
-        const redisKey = `admin:permission:${userId}`;
-        const cached = await redisClient.get(redisKey);
-        
-        if (cached === "true") {
-            console.log("✅ Đã xác thực quyền admin từ Redis cache!");
-            req.user = {
-                _id: userId,
-                email: userEmail,
-                roles: userRoles,
-            };
-            return next();
-        }
-
-        const foundUser = await user.findById(userId).populate("roles", "name");
-        if (!foundUser) {
-            return res.status(StatusCodes.NOT_FOUND).json({ 
-                message: "Không tìm thấy thông tin người dùng" 
-            });
-        }
-
-        if (foundUser.email !== userEmail) {
-            return res.status(StatusCodes.FORBIDDEN).json({ 
-                message: "Access Denied: Thông tin người dùng không khớp!" 
-            });
-        }
-
-        const isAdmin = foundUser.roles.some(r => r.name === "admin" || r.name === "super_admin");
-        if (!isAdmin) {
-            return res.status(StatusCodes.FORBIDDEN).json({ 
-                message: "Access Denied: Không có quyền admin!" 
-            });
-        }
-
-        await redisClient.setEx(redisKey, 900, "true");
-        console.log("✅ Xác thực quyền admin từ DB và ghi vào Redis!");
-        
-        req.user = {
-            _id: userId,
-            email: userEmail,
-            roles: userRoles,
-        };
-        
-        next();
-    } catch (error) {
-        console.error("❌ Lỗi trong middleware isAdmin:", error);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
-            message: "Lỗi máy chủ khi xác thực quyền admin!" 
-        });
+export const isAdmin = RoleChecking('admin', {
+    redisKeyPrefix: 'admin',
+    customMessages: {
+        noRole: 'Bạn không có quyền admin để truy cập',
+        serverError: 'Lỗi hệ thống khi kiểm tra quyền admin'
     }
-};
+});
 
 export const checkAdminLogin = async (req, res, next) => {
     try {
         const { emailOrUsername, password } = req.body;
 
-        if (!emailOrUsername) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ 
-                message: "Email hoặc username là bắt buộc" 
-            });
-        }
-        
-        if (!password) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ 
-                message: "Mật khẩu là bắt buộc" 
+        if (!emailOrUsername || !password) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: !emailOrUsername ? "Email hoặc username là bắt buộc" : "Mật khẩu là bắt buộc"
             });
         }
 
@@ -107,21 +37,41 @@ export const checkAdminLogin = async (req, res, next) => {
                 { email: emailOrUsername },
                 { username: emailOrUsername }
             ]
-        }).populate("roles", "name");
+        })
+            .select('password roles isActive')
+            .populate("roles", "name")
+            .lean();
 
         if (!foundUser) {
-            return res.status(StatusCodes.NOT_FOUND).json({ 
-                message: "Không tìm thấy người dùng" 
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "Không tìm thấy người dùng"
             });
         }
 
-        const hasAdminRole = foundUser.roles.some(role => 
+        if (!foundUser.isActive) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+                message: "Tài khoản chưa được kích hoạt hoặc đã bị khóa!"
+            });
+        }
+
+        const isPasswordValid = await user.comparePassword(password, foundUser.password);
+        if (!isPasswordValid) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: "Mật khẩu không chính xác!"
+            });
+        }
+
+        const hasAdminRole = foundUser.roles.some(role =>
             role.name === 'admin' || role.name === 'super_admin'
         );
 
         if (!hasAdminRole) {
-            return res.status(StatusCodes.FORBIDDEN).json({ 
-                message: "Bạn không phải admin nên không có quyền đăng nhập vào hệ thống quản trị!" 
+            return res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+                message: "Bạn không phải admin nên không có quyền đăng nhập vào hệ thống quản trị!"
             });
         }
 
@@ -129,8 +79,9 @@ export const checkAdminLogin = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("❌ Lỗi trong middleware checkAdminLogin:", error);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
-            message: "Lỗi máy chủ khi xác thực vai trò admin!" 
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Lỗi máy chủ khi xác thực vai trò admin!"
         });
     }
 };

@@ -33,7 +33,7 @@ import {
   FaFileWord,
   FaNewspaper
 } from 'react-icons/fa';
-import { IoSparkles } from 'react-icons/io5';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 
 const PetGuide = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -529,7 +529,7 @@ const PetGuide = () => {
             )}
           </Box>
         </Card>
-
+        <ScrollToTopButton />
         {/* Statistics */}
         <SimpleGrid columns={{ base: 1, md: 4 }} spacing={6}>
           <Card 

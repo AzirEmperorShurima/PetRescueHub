@@ -39,7 +39,7 @@ import {
   useSteps,
 } from '@chakra-ui/react';
 import { BiUpload, BiX, BiHeart, BiCheckCircle, BiCamera, BiUser } from 'react-icons/bi';
-
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 // Pet Basic Info Component
 const PetBasicInfo = ({ formData, setFormData, errors }) => {
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -761,6 +761,7 @@ const FindHome = () => {
           </HStack>
         </VStack>
       </Container>
+      <ScrollToTopButton />
     </Box>
   );
 };

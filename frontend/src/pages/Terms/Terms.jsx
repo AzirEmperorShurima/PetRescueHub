@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { GiPawPrint } from 'react-icons/gi';
 import { FaEnvelope, FaPhone, FaMapPin } from 'react-icons/fa';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 
 // Tùy chỉnh theme với các màu và style từ Terms.css
 const theme = extendTheme({
@@ -198,6 +199,7 @@ const Terms = () => {
                   <Text as="span">Văn phòng: 254 Nguyen Van Linh, TP. Da Nang</Text>
                 </ListItem>
               </List>
+              <ScrollToTopButton />
             </Box>
           </VStack>
         </Box>

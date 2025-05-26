@@ -3,12 +3,14 @@ import { momoCallback, momoPaymentService, momo_Get_Transaction_Status } from ".
 import { zaloPayCallBack, zaloPayCheckStatusTransaction, zaloPaymentService } from "../services/PaymentService/ZaloPay/Zalo.payment.service.js";
 import { VnPayCreatePaymentUrl, VnPayIPN_URL, VnPayReturnURL } from "../services/PaymentService/VnPay/VnPay.payment.service.js";
 import { updateUserProfile } from "../Controller/User.Controller.js";
-import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.js";
+// import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.js";
 import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
+import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.Middlware.js";
 // import { get_Transaction_Status } from "../services/PaymentService/MOMO/Momo.payment.js";
+import { verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware } from "../utils/auth/authUtils.js";
 
 const userRoute = Router()
-
+userRoute.use(checkUserAuth)
 userRoute.get('/', (req, res) => {
     res.status(200).json({ message: 'User API is working' })
 })
@@ -31,7 +33,9 @@ userRoute.get("/v2", async (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
-userRoute.put('/v1/user/own/profile/update', [checkUserAuth,avatarUploadMiddleware("user_avatar")], updateUserProfile)
+userRoute.use(verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware)
+
+userRoute.put('/v1/user/own/profile/update', [avatarUploadMiddleware("user_avatar")], updateUserProfile)
 
 // Momo Payment Gate for PREMIUM USER
 userRoute.post('/user/payments/momo/transactions/create', momoPaymentService);

@@ -58,6 +58,7 @@ import Achievements from './components/Achievements';
 import RescueActivities from './components/RescueActivities';
 import ActivityTimeline from './components/ActivityTimeline';
 import VolunteerBadges from './components/VolunteerBadges';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import { pets as mockPets } from '../../mocks/pets';
 import { forumPosts as mockPosts } from '../../mocks/forum';
 import { testimonials as mockAchievements } from '../../mocks/homeMock';
@@ -761,6 +762,7 @@ const Profile = () => {
           </GridItem>
         </Grid>
       </Container>
+      <ScrollToTopButton />
     </Box>
   );
 };

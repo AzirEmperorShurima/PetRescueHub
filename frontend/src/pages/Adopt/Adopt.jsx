@@ -43,6 +43,7 @@ import {
   BiFilter
 } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 
 // Import custom hook với error handling
 const useAdoptHook = () => {
@@ -745,5 +746,6 @@ const Adopt = () => {
     </Box>
   );
 };
+<ScrollToTopButton />
 
 export default Adopt;

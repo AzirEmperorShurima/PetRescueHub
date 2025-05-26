@@ -14,27 +14,30 @@ import { checkUserAuth, checkUserRole } from "../Middlewares/userAuthChecker.js"
 
 const PetRescueRouter = Router();
 
-PetRescueRouter.get("/", async (req, res) => {
-    console.log('Received request at /api/PetRescueHub');
+// Áp dụng middleware xác thực cho toàn bộ router
+PetRescueRouter.use(checkUserAuth);
+
+// Route chào mừng
+PetRescueRouter.get("/", (req, res) => {
     res.status(200).json({
-        message: 'Welcome to PetRescueHub API',
-        ip: req.ip,
+        message: 'Chào mừng đến với API Cứu hộ thú cưng',
         status: 'success',
         timestamp: new Date().toISOString()
     });
 });
 
-PetRescueRouter.post("/v1/rescue/create-rescue-request", [checkUserAuth, checkUserRole], requestRescue)
-PetRescueRouter.post("/v2/rescue/create-rescue-request", [checkUserAuth, checkUserRole], requestToRescue)
+// ====== Nhóm routes tạo yêu cầu cứu hộ ====== //
+PetRescueRouter.post('/rescue/requests/v1/create', checkUserRole, requestRescue);
+PetRescueRouter.post('/rescue/requests/v2/create', checkUserRole, requestToRescue);
 
-PetRescueRouter.post("/v1/rescue/host/owner/confirm-volunteer", [checkUserAuth, checkUserRole], confirmSelectedVolunteers)
-PetRescueRouter.post("/v1/rescue/host/owner/rescue-request/cancel", [checkUserAuth, checkUserRole], cancelRescueRequest);
+// ====== Nhóm routes cho Chủ sở hữu ====== //
+PetRescueRouter.post('/rescue/owner/confirm-volunteer', checkUserRole, confirmSelectedVolunteers);
+PetRescueRouter.post('/rescue/owner/cancel-request', checkUserRole, cancelRescueRequest);
 
-PetRescueRouter.post("/v1/rescue/host/volunteer/rescue-request/accept", [isVolunteer], acceptRescueMission)
-PetRescueRouter.post("/v1/rescue/host/volunteer/rescue-request/reject", [isVolunteer], rejectRescueMission)
-PetRescueRouter.post("/v1/rescue/host/volunteer/rescue-request/cancel-pending-request", [isVolunteer], cancelRescueMission)
-
-PetRescueRouter.post("/v1/rescue/host/volunteer/complete-rescue/:missionId", [isVolunteer], completeRescueMission);
-
+// ====== Nhóm routes cho Tình nguyện viên ====== //
+PetRescueRouter.post('/rescue/volunteer/accept', isVolunteer, acceptRescueMission);
+PetRescueRouter.post('/rescue/volunteer/reject', isVolunteer, rejectRescueMission);
+PetRescueRouter.post('/rescue/volunteer/cancel', isVolunteer, cancelRescueMission);
+PetRescueRouter.post('/rescue/volunteer/complete/:missionId', isVolunteer, completeRescueMission);
 
 export default PetRescueRouter;

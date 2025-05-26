@@ -3,42 +3,40 @@ import { Box, Text } from '@chakra-ui/react';
 
 const PostSticker = ({ type }) => {
   const getTypeStyle = () => {
-    switch (type) {
-      case 'Question':
-      case 'question':
-        return {
-          bg: 'orange.400',
-          color: 'white'
-        };
-      case 'EventPost':
-      case 'event':
-        return {
-          bg: 'green.400',
-          color: 'white'
-        };
-      case 'ForumPost':
-      case 'post':
-      default:
-        return {
-          bg: 'blue.400',
-          color: 'white'
-        };
-    }
+    const styleMap = {
+      question: {
+        bg: 'orange.400',
+        color: 'white'
+      },
+      eventpost: {
+        bg: 'green.400',
+        color: 'white'
+      },
+      post: {
+        bg: 'blue.400',
+        color: 'white'
+      },
+      findlostpetpost: {
+        bg: 'red.500', // màu nổi bật
+        color: 'white',
+        border: '2px solid',
+        borderColor: 'red.700',
+        boxShadow: '0 0 10px red' // hiệu ứng bắt mắt
+      }
+    };
+  
+    return styleMap[type?.toLowerCase()] || styleMap['post'];
   };
-
+  
   const getTypeLabel = () => {
-    switch (type) {
-      case 'Question':
-      case 'question':
-        return 'Câu hỏi';
-      case 'EventPost':
-      case 'event':
-        return 'Sự kiện';
-      case 'ForumPost':
-      case 'post':
-      default:
-        return 'Bài viết';
-    }
+    const typeMap = {
+      question: 'Câu hỏi',
+      eventpost: 'Sự kiện',
+      post: 'Bài viết',
+      findlostpetpost: 'Tìm thú đi lạc'
+    };
+  
+    return typeMap[type?.toLowerCase()] || 'Bài viết';
   };
 
   return (

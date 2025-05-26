@@ -1,7 +1,6 @@
 import { StatusCodes } from "http-status-codes";
-import { COOKIE_PATHS } from "../../config.js";
 import * as petService from "../services/Pet/Pet.service.js";
-import { getUserFieldFromToken } from "../services/User/User.service.js";
+import PetProfile from "../models/PetProfile.js";
 import Joi from "joi";
 
 const petUpdateSchema = Joi.object({
@@ -41,16 +40,31 @@ const checkOwnership = async (petId, ownerId) => {
  */
 export const createPet = async (req, res) => {
     try {
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id;
         if (!ownerId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: "Bạn cần đăng nhập để thực hiện hành động này"
+            });
         }
+
         const { error, value } = petUpdateSchema.validate(req.body, { abortEarly: false });
         if (error) {
             return res.status(400).json({
+                success: false,
                 message: "Dữ liệu không hợp lệ",
                 details: error.details.map((d) => d.message)
             });
+        }
+
+        if (value.microchipId) {
+            const existingPet = await petService.findPetByMicrochipId(value.microchipId);
+            if (existingPet) {
+                return res.status(StatusCodes.CONFLICT).json({
+                    success: false,
+                    message: "Microchip ID đã tồn tại trong hệ thống"
+                });
+            }
         }
 
         const petData = {
@@ -60,9 +74,18 @@ export const createPet = async (req, res) => {
         };
 
         const newPet = await petService.createPetProfile(ownerId, petData);
-        res.status(201).json({ message: "Thêm thú cưng thành công!", pet: newPet });
+        return res.status(201).json({
+            success: true,
+            message: "Thêm thú cưng thành công!",
+            pet: newPet
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error("Lỗi khi tạo thú cưng:", error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Có lỗi xảy ra khi tạo hồ sơ thú cưng",
+            error: error.message
+        });
     }
 };
 
@@ -75,11 +98,11 @@ export const createPet = async (req, res) => {
 export const uploadPetAvatar = async (req, res) => {
     try {
         const { petId, avatarUrl } = req.body
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
-        await checkOwnership(petId, ownerId); // Kiểm tra quyền
+        await checkOwnership(petId, ownerId);
         const updatedPet = await petService.updatePetAvatar(petId, avatarUrl);
         res.status(200).json({ message: "Cập nhật avatar thành công!", avatar: updatedPet.avatar });
     } catch (error) {
@@ -93,7 +116,7 @@ export const uploadPetAvatar = async (req, res) => {
 export const uploadPetCertificate = async (req, res) => {
     try {
         const { petId, certificateName, certificateType } = req.body;
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -117,31 +140,31 @@ export const uploadPetCertificate = async (req, res) => {
 export const updatePetProfile = async (req, res) => {
     try {
         const { petId } = req.params;
-        if (!petId) return res.status(400).json({ 
+        if (!petId) return res.status(400).json({
             success: false,
-            message: "Thiếu ID thú cưng!" 
+            message: "Thiếu ID thú cưng!"
         });
 
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ 
+            return res.status(StatusCodes.UNAUTHORIZED).json({
                 success: false,
-                message: "Bạn cần đăng nhập để thực hiện hành động này" 
+                message: "Bạn cần đăng nhập để thực hiện hành động này"
             });
         }
 
         await checkOwnership(petId, ownerId);
 
         // Validate req.body using Joi
-        const { error, value } = petUpdateSchema.validate(req.body, { 
-            allowUnknown: false, 
-            stripUnknown: true 
+        const { error, value } = petUpdateSchema.validate(req.body, {
+            allowUnknown: false,
+            stripUnknown: true
         });
-        
+
         if (error) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: error.details[0].message 
+                message: error.details[0].message
             });
         }
 
@@ -149,23 +172,23 @@ export const updatePetProfile = async (req, res) => {
 
         const updatedPet = await petService.updatePetProfile(petId, petUpdateData);
         if (!updatedPet) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy thú cưng!" 
+                message: "Không tìm thấy thú cưng!"
             });
         }
 
-        return res.status(200).json({ 
+        return res.status(200).json({
             success: true,
-            message: "Cập nhật thông tin thành công!", 
-            pet: updatedPet 
+            message: "Cập nhật thông tin thành công!",
+            pet: updatedPet
         });
     } catch (error) {
         console.error("Lỗi cập nhật thông tin thú cưng:", error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             success: false,
-            message: "Lỗi hệ thống!", 
-            error: error.message 
+            message: "Lỗi hệ thống!",
+            error: error.message
         });
     }
 };
@@ -175,7 +198,7 @@ export const updatePetProfile = async (req, res) => {
 export const deletePet = async (req, res) => {
     try {
         const { petId } = req.body;
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -194,15 +217,26 @@ export const deletePet = async (req, res) => {
  */
 export const getPetsByOwner = async (req, res) => {
     try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
-        if (!userId) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        const ownerId = req.user._id;
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Bạn cần đăng nhập để thực hiện hành động này"
+            });
         }
-        const { ownerId } = req.body
-        const pets = await petService.getPetsByOwner(ownerId);
-        return res.status(200).json({ pets });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const result = await petService.getPetsByOwnerWithFilter(ownerId, req.query, page, limit);
+
+        return res.status(StatusCodes.OK).json({
+            message: "Lọc thú cưng thành công!",
+            ...result
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Lỗi hệ thống",
+            error: error.message
+        });
     }
 };
 
@@ -212,12 +246,12 @@ export const getPetsByOwner = async (req, res) => {
 export const getPetDetails = async (req, res) => {
     try {
         const { petId } = req.params;
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const userId = req.user._id
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
 
-        const isOwner = await checkOwnership(petId, ownerId);
+        const isOwner = await checkOwnership(petId, userId);
         const pet = await petService.getPetOrThrow(petId);
         return res.status(200).json({
             message: "Get Pet Portfolio Successfully", petData: pet, canEdit: isOwner
@@ -233,7 +267,7 @@ export const getPetDetails = async (req, res) => {
 export const addVaccinationRecord = async (req, res) => {
     try {
         const { petId, vaccineName, vaccinationDate, vaccinationCode } = req.body;
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -261,7 +295,7 @@ export const addVaccinationRecord = async (req, res) => {
 export const addPetAlbumPhoto = async (req, res) => {
     try {
         const { petId, photoUrl } = req.body;
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -284,7 +318,7 @@ export const addPetAlbumPhoto = async (req, res) => {
 export const removePhotoFromPetAlbum = async (req, res) => {
     try {
         const { petId, photoUrl } = req.body;
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -303,7 +337,7 @@ export const removePhotoFromPetAlbum = async (req, res) => {
 export const updateMicrochipId = async (req, res) => {
     try {
         const { petId, microchipId } = req.body;
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -326,7 +360,7 @@ export const updateMicrochipId = async (req, res) => {
 export const deletePetCertificate = async (req, res) => {
     try {
         const { petId, certificateId } = req.body;
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -348,7 +382,7 @@ export const deletePetCertificate = async (req, res) => {
  */
 export const getPetStatistics = async (req, res) => {
     try {
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -385,7 +419,7 @@ export const getPetStatistics = async (req, res) => {
  */
 export const searchPets = async (req, res) => {
     try {
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user?._id;
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
@@ -395,76 +429,155 @@ export const searchPets = async (req, res) => {
             gender,
             minAge,
             maxAge,
-            reproductiveStatus
+            reproductiveStatus,
+            breedName,
+            search,
+            petState,
+            page = 1,
+            limit = 10,
+            sortBy = "createdAt",
+            order = "desc"
         } = req.query;
 
-        const searchCriteria = { ownerId };
-        if (breed) searchCriteria.breed = breed;
-        if (gender) searchCriteria.gender = gender;
-        if (minAge) searchCriteria.age = { ...searchCriteria.age, $gte: Number(minAge) };
-        if (maxAge) searchCriteria.age = { ...searchCriteria.age, $lte: Number(maxAge) };
-        if (reproductiveStatus) searchCriteria.reproductiveStatus = reproductiveStatus;
+        // Xây dựng searchCriteria
+        const searchCriteria = {
+            ownerId,
+            ...(breed && { breed }),
+            ...(gender && { gender }),
+            ...(reproductiveStatus && { reproductiveStatus }),
+            ...(breedName && { breedName: { $regex: breedName, $options: 'i' } }),
+            ...(petState && { petState }),
+            ...(search && {
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { breed: { $regex: search, $options: 'i' } },
+                    { breedName: { $regex: search, $options: 'i' } },
+                ]
+            }),
+            isDeleted: false,
+        };
 
-        const pets = await petService.searchPets(searchCriteria);
-        return res.status(200).json({
+        // Tuổi
+        if (minAge || maxAge) {
+            searchCriteria.age = {};
+            if (minAge) searchCriteria.age.$gte = Number(minAge);
+            if (maxAge) searchCriteria.age.$lte = Number(maxAge);
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const sort = { [sortBy]: order === "asc" ? 1 : -1 };
+
+        const [pets, total] = await petService.searchPets(searchCriteria, { skip, limit: parseInt(limit), sort });
+
+        return res.status(StatusCodes.OK).json({
             message: "Tìm kiếm thành công!",
-            pets
+            pets,
+            total,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error(error);
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
     }
 };
 
 export const petFilters = async (req, res) => {
-    const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
-    if (!ownerId) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+    const userId = req.user?._id;
+    if (!userId) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "Bạn cần đăng nhập để thực hiện hành động này",
+        });
     }
+
     try {
-        let filter = {};
+        const {
+            breed,
+            breedName,
+            gender,
+            age,
+            ageMin,
+            ageMax,
+            reproductiveStatus,
+            petState,
+            vaccineName,
+            ownerId,
+            page = 1,
+            limit = 10
+        } = req.query;
 
-        if (req.query.breed) {
-            filter.breed = { $in: req.query.breed.split(',') };
+        const filter = {
+            isDeleted: false,
+            ...(petState ? { petState } : { petState: "ReadyToAdopt" }) 
+        };
+
+        if (breed) {
+            filter.breed = { $in: breed.split(',') };
         }
 
-        if (req.query.breedName) {
-            filter.breedName = { $regex: req.query.breedName, $options: 'i' }; // Không phân biệt hoa thường
+        if (breedName) {
+            filter.breedName = { $regex: breedName, $options: 'i' };
         }
-        if (req.query.gender) {
-            filter.gender = req.query.gender;
+
+        if (gender) {
+            const genders = gender.split(',');
+            filter.gender = { $in: genders };
         }
-        if (req.query.age) {
-            filter.age = Number(req.query.age);
+
+        if (reproductiveStatus) {
+            filter.reproductiveStatus = reproductiveStatus;
         }
-        if (req.query.ageMin || req.query.ageMax) {
-            filter.age = {};
-            if (req.query.ageMin) {
-                filter.age.$gte = parseInt(req.query.ageMin);
-            }
-            if (req.query.ageMax) {
-                filter.age.$lte = parseInt(req.query.ageMax);
-            }
+
+        if (ownerId) {
+            filter.ownerId = ownerId;
         }
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        const pets = await petService.filterPetProfiles(filter, skip, limit);
-        return res.status(200).json({ message: "find Pet With filter successful!", pets });
+
+        if (vaccineName) {
+            filter["vaccinationStatus.vaccineName"] = { $regex: vaccineName, $options: 'i' };
+        }
+
+        if (age) {
+            filter.age = Number(age);
+        }
+
+        if (ageMin || ageMax) {
+            filter.age = filter.age || {};
+            if (ageMin) filter.age.$gte = parseInt(ageMin);
+            if (ageMax) filter.age.$lte = parseInt(ageMax);
+        }
+
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const pets = await petService.filterPetProfiles(filter, skip, limitNum);
+
+        return res.status(200).json({
+            message: "Lọc thú cưng thành công!",
+            ...pets,
+        });
     } catch (error) {
-        return res.status(500).json({ message: "System error!", error: error.message });
+        return res.status(500).json({
+            message: "Lỗi hệ thống!",
+            error: error.message,
+        });
     }
-}
+};
+
+
 
 export const getAllPets = async (req, res) => {
-    const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+    const userId = req.user._id
     if (!userId) {
         return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
     }
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        const pets = await petService.getAllPets(skip, limit);
+        const pets = await petService.getAllPets({ page, limit });
         return res.status(200).json({ message: "Get all pets successful!", pets });
     } catch (error) {
         return res.status(500).json({ message: "System error!", error: error.message });
@@ -495,7 +608,7 @@ export const updatePetState = async (req, res) => {
             });
         }
 
-        const ownerId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
+        const ownerId = req.user._id
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 success: false,

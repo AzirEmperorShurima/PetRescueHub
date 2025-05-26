@@ -9,13 +9,14 @@ import {
     petFilters,
     getPetDetails,
     getAllPets,
-    updatePetState
+    updatePetState,
+    getPetStatistics
 } from "../Controller/Pet.Controller.js";
-import { uploadPostImages } from "../Middlewares/uploadMiddleware.js";
-import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.js";
 import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
+import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.Middlware.js";
+import { uploadPetAlbumImages } from "../Middlewares/GoogleDriveUploader.js";
 
-const petRoute = Router()
+const petRoute = Router();
 
 petRoute.get("/", (req, res) => {
     res.status(200).json({
@@ -25,35 +26,35 @@ petRoute.get("/", (req, res) => {
     });
 });
 
-// 📌 Routes liên quan đến Pet
-petRoute.post("/portfolio/create", 
+// Protected routes 
+petRoute.use(checkUserAuth);
+
+petRoute.get("/v1/get-pets/filter-apply", petFilters);
+petRoute.get("/v1/get-pets/all-pet", getAllPets);
+// GET / api / pets / search ? breed = poodle & gender=male & minAge=1 & maxAge=5 & search=cho & page=2 & limit=5 & sortBy=age & order=asc
+
+// CRUD operations
+petRoute.post("/pets/portfolio/create", [
     avatarUploadMiddleware('pet_avatars'),
-    uploadPostImages('petAlbum', 'petAlbum'),
-    createPet
-);
-petRoute.put("/portfolio/update/:petId", [checkUserAuth], updatePetProfile);
-petRoute.patch("/portfolio/update-state/:petId", [checkUserAuth], updatePetState);
-petRoute.delete("/portfolio/delete/:petId", deletePet);
+    uploadPetAlbumImages('petAlbum')
+], createPet);
 
-// 📌 Upload files (Avatar & Certificate)
-// petRoute.post("/portfolio/upload-avatar/:petId", upload.single("avatar"), uploadPetAvatar);
-// petRoute.post("/portfolio/upload-certificate/:petId", upload.single("certificate"), uploadPetCertificate);
+petRoute.put("/pets/update/:petId", updatePetProfile);
+petRoute.put("/pets/update-state/:petId", updatePetState);
+petRoute.delete("/pets/delete/:petId", deletePet);
 
-// 📌 Lọc pet theo các tiêu chí (breed, age, gender,...)
-petRoute.get("/portfolio/filter", petFilters);
+// Pet information routes
+petRoute.get("/pets/owner/:ownerId", getPetsByOwner);
+petRoute.get("/pets/:petId", getPetDetails);
 
-// 📌 Lấy danh sách pet theo owner
-petRoute.get("/portfolio/owner/:ownerId", getPetsByOwner);
-
-// 📌 Lấy thông tin pet theo ID
-petRoute.get("/portfolio/:petId", getPetDetails);
-
-// 📌 Lấy tất cả pet (có thể phân trang)
-petRoute.get("/portfolio/all", getAllPets);
-
-// 📌 Middleware xử lý lỗi chung
+petRoute.get("/pets/analysis/petStatistics", getPetStatistics)
+// Error handling middleware
 petRoute.use((err, req, res, next) => {
     console.error("Lỗi xảy ra:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({
+        success: false,
+        error: "Internal Server Error"
+    });
 });
+
 export default petRoute;

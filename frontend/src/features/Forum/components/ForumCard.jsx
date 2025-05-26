@@ -1,10 +1,9 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Box, 
-  Avatar, 
-  Text, 
-  Image,
+import {
+  Box,
+  Avatar,
+  Text,
   Badge,
   IconButton,
   HStack,
@@ -13,42 +12,38 @@ import {
   useColorModeValue,
   useTheme
 } from '@chakra-ui/react';
-import { 
-  FaHeart, 
-  FaRegHeart,
+import {
   FaComment,
-  FaEye,
   FaEllipsisV,
   FaBookmark,
   FaRegBookmark
 } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import PostSticker from './PostSticker';
+import Reaction from '../../../components/common/interactions/Reaction';
 
-const ForumCard = ({ 
-  item, 
-  type, 
-  categories, 
-  onToggleLike, 
-  onToggleFavorite, 
+const ForumCard = ({
+  item,
+  type,
+  categories,
+  onToggleLike,
+  onToggleFavorite,
   formatDate,
   onClick
 }) => {
   const theme = useTheme();
-  
-  // Color mode values
+
   const cardBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const textSecondary = useColorModeValue('gray.600', 'gray.400');
   const tagBg = useColorModeValue('blue.50', 'blue.900');
   const tagColor = useColorModeValue('blue.600', 'blue.200');
   const shadowColor = useColorModeValue('lg', 'dark-lg');
-  
-  // Sử dụng categories được truyền vào hoặc sử dụng categoryObj từ item
+
   const category = item.categoryObj || (categories && categories.find(cat => cat.id === item.category));
-  
+
   const getDetailUrl = () => {
-    switch(type) {
+    switch (type) {
       case 'post':
         return `/forum/post/${item.id}`;
       case 'question':
@@ -61,36 +56,28 @@ const ForumCard = ({
   };
 
   return (
-    <Box 
+    <Box
+      w="100%"
       bg={cardBg}
       borderWidth="1px"
       borderColor={borderColor}
       borderRadius="lg"
       shadow="md"
-      mb={6}
+      mb={4}
       position="relative"
       transition="all 0.2s ease-in-out"
-      cursor={onClick ? "pointer" : "default"}
-      _hover={{
-        transform: 'translateY(-5px)',
-        shadow: shadowColor,
-      }}
+      cursor={onClick ? 'pointer' : 'default'}
+      _hover={{ shadow: shadowColor }}
       onClick={onClick ? () => onClick(item.id) : undefined}
     >
-      <PostSticker type={type} />
-      
-      <Box p={4}>
+    <PostSticker type={type} />
+
+      <Box p={2}>
         {/* Author Section */}
         <HStack mb={4} spacing={3}>
-          <Avatar 
-            src={item.author?.avatar} 
-            name={item.author?.name}
-            size="sm"
-          />
+          <Avatar src={item.author?.avatar} name={item.author?.name} size="sm" />
           <VStack align="start" spacing={0}>
-            <Text fontSize="sm" fontWeight="medium">
-              {item.author?.name}
-            </Text>
+            <Text fontSize="sm" fontWeight="medium">{item.author?.name}</Text>
             <Text fontSize="xs" color={textSecondary}>
               {formatDate ? formatDate(item.createdAt) : new Date(item.createdAt).toLocaleDateString()}
             </Text>
@@ -99,57 +86,48 @@ const ForumCard = ({
 
         {/* Content Section */}
         <Box as={Link} to={getDetailUrl()} _hover={{ textDecoration: 'none' }}>
-          <Text 
-            fontSize="lg" 
-            fontWeight="semibold" 
-            mb={3}
-            lineHeight="shorter"
-            _hover={{ color: 'blue.500' }}
-          >
+          <Text fontSize="25px" fontWeight="semibold" mb={1.5} lineHeight="shorter" _hover={{ color: 'blue.500' }}>
             {item.title}
           </Text>
-          
-          <Text 
-            fontSize="sm" 
-            color={textSecondary} 
-            mb={4}
-            lineHeight="base"
-          >
-            {item.content?.substring(0, 150)}
-            {item.content?.length > 150 ? '...' : ''}
+
+          <Text fontSize="18px" color={textSecondary} mb={2} lineHeight="base">
+            {item.content?.substring(0, 150)}{item.content?.length > 150 ? '...' : ''}
           </Text>
         </Box>
 
-        {/* Image Section */}
-        {item.image && (
-          <Image
-            src={item.image}
-            alt={item.title}
-            w="100%"
-            borderRadius="md"
-            maxH="450px"
-            objectFit="cover"
-            mb={4}
-          />
-        )}
+        {/* Image Section (iframe Google Drive) */}
+        {item.imgUrl && item.imgUrl.length > 0 && item.imgUrl.map((url, index) => {
+          const driveIdMatch = url.match(/[-\w]{25,}/);
+          const driveId = driveIdMatch?.[0];
+          return driveId ? (
+            <Box key={index} mb={4}>
+              <iframe
+                src={`https://drive.google.com/file/d/${driveId}/preview`}
+                width="90%"
+                height="350px"
+                style={{ border: 'none', borderRadius: '8px' }}
+                allow="autoplay"
+                title={`Google Drive Image ${index + 1}`}
+                padding left="10px"
+              />
+            </Box>
+          ) : null;
+        })}
 
         {/* Tags Section */}
         {item.tags && item.tags.length > 0 && (
-          <Flex flexWrap="wrap" gap={2} mb={4}>
+          <Flex flexWrap="wrap" gap={2} mb={0}>
             {item.tags.map((tag, index) => (
               <Badge
                 key={index}
-                px={2}
-                py={1}
+                px={3}
+                py={1.5}
                 bg={tagBg}
                 color={tagColor}
                 borderRadius="md"
-                fontSize="xs"
-                fontWeight="medium"
-                _hover={{
-                  bg: useColorModeValue('blue.100', 'blue.800'),
-                  cursor: 'pointer'
-                }}
+                fontSize="sm"
+                fontWeight="bold"
+                _hover={{ bg: useColorModeValue('blue.100', 'blue.800'), cursor: 'pointer' }}
               >
                 {tag}
               </Badge>
@@ -158,72 +136,41 @@ const ForumCard = ({
         )}
       </Box>
 
-      {/* Actions Section */}
-      <Box 
-        px={4} 
-        pb={4}
-        borderTop="1px"
-        borderColor={borderColor}
-        pt={3}
-      >
-        <Flex justify="space-between" w="100%">
-          <HStack spacing={1}>
-            {/* Like Button */}
-            <IconButton
-              aria-label="like"
-              icon={item.isLiked ? <FaHeart /> : <FaRegHeart />}
-              size="sm"
-              variant="ghost"
-              colorScheme={item.isLiked ? "red" : "gray"}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleLike && onToggleLike(item.id);
-              }}
-              rightIcon={
-                <Text fontSize="xs" ml={1}>
-                  {item.likes || 0}
-                </Text>
-              }
+      {/* Action Section */}
+      <Box px={4} pb={1} borderTop="1px" borderColor={borderColor} pt={1}>
+        <Flex justify="space-between" w="100%" align="center">
+          <HStack spacing={4}>
+            <Reaction
+              reactions={item.reactions}
+              userReaction={item.userReaction}
+              onReact={(type) => onToggleLike && onToggleLike(item.id, type)}
+              size="md"
+              variant="emoji"
+              showCount={true}
             />
 
-            {/* Comment Button */}
-            <IconButton
-              aria-label="comments"
-              icon={<FaComment />}
-              size="sm"
-              variant="ghost"
-              colorScheme="gray"
-              rightIcon={
-                <Text fontSize="xs" ml={1}>
-                  {item.comments || 0}
-                </Text>
-              }
-            />
-
-            {/* Views Button */}
-            <IconButton
-              aria-label="views"
-              icon={<FaEye />}
-              size="sm"
-              variant="ghost"
-              colorScheme="gray"
-              rightIcon={
-                <Text fontSize="xs" ml={1}>
-                  {item.views || 0}
-                </Text>
-              }
-            />
+            <HStack spacing={2}>
+              <IconButton
+                aria-label="comments"
+                icon={<FaComment />}
+                size="md"
+                variant="ghost"
+                colorScheme="gray"
+              />
+              <Text fontSize="sm" color={textSecondary}>
+                {item.comments || 0}
+              </Text>
+            </HStack>
           </HStack>
 
-          <HStack spacing={1}>
-            {/* Favorite Button */}
+          <HStack spacing={3}>
+             {/* Favorite Button */}
             <IconButton
               aria-label="favorite"
               icon={item.isFavorited ? <FaBookmark /> : <FaRegBookmark />}
-              size="sm"
+              size="md"
               variant="ghost"
-              colorScheme={item.isFavorited ? "blue" : "gray"}
+              colorScheme={item.isFavorited ? 'blue' : 'gray'}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -235,7 +182,7 @@ const ForumCard = ({
             <IconButton
               aria-label="more options"
               icon={<FaEllipsisV />}
-              size="sm"
+              size="md"
               variant="ghost"
               colorScheme="gray"
             />
