@@ -1,30 +1,68 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Container, Grid, GridItem, Tabs, TabList, TabPanels, Tab, TabPanel,
-  Divider, Text, Card, CardBody, Input, Button, Avatar,
-  FormControl, FormLabel, Select, Spinner, Tag,
-  useToast, IconButton, VStack, HStack, Flex, Heading,
-  Radio, RadioGroup, Stack, Textarea, Badge, SimpleGrid
+  Box,
+  Container,
+  Grid,
+  GridItem,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Text,
+  Card,
+  CardBody,
+  Input,
+  Button,
+  Avatar,
+  FormControl,
+  FormLabel,
+  Select,
+  Spinner,
+  Tag,
+  Alert,
+  AlertIcon,
+  AlertDescription,
+  IconButton,
+  VStack,
+  HStack,
+  Divider,
+  useToast,
+  Flex,
+  Spacer,
+  useColorModeValue
 } from '@chakra-ui/react';
 import {
-  FiUser, FiMail, FiPhone, FiMapPin, FiCalendar,
-  FiUserCheck, FiHeart, FiFileText, FiAward, FiUsers,
-  FiEdit, FiSave, FiX, FiUserPlus, FiUserMinus, FiHelpCircle
-} from 'react-icons/fi';
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaMapMarkerAlt,
+  FaBirthdayCake,
+  FaIdBadge,
+  FaPaw,
+  FaNewspaper,
+  FaTrophy,
+  FaHandsHelping,
+  FaEdit,
+  FaSave,
+  FaTimes,
+  FaMars,
+  FaVenus,
+  FaQuestion
+} from 'react-icons/fa';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi'; // Import Vietnamese locale
 import PetGrid from './components/PetGrid';
 import PostGrid from './components/PostGrid';
 import Achievements from './components/Achievements';
 import RescueActivities from './components/RescueActivities';
 import ActivityTimeline from './components/ActivityTimeline';
 import VolunteerBadges from './components/VolunteerBadges';
-import './Profile.css';
 import { pets as mockPets } from '../../mocks/pets';
 import { forumPosts as mockPosts } from '../../mocks/forum';
 import { testimonials as mockAchievements } from '../../mocks/homeMock';
 import { rescues as mockRescues } from '../../mocks/rescues';
 import apiService from '../../services/api.service';
-import dayjs from 'dayjs';
-import 'dayjs/locale/vi';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -41,8 +79,15 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const toast = useToast();
+
+  // Color scheme
+  const bgColor = useColorModeValue('#f8f9fa', 'gray.800');
+  const cardBg = useColorModeValue('white', 'gray.700');
+  const textColor = useColorModeValue('#333', 'white');
+  const primaryColor = '#D34F81'; // Updated to match Terms.css --primary-color
+  const primaryDark = '#b71c50'; // Darker shade for hover effects
 
   // Xử lý thay đổi tab
   const handleTabChange = (index) => {
@@ -101,8 +146,9 @@ const Profile = () => {
           title: 'Thành công',
           description: 'Cập nhật thông tin thành công!',
           status: 'success',
-          duration: 5000,
+          duration: 3000,
           isClosable: true,
+          position: 'bottom-right'
         });
         setIsEditing(false);
       } else {
@@ -114,8 +160,9 @@ const Profile = () => {
         title: 'Lỗi',
         description: error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin!',
         status: 'error',
-        duration: 5000,
+        duration: 3000,
         isClosable: true,
+        position: 'bottom-right'
       });
     } finally {
       setIsSaving(false);
@@ -191,16 +238,16 @@ const Profile = () => {
   // Thêm tab "Thông tin cá nhân"
   const getTabs = () => {
     const tabs = [
-      { label: 'Thông tin cá nhân', icon: <FiUser /> },
-      { label: 'Thú cưng', icon: <FiHeart /> },
-      { label: 'Bài viết', icon: <FiFileText /> }
+      { label: 'Thông tin cá nhân', icon: FaUser },
+      { label: 'Thú cưng', icon: FaPaw },
+      { label: 'Bài viết', icon: FaNewspaper }
     ];
 
     const userRoles = Array.isArray(user?.roles) ? user.roles : [];
     if (userRoles.includes('volunteer')) {
       tabs.push(
-        { label: 'Hoạt động cứu hộ', icon: <FiUsers /> },
-        { label: 'Thành tích', icon: <FiAward /> }
+        { label: 'Hoạt động cứu hộ', icon: FaHandsHelping },
+        { label: 'Thành tích', icon: FaTrophy }
       );
     }
 
@@ -211,15 +258,15 @@ const Profile = () => {
   const renderGenderIcon = (gender) => {
     switch (gender) {
       case 'male':
-        return <FiUserPlus color="blue" />;
+        return <Box as={FaMars} color={primaryColor} />;
       case 'female':
-        return <FiUserMinus color="pink" />;
+        return <Box as={FaVenus} color={primaryColor} />;
       default:
-        return <FiHelpCircle color="gray" />;
+        return <Box as={FaQuestion} color="gray.500" />;
     }
   };
 
-  // Format ngày tháng
+  // Format ngày tháng với dayjs
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa cập nhật';
     try {
@@ -239,53 +286,77 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <Box className="profile-loading" display="flex" flexDirection="column" alignItems="center" justifyContent="center" minH="60vh">
-        <Spinner size="xl" color="pink.500" thickness="4px" />
-        <Text mt={4} fontSize="lg">Đang tải thông tin...</Text>
+      <Box 
+        minH="100vh" 
+        bg={bgColor} 
+        display="flex" 
+        alignItems="center" 
+        justifyContent="center"
+        flexDirection="column"
+      >
+        <Spinner 
+          size="xl" 
+          color={primaryColor}
+          thickness="4px"
+          speed="0.65s"
+        />
+        <Text mt={4} color={textColor}>Đang tải thông tin...</Text>
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box className="profile-loading" display="flex" flexDirection="column" alignItems="center" justifyContent="center" minH="60vh">
-        <Text color="red.500" fontSize="lg">{error}</Text>
-        <Text mt={2}>Vui lòng đăng nhập lại hoặc thử lại sau.</Text>
+      <Box minH="100vh" bg={bgColor} display="flex" alignItems="center" justifyContent="center">
+        <Alert status="error" borderRadius="md" maxW="md">
+          <AlertIcon />
+          <Box>
+            <AlertDescription>{error}</AlertDescription>
+            <Text mt={2}>Vui lòng đăng nhập lại hoặc thử lại sau.</Text>
+          </Box>
+        </Alert>
       </Box>
     );
   }
 
   if (!user) {
     return (
-      <Box className="profile-loading" display="flex" flexDirection="column" alignItems="center" justifyContent="center" minH="60vh">
-        <Text>Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.</Text>
+      <Box minH="100vh" bg={bgColor} display="flex" alignItems="center" justifyContent="center">
+        <Alert status="warning" borderRadius="md" maxW="md">
+          <AlertIcon />
+          <AlertDescription>
+            Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.
+          </AlertDescription>
+        </Alert>
       </Box>
     );
   }
 
   return (
-    <Box className="profile-page" py={8}>
-      <Container maxW="6xl">
-        <Grid templateColumns={{ base: "1fr", md: "1fr 2fr" }} gap={6} className="profile-content-container">
+    <Box minH="100vh" bg={bgColor} py={10}>
+      <Container maxW="container.xl">
+        <Grid templateColumns={{ base: "1fr", lg: "1fr 2fr" }} gap={6}>
           {/* Sidebar - Thông tin người dùng */}
           <GridItem>
-            <Card className="profile-sidebar" shadow="lg">
-              <CardBody className="profile-avatar-container">
-                <VStack spacing={4} align="center">
+            <Card bg={cardBg} shadow="lg" borderRadius="xl">
+              <CardBody p={6}>
+                <VStack spacing={4}>
                   <Avatar
+                    size="2xl"
                     src={user.avatar}
                     name={user.fullname || user.username}
-                    size="2xl"
-                    className="profile-avatar"
+                    border="4px solid"
+                    borderColor="white"
+                    shadow="lg"
                   />
-                  <VStack spacing={1} align="center">
-                    <Heading as="h3" size="lg" className="profile-name">
+                  <VStack spacing={1} textAlign="center">
+                    <Text fontSize="xl" fontWeight="bold" color={textColor}>
                       {user.fullname || 'Anonymous'}
-                    </Heading>
-                    <Text fontSize="sm" color="gray.600" className="profile-username">
+                    </Text>
+                    <Text fontSize="sm" color="gray.500">
                       @{user.username}
                     </Text>
-                    <HStack spacing={2} flexWrap="wrap" justify="center">
+                    <HStack>
                       {(() => {
                         const roles = user.roles.map(role => typeof role === 'object' ? role.name : role);
                         const matchedRole = roles.find(r => r.toLowerCase() === 'volunteer') || roles.find(r => r.toLowerCase() === 'user');
@@ -294,8 +365,10 @@ const Profile = () => {
                         return (
                           <Tag
                             key={matchedRole}
-                            colorScheme="pink"
+                            bg={primaryColor}
+                            color="white"
                             size="sm"
+                            fontWeight="medium"
                           >
                             {matchedRole}
                           </Tag>
@@ -305,371 +378,379 @@ const Profile = () => {
                   </VStack>
                 </VStack>
 
-                <Divider my={6} className="sidebar-divider" />
+                <Divider my={6} />
 
-                <VStack spacing={6} align="stretch">
-                  <Box className="sidebar-section">
-                    <Heading as="h4" size="md" mb={3} className="sidebar-title">
-                      Thông tin liên hệ
-                    </Heading>
+                <VStack align="stretch" spacing={4}>
+                  <Text fontSize="lg" fontWeight="semibold" color={textColor}>
+                    Thông tin liên hệ
+                  </Text>
 
-                    <VStack spacing={3} align="stretch">
-                      <Box className="info-item">
-                        <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
-                          Email
+                  <VStack align="stretch" spacing={3}>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                        Email
+                      </Text>
+                      <Text fontSize="sm" color={textColor}>
+                        {user.email}
+                      </Text>
+                    </Box>
+
+                    {user.phonenumber && (
+                      <Box>
+                        <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                          Số điện thoại
                         </Text>
-                        <Text className="profile-email">
-                          {user.email}
-                        </Text>
-                      </Box>
-
-                      {user.phonenumber && (
-                        <Box className="info-item">
-                          <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
-                            Số điện thoại
-                          </Text>
-                          <Text>
-                            {user.phonenumber}
-                          </Text>
-                        </Box>
-                      )}
-
-                      {user.address && (
-                        <Box className="info-item">
-                          <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
-                            Địa chỉ
-                          </Text>
-                          <Text>
-                            {user.address}
-                          </Text>
-                        </Box>
-                      )}
-                    </VStack>
-                  </Box>
-
-                  <Divider className="sidebar-divider" />
-
-                  <Box className="sidebar-section">
-                    <Heading as="h4" size="md" mb={3} className="sidebar-title">
-                      Thông tin khác
-                    </Heading>
-
-                    <VStack spacing={3} align="stretch">
-                      <Box className="info-item">
-                        <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
-                          Ngày tham gia
-                        </Text>
-                        <Text>
-                          {formatDate(user.createdAt)}
+                        <Text fontSize="sm" color={textColor}>
+                          {user.phonenumber}
                         </Text>
                       </Box>
+                    )}
 
-                      <Box className="info-item">
-                        <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
-                          Giới tính
+                    {user.address && (
+                      <Box>
+                        <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                          Địa chỉ
                         </Text>
-                        <HStack>
-                          {renderGenderIcon(user.gender)}
-                          <Text>
-                            {user.gender === 'male' ? 'Nam' :
-                              user.gender === 'female' ? 'Nữ' : 
-                              user.gender === 'not provided' ? 'Chưa cung cấp' : 'Chưa cung cấp'}
-                          </Text>
-                        </HStack>
+                        <Text fontSize="sm" color={textColor}>
+                          {user.address}
+                        </Text>
                       </Box>
-
-                      {user.birthdate && (
-                        <Box className="info-item">
-                          <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={1}>
-                            Ngày sinh
-                          </Text>
-                          <Text>
-                            {formatDate(user.birthdate)}
-                          </Text>
-                        </Box>
-                      )}
-                    </VStack>
-                  </Box>
-
-                  <Box className="profile-actions">
-                    <Button
-                      colorScheme="pink"
-                      leftIcon={<FiEdit />}
-                      width="full"
-                      onClick={handleEditProfile}
-                      className="edit-profile-button"
-                    >
-                      Chỉnh sửa hồ sơ
-                    </Button>
-                  </Box>
+                    )}
+                  </VStack>
                 </VStack>
+
+                <Divider my={6} />
+
+                <VStack align="stretch" spacing={4}>
+                  <Text fontSize="lg" fontWeight="semibold" color={textColor}>
+                    Thông tin khác
+                  </Text>
+
+                  <VStack align="stretch" spacing={3}>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                        Ngày tham gia
+                      </Text>
+                      <Text fontSize="sm" color={textColor}>
+                        {formatDate(user.createdAt)}
+                      </Text>
+                    </Box>
+
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                        Giới tính
+                      </Text>
+                      <HStack>
+                        {renderGenderIcon(user.gender)}
+                        <Text fontSize="sm" color={textColor}>
+                          {user.gender === 'male' ? 'Nam' :
+                            user.gender === 'female' ? 'Nữ' : 
+                            user.gender === 'not provided' ? 'Chưa cung cấp' : 'Chưa cung cấp'}
+                        </Text>
+                      </HStack>
+                    </Box>
+
+                    {user.birthdate && (
+                      <Box>
+                        <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                          Ngày sinh
+                        </Text>
+                        <Text fontSize="sm" color={textColor}>
+                          {formatDate(user.birthdate)}
+                        </Text>
+                      </Box>
+                    )}
+                  </VStack>
+                </VStack>
+
+                <Box mt={6}>
+                  <Button
+                    bg={primaryColor}
+                    color="white"
+                    leftIcon={<FaEdit />}
+                    width="full"
+                    onClick={handleEditProfile}
+                    _hover={{
+                      bg: primaryDark,
+                      transform: 'translateY(-2px)',
+                      shadow: 'lg'
+                    }}
+                    transition="all 0.3s ease"
+                  >
+                    Chỉnh sửa hồ sơ
+                  </Button>
+                </Box>
               </CardBody>
             </Card>
           </GridItem>
 
           {/* Main Content */}
           <GridItem>
-            <Card shadow="lg" className="profile-content">
-              <CardBody>
-                <Tabs index={activeTab} onChange={handleTabChange} variant="enclosed" colorScheme="pink">
-                  <TabList className="profile-tabs" flexWrap="wrap">
+            <Card bg={cardBg} shadow="lg" borderRadius="xl" minH="500px">
+              <CardBody p={0}>
+                <Tabs 
+                  index={activeTab} 
+                  onChange={handleTabChange}
+                  colorScheme="pink"
+                  variant="enclosed"
+                >
+                  <TabList borderBottomColor="gray.200">
                     {getTabs().map((tab, index) => (
-                      <Tab key={index} className="profile-tab">
+                      <Tab
+                        key={index}
+                        fontSize="sm"
+                        fontWeight="medium"
+                        _selected={{
+                          color: primaryColor,
+                          borderBottomColor: primaryColor
+                        }}
+                      >
                         <HStack spacing={2}>
-                          {tab.icon}
+                          <Box as={tab.icon} />
                           <Text>{tab.label}</Text>
                         </HStack>
                       </Tab>
                     ))}
                   </TabList>
 
-                  <TabPanels className="profile-tab-content">
+                  <TabPanels>
                     {/* Tab 0: Thông tin cá nhân */}
-                    <TabPanel>
-                      <VStack spacing={6} align="stretch">
-                        <Flex justify="space-between" align="center" className="tab-header">
-                          <Heading as="h3" size="lg" className="tab-title">
-                            Thông tin cá nhân
-                          </Heading>
+                    <TabPanel p={6}>
+                      <Flex justify="space-between" align="center" mb={6}>
+                        <Text fontSize="xl" fontWeight="semibold" color={textColor}>
+                          Thông tin cá nhân
+                        </Text>
 
-                          {isEditing && (
-                            <HStack className="profile-edit-actions">
-                              <Button
-                                colorScheme="green"
-                                leftIcon={isSaving ? <Spinner size="sm" /> : <FiSave />}
-                                onClick={handleSaveProfile}
-                                isLoading={isSaving}
-                                isDisabled={!isFormValid()}
-                                className="save-profile-button"
-                              >
-                                {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                colorScheme="red"
-                                leftIcon={<FiX />}
-                                onClick={handleCancelEdit}
-                                isDisabled={isSaving}
-                                className="cancel-button"
-                              >
-                                Hủy
-                              </Button>
-                            </HStack>
-                          )}
-                        </Flex>
+                        {isEditing && (
+                          <HStack>
+                            <Button
+                              bg="#4caf50"
+                              color="white"
+                              leftIcon={isSaving ? <Spinner size="sm" /> : <FaSave />}
+                              onClick={handleSaveProfile}
+                              isDisabled={isSaving || !isFormValid()}
+                              _hover={{
+                                bg: "#43a047",
+                                transform: 'translateY(-2px)',
+                                shadow: 'lg'
+                              }}
+                              transition="all 0.3s ease"
+                            >
+                              {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              colorScheme="red"
+                              leftIcon={<FaTimes />}
+                              onClick={handleCancelEdit}
+                              isDisabled={isSaving}
+                            >
+                              Hủy
+                            </Button>
+                          </HStack>
+                        )}
+                      </Flex>
 
-                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                          {/* Thông tin cơ bản */}
-                          <Card className="profile-section-card">
+                      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6}>
+                        {/* Thông tin cơ bản */}
+                        <GridItem>
+                          <Card shadow="sm" borderRadius="lg" h="full">
                             <CardBody>
-                              <VStack spacing={4} align="stretch">
+                              <Text fontSize="md" fontWeight="semibold" color={textColor} mb={4}>
+                                Thông tin cơ bản
+                              </Text>
+                              <Divider mb={4} />
+                              
+                              <VStack align="stretch" spacing={4}>
                                 <Box>
-                                  <Heading as="h4" size="md" className="section-title">
-                                    Thông tin cơ bản
-                                  </Heading>
-                                  <Divider mt={2} mb={4} />
+                                  <HStack mb={2}>
+                                    <Box as={FaUser} color="gray.500" />
+                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                      Họ và tên
+                                    </Text>
+                                  </HStack>
+                                  {isEditing ? (
+                                    <Input
+                                      name="fullname"
+                                      value={editedUser.fullname || ''}
+                                      onChange={handleInputChange}
+                                      size="sm"
+                                    />
+                                  ) : (
+                                    <Text fontSize="sm" color={primaryColor} fontWeight="medium">
+                                      {user.fullname || 'Chưa cập nhật'}
+                                    </Text>
+                                  )}
                                 </Box>
 
-                                <VStack spacing={4} align="stretch" className="profile-field-container">
-                                  <Box className="profile-field">
-                                    <HStack mb={2} className="field-label">
-                                      <FiUser size={16} />
-                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
-                                        Họ và tên
-                                      </Text>
-                                    </HStack>
-                                    {isEditing ? (
-                                      <Input
-                                        name="fullname"
-                                        value={editedUser.fullname || ''}
-                                        onChange={handleInputChange}
-                                        size="sm"
-                                        className="edit-field"
-                                      />
-                                    ) : (
-                                      <Text className="field-value highlight-field" fontWeight="medium">
-                                        {user.fullname || 'Chưa cập nhật'}
-                                      </Text>
-                                    )}
-                                  </Box>
-
-                                  <Box className="profile-field">
-                                    <HStack mb={2} className="field-label">
-                                      <FiUserCheck size={16} />
-                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
-                                        Tên đăng nhập
-                                      </Text>
-                                    </HStack>
-                                    <Text className="field-value">
-                                      {user.username}
+                                <Box>
+                                  <HStack mb={2}>
+                                    <Box as={FaIdBadge} color="gray.500" />
+                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                      Tên đăng nhập
                                     </Text>
-                                  </Box>
+                                  </HStack>
+                                  <Text fontSize="sm" color={textColor}>
+                                    {user.username}
+                                  </Text>
+                                </Box>
 
-                                  <Box className="profile-field">
-                                    <HStack mb={2} className="field-label">
-                                      <FiMail size={16} />
-                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
-                                        Email
-                                      </Text>
-                                    </HStack>
-                                    <Text className="field-value">
+                                <Box>
+                                  <HStack mb={2}>
+                                    <Box as={FaEnvelope} color="gray.500" />
+                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                      Email
+                                    </Text>
+                                  </HStack>
+                                    <Text fontSize="sm" color={textColor}>
                                       {user.email}
                                     </Text>
-                                  </Box>
-                                </VStack>
+                                </Box>
                               </VStack>
                             </CardBody>
                           </Card>
+                        </GridItem>
 
-                          {/* Thông tin liên hệ */}
-                          <Card className="profile-section-card">
+                        {/* Thông tin liên hệ */}
+                        <GridItem>
+                          <Card shadow="sm" borderRadius="lg" h="full">
                             <CardBody>
-                              <VStack spacing={4} align="stretch">
+                              <Text fontSize="md" fontWeight="semibold" color={textColor} mb={4}>
+                                Thông tin liên hệ
+                              </Text>
+                              <Divider mb={4} />
+                              
+                              <VStack align="stretch" spacing={4}>
                                 <Box>
-                                  <Heading as="h4" size="md" className="section-title">
-                                    Thông tin liên hệ
-                                  </Heading>
-                                  <Divider mt={2} mb={4} />
+                                  <HStack mb={2}>
+                                    <Box as={FaPhone} color="gray.500" />
+                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                      Số điện thoại
+                                    </Text>
+                                  </HStack>
+                                  {isEditing ? (
+                                    <Input
+                                      name="phonenumber"
+                                      value={editedUser.phonenumber || ''}
+                                      onChange={handleInputChange}
+                                      size="sm"
+                                    />
+                                  ) : (
+                                    <Text fontSize="sm" color={textColor}>
+                                      {user.phonenumber || 'Chưa cập nhật'}
+                                    </Text>
+                                  )}
                                 </Box>
 
-                                <VStack spacing={4} align="stretch" className="profile-field-container">
-                                  <Box className="profile-field">
-                                    <HStack mb={2} className="field-label">
-                                      <FiPhone size={16} />
-                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
-                                        Số điện thoại
-                                      </Text>
-                                    </HStack>
-                                    {isEditing ? (
-                                      <Input
-                                        name="phonenumber"
-                                        value={editedUser.phonenumber || ''}
-                                        onChange={handleInputChange}
-                                        size="sm"
-                                        className="edit-field"
-                                      />
-                                    ) : (
-                                      <Text className="field-value">
-                                        {user.phonenumber || 'Chưa cập nhật'}
-                                      </Text>
-                                    )}
-                                  </Box>
+                                <Box>
+                                  <HStack mb={2}>
+                                    <Box as={FaMapMarkerAlt} color="gray.500" />
+                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                      Địa chỉ
+                                    </Text>
+                                  </HStack>
+                                  {isEditing ? (
+                                    <Input
+                                      name="address"
+                                      value={editedUser.address || ''}
+                                      onChange={handleInputChange}
+                                      size="sm"
+                                    />
+                                  ) : (
+                                    <Text fontSize="sm" color={textColor}>
+                                      {user.address || 'Chưa cập nhật'}
+                                    </Text>
+                                  )}
+                                </Box>
 
-                                  <Box className="profile-field">
-                                    <HStack mb={2} className="field-label">
-                                      <FiMapPin size={16} />
-                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
-                                        Địa chỉ
-                                      </Text>
-                                    </HStack>
-                                    {isEditing ? (
-                                      <Input
-                                        name="address"
-                                        value={editedUser.address || ''}
-                                        onChange={handleInputChange}
-                                        size="sm"
-                                        className="edit-field"
-                                      />
-                                    ) : (
-                                      <Text className="field-value">
-                                        {user.address || 'Chưa cập nhật'}
-                                      </Text>
-                                    )}
-                                  </Box>
-
-                                  <Box className="profile-field">
-                                    <HStack mb={2} className="field-label">
-                                      <FiCalendar size={16} />
-                                      <Text fontSize="sm" fontWeight="semibold" color="gray.600">
-                                        Ngày sinh
-                                      </Text>
-                                    </HStack>
-                                    {isEditing ? (
-                                      <Input
-                                        name="birthdate"
-                                        type="date"
-                                        value={editedUser.birthdate ? new Date(editedUser.birthdate).toISOString().split('T')[0] : ''}
-                                        onChange={handleInputChange}
-                                        size="sm"
-                                        className="edit-field"
-                                      />
-                                    ) : (
-                                      <Text className="field-value">
-                                        {user.birthdate ? formatDate(user.birthdate) : 'Chưa cập nhật'}
-                                      </Text>
-                                    )}
-                                  </Box>
-                                </VStack>
+                                <Box>
+                                  <HStack mb={2}>
+                                    <Box as={FaBirthdayCake} color="gray.500" />
+                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                      Ngày sinh
+                                    </Text>
+                                  </HStack>
+                                  {isEditing ? (
+                                    <Input
+                                      name="birthdate"
+                                      type="date"
+                                      value={editedUser.birthdate ? dayjs(editedUser.birthdate).format('YYYY-MM-DD') : ''}
+                                      onChange={handleInputChange}
+                                      size="sm"
+                                    />
+                                  ) : (
+                                    <Text fontSize="sm" color={textColor}>
+                                      {user.birthdate ? formatDate(user.birthdate) : 'Chưa cập nhật'}
+                                    </Text>
+                                  )}
+                                </Box>
                               </VStack>
                             </CardBody>
                           </Card>
-                        </SimpleGrid>
+                        </GridItem>
 
                         {/* Thông tin bổ sung */}
-                        <Card className="profile-section-card">
-                          <CardBody>
-                            <VStack spacing={4} align="stretch">
+                        <GridItem colSpan={{ base: 1, md: 2 }}>
+                          <Card shadow="sm" borderRadius="lg">
+                            <CardBody>
+                              <Text fontSize="md" fontWeight="semibold" color={textColor} mb={4}>
+                                Thông tin bổ sung
+                              </Text>
+                              <Divider mb={4} />
+                              
                               <Box>
-                                <Heading as="h4" size="md" className="section-title">
-                                  Thông tin bổ sung
-                                </Heading>
-                                <Divider mt={2} mb={4} />
-                              </Box>
-
-                              <Box className="profile-field">
-                                <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={2}>
+                                <Text fontSize="sm" color="gray.500" fontWeight="medium" mb={2}>
                                   Giới tính
                                 </Text>
                                 {isEditing ? (
-                                  <RadioGroup
+                                  <Select
                                     name="gender"
                                     value={
                                       editedUser.gender === 'not provided'
                                         ? 'not_provided'
                                         : (editedUser.gender || 'not_provided')
                                     }
-                                    onChange={(value) => handleInputChange({ target: { name: 'gender', value } })}
+                                    onChange={handleInputChange}
+                                    size="sm"
                                   >
-                                    <Stack direction="row" spacing={4}>
-                                      <Radio value="male">Nam</Radio>
-                                      <Radio value="female">Nữ</Radio>
-                                      <Radio value="not_provided">Không cung cấp</Radio>
-                                    </Stack>
-                                  </RadioGroup>
+                                    <option value="male">Nam</option>
+                                    <option value="female">Nữ</option>
+                                    <option value="not_provided">Không cung cấp</option>
+                                  </Select>
                                 ) : (
                                   <HStack>
                                     {renderGenderIcon(user.gender)}
-                                    <Text className="field-value">
+                                    <Text fontSize="sm" color={textColor}>
                                       {user.gender === 'male' ? 'Nam' :
                                         user.gender === 'female' ? 'Nữ' : 'Chưa cung cấp'}
                                     </Text>
                                   </HStack>
                                 )}
                               </Box>
-                            </VStack>
-                          </CardBody>
-                        </Card>
-                      </VStack>
+                            </CardBody>
+                          </Card>
+                        </GridItem>
+                      </Grid>
                     </TabPanel>
 
                     {/* Tab 1: Thú cưng */}
-                    <TabPanel>
+                    <TabPanel p={6}>
                       <PetGrid pets={pets} />
                     </TabPanel>
 
                     {/* Tab 2: Bài viết */}
-                    <TabPanel>
+                    <TabPanel p={6}>
                       <PostGrid posts={posts} />
                     </TabPanel>
 
                     {/* Tab 3: Hoạt động cứu hộ (chỉ hiển thị với volunteer) */}
-                    <TabPanel>
+                    <TabPanel p={6}>
                       <RescueActivities rescues={rescues} user={user} />
                       <ActivityTimeline user={user} rescues={rescues} donations={donations} posts={posts} />
                     </TabPanel>
 
                     {/* Tab 4: Thành tích (chỉ hiển thị với volunteer) */}
-                    <TabPanel>
+                    <TabPanel p={6}>
                       <Achievements achievements={achievements} />
                       <VolunteerBadges user={user} achievements={achievements} />
                     </TabPanel>

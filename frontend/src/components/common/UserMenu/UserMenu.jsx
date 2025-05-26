@@ -84,7 +84,7 @@ const UserMenu = ({ user }) => {
               size="sm"
             />
           </MenuButton>
-          <MenuList zIndex={100} boxShadow="lg" width="250px">
+          <MenuList zIndex={100} boxShadow="lg" width="280px">
             <Box p={3} className="user-info">
               <Flex alignItems="center">
                 <Avatar

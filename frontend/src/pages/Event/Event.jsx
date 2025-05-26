@@ -174,7 +174,7 @@ const Event = () => {
           gap={4} 
           className="event-actions"
         >
-          <InputGroup maxW={{ base: "100%", md: "400px" }} className="event-search">
+          <InputGroup maxW={{ base: "100%", md: "900px" }} className="event-search">
             <Input
               placeholder="Tìm kiếm sự kiện..."
               value={searchTerm}

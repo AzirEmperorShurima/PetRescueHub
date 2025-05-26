@@ -387,7 +387,7 @@ const PetGuide = () => {
               Khám phá các hướng dẫn, video và tài liệu để chăm sóc thú cưng của bạn tốt nhất 🐕🐈
             </Text>
             <HStack spacing={8} fontSize="lg" justify="center">
-              <HStack>
+              {/* <HStack>
                 <Icon as={IoSparkles} w={5} h={5} />
                 <Text>{videoData.length}+ Video HD</Text>
               </HStack>
@@ -398,7 +398,7 @@ const PetGuide = () => {
               <HStack>
                 <Icon as={FaHeart} w={5} h={5} />
                 <Text>10k+ Người yêu thích</Text>
-              </HStack>
+              </HStack> */}
             </HStack>
           </VStack>
         </Box>

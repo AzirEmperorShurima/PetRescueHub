@@ -160,14 +160,25 @@ const PaymentAppTab = ({ appName, qrCode }) => (
       <Heading as="h3" size="md" color={useColorModeValue('pink.600', 'pink.300')}>
         Hướng dẫn thanh toán qua {appName}
       </Heading>
-      <Box as="ol" pl={4} color={useColorModeValue('gray.600', 'gray.300')}>
-        <li>Mở ứng dụng {appName} trên điện thoại</li>
-        <li>Chọn "Quét mã QR"</li>
-        <li>Quét mã QR bên cạnh</li>
-        <li>Nhập số tiền bạn muốn quyên góp</li>
-        <li>Nhập nội dung: "Ủng hộ [Tên của bạn]"</li>
-        <li>Xác nhận thanh toán</li>
-      </Box>
+      <VStack align="start" spacing={3} w="full">
+        {[
+          `Mở ứng dụng ${appName} trên điện thoại`,
+          `Chọn "Quét mã QR"`,
+          `Quét mã QR bên cạnh`,
+          `Nhập số tiền bạn muốn quyên góp`,
+          `Nhập nội dung: "Ủng hộ [Tên của bạn]"`,
+          `Xác nhận thanh toán`
+        ].map((step, index) => (
+          <Box key={index} display="flex" alignItems="center" w="full">
+            <Text fontWeight="bold" minW="30px" color={useColorModeValue('pink.500', 'pink.300')}>
+              {index + 1}.
+            </Text>
+            <Text flex="1" color={useColorModeValue('gray.600', 'gray.300')}>
+              {step}
+            </Text>
+          </Box>
+        ))}
+      </VStack>
     </VStack>
     <VStack spacing={2}>
       <Image

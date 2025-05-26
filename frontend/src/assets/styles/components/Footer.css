@@ -200,7 +200,8 @@
   color: var(--color-text);
   position: relative;
   padding-bottom: 10px;
-  /* text-decoration: underline;  Nếu muốn gạch chân */
+  font-size: 1.75rem;
+  font-weight: 500;
 }
 
 .f_list li {
@@ -222,6 +223,32 @@
 /* ============================= */
 /*      Thông tin liên hệ        */
 /* ============================= */
+.new_footer_area ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+/* Đảm bảo class list-unstyled hoạt động */
+.list-unstyled {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: 0;
+}
+
+/* Cụ thể cho f_list và contact-list */
+.f_list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.contact-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
 .contact-list {
   text-align: left;
   display: flex;

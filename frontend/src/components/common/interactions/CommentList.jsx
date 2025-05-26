@@ -75,7 +75,7 @@ import {
   FiUsers,
   FiEye,
   FiBookmark,
-  FiPin,
+  FiMapPin ,
   FiMinus,
   FiPlus,
   FiRefreshCw,
@@ -315,7 +315,7 @@ const EnhancedCommentItem = ({
             borderRadius="full"
             p={1}
           >
-            <FiPin size={12} />
+            <FiMapPin  size={12} />
           </Box>
         )}
 
@@ -411,7 +411,7 @@ const EnhancedCommentItem = ({
                   {showModerationTools && (
                     <>
                       <MenuItem 
-                        icon={<FiPin />} 
+                        icon={<FiMapPin  />} 
                         onClick={() => onPin?.(comment.id)}
                       >
                         {isPinned ? 'Bỏ ghim' : 'Ghim bình luận'}
@@ -916,7 +916,7 @@ const CommentList = ({
           </Tab>
           <Tab>
             <HStack>
-              <FiPin />
+              <FiMapPin  />
               <Text>Đã ghim</Text>
             </HStack>
           </Tab>
