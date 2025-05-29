@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Container, 
   Heading, 
@@ -7,68 +7,58 @@ import {
   Box, 
   SimpleGrid, 
   Button, 
-  Image,
-  Badge,
   Input,
   InputGroup,
   InputLeftElement,
-  InputRightElement,
-  IconButton,
-  useBreakpointValue,
   useColorModeValue,
   VStack,
   HStack,
-  Flex,
-  Skeleton,
-  SkeletonText,
   Center,
-  Stack,
-  Spacer
+  Skeleton
 } from '@chakra-ui/react';
-import { 
-  FaPlus,
-  FaSearch,
-  FaCalendarAlt,
-  FaMapMarkerAlt,
-  FaUsers,
-  FaArrowRight
-} from 'react-icons/fa';
+import { FaPlus, FaSearch } from 'react-icons/fa';
 import './Event.css';
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
-import { events } from '../../mocks/events';
 import EventCard from './components/EventCard';
+import { useAuth } from '../../components/contexts/AuthContext';
+import apiService from '../../services/api.service';
 
 const Event = () => {
-  const isMobile = useBreakpointValue({ base: true, sm: false });
   const navigate = useNavigate();
-  const [eventsList, setEventsList] = useState([]);
+  const { user } = useAuth();
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [featuredEvent, setFeaturedEvent] = useState(null);
 
   // Color mode values
-  const cardBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const textSecondary = useColorModeValue('gray.600', 'gray.400');
   const searchBg = useColorModeValue('white', 'gray.700');
-  const shadowColor = useColorModeValue('lg', 'dark-lg');
 
+  // Fetch events from API
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
       try {
-        setTimeout(() => {
-          if (events.length > 0) {
-            setFeaturedEvent(events[0]);
-            setEventsList(events.slice(1));
-          } else {
-            setEventsList([]);
-          }
-          setLoading(false);
-        }, 500);
+        const response = await apiService.forum.posts.getAll({
+          postType: 'EventPost',
+          limit: 100
+        });
+        const eventsList = response.data?.data || [];
+        
+        // Set featured event (first approved event or first event)
+        const featured = eventsList.find(event => 
+          event.status === 'approved' && event.featured
+        ) || eventsList[0];
+        
+        setFeaturedEvent(featured);
+        setEvents(eventsList.filter(event => event._id !== featured?._id));
+        
       } catch (error) {
         console.error('Error fetching events:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -76,34 +66,79 @@ const Event = () => {
     fetchEvents();
   }, []);
 
-  const filteredEvents = eventsList.filter(event => 
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setPage(1);
   };
 
   const handleCreateEvent = () => {
+    if (!user) {
+      navigate('/auth/login', { state: { returnUrl: '/event/create' } });
+      return;
+    }
     navigate('/event/create');
   };
 
-  // Phân trang
+  // Handle reactions and favorites
+  const handleToggleReaction = async (postId, userReaction, reactions) => {
+    if (!user) return;
+    try {
+      setEvents(prevEvents => 
+        prevEvents.map(event => 
+          event._id === postId
+            ? { ...event, userReaction, reactions }
+            : event
+        )
+      );
+
+      if (featuredEvent?._id === postId) {
+        setFeaturedEvent(prev => ({
+          ...prev,
+          userReaction,
+          reactions
+        }));
+      }
+    } catch (error) {
+      console.error('Error toggling reaction:', error);
+    }
+  };
+
+  const handleToggleFavorite = async (postId) => {
+    if (!user) return;
+    try {
+      setEvents(prevEvents => 
+        prevEvents.map(event => 
+          event._id === postId
+            ? { ...event, isFavorited: !event.isFavorited }
+            : event
+        )
+      );
+
+      if (featuredEvent?._id === postId) {
+        setFeaturedEvent(prev => ({
+          ...prev,
+          isFavorited: !prev.isFavorited
+        }));
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  // Filter events based on search term
+  const filteredEvents = events.filter(event => 
+    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.location?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Pagination
   const eventsPerPage = 6;
   const pageCount = Math.ceil(filteredEvents.length / eventsPerPage);
   const displayedEvents = filteredEvents.slice(
     (page - 1) * eventsPerPage,
     page * eventsPerPage
   );
-
-  // Format date
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('vi-VN', options);
-  };
 
   // Custom Pagination Component
   const Pagination = ({ currentPage, totalPages, onPageChange }) => {
@@ -146,13 +181,12 @@ const Event = () => {
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
-    // Cuộn lên đầu trang khi chuyển trang
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <Box className="event-page" minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
-    <Container maxW="container.xl" py={6}>
+      <Container maxW="container.xl" py={6}>
         {/* Header */}
         <VStack spacing={0} textAlign="center" mb={8} className="event-header">
           <Heading as="h1" size="2xl" className="event-title">
@@ -193,14 +227,27 @@ const Event = () => {
         </HStack>
 
         {/* Featured Event */}
-        {featuredEvent && (
+        {loading ? (
           <Box mb={12}>
             <Heading as="h2" size="lg" mb={4} className="section-title">
               Sự kiện nổi bật
             </Heading>
-            <EventCard event={featuredEvent} isFeatured={true} />
+            <Skeleton height="100px" />
           </Box>
-        )}
+        ) : featuredEvent ? (
+          <Box mb={12}>
+            <Heading as="h2" size="lg" mb={4} className="section-title">
+              Sự kiện nổi bật
+            </Heading>
+            <EventCard 
+              event={featuredEvent} 
+              isFeatured={true}
+              onToggleReaction={handleToggleReaction}
+              onToggleFavorite={handleToggleFavorite}
+              currentUser={user}
+            />
+          </Box>
+        ) : null}
 
         {/* Event List */}
         <Box mb={8}>
@@ -223,7 +270,14 @@ const Event = () => {
           ) : displayedEvents.length > 0 ? (
             <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={6}>
               {displayedEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
+                <EventCard 
+                  key={event._id} 
+                  event={event}
+                  onToggleReaction={handleToggleReaction}
+                  onToggleFavorite={handleToggleFavorite}
+                  currentUser={user}
+                  isOwner={user && (user.id === event.authorId || user._id === event.authorId)}
+                />
               ))}
             </SimpleGrid>
           ) : (

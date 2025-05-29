@@ -53,8 +53,8 @@ const Forum = () => {
     loading,
     posts,
     questions,
-    eventspost: eventspost,
-    findLostPet: findlostpetpost,
+    events,
+    findLostPet,
     tabValue,
     filterAnchorEl,
     sortBy,
@@ -69,9 +69,9 @@ const Forum = () => {
     handleToggleReaction: originalHandleToggleReaction,
     handleToggleFavorite,
     formatDate,
-    setPosts, // Thêm setter functions từ useForum hook
+    setPosts,
     setQuestions,
-    setEventspost,
+    setEvents,
     setFindLostPet
   } = useForum();
 
@@ -79,8 +79,8 @@ const Forum = () => {
   const safeCategories = categories || [];
   const safePosts = posts || [];
   const safeQuestions = questions || [];
-  const safeEvents = eventspost || [];
-  const safeFindPet = findlostpetpost || [];
+  const safeEvents = events || [];
+  const safeFindPet = findLostPet || [];
 
   const allPosts = [...safePosts, ...safeQuestions, ...safeEvents, ...safeFindPet];
 
@@ -115,8 +115,8 @@ const Forum = () => {
       }
 
       // Cập nhật Events
-      if (setEventspost) {
-        setEventspost(prevEvents => updatePostInArray(prevEvents));
+      if (setEvents) {
+        setEvents(prevEvents => updatePostInArray(prevEvents));
       }
 
       // Cập nhật FindLostPet
@@ -152,7 +152,7 @@ const Forum = () => {
       // Cập nhật tất cả các state arrays
       if (setPosts) setPosts(prevPosts => updateFavoriteInArray(prevPosts));
       if (setQuestions) setQuestions(prevQuestions => updateFavoriteInArray(prevQuestions));
-      if (setEventspost) setEventspost(prevEvents => updateFavoriteInArray(prevEvents));
+      if (setEvents) setEvents(prevEvents => updateFavoriteInArray(prevEvents));
       if (setFindLostPet) setFindLostPet(prevFindPet => updateFavoriteInArray(prevFindPet));
 
     } catch (error) {
@@ -262,6 +262,42 @@ const Forum = () => {
     setShowCreateQuestion(false);
   };
 
+  // Add handlers for edit, delete, and report
+  const handleEdit = (postId) => {
+    if (!requireLogin('edit')) return;
+    navigate(`/forum/edit/${postId}`);
+  };
+
+  const handleDelete = async (postId) => {
+    if (!requireLogin('delete')) return;
+    
+    if (window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+      try {
+        const response = await apiService.forum.posts.delete(postId);
+        if (response && response.status === 200) {
+          // Cập nhật state để xóa bài viết
+          setPosts(prev => prev.filter(p => p._id !== postId));
+          setQuestions(prev => prev.filter(p => p._id !== postId));
+          setEvents(prev => prev.filter(p => p._id !== postId));
+          setFindLostPet(prev => prev.filter(p => p._id !== postId));
+        }
+      } catch (error) {
+        console.error('Error deleting post:', error);
+      }
+    }
+  };
+
+  const handleReport = async (postId) => {
+    if (!requireLogin('report')) return;
+    
+    try {
+      await apiService.forum.posts.report(postId);
+      alert('Đã báo cáo bài viết thành công');
+    } catch (error) {
+      console.error('Error reporting post:', error);
+    }
+  };
+
   // JSX
   return (
     <Box className="forum-page" minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
@@ -368,8 +404,8 @@ const Forum = () => {
                     <TabList borderBottom="1px" borderColor={borderColor}>
                       <Tab>Bài viết</Tab>
                       <Tab>Câu hỏi</Tab>
-                      <Tab>Thú đi lạc</Tab>
                       <Tab>Sự kiện</Tab>
+                      <Tab>Thú đi lạc</Tab>
                     </TabList>
 
                     <TabPanels>
@@ -392,6 +428,11 @@ const Forum = () => {
                                   onToggleFavorite={() => handleToggleFavoriteImproved(post._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/post/${post._id}`)}
+                                  currentUser={user}
+                                  isOwner={user && (user.id === post.authorId || user._id === post.authorId)}
+                                  onEdit={() => handleEdit(post._id)}
+                                  onDelete={() => handleDelete(post._id)}
+                                  onReport={() => handleReport(post._id)}
                                 />
                               ))
                             ) : (
@@ -422,6 +463,11 @@ const Forum = () => {
                                   onToggleFavorite={() => handleToggleFavoriteImproved(question._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/question/${question._id}`)}
+                                  currentUser={user}
+                                  isOwner={user && (user.id === question.authorId || user._id === question.authorId)}
+                                  onEdit={() => handleEdit(question._id)}
+                                  onDelete={() => handleDelete(question._id)}
+                                  onReport={() => handleReport(question._id)}
                                 />
                               ))
                             ) : (
@@ -452,6 +498,11 @@ const Forum = () => {
                                   onToggleFavorite={() => handleToggleFavoriteImproved(event._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/event/${event._id}`)}
+                                  currentUser={user}
+                                  isOwner={user && (user.id === event.authorId || user._id === event.authorId)}
+                                  onEdit={() => handleEdit(event._id)}
+                                  onDelete={() => handleDelete(event._id)}
+                                  onReport={() => handleReport(event._id)}
                                 />
                               ))
                             ) : (
@@ -482,6 +533,11 @@ const Forum = () => {
                                   onToggleFavorite={() => handleToggleFavoriteImproved(findPet._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/findLostPet/${findPet._id}`)}
+                                  currentUser={user}
+                                  isOwner={user && (user.id === findPet.authorId || user._id === findPet.authorId)}
+                                  onEdit={() => handleEdit(findPet._id)}
+                                  onDelete={() => handleDelete(findPet._id)}
+                                  onReport={() => handleReport(findPet._id)}
                                 />
                               ))
                             ) : (

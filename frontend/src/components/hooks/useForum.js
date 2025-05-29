@@ -18,6 +18,7 @@ const debounce = (func, delay) => {
 
 export const useForum = () => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [postTypeFilter, setPostTypeFilter] = useState('');
@@ -31,8 +32,8 @@ export const useForum = () => {
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [categories, setCategories] = useState([]);
 
-  // Mapping tab index → postType
-  const postTypeMap = ['', 'Question', 'EventPost', 'FindLostPetPost'];
+  // Mapping tab index → postType - Cập nhật lại thứ tự cho phù hợp với UI mới
+  const postTypeMap = ['ForumPost', 'Question', 'EventPost', 'FindLostPetPost'];
 
   // Debounce fetch
   const debouncedFetch = useCallback(
@@ -42,62 +43,185 @@ export const useForum = () => {
     []
   );
 
-  // Fetch ngay khi mount hoặc sort/postType thay đổi
-  useEffect(() => {
-    fetchPosts(searchTerm, sortBy, postTypeFilter);
-  }, [sortBy, postTypeFilter]);
-
-  // Debounce khi searchTerm thay đổi
-  useEffect(() => {
-    debouncedFetch(searchTerm, sortBy, postTypeFilter);
-    return debouncedFetch.cancel;
-  }, [searchTerm, sortBy, postTypeFilter, debouncedFetch]);
-
+  // Fetch posts
   const fetchPosts = async (search, sort, postType) => {
     setLoading(true);
+    setError(null);
     try {
-      const params = {
-        search,
-        sort,
-        postType,
-        limit: 100,
-      };
-
+      const params = { search, sort, postType, limit: 100 };
       const response = await apiService.forum.posts.getAll(params);
       const data = response.data?.data || [];
 
-      const newPosts = data;
-      const newQuestions = [];
-      const newEvents = [];
-      const newLostPets = [];
-
-      data.forEach(post => {
-        switch (post.postType) {
-          case 'Question':
-            newQuestions.push(post);
-            break;
-          case 'EventPost':
-            newEvents.push(post);
-            break;
-          case 'FindLostPetPost':
-            newLostPets.push(post);
-            break;
-        }
-      });
-
-      setPosts(newPosts);
-      setQuestions(newQuestions);
-      setEvents(newEvents);
-      setFindLostPet(newLostPets);
-
+      const categorizedPosts = categorizePosts(data);
+      updatePostStates(categorizedPosts);
     } catch (err) {
       console.error('Error fetching posts:', err);
-      setPosts([]);
-      setQuestions([]);
-      setEvents([]);
-      setFindLostPet([]);
+      setError('Không thể tải bài viết. Vui lòng thử lại sau.');
+      resetPostStates();
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Categorize posts by type
+  const categorizePosts = (data) => {
+    return data.reduce((acc, post) => {
+      switch (post.postType) {
+        case 'Question':
+          acc.questions.push(post);
+          break;
+        case 'EventPost':
+          acc.events.push(post);
+          break;
+        case 'FindLostPetPost':
+          acc.findLostPet.push(post);
+          break;
+      }
+      acc.all.push(post);
+      return acc;
+    }, { all: [], questions: [], events: [], findLostPet: [] });
+  };
+
+  // Update all post states
+  const updatePostStates = (categorizedPosts) => {
+    setPosts(categorizedPosts.all);
+    setQuestions(categorizedPosts.questions);
+    setEvents(categorizedPosts.events);
+    setFindLostPet(categorizedPosts.findLostPet);
+  };
+
+  // Reset all post states
+  const resetPostStates = () => {
+    setPosts([]);
+    setQuestions([]);
+    setEvents([]);
+    setFindLostPet([]);
+  };
+
+  // Post actions
+  const createPost = async (postData) => {
+    try {
+      const response = await apiService.forum.posts.create(postData);
+      await fetchPosts(searchTerm, sortBy, postTypeFilter);
+      return response.data;
+    } catch (err) {
+      console.error('Error creating post:', err);
+      throw err;
+    }
+  };
+
+  const updatePost = async (postId, postData) => {
+    try {
+      const response = await apiService.forum.posts.update(postId, postData);
+      await fetchPosts(searchTerm, sortBy, postTypeFilter);
+      return response.data;
+    } catch (err) {
+      console.error('Error updating post:', err);
+      throw err;
+    }
+  };
+
+  const deletePost = async (postId) => {
+    try {
+      await apiService.forum.posts.delete(postId);
+      await fetchPosts(searchTerm, sortBy, postTypeFilter);
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      throw err;
+    }
+  };
+
+  // Reaction handling
+  const handleReaction = async (targetId, reactionType) => {
+    try {
+      if (reactionType) {
+        await apiService.forum.reactions.add({
+          targetId,
+          targetType: 'Post',
+          reactionType
+        });
+      } else {
+        await apiService.forum.reactions.delete(targetId, 'Post');
+      }
+      await fetchPosts(searchTerm, sortBy, postTypeFilter);
+    } catch (err) {
+      console.error('Error handling reaction:', err);
+      throw err;
+    }
+  };
+
+  // Favorite handling
+  const toggleFavorite = async (postId, isFavorited) => {
+    try {
+      if (isFavorited) {
+        await apiService.forum.posts.favorite.remove(postId);
+      } else {
+        await apiService.forum.posts.favorite.add(postId);
+      }
+      await fetchPosts(searchTerm, sortBy, postTypeFilter);
+    } catch (err) {
+      console.error('Error toggling favorite:', err);
+      throw err;
+    }
+  };
+
+  // Comment actions
+  const getPostComments = async (postId) => {
+    try {
+      const response = await apiService.forum.comments.getByPost(postId);
+      return response.data?.data || [];
+    } catch (err) {
+      console.error('Error fetching comments:', err);
+      throw err;
+    }
+  };
+
+  const createComment = async (postId, content) => {
+    try {
+      await apiService.forum.comments.create({ postId, content });
+      return await getPostComments(postId);
+    } catch (err) {
+      console.error('Error creating comment:', err);
+      throw err;
+    }
+  };
+
+  const updateComment = async (commentId, content, postId) => {
+    try {
+      await apiService.forum.comments.update(commentId, { content });
+      return await getPostComments(postId);
+    } catch (err) {
+      console.error('Error updating comment:', err);
+      throw err;
+    }
+  };
+
+  const deleteComment = async (commentId, postId) => {
+    try {
+      await apiService.forum.comments.delete(commentId);
+      return await getPostComments(postId);
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      throw err;
+    }
+  };
+
+  // Report handling
+  const reportPost = async (postId, reason) => {
+    try {
+      await apiService.forum.reports.post(postId, reason);
+    } catch (err) {
+      console.error('Error reporting post:', err);
+      throw err;
+    }
+  };
+
+  const reportComment = async (commentId, reason) => {
+    try {
+      await apiService.forum.reports.comment(commentId, reason);
+    } catch (err) {
+      console.error('Error reporting comment:', err);
+      throw err;
     }
   };
 
@@ -112,45 +236,23 @@ export const useForum = () => {
   const handleFilterClick = useCallback(e => setFilterAnchorEl(e.currentTarget), []);
   const handleFilterClose = useCallback(() => setFilterAnchorEl(null), []);
 
-  const handleToggleLike = useCallback(async (id, reactionType) => {
-    try {
-      // Optimistic UI Update - Cập nhật UI ngay lập tức
-      // Component Reaction đã xử lý việc cập nhật UI
-      
-      // Gọi API thông qua service
-      await apiService.forum.reactions.addOrUpdate({
-        targetId: id,
-        targetType: 'Post',
-        reactionType: reactionType || 'like'
-      });
-      
-      // Không cần fetch lại dữ liệu ngay lập tức
-      // Chỉ fetch lại sau một khoảng thời gian để đảm bảo dữ liệu đồng bộ
-      // nhưng không làm gián đoạn trải nghiệm người dùng
-    } catch (err) {
-      console.error('Error toggling reaction:', err);
-      // Có thể thêm logic để khôi phục UI nếu API thất bại
-    }
-  }, []);
+  // Effects
+  useEffect(() => {
+    fetchPosts(searchTerm, sortBy, postTypeFilter);
+  }, [sortBy, postTypeFilter]);
 
-  const handleToggleFavorite = useCallback(async (id) => {
-    try {
-      // Placeholder for favorite toggle
-      fetchPosts(searchTerm, sortBy, postTypeFilter);
-    } catch (err) {
-      console.error('Error toggling favorite:', err);
-    }
-  }, [searchTerm, sortBy, postTypeFilter]);
-
-  const formatDate = useCallback((date) => {
-    return new Date(date).toLocaleDateString('vi-VN');
-  }, []);
+  useEffect(() => {
+    debouncedFetch(searchTerm, sortBy, postTypeFilter);
+    return debouncedFetch.cancel;
+  }, [searchTerm, debouncedFetch]);
 
   return {
+    // States
     loading,
+    error,
     posts,
     questions,
-    eventspost: events,
+    events,
     findLostPet,
     searchTerm,
     sortBy,
@@ -158,13 +260,42 @@ export const useForum = () => {
     tabValue,
     filterAnchorEl,
     categories,
+
+    // State setters
+    setSearchTerm,
+    setSortBy,
+    setPostTypeFilter,
+    setTabValue,
+    setPosts,
+    setQuestions,
+    setEvents,
+    setFindLostPet,
+
+    // Post actions
+    createPost,
+    updatePost,
+    deletePost,
+    handleReaction,
+    toggleFavorite,
+
+    // Comment actions
+    getPostComments,
+    createComment,
+    updateComment,
+    deleteComment,
+
+    // Report actions
+    reportPost,
+    reportComment,
+
+    // Utils
+    formatDate: (date) => new Date(date).toLocaleDateString('vi-VN'),
+
+    // Handlers
     handleSearchChange,
     handleSortChange,
     handleTabChange,
     handleFilterClick,
-    handleFilterClose,
-    handleToggleLike,
-    handleToggleFavorite,
-    formatDate,
+    handleFilterClose
   };
 };

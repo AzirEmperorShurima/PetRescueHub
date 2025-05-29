@@ -1,86 +1,170 @@
 import React, { useState } from 'react';
-import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
-import { MoreVert as MoreVertIcon, Edit as EditIcon, Delete as DeleteIcon, Report as ReportIcon } from '@mui/icons-material';
 import PropTypes from 'prop-types';
+import {
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useColorModeValue,
+  Icon,
+  Text,
+  HStack,
+  Portal,
+} from '@chakra-ui/react';
+import { 
+  FaEllipsisV, 
+  FaEdit, 
+  FaTrash, 
+  FaFlag,
+  FaUserSlash 
+} from 'react-icons/fa';
 
-const ActionMenu = ({ onEdit, onDelete, onReport, isOwner = false }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+const ActionMenu = ({ 
+  isOwner = false,
+  onEdit,
+  onDelete,
+  onReportPost,
+  onReportUser,
+  size = 'md',
+  isDisabled = false,
+  onOpenCommentModal
+}) => {
+  // Color mode values
+  const menuBg = useColorModeValue('white', 'gray.800');
+  const hoverBg = useColorModeValue('gray.100', 'gray.700');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textColor = useColorModeValue('gray.700', 'gray.200');
+  const dangerColor = useColorModeValue('red.600', 'red.300');
+  const iconColor = useColorModeValue('gray.600', 'gray.400');
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const [isCommentModalOpen, setCommentModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedComments, setSelectedComments] = useState([]);
+  const [commentLoading, setCommentLoading] = useState(false);
+
+  const handleOpenCommentModal = async (post) => {
+    setSelectedPost(post);
+    setCommentLoading(true);
+    setCommentModalOpen(true);
+    try {
+      const res = await apiService.forum.comments.getAll({ postId: post._id || post.id });
+      setSelectedComments(res.data?.data || []);
+    } catch (e) {
+      setSelectedComments([]);
+    }
+    setCommentLoading(false);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleCloseCommentModal = () => {
+    setCommentModalOpen(false);
+    setSelectedPost(null);
+    setSelectedComments([]);
   };
 
-  const handleAction = (action) => {
-    handleClose();
-    if (action === 'edit' && onEdit) onEdit();
-    if (action === 'delete' && onDelete) onDelete();
-    if (action === 'report' && onReport) onReport();
+  const handleAction = (action) => (e) => {
+    e.stopPropagation();
+    action();
   };
 
   return (
-    <>
-      <IconButton
-        aria-label="more"
-        aria-controls={open ? 'action-menu' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
-        onClick={handleClick}
-      >
-        <MoreVertIcon />
-      </IconButton>
-      <Menu
-        id="action-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        {isOwner && onEdit && (
-          <MenuItem onClick={() => handleAction('edit')}>
-            <ListItemIcon>
-              <EditIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Chỉnh sửa</ListItemText>
-          </MenuItem>
-        )}
-        {isOwner && onDelete && (
-          <MenuItem onClick={() => handleAction('delete')}>
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Xóa</ListItemText>
-          </MenuItem>
-        )}
-        {!isOwner && onReport && (
-          <MenuItem onClick={() => handleAction('report')}>
-            <ListItemIcon>
-              <ReportIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Báo cáo</ListItemText>
-          </MenuItem>
-        )}
-      </Menu>
-    </>
+    <Menu placement="bottom-end" closeOnSelect isLazy>
+      <MenuButton
+        as={IconButton}
+        icon={<FaEllipsisV />}
+        variant="ghost"
+        size={size}
+        aria-label="More options"
+        isDisabled={isDisabled}
+        color={iconColor}
+        _hover={{ bg: hoverBg }}
+        onClick={(e) => e.stopPropagation()}
+      />
+      <Portal>
+        <MenuList
+          bg={menuBg}
+          borderColor={borderColor}
+          boxShadow="lg"
+          py={2}
+          minW="200px"
+          zIndex={9999}
+        >
+          {isOwner ? (
+            // Owner Actions - Only show Edit and Delete
+            <>
+              {onEdit && (
+                <MenuItem
+                  onClick={handleAction(onEdit)}
+                  _hover={{ bg: hoverBg }}
+                  px={4}
+                  py={2}
+                >
+                  <HStack spacing={3}>
+                    <Icon as={FaEdit} color="blue.500" />
+                    <Text color={textColor}>Cập nhật</Text>
+                  </HStack>
+                </MenuItem>
+              )}
+              {onDelete && (
+                <MenuItem
+                  onClick={handleAction(onDelete)}
+                  _hover={{ bg: hoverBg }}
+                  px={4}
+                  py={2}
+                >
+                  <HStack spacing={3}>
+                    <Icon as={FaTrash} color={dangerColor} />
+                    <Text color={dangerColor}>Xóa</Text>
+                  </HStack>
+                </MenuItem>
+              )}
+            </>
+          ) : (
+            // Non-owner Actions - Only show Report options
+            <>
+              {onReportPost && (
+                <MenuItem
+                  onClick={handleAction(onReportPost)}
+                  _hover={{ bg: hoverBg }}
+                  px={4}
+                  py={2}
+                >
+                  <HStack spacing={3}>
+                    <Icon as={FaFlag} color="orange.500" />
+                    <Text color={textColor}>Báo cáo bài viết</Text>
+                  </HStack>
+                </MenuItem>
+              )}
+              {onReportUser && (
+                <MenuItem
+                  onClick={handleAction(onReportUser)}
+                  _hover={{ bg: hoverBg }}
+                  px={4}
+                  py={2}
+                >
+                  <HStack spacing={3}>
+                    <Icon as={FaUserSlash} color="orange.500" />
+                    <Text color={textColor}>Báo cáo người dùng</Text>
+                  </HStack>
+                </MenuItem>
+              )}
+            </>
+          )}
+        </MenuList>
+      </Portal>
+    </Menu>
   );
 };
 
 ActionMenu.propTypes = {
+  isOwner: PropTypes.bool,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
-  onReport: PropTypes.func,
-  isOwner: PropTypes.bool
+  onReportPost: PropTypes.func,
+  onReportUser: PropTypes.func,
+  size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg']),
+  isDisabled: PropTypes.bool,
+  onOpenCommentModal: PropTypes.func
 };
 
 export default ActionMenu;

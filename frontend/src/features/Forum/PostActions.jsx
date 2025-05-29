@@ -14,17 +14,24 @@ import {
   Spinner,
   Alert,
   AlertIcon,
-  Button
+  Button,
+  Icon,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton
 } from '@chakra-ui/react';
 import { FaComment, FaBookmark, FaRegBookmark, FaEllipsisV } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import Reaction from '../../components/common/interactions/Reaction';
 import ShareButton from '../../components/common/interactions/ShareButton';
-import CommentForm from '../../components/common/interactions/CommentForm';
-import CommentList from '../../components/common/interactions/CommentList';
+import ActionMenu from '../../components/common/interactions/ActionMenu';
 import apiService from '../../services/api.service';
 import { useAuth } from '../../components/contexts/AuthContext';
+import CommentModal from '../../components/common/interactions/CommentModal';
 
 const PostActions = ({
   post,
@@ -42,7 +49,8 @@ const PostActions = ({
   commentLoading = false,
   showCommentSection = false,
   onToggleCommentSection,
-  isLoading = false
+  isLoading = false,
+  isOwner = false
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -71,6 +79,8 @@ const PostActions = ({
   // Local state
   const [localPost, setLocalPost] = useState(post);
   const [loading, setLoading] = useState(false);
+  const [isCommentModalOpen, setCommentModalOpen] = useState(false);
+  const [selectedComments, setSelectedComments] = useState([]);
 
   // Cập nhật local state khi post props thay đổi
   useEffect(() => {
@@ -81,7 +91,6 @@ const PostActions = ({
   useEffect(() => {
     const fetchUserReaction = async () => {
       try {
-        // Chỉ gọi API nếu có targetId và user đã đăng nhập
         if ((localPost.id || localPost._id) && currentUser) {
           const targetId = localPost.id || localPost._id;
           console.log('Fetching user reaction for:', targetId);
@@ -89,7 +98,6 @@ const PostActions = ({
           const response = await apiService.forum.reactions.getUserReaction('Post', targetId);
           if (response && response.data) {
             console.log('User reaction response:', response.data);
-            // Cập nhật local state với userReaction từ API
             setLocalPost(prev => ({
               ...prev,
               userReaction: response.data.userReaction
@@ -98,7 +106,6 @@ const PostActions = ({
         }
       } catch (error) {
         console.error('Error fetching user reaction:', error);
-        // Không cần làm gì nếu không fetch được user reaction
       }
     };
 
@@ -144,7 +151,6 @@ const PostActions = ({
         reactionType: reactionType
       });
       
-      // Cập nhật với data từ server nếu có
       if (response && response.data) {
         setLocalPost(prev => ({
           ...prev,
@@ -153,7 +159,6 @@ const PostActions = ({
         }));
       }
   
-      // Callback để parent component cập nhật state
       if (onReactionChange) {
         onReactionChange(reactionType, updatedReactions);
       }
@@ -192,7 +197,6 @@ const PostActions = ({
     } catch (error) {
       console.error('Error toggling favorite:', error);
       
-      // Rollback nếu thất bại
       setLocalPost(prev => ({
         ...prev,
         isFavorited: previousFavorited
@@ -202,54 +206,60 @@ const PostActions = ({
     }
   };
 
-  // Handle comment submission
-  const handleCommentSubmit = async (commentText) => {
-    if (!requireLogin()) {
-      return;
-    }
-
-    if (!commentText.trim()) return;
-
-    try {
-      if (onCommentSubmit) {
-        await onCommentSubmit(commentText);
-      }
-      
-      if (!isOpen && onToggleCommentSection) {
-        onToggleCommentSection();
-      }
-    } catch (error) {
-      console.error('Error adding comment:', error);
-    }
-  };
-
   // Handle comment toggle
   const handleCommentToggle = () => {
-    if (onToggleCommentSection) {
+    if (!isDetail) {
+      handleOpenCommentModal(localPost);
+    } else if (onToggleCommentSection) {
       onToggleCommentSection();
     } else {
       onToggle();
     }
   };
 
-  // Handle post actions
-  const handleActionClick = (action) => {
-    switch (action) {
-      case 'edit':
-        if (onEditPost) onEditPost();
-        break;
-      case 'delete':
-        if (onDeletePost) onDeletePost();
-        break;
-      case 'report':
-        if (onReportPost) onReportPost();
-        break;
-      default:
-        break;
+  const handleOpenCommentModal = async (post) => {
+    if (!requireLogin()) return;
+    
+    setCommentModalOpen(true);
+    try {
+      const res = await apiService.forum.comments.getAll({ postId: post._id || post.id });
+      setSelectedComments(res.data?.data || []);
+    } catch (e) {
+      console.error('Error fetching comments:', e);
+      setSelectedComments([]);
     }
   };
 
-  const isOwner = currentUser && (currentUser.id === localPost.authorId || currentUser._id === localPost.authorId);
+  const handleCloseCommentModal = () => {
+    setCommentModalOpen(false);
+    setSelectedComments([]);
+  };
+
+  const handleModalCommentSubmit = async (commentText) => {
+    if (!requireLogin()) return;
+
+    try {
+      await onCommentSubmit?.(commentText);
+      handleOpenCommentModal(localPost);
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+    }
+  };
+
+  // Handle report user action
+  const handleReportUser = async () => {
+    if (!requireLogin()) return;
+    
+    try {
+      if (post?.author?._id) {
+        await apiService.users.report(post.author._id);
+        alert('Đã báo cáo người dùng thành công');
+      }
+    } catch (error) {
+      console.error('Error reporting user:', error);
+      alert('Có lỗi xảy ra khi báo cáo người dùng');
+    }
+  };
 
   return (
     <>
@@ -269,56 +279,65 @@ const PostActions = ({
               isLoading={loading || isLoading}
             />
 
-            <HStack spacing={2}>
-              <IconButton
-                aria-label="comments"
-                icon={<FaComment />}
-                size="md"
-                variant="ghost"
-                colorScheme="gray"
-                onClick={handleCommentToggle}
-                _hover={{ bg: hoverBgColor }}
-              />
-              <Text fontSize="sm" color={textSecondary}>
+            <Box 
+              as="button"
+              display="flex"
+              alignItems="center"
+              gap={1}
+              p={2}
+              borderRadius="md"
+              transition="all 0.2s"
+              _hover={{ bg: hoverBgColor }}
+              onClick={handleCommentToggle}
+            >
+              <Icon as={FaComment} boxSize={4} color={textSecondary} />
+              <Text fontSize="sm" color={textSecondary} fontWeight="medium">
                 {comments.length || localPost.comments || 0}
               </Text>
-            </HStack>
+            </Box>
             
-            {isDetail && <ShareButton url={window.location.href} title={localPost.title} />}
+            {isDetail && (
+              <Box
+                as="button"
+                p={2}
+                borderRadius="md"
+                transition="all 0.2s"
+                _hover={{ bg: hoverBgColor }}
+              >
+                <ShareButton url={window.location.href} title={localPost.title} />
+              </Box>
+            )}
           </HStack>
 
-          <HStack spacing={3}>
-            {/* Favorite Button */}
-            <IconButton
-              aria-label="favorite"
-              icon={localPost.isFavorited ? <FaBookmark /> : <FaRegBookmark />}
-              size="md"
-              variant="ghost"
-              colorScheme={localPost.isFavorited ? 'blue' : 'gray'}
+          <HStack spacing={2}>
+            <Box
+              as="button"
+              p={2}
+              borderRadius="md"
+              transition="all 0.2s"
+              _hover={{ bg: hoverBgColor }}
               onClick={handleFavoriteToggle}
-              isLoading={loading || isLoading}
-            />
+              display="flex"
+              alignItems="center"
+            >
+              <Icon 
+                as={localPost.isFavorited ? FaBookmark : FaRegBookmark}
+                boxSize={4}
+                color={localPost.isFavorited ? 'blue.500' : textSecondary}
+                transition="all 0.2s"
+              />
+            </Box>
 
             {/* More Options Button */}
-            {(isOwner || (!isOwner && onReportPost)) && (
-              <IconButton
-                aria-label="more options"
-                icon={<FaEllipsisV />}
-                size="md"
-                variant="ghost"
-                colorScheme="gray"
-                onClick={() => {
-                  const actions = [];
-                  if (isOwner && onEditPost) actions.push({ label: 'Chỉnh sửa', action: 'edit' });
-                  if (isOwner && onDeletePost) actions.push({ label: 'Xóa', action: 'delete' });
-                  if (!isOwner && onReportPost) actions.push({ label: 'Báo cáo', action: 'report' });
-                  
-                  // Hiển thị menu với các action tương ứng
-                  // Đây là phần giả định, bạn cần triển khai menu thực tế
-                  console.log('Actions:', actions);
-                }}
-              />
-            )}
+            <ActionMenu
+              isOwner={isOwner}
+              onEdit={onEditPost}
+              onDelete={onDeletePost}
+              onReportPost={onReportPost}
+              onReportUser={handleReportUser}
+              size="sm"
+              isDisabled={loading || isLoading}
+            />
           </HStack>
         </Flex>
       </Box>
@@ -331,29 +350,22 @@ const PostActions = ({
               <Heading size="md">Bình luận ({comments.length})</Heading>
               {commentLoading && <Spinner size="sm" color="blue.500" />}
             </Flex>
-            {currentUser ? (
-              <CommentForm onSubmit={handleCommentSubmit} userAvatar={currentUser.avatar} />
-            ) : (
-              <Alert status="info" borderRadius="md">
-                <AlertIcon />
-                <VStack align="start" spacing={2}>
-                  <Text>Đăng nhập để bình luận</Text>
-                  <Button size="sm" colorScheme="blue" onClick={goToLogin}>
-                    Đăng nhập
-                  </Button>
-                </VStack>
-              </Alert>
-            )}
-            <CommentList
-              comments={comments}
-              currentUserId={currentUser?.id || currentUser?._id}
-              onDelete={onCommentDelete}
-              onEdit={onCommentEdit}
-              loading={commentLoading}
-            />
           </VStack>
         </SlideFade>
       )}
+
+      {/* Comment Modal */}
+      <CommentModal
+        isOpen={isCommentModalOpen}
+        onClose={handleCloseCommentModal}
+        post={post}
+        comments={selectedComments}
+        currentUser={user}
+        onCommentSubmit={handleModalCommentSubmit}
+        onCommentDelete={onCommentDelete}
+        onCommentEdit={onCommentEdit}
+        commentLoading={commentLoading}
+      />
     </>
   );
 };
@@ -375,7 +387,8 @@ PostActions.propTypes = {
   commentLoading: PropTypes.bool,
   showCommentSection: PropTypes.bool,
   onToggleCommentSection: PropTypes.func,
-  isLoading: PropTypes.bool
+  isLoading: PropTypes.bool,
+  isOwner: PropTypes.bool
 };
 
 export default PostActions;

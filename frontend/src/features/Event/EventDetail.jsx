@@ -53,7 +53,7 @@ const EventDetail = () => {
 
   // Sử dụng useCallback cho hàm điều hướng
   const handleNavigateBack = useCallback(() => {
-    navigate('/events');
+    navigate('/event');
   }, [navigate]);
 
   // Format date with day.js
@@ -88,7 +88,7 @@ const EventDetail = () => {
             <Text fontSize="lg">Không tìm thấy sự kiện</Text>
             <Button
               leftIcon={<FaArrowLeft />}
-              onClick={() => navigate('/events')}
+              onClick={() => navigate('/event')}
               colorScheme="blue"
               variant="outline"
             >
@@ -105,7 +105,7 @@ const EventDetail = () => {
       <Box py={8}>
         <Button
           leftIcon={<FaArrowLeft />}
-          onClick={() => navigate('/events')}
+          onClick={() => navigate('/event')}
           mb={6}
           variant="ghost"
           colorScheme="blue"

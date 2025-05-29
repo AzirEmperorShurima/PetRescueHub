@@ -47,26 +47,41 @@ const apiService = {
   forum: {
     posts: {
       ...createApiService('forum/posts'),
+      getAll: (params = {}) => api.get('/forum/GET/posts', { params }),
+      getById: (id) => api.get(`/forum/GET/posts/${id}`),
       create: (data) => {
         // Kiểm tra nếu là FormData thì sử dụng Content-Type phù hợp
         if (data instanceof FormData) {
           return api.post('/forum/posts/new', data, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
+            headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials: true
           });
         }
         // Nếu không phải FormData thì sử dụng Content-Type mặc định
         return api.post('/forum/posts/new', data, { withCredentials: true });
       },
-      getAll: (params = {}) => api.get('/forum/GET/posts', { params }),
-      getById: (id) => api.get(`/forum/GET/posts/${id}`),
+      update: (id, data) => api.put(`/forum/posts/${id}`, data, { withCredentials: true }),
+      delete: (id) => api.delete(`/forum/posts/${id}`, { withCredentials: true }),
+      favorite: {
+        add: (postId) => api.post(`/forum/posts/${postId}/favorite`, {}, { withCredentials: true }),
+        remove: (postId) => api.delete(`/forum/posts/${postId}/favorite`, { withCredentials: true }),
+        getStatus: (postId) => api.get(`/forum/posts/${postId}/favorite`, { withCredentials: true })
+      }
     },
-    comments: createApiService('forum/comments'),
+    comments: {
+      ...createApiService('forum/comments'),
+      getByPost: (postId, params = {}) => api.get(`/forum/comments/post/${postId}`, { params }),
+      create: (data) => api.post('/forum/comments', data, { withCredentials: true }),
+      update: (id, data) => api.put(`/forum/comments/${id}`, data, { withCredentials: true }),
+      delete: (id) => api.delete(`/forum/comments/${id}`, { withCredentials: true })
+    },
     reactions: {
       addOrUpdate: (data) => api.post('/forum/reactions/post', data, { withCredentials: true }),
       getUserReaction: (targetType, targetId) => api.get(`/forum/reaction/${targetType}/${targetId}`, { withCredentials: true })
+    },
+    reports: {
+      post: (postId, reason) => api.post(`/forum/reports/post/${postId}`, { reason }, { withCredentials: true }),
+      comment: (commentId, reason) => api.post(`/forum/reports/comment/${commentId}`, { reason }, { withCredentials: true })
     }
   },
 
