@@ -1,14 +1,26 @@
 import { google } from 'googleapis';
 import stream from 'stream';
 import { parentFolder, parentFolderId } from '../../../config.js';
-import path from 'path';
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
+const credentials = {
+    type: process.env.GOOGLE_TYPE,
+    project_id: process.env.GOOGLE_PROJECT_ID,
+    private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    auth_uri: process.env.GOOGLE_AUTH_URI,
+    token_uri: process.env.GOOGLE_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_X509_CERT_URL,
+    client_x509_cert_url: process.env.GOOGLE_CLIENT_X509_CERT_URL,
+    universe_domain: process.env.GOOGLE_UNIVERSE_DOMAIN,
+};
+
 const auth = new google.auth.GoogleAuth({
-    keyFile: path.resolve(process.env.GOOGLE_APPLICATION_CREDENTIALS),
+    credentials,
     scopes: SCOPES,
 });
-
 const drive = google.drive({ version: 'v3', auth });
 
 /**
@@ -234,7 +246,7 @@ export const uploadToGoogleDrive = async (file) => {
 export const getOrCreatePostTypeFolder = async (parentId, postType) => {
     try {
         let folder = await findFolder(postType, parentId);
-        
+
         if (!folder) {
             const folderId = await createFolder(postType, parentId);
             folder = { id: folderId };
