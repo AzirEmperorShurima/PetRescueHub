@@ -5,6 +5,8 @@ import * as commentService from "../services/Comments/Comments.service.js"
 import * as reactionService from "../services/Reaction/Reaction.service.js";
 import { CommentModel } from "../models/CommentsSchema.js";
 import Reaction from "../models/ReactionSchema.js";
+import mongoose from "mongoose";
+import { moderationQueue } from "../Jobs/ContentModeratorJob.js";
 
 export const getForumPosts = async (req, res) => {
     try {
@@ -130,8 +132,6 @@ export const updateForumPost = async (req, res) => {
 };
 
 export const createNewForumPost = async (req, res) => {
-    console.log("req.body", req.body);
-    console.log("req.uploadedImageUrls", req.uploadedImageUrls);
     try {
         const {
             title, content, tags, postType,
@@ -142,13 +142,14 @@ export const createNewForumPost = async (req, res) => {
 
         const imgUrl = req.uploadedImageUrls || [];
         const userId = req.user?._id;
-        console.log("data resolving :"
-            , title, content, tags, postType,
+        console.log("Data resolving:", {
+            title, content, tags, postType,
             questionDetails, lostPetInfo,
             eventStartDate, eventEndDate,
-            eventLongitude, eventLatitude, eventLocation
-            , imgUrl, userId
-        );
+            eventLongitude, eventLatitude, eventLocation,
+            imgUrl, userId
+        });
+
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để đăng bài" });
         }
@@ -162,8 +163,11 @@ export const createNewForumPost = async (req, res) => {
             content: content.trim(),
             tags: Array.isArray(tags) ? tags : tags ? [tags] : [],
             imgUrl: Array.isArray(imgUrl) ? imgUrl : [],
-            author: userId,
-            postStatus: "public"
+            author: new mongoose.Types.ObjectId(String(userId)),
+            postStatus: 'pending',
+            violate_tags: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
         };
 
         const postTypeData = {
@@ -174,35 +178,40 @@ export const createNewForumPost = async (req, res) => {
                 ...(eventEndDate && { eventEndDate: new Date(eventEndDate) }),
                 ...(eventLongitude && { eventLongitude: Number(eventLongitude) }),
                 ...(eventLatitude && { eventLatitude: Number(eventLatitude) }),
-                ...(eventLocation && { eventLocation })
+                ...(eventLocation && { eventLocation }),
+                approvalStatus: 'pending',
             }
         };
+        const fullPostData = { ...baseData, ...(postTypeData[postType] || {}) };
 
-        const fullPostData = {
-            ...baseData,
-            ...(postTypeData[postType] || {})
-        };
 
-        const result = await forumService.createPost(postType, fullPostData);
+        const PostSubModel = PostModel.discriminators[postType] || PostModel;
+        const newPost = new PostSubModel(fullPostData);
+        await newPost.save();
 
-        if (result.success) {
-            return res.status(StatusCodes.CREATED).json({
-                success: true,
-                message: "Đăng bài thành công!",
-                post: result.post
-            });
-        }
+        await moderationQueue.add('moderatePost', {
+            postId: newPost._id.toString(),
+            title: title.trim(),
+            content: content.trim(),
+            postType,
+            userId,
+        }, {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 1000 }
+        });
 
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            success: false,
-            message: result.message || "Lỗi khi tạo bài viết"
+        return res.status(StatusCodes.CREATED).json({
+            success: true,
+            message: "Đăng bài thành công, đang chờ kiểm duyệt!",
+            post: newPost
         });
 
     } catch (error) {
         console.error("❌ Lỗi controller:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
-            message: "Lỗi server khi đăng bài"
+            message: "Lỗi server khi đăng bài",
+            error: error.message
         });
     }
 };
@@ -401,19 +410,19 @@ export const handlerReaction = async (req, res) => {
     try {
         const { targetId, reactionType, targetType } = req.body;
         const userId = req.user._id;
-        
+
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
-        
+
         if (!reactionType) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Loại reaction không được để trống' });
         }
-        
+
         if (!targetId) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Target ID không được để trống' });
         }
-        
+
         if (!targetType) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Target Type không được để trống' });
         }
@@ -422,59 +431,59 @@ export const handlerReaction = async (req, res) => {
         if (!validTargetTypes.includes(targetType)) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: `Target type không hợp lệ, phải là một trong: ${validTargetTypes.join(', ')}` });
         }
-        
+
         const validReactionTypes = Reaction.schema.paths.reactionType.enumValues;
         if (!validReactionTypes.includes(reactionType)) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: `Loại reaction không hợp lệ, phải là một trong: ${validReactionTypes.join(', ')}` });
         }
 
         const result = await reactionService.addOrUpdateReaction({ userId, targetType, targetId, reactionType });
-        
+
         if (!result || !result.success) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
-                message: result?.message || "Lỗi trong quá trình xử lý reaction" 
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: result?.message || "Lỗi trong quá trình xử lý reaction"
             });
         }
-        
+
         // Trả về response tùy theo action đã thực hiện
         switch (result.action) {
             case 'created':
-                return res.status(StatusCodes.CREATED).json({ 
+                return res.status(StatusCodes.CREATED).json({
                     success: true,
-                    message: "Đã thêm reaction", 
+                    message: "Đã thêm reaction",
                     reaction: result.reaction,
                     action: 'created'
                 });
-                
+
             case 'updated':
-                return res.status(StatusCodes.OK).json({ 
+                return res.status(StatusCodes.OK).json({
                     success: true,
-                    message: "Đã cập nhật loại reaction", 
+                    message: "Đã cập nhật loại reaction",
                     reaction: result.reaction,
                     oldReactionType: result.oldReactionType,
                     action: 'updated'
                 });
-                
+
             case 'removed':
-                return res.status(StatusCodes.OK).json({ 
+                return res.status(StatusCodes.OK).json({
                     success: true,
-                    message: "Đã hủy reaction", 
+                    message: "Đã hủy reaction",
                     reactionType: result.reactionType,
                     action: 'removed'
                 });
-                
+
             default:
-                return res.status(StatusCodes.OK).json({ 
+                return res.status(StatusCodes.OK).json({
                     success: true,
-                    message: "Đã xử lý reaction", 
+                    message: "Đã xử lý reaction",
                     result
                 });
         }
     } catch (error) {
         console.error("Lỗi trong handlerReaction:", error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
-            message: error.message || "Lỗi server" 
+            message: error.message || "Lỗi server"
         });
     }
 };
@@ -484,23 +493,23 @@ export const getUserReaction = async (req, res) => {
     try {
         const { targetType, targetId } = req.params;
         const userId = req.user._id;
-        
+
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
-        
+
         const result = await reactionService.getUserReactionService({ userId, targetType, targetId });
-        
+
         if (!result.success) {
             return res.status(StatusCodes.OK).json(result);
         }
-        
+
         return res.status(StatusCodes.OK).json(result);
     } catch (error) {
         console.error("Lỗi trong getUserReaction:", error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
-            message: error.message || "Lỗi server" 
+            message: error.message || "Lỗi server"
         });
     }
 };

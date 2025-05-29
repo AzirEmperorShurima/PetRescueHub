@@ -1,7 +1,17 @@
-import { COOKIE_PATHS, TOKEN_TYPE } from "../../config.js";
 import Role from "../models/Role.js";
 import user from "../models/user.js";
+import { getEventsByApprovalStatusService } from "../services/Admin/EventManagement.service.js";
 import { createPackage } from "../services/PackageService/PackageService.js";
+
+import * as userManageService from "../services/Admin/UserManagement.service.js";
+import * as forumManageService from "../services/Admin/ForumManagement.service.js";
+import * as volunteerManageService from "../services/Admin/VolunteerManagement.service.js";
+import * as petManageService from "../services/Admin/PetManagement.service.js";
+import * as eventManageService from "../services/Admin/EventManagement.service.js";
+import * as petRescueManageService from "../services/Admin/PetRescueManagement.service.js";
+
+import PetRescueMissionHistory from "../models/PetRescueMissionHistory.js";
+
 
 /**
  * @desc Lấy danh sách người dùng (Chỉ Admin hoặc Super Admin)
@@ -171,16 +181,32 @@ export const _getVolunteers = async (req, res) => {
 export const deleteUser = async (req, res) => {
     try {
         const { id_delete } = req.body;
+        const currentUserId = req.user._id.toString();
 
         if (currentUserId === id_delete) {
             return res.status(400).json({ message: "Invalid request: You cannot delete yourself!" });
         }
 
-        const deletedUser = await user.findByIdAndDelete(id_delete);
-        if (!deletedUser) {
+        // Kiểm tra user cần xóa có phải là admin không
+        const userToDelete = await user.findById(id_delete).populate("roles", "name");
+        if (!userToDelete) {
             return res.status(404).json({ message: "User does not exist!" });
         }
 
+        const isUserAdmin = userToDelete.roles.some(role => role.name === "admin" || role.name === "super_admin");
+
+        if (isUserAdmin) {
+            const currentUser = await user.findById(currentUserId).populate("roles", "name");
+            const isSuperAdmin = currentUser.roles.some(role => role.name === "super_admin");
+
+            if (!isSuperAdmin) {
+                return res.status(403).json({
+                    message: "Không đủ quyền: Chỉ super_admin mới có thể xóa tài khoản admin!"
+                });
+            }
+        }
+
+        const deletedUser = await user.findByIdAndDelete(id_delete);
         return res.status(200).json({ message: "User deleted successfully!" });
 
     } catch (error) {
@@ -303,5 +329,103 @@ export const addNewPackage = async (req, res) => {
     catch (error) {
         console.error("Lỗi khi thêm mới gói dịch vụ:", error);
         return res.status(500).json({ message: "Lỗi máy chủ!", error: error.message });
+    }
+}
+
+export const getEventsByApprovalStatus = async (req, res) => {
+    try {
+        const { status, page, limit } = req.query;
+        const result = await getEventsByApprovalStatusService({
+            status,
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 10
+        });
+
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ message: err.message || "Lỗi server" });
+    }
+};
+
+export async function getVolunteerStatistics(req, res) {
+    try {
+        const stats = await volunteerManageService.getAdvancedVolunteerStatistics();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khi lấy thống kê", error: error.message });
+    }
+}
+
+export async function getUserStatistics(req, res) {
+    try {
+        const stats = await volunteerManageService.getComprehensiveUserStatistics();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khi lấy thống kê", error: error.message });
+    }
+}
+
+export async function getUserStats(req, res) {
+    try {
+        const data = await userManageService.getUserStatistics();
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ message: "Lỗi thống kê user", error: err.message });
+    }
+}
+
+export async function deactivateUser(req, res) {
+    const { userId } = req.params;
+    try {
+        const user = await user.findByIdAndUpdate(userId, { isActive: false }, { new: true });
+        if (!user) return res.status(404).json({ message: "User không tồn tại" });
+        res.json({ message: "Đã chuyển trạng thái user sang inactive", user });
+    } catch (err) {
+        res.status(500).json({ message: "Lỗi khi vô hiệu hóa user", error: err.message });
+    }
+}
+
+export const aggregateUserChartData = async (req, res) => {
+    try {
+        const data = await userManageService.aggregateUserChartData();
+        res.status(200).json({ data: data });
+    } catch (err) {
+        res.status(500).json({ message: "Lỗi khi thống kê user", error: err.message });
+    }
+}
+
+/**
+ * Admin cập nhật trạng thái nhiệm vụ
+ */
+export async function adminManageMission(req, res) {
+    try {
+        const { id } = req.params;
+        const { action } = req.body; // 'cancel', 'lock', 'unlock'
+
+        const mission = await PetRescueMissionHistory.findById(id);
+        if (!mission) return res.status(404).json({ message: "Mission not found" });
+
+        if (["completed", "cancelled", "timeout"].includes(mission.status)) {
+            return res.status(400).json({ message: "Cannot modify a finalized mission." });
+        }
+
+        if (action === "cancel") {
+            mission.status = "cancelled";
+            mission.endedAt = new Date();
+        } else if (action === "lock") {
+            mission.isLocked = true;
+            mission.lockExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // Lock 1 hour
+        } else if (action === "unlock") {
+            mission.isLocked = false;
+            mission.lockExpiresAt = null;
+        } else {
+            return res.status(400).json({ message: "Invalid action." });
+        }
+
+        await mission.save();
+        res.json({ message: "Mission updated", mission });
+    } catch (err) {
+        res.status(500).json({ message: "Server error", error: err.message });
     }
 }

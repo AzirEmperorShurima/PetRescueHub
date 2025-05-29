@@ -3,6 +3,7 @@ import { COOKIE_PATHS, TOKEN_TYPE } from "../../config.js";
 import { getUserFieldFromToken } from "../services/User/User.service.js";
 import User from "../models/user.js";
 import { redisClient } from "../Config/redis.client.js";
+import { resignVolunteerService } from "../services/Volunteer/Volunteer.service.js";
 
 export const requestVolunteer = async (req, res) => {
     try {
@@ -124,6 +125,39 @@ export const volunteerUpdateStatus = async (req, res) => {
     } catch (error) {
         console.error('Error updating volunteer status:', error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Server error" });
+    }
+};
+
+
+/**
+ * @desc Volunteer từ bỏ quyền volunteer của mình
+ */
+export const resignVolunteer = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const userEmail = req.user.email;
+        const roles = req.user.roles;
+        const tokenType = req.token_verified.tokenType;
+
+        if (!userId || !userEmail || !roles || tokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ 
+                message: "Unauthorized: Access Denied You must be login to use this resource" 
+            });
+        }
+
+        const result = await resignVolunteerService(userId);
+
+        if (!result.success) {
+            return res.status(400).json({ message: result.message });
+        }
+
+        return res.status(200).json({ 
+            message: result.message,
+            user: result.data
+        });
+    } catch (error) {
+        console.error("Lỗi khi từ bỏ quyền volunteer:", error);
+        return res.status(500).json({ message: "Lỗi máy chủ!", error: error.message });
     }
 };
 

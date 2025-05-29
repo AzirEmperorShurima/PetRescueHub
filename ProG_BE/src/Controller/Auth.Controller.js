@@ -14,6 +14,7 @@ import timezone from 'dayjs/plugin/timezone.js';
 import { getUserFieldFromToken } from '../services/User/User.service.js';
 import mongoose from 'mongoose';
 import { redisClient } from '../Config/redis.client.js';
+import { buildGreeting } from '../utils/buildGreeting.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -41,7 +42,7 @@ export const Signup_Handler = async (req, res) => {
             res
         });
         const register_token_redisKey = `register:${CreateUser._id}`;
-        await redisClient.set(register_token_redisKey, token, { EX: 60 * 15 });
+        await getRedisClient.set(register_token_redisKey, token, { EX: 60 * 15 });
 
         // ✅ Trả phản hồi ngay lập tức (không chờ email gửi xong)
         res.status(StatusCodes.CREATED).json({
@@ -64,7 +65,7 @@ export const Signup_Handler = async (req, res) => {
 
         Promise.all([
             CreateUser.save(),
-            redisClient.set(redisKey, generateOTP, { EX: 60 * 15 })
+            getRedisClient.set(redisKey, generateOTP, { EX: 60 * 15 })
         ]).then(() => {
             // ✅ Gửi email OTP sau khi phản hồi API
             setImmediate(() => {
@@ -86,101 +87,67 @@ export const loginHandler = async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        if (!username && !email) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Username or Email is required" });
-        }
-        if (!password) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Password is required" });
-        }
-        const foundUser = await user.findOne(email ? { email } : { username }).populate("roles");
-        if (!foundUser) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid Username or Email" });
-        }
-        if (!foundUser.isActive) {
-            return res.status(StatusCodes.FORBIDDEN).json({ message: "Login Failed, User is not active" });
+        if (!(username || email) || !password) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Username/Email and Password are required",
+            });
         }
 
+        // Tìm user theo email hoặc username
+        const foundUser = await user
+            .findOne(email ? { email } : { username })
+            .populate("roles", "name");
+
+        if (!foundUser) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid credentials" });
+        }
+
+        if (!foundUser.isActive) {
+            return res.status(StatusCodes.FORBIDDEN).json({ message: "User is not active" });
+        }
+
+        // So sánh mật khẩu
         const isPasswordValid = await user.comparePassword(password, foundUser.password);
         if (!isPasswordValid) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid Password' });
-        }
-        const isFirstLogin = !foundUser.lastLoginAt;
-        const currentHour = new Date().getHours();
-        let greetingTitle, greetingMessage, priority, metadata;
-
-        if (isFirstLogin) {
-            greetingTitle = 'Chào mừng bạn đến với PetRescueHub! 🎉';
-            greetingMessage = `Chào mừng ${foundUser.username} đã tham gia cộng đồng của chúng tôi. Hãy khám phá và tận hưởng những tính năng tuyệt vời!`;
-            priority = 'high';
-            metadata = {
-                isFirstLogin: true,
-                userJoinedAt: new Date()
-            };
-        } else {
-            if (currentHour >= 5 && currentHour < 12) {
-                greetingTitle = 'Chào buổi sáng! ☀️';
-                greetingMessage = `Chào buổi sáng ${foundUser.username}! Chúc bạn có một ngày tốt lành.`;
-            } else if (currentHour >= 12 && currentHour < 18) {
-                greetingTitle = 'Chào buổi chiều! 🌤️';
-                greetingMessage = `Chào buổi chiều ${foundUser.username}! Hy vọng bạn đang có một ngày tuyệt vời.`;
-            } else {
-                greetingTitle = 'Chào buổi tối! 🌙';
-                greetingMessage = `Chào buổi tối ${foundUser.username}! Cảm ơn bạn đã quay trở lại.`;
-            }
-            priority = 'low';
-            metadata = {
-                loginTime: new Date(),
-                timeOfDay: currentHour >= 5 && currentHour < 12 ? 'morning' : 
-                          currentHour >= 12 && currentHour < 18 ? 'afternoon' : 'evening'
-            };
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid Password" });
         }
 
-        const welcomeNotification = new Notification({
-            userId: foundUser._id.toString(),
-            type: 'success',
-            title: greetingTitle,
-            message: greetingMessage,
-            priority: priority,
-            relatedTo: 'login',
-            metadata: metadata,
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // Thông báo sẽ hết hạn sau 24 giờ
-        });
-        await welcomeNotification.save();
-        foundUser.lastLoginAt = new Date();
-        await foundUser.save();
-
+        // Tạo payload
         const userLoginPayLoad = {
             id: foundUser._id,
             email: foundUser.email,
-            roles: foundUser.roles.map(role => role.name),
+            roles: foundUser.roles.map(r => r.name),
             tokenType: TOKEN_TYPE.ACCESS_TOKEN.name,
-        }
+        };
+
         const refreshTokenPayload = {
             id: foundUser._id,
             email: foundUser.email,
             tokenType: TOKEN_TYPE.REFRESH_TOKEN.name,
         };
 
-        const newCookies = await getCookies({
-            PayLoad: userLoginPayLoad,
-            path: COOKIE_PATHS.ACCESS_TOKEN.Path,
-            cookieName: COOKIE_PATHS.ACCESS_TOKEN.CookieName,
-            maxAge: TOKEN_TYPE.ACCESS_TOKEN.maxAge,
-            expiresIn: TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
-            res
-        });
-        const newRefreshToken = await getCookies({
-            PayLoad: refreshTokenPayload,
-            path: COOKIE_PATHS.REFRESH_TOKEN.Path,
-            cookieName: COOKIE_PATHS.REFRESH_TOKEN.CookieName,
-            maxAge: TOKEN_TYPE.REFRESH_TOKEN.maxAge,
-            expiresIn: TOKEN_TYPE.REFRESH_TOKEN.expiresIn,
-            res
-        });
-        const token = await manageTokens(foundUser, newCookies, TOKEN_TYPE.ACCESS_TOKEN.name);
+        const [accessCookie, refreshCookie] = await Promise.all([
+            getCookies({
+                PayLoad: userLoginPayLoad,
+                path: COOKIE_PATHS.ACCESS_TOKEN.Path,
+                cookieName: COOKIE_PATHS.ACCESS_TOKEN.CookieName,
+                maxAge: TOKEN_TYPE.ACCESS_TOKEN.maxAge,
+                expiresIn: TOKEN_TYPE.ACCESS_TOKEN.expiresIn,
+                res
+            }),
+            getCookies({
+                PayLoad: refreshTokenPayload,
+                path: COOKIE_PATHS.REFRESH_TOKEN.Path,
+                cookieName: COOKIE_PATHS.REFRESH_TOKEN.CookieName,
+                maxAge: TOKEN_TYPE.REFRESH_TOKEN.maxAge,
+                expiresIn: TOKEN_TYPE.REFRESH_TOKEN.expiresIn,
+                res
+            }),
+        ]);
 
-        return res.status(StatusCodes.OK).json({
-            message: "Login Successful",
+        // Trả response sớm
+        res.status(StatusCodes.OK).json({
+            message: "User login successful",
             user: {
                 id: foundUser._id,
                 username: foundUser.username,
@@ -189,60 +156,87 @@ export const loginHandler = async (req, res) => {
                 address: foundUser.address,
                 avatar: foundUser.avatar,
                 email: foundUser.email,
-                roles: foundUser.roles.map(role => role.name)
+                roles: foundUser.roles.map(r => r.name),
             }
         });
+
+        setImmediate(async () => {
+            try {
+                const { greetingTitle, greetingMessage, priority, metadata } = buildGreeting(foundUser);
+                const notification = new Notification({
+                    userId: foundUser._id.toString(),
+                    type: 'success',
+                    title: greetingTitle,
+                    message: greetingMessage,
+                    priority,
+                    relatedTo: 'login',
+                    metadata,
+                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                });
+
+                foundUser.lastLoginAt = new Date();
+
+                await Promise.all([
+                    notification.save(),
+                    foundUser.save()
+                ]);
+                manageTokens(foundUser, accessCookie, TOKEN_TYPE.ACCESS_TOKEN.name)
+            } catch (e) {
+                console.warn("Background login processing error:", e.message);
+            }
+        });
+
     } catch (err) {
         console.error("Login error:", err);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error", error: err.message });
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Internal Server Error",
+            error: err.message
+        });
     }
 };
+
 
 export const logoutHandler = async (req, res) => {
     const token = req.cookies[COOKIE_PATHS.ACCESS_TOKEN.CookieName];
 
     if (!token) {
-        return res
-            .status(StatusCodes.UNAUTHORIZED)
-            .json({ message: "Token is missing. Unauthorized access." });
-    }
-    const accessTokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'tokenType');
-    const refreshTokenType = getUserFieldFromToken(req, COOKIE_PATHS.REFRESH_TOKEN.CookieName, 'tokenType');
-    if (!refreshTokenType || refreshTokenType !== TOKEN_TYPE.REFRESH_TOKEN.name) {
-        return res.status(StatusCodes.FORBIDDEN).json({ message: "Permission is Invalid -> 🚫 Access Denied" });
-    }
-    if (!accessTokenType || accessTokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
-        return res.status(StatusCodes.FORBIDDEN).json({ message: "Permission is Invalid -> 🚫 Access Denied" });
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "Missing access token. Unauthorized access.",
+        });
     }
 
-    try {
-        const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
-        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Token is missing. Unauthorized access." });
-        }
+    const { tokenType: accessTokenType, _id: userId } = req.user || {};
+    const { tokenType: refreshTokenType } = req.refreshUser || {};
 
-        const _user = await user.findById(userId);
+    const isInvalidTokenType =
+        accessTokenType !== TOKEN_TYPE.ACCESS_TOKEN.name ||
+        refreshTokenType !== TOKEN_TYPE.REFRESH_TOKEN.name;
 
-        if (!_user) {
-            return res
-                .status(StatusCodes.NOT_FOUND)
-                .json({ message: "User not found." });
-        }
-        _user.tokens = _user.tokens.filter(t => t.token !== token);
-        await _user.save();
-
-        res.clearCookie(TOKEN_TYPE.ACCESS_TOKEN.name);
-        res.clearCookie(TOKEN_TYPE.REFRESH_TOKEN.name);
-
-        return res
-            .status(StatusCodes.OK)
-            .json({ message: "Logged out successfully." });
-    } catch (error) {
-        console.error("Error during logout:", error.message);
-        return res
-            .status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .json({ message: "Something went wrong during logout." });
+    if (isInvalidTokenType) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+            message: "Invalid token types. 🚫 Access Denied",
+        });
     }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "Invalid user ID. Unauthorized access.",
+        });
+    }
+
+    res.clearCookie(TOKEN_TYPE.ACCESS_TOKEN.name);
+    res.clearCookie(TOKEN_TYPE.REFRESH_TOKEN.name);
+
+    res.status(StatusCodes.OK).json({
+        message: "Logout request received. Processing in background.",
+    });
+
+    user.updateOne(
+        { _id: userId },
+        { $pull: { tokens: { token } } }
+    ).catch(err => {
+        console.error("Background logout error:", err.message);
+    });
 };
 
 export const refreshToken = async (req, res) => {
@@ -330,15 +324,21 @@ export const refreshToken = async (req, res) => {
 
 export const manageTokens = async (_user, token, type) => {
     try {
-        let tokensArray = _user.tokens || [];
         const now = Date.now();
-        tokensArray = tokensArray.filter(tokenObj => (now - parseInt(tokenObj.signedAt)) < 86400000);
-        if (tokensArray.length >= 5) {
-            tokensArray.shift();
+        if (!_user.tokens) {
+            _user.tokens = [];
         }
-
-        tokensArray.push({ type, token, signedAt: now, expiredAt: now + 86400000 });
-        await user.updateOne({ _id: _user._id }, { $set: { tokens: tokensArray } });
+        _user.tokens = _user.tokens.filter(tokenObj => (now - tokenObj.signedAt) < 86400000);
+        if (_user.tokens.length >= 5) {
+            _user.tokens.shift();
+        }
+        _user.tokens.push({
+            type,
+            token,
+            signedAt: now,
+            expiredAt: now + 86400000
+        });
+        await _user.save();
         return token;
     } catch (error) {
         console.error("Error managing tokens:", error);
@@ -346,16 +346,18 @@ export const manageTokens = async (_user, token, type) => {
     }
 };
 
+
 export const getProfile = async (req, res) => {
     try {
         const userToken = req.cookies[COOKIE_PATHS.ACCESS_TOKEN.CookieName]
         if (!userToken) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - No token provided" });
         }
-        const currUserId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
-        const currUserRoles = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'roles') || [];
-        const currAccessTokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'tokenType');
-        const targetUser = (req.params.targetUser || currUserId).trim();
+        const currUserId = req.user._id.toString()
+        const currUserRoles = req.user.roles
+        const currAccessTokenType = req.user.tokenType
+        const rawTarget = req.params.targetUser || currUserId;
+        const targetUser = typeof rawTarget === 'string' ? rawTarget.trim() : rawTarget.toString();
 
         if (!currUserId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - No token provided" });
@@ -382,11 +384,14 @@ export const getProfile = async (req, res) => {
 
         // Nếu là chủ tài khoản thì kiểm tra token có tồn tại trong DB không
         if (isOwner) {
-            const isTokenValid = foundUser.tokens?.some(tokenObj =>
-                tokenObj.token === req.cookies[COOKIE_PATHS.ACCESS_TOKEN.CookieName]
-            );
-            if (!isTokenValid) {
-                return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - Token mismatch" });
+            const currentToken = req.cookies[TOKEN_TYPE.ACCESS_TOKEN.name];
+            if (Array.isArray(foundUser.tokens) && foundUser.tokens.length > 0) {
+                const isTokenValid = foundUser.tokens.some(tokenObj => tokenObj.token === currentToken);
+                if (!isTokenValid) {
+                    return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - Token mismatch" });
+                }
+            } else {
+                return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized - Token not found" });
             }
         }
 
@@ -439,14 +444,14 @@ export const verified_OTP = async (req, res) => {
     try {
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.REGISTER_VERIFY.CookieName, 'id');
         const redisTokenKey = `register:${userId}`;
-        const redisToken = await redisClient.get(redisTokenKey);
+        const redisToken = await getRedisClient.get(redisTokenKey);
         if (!redisToken || redisToken !== cookies) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: 'Verify OTP failed, token expired or invalid'
             });
         }
         const redisOTPKey = `otp:signup:${userId}`;
-        const redisOTP = await redisClient.get(redisOTPKey);
+        const redisOTP = await getRedisClient.get(redisOTPKey);
         if (!redisOTP) {
             return res.status(StatusCodes.FORBIDDEN).json({
                 message: 'Verify OTP failed, OTP expired or not found'
@@ -491,8 +496,8 @@ export const verified_OTP = async (req, res) => {
         );
         await foundUser.save();
         await Promise.all([
-            redisClient.del(redisTokenKey),
-            redisClient.del(redisOTPKey)
+            getRedisClient.del(redisTokenKey),
+            getRedisClient.del(redisOTPKey)
         ]);
         return res.status(StatusCodes.OK).json({
             message: 'OTP verified successfully, user activated'
@@ -539,17 +544,17 @@ export const resendActivationOTP = async (req, res) => {
         }
 
         const redisOTPKey = `otp:signup:${userId}`;
-        const otpTTL = await redisClient.ttl(redisOTPKey);
+        const otpTTL = await getRedisClient.ttl(redisOTPKey);
 
         const newOTP = otpGenerator();
 
         // Nếu vẫn còn OTP trong Redis thì ghi đè
         if (otpTTL > 0) {
-            await redisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
+            await getRedisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
         } else {
             // Nếu không còn nhưng user chưa active thì cũng cấp lại
             if (!foundUser.active) {
-                await redisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
+                await getRedisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
             } else {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     message: "Account already activated"
@@ -601,7 +606,7 @@ export const forgot_password = async (req, res) => {
 
         const otp = otpGenerator()
 
-        await redisClient.setEx(`forgotpassword:${userFound.email}`, 60 * 15, otp);
+        await getRedisClient.setEx(`forgotpassword:${userFound.email}`, 60 * 15, otp);
         const forgotPasswordPayLoad = {
             email: userFound.email,
             tokenType: TOKEN_TYPE.FORGOT_PASSWORD.name,
@@ -651,12 +656,12 @@ export const verified_OTP_forgot_password = async (req, res) => {
         if (!userFound) {
             return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
         }
-        const storedOtp = await redisClient.get(`forgotpassword:${email}`);
+        const storedOtp = await getRedisClient.get(`forgotpassword:${email}`);
 
         if (!storedOtp || storedOtp !== otp) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid or expired OTP' });
         }
-        await redisClient.del(`forgotpassword:${email}`);
+        await getRedisClient.del(`forgotpassword:${email}`);
         res.clearCookie(TOKEN_TYPE.FORGOT_PASSWORD.name, {
             path: COOKIE_PATHS.FORGOT_PASSWORD.Path,
             httpOnly: true,

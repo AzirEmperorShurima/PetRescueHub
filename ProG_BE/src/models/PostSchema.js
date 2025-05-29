@@ -6,6 +6,12 @@ const PostSchema = new mongoose.Schema(
         content: { type: String, required: true, trim: true },
         author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         tags: [{ type: String, index: true }],
+        violate_tags: [{ type: String, index: true }],
+        violationDetails: [{
+            tag: { type: String, required: true },
+            reason: { type: String, required: true },
+            triggerPhrase: { type: String, default: "" }
+        }],
         imgUrl: [{ type: String }],
         commentCount: { type: Number, default: 0 },
         favoriteCount: { type: Number, default: 0 },
@@ -21,7 +27,9 @@ const PostSchema = new mongoose.Schema(
                 ['angry', 0],
             ]),
         },
-        postStatus: { type: String, enum: ["public", "private", "hidden"], default: "public" },
+        postStatus: {
+            type: String, enum: ["public", "private", "hidden", "pending"], default: "public"
+        },
         createdAt: { type: Date, default: Date.now },
         updatedAt: { type: Date, default: Date.now }
     },
@@ -89,6 +97,17 @@ export const EventPost = PostModel.discriminator(
         eventLongitude: { type: String }, //kinh độ
         eventLatitude: { type: String }, //vĩ độ
         eventLocation: { type: String },
+        postStatus: { type: String, enum: ["public", "private", "hidden", "pending"], default: "hidden" },
+        approvalStatus: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending"
+        },
+        approvedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null
+        }
     })
 );
 export default {
