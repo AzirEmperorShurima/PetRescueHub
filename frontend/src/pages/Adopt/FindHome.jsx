@@ -38,16 +38,18 @@ import {
   Stepper,
   useSteps,
 } from '@chakra-ui/react';
-import { BiUpload, BiX, BiHeart, BiCheckCircle, BiCamera, BiUser } from 'react-icons/bi';
+import { BiUpload, BiX, BiHeart, BiCheckCircle, BiCamera, BiUser, BiPlus } from 'react-icons/bi';
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
+import { useNavigate } from 'react-router-dom';
+import apiService from '../../services/api.service';
 // Pet Basic Info Component
 const PetBasicInfo = ({ formData, setFormData, errors }) => {
   const cardBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   const petTypes = [
-    'Chó', 'Mèo', 'Chim', 'Cá', 'Hamster', 'Thỏ', 
-    'Rùa', 'Bò sát', 'Khác'
+    'Dog', 'Cat', 'Bird', 'Fish', 'Hamster', 'Rabbit', 
+    'Turtle', 'Reptile', 'Other'
   ];
 
   const handleInputChange = (field, value) => {
@@ -72,65 +74,57 @@ const PetBasicInfo = ({ formData, setFormData, errors }) => {
       <CardBody pt={0}>
         <VStack spacing={6}>
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} w="full">
-            {/* Pet Name - Optional */}
-            <FormControl>
-              <FormLabel>
-                Tên thú cưng 
-                <Text as="span" fontSize="sm" color="gray.500" ml={2}>
-                  (Không bắt buộc)
-                </Text>
-              </FormLabel>
+            {/* Pet Name */}
+            <FormControl isRequired>
+              <FormLabel>Tên thú cưng</FormLabel>
               <Input
-                placeholder="Chưa có tên hoặc để trống nếu chưa đặt tên"
+                placeholder="Nhập tên thú cưng"
                 value={formData.petInfo.name || ''}
                 onChange={(e) => handleInputChange('name', e.target.value)}
+                isInvalid={errors.name}
               />
-              <Text fontSize="xs" color="gray.500" mt={1}>
-                Nhiều thú cưng bị bỏ rơi chưa có tên, bạn có thể để trống
-              </Text>
             </FormControl>
 
-            {/* Pet Type */}
+            {/* Pet Type (breed) */}
             <FormControl isRequired>
               <FormLabel>Loại thú cưng</FormLabel>
               <Select
                 placeholder="Chọn loại thú cưng"
-                value={formData.petInfo.type || ''}
-                onChange={(e) => handleInputChange('type', e.target.value)}
-                isInvalid={errors.type}
+                value={formData.petInfo.breed || ''}
+                onChange={(e) => handleInputChange('breed', e.target.value)}
+                isInvalid={errors.breed}
               >
                 {petTypes.map(type => (
                   <option key={type} value={type}>{type}</option>
                 ))}
               </Select>
-              {formData.petInfo.type === 'Khác' && (
+              {formData.petInfo.breed === 'Other' && (
                 <Input
                   mt={2}
                   placeholder="Nhập loại thú cưng khác"
-                  value={formData.petInfo.customType || ''}
-                  onChange={(e) => handleInputChange('customType', e.target.value)}
+                  value={formData.petInfo.customBreed || ''}
+                  onChange={(e) => handleInputChange('customBreed', e.target.value)}
+                  isInvalid={errors.customBreed}
                 />
               )}
             </FormControl>
 
-            {/* Breed */}
-            <FormControl>
-              <FormLabel>Giống</FormLabel>
+            {/* Breed Name */}
+            <FormControl isRequired>
+              <FormLabel>Tên giống chi tiết</FormLabel>
               <Input
-                placeholder="VD: Golden Retriever, Persian, v.v."
-                value={formData.petInfo.breed || ''}
-                onChange={(e) => handleInputChange('breed', e.target.value)}
+                placeholder="VD: Chó Cỏ, Persian, v.v."
+                value={formData.petInfo.breedName || ''}
+                onChange={(e) => handleInputChange('breedName', e.target.value)}
+                isInvalid={errors.breedName}
               />
-              <Text fontSize="xs" color="gray.500" mt={1}>
-                Để trống nếu không rõ giống cụ thể
-              </Text>
             </FormControl>
 
             {/* Gender */}
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Giới tính</FormLabel>
               <RadioGroup
-                value={formData.petInfo.gender || ''}
+                value={formData.petInfo.gender || 'unknown'}
                 onChange={(value) => handleInputChange('gender', value)}
               >
                 <HStack spacing={6}>
@@ -141,80 +135,176 @@ const PetBasicInfo = ({ formData, setFormData, errors }) => {
               </RadioGroup>
             </FormControl>
 
-            {/* Age */}
-            <FormControl>
-              <FormLabel>Tuổi (ước tính)</FormLabel>
-              <Select
-                placeholder="Chọn độ tuổi"
-                value={formData.petInfo.age || ''}
-                onChange={(e) => handleInputChange('age', e.target.value)}
-              >
-                <option value="puppy">Con non (dưới 1 tuổi)</option>
-                <option value="young">Trẻ (1-3 tuổi)</option>
-                <option value="adult">Trưởng thành (3-7 tuổi)</option>
-                <option value="senior">Già (trên 7 tuổi)</option>
-                <option value="unknown">Không rõ</option>
-              </Select>
+            {/* Date of Birth */}
+            <FormControl isRequired>
+              <FormLabel>Ngày sinh</FormLabel>
+              <Input
+                type="date"
+                value={formData.petInfo.petDob || ''}
+                onChange={(e) => {
+                  handleInputChange('petDob', e.target.value);
+                  // Tự động tính tuổi khi chọn ngày sinh
+                  if (e.target.value) {
+                    const birthDate = new Date(e.target.value);
+                    const today = new Date();
+                    const ageInYears = Math.floor((today - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
+                    handleInputChange('age', ageInYears);
+                  }
+                }}
+                max={new Date().toISOString().split('T')[0]}
+                isInvalid={errors.petDob}
+              />
             </FormControl>
 
-            {/* Size */}
+            {/* Age - Readonly, calculated from DOB */}
             <FormControl>
-              <FormLabel>Kích thước</FormLabel>
-              <RadioGroup
-                value={formData.petInfo.size || ''}
-                onChange={(value) => handleInputChange('size', value)}
+              <FormLabel>Tuổi (năm)</FormLabel>
+              <Input
+                type="number"
+                min="0"
+                value={formData.petInfo.age || 0}
+                readOnly
+                isDisabled
+              />
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                Tuổi được tính tự động từ ngày sinh
+              </Text>
+            </FormControl>
+
+            {/* Weight and Height */}
+            <FormControl>
+              <FormLabel>Cân nặng (kg)</FormLabel>
+              <Input
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder="Nhập cân nặng"
+                value={formData.petInfo.weight || ''}
+                onChange={(e) => handleInputChange('weight', Number(e.target.value))}
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Chiều cao (cm)</FormLabel>
+              <Input
+                type="number"
+                min="0"
+                placeholder="Nhập chiều cao"
+                value={formData.petInfo.height || ''}
+                onChange={(e) => handleInputChange('height', Number(e.target.value))}
+              />
+            </FormControl>
+
+            {/* Microchip ID */}
+            <FormControl>
+              <FormLabel>Mã số chip (nếu có)</FormLabel>
+              <Input
+                placeholder="Nhập mã số chip"
+                value={formData.petInfo.microchipId || ''}
+                onChange={(e) => handleInputChange('microchipId', e.target.value)}
+              />
+            </FormControl>
+
+            {/* Pet State */}
+            <FormControl isRequired>
+              <FormLabel>Trạng thái</FormLabel>
+              <Select
+                value={formData.petInfo.petState || 'NotReadyToAdopt'}
+                onChange={(e) => handleInputChange('petState', e.target.value)}
+                isInvalid={errors.petState}
               >
-                <HStack spacing={4} flexWrap="wrap">
-                  <Radio value="small">Nhỏ</Radio>
-                  <Radio value="medium">Trung bình</Radio>
-                  <Radio value="large">Lớn</Radio>
-                  <Radio value="extra-large">Rất lớn</Radio>
-                </HStack>
-              </RadioGroup>
+                <option value="ReadyToAdopt">Sẵn sàng cho nhận nuôi</option>
+                <option value="NotReadyToAdopt">Chưa sẵn sàng cho nhận nuôi</option>
+              </Select>
             </FormControl>
           </SimpleGrid>
 
-          {/* Description */}
-          <FormControl>
+          {/* Pet Details */}
+          <FormControl isRequired>
             <FormLabel>Mô tả chi tiết</FormLabel>
             <Textarea
               placeholder="Mô tả tính cách, sở thích, tình trạng sức khỏe, hoàn cảnh tìm thấy..."
-              value={formData.petInfo.description || ''}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              value={formData.petInfo.petDetails || ''}
+              onChange={(e) => handleInputChange('petDetails', e.target.value)}
               minH="120px"
+              isInvalid={errors.petDetails}
             />
           </FormControl>
 
           {/* Health Info */}
           <FormControl>
-            <FormLabel>Tình trạng sức khỏe</FormLabel>
             <VStack align="start" spacing={3}>
-              <Checkbox
-                isChecked={formData.petInfo.isVaccinated || false}
-                onChange={(e) => handleInputChange('isVaccinated', e.target.checked)}
-              >
-                Đã tiêm phòng
-              </Checkbox>
-              <Checkbox
-                isChecked={formData.petInfo.isNeutered || false}
-                onChange={(e) => handleInputChange('isNeutered', e.target.checked)}
-              >
-                Đã triệt sản
-              </Checkbox>
-              <Checkbox
-                isChecked={formData.petInfo.hasHealthIssues || false}
-                onChange={(e) => handleInputChange('hasHealthIssues', e.target.checked)}
-              >
-                Có vấn đề sức khỏe đặc biệt
-              </Checkbox>
-              {formData.petInfo.hasHealthIssues && (
-                <Textarea
-                  placeholder="Mô tả vấn đề sức khỏe cụ thể..."
-                  value={formData.petInfo.healthDetails || ''}
-                  onChange={(e) => handleInputChange('healthDetails', e.target.value)}
-                  size="sm"
-                />
-              )}
+              {/* Reproductive Status */}
+              <FormControl isRequired>
+                <FormLabel>Tình trạng sinh sản</FormLabel>
+                <RadioGroup
+                  value={formData.petInfo.reproductiveStatus || 'not neutered'}
+                  onChange={(value) => handleInputChange('reproductiveStatus', value)}
+                >
+                  <HStack spacing={6}>
+                    <Radio value="neutered">Đã triệt sản</Radio>
+                    <Radio value="not neutered">Chưa triệt sản</Radio>
+                  </HStack>
+                </RadioGroup>
+              </FormControl>
+
+              {/* Vaccination Status */}
+              <Box w="full">
+                <FormLabel>Thông tin tiêm chủng</FormLabel>
+                <VStack align="start" w="full" spacing={4}>
+                  {(formData.petInfo.vaccinationStatus || []).map((vaccine, index) => (
+                    <HStack key={index} w="full" spacing={4}>
+                      <Input
+                        placeholder="Tên vaccine"
+                        value={vaccine.vaccineName || ''}
+                        onChange={(e) => {
+                          const newVaccines = [...(formData.petInfo.vaccinationStatus || [])];
+                          newVaccines[index] = { ...newVaccines[index], vaccineName: e.target.value };
+                          handleInputChange('vaccinationStatus', newVaccines);
+                        }}
+                      />
+                      <Input
+                        type="date"
+                        value={vaccine.vaccinationDate || ''}
+                        onChange={(e) => {
+                          const newVaccines = [...(formData.petInfo.vaccinationStatus || [])];
+                          newVaccines[index] = { ...newVaccines[index], vaccinationDate: e.target.value };
+                          handleInputChange('vaccinationStatus', newVaccines);
+                        }}
+                      />
+                      <Input
+                        placeholder="Mã vaccine"
+                        value={vaccine.vaccinationCode || ''}
+                        onChange={(e) => {
+                          const newVaccines = [...(formData.petInfo.vaccinationStatus || [])];
+                          newVaccines[index] = { ...newVaccines[index], vaccinationCode: e.target.value };
+                          handleInputChange('vaccinationStatus', newVaccines);
+                        }}
+                      />
+                      <IconButton
+                        icon={<BiX />}
+                        onClick={() => {
+                          const newVaccines = formData.petInfo.vaccinationStatus.filter((_, i) => i !== index);
+                          handleInputChange('vaccinationStatus', newVaccines);
+                        }}
+                      />
+                    </HStack>
+                  ))}
+                  <Button
+                    leftIcon={<BiPlus />}
+                    onClick={() => {
+                      const newVaccines = [...(formData.petInfo.vaccinationStatus || []), {
+                        vaccineName: '',
+                        vaccinationDate: '',
+                        vaccinationCode: ''
+                      }];
+                      handleInputChange('vaccinationStatus', newVaccines);
+                    }}
+                  >
+                    Thêm thông tin vaccine
+                  </Button>
+                </VStack>
+              </Box>
             </VStack>
           </FormControl>
         </VStack>
@@ -513,6 +603,7 @@ const ContactInfo = ({ formData, setFormData, errors }) => {
 // Main Form Component
 const FindHome = () => {
   const toast = useToast();
+  const navigate = useNavigate();
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   
   const [formData, setFormData] = useState({
@@ -609,8 +700,37 @@ const FindHome = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Tạo FormData để gửi cả thông tin và hình ảnh
+      const formDataToSubmit = new FormData();
+
+      // Thêm thông tin cơ bản của thú cưng
+      const petInfo = {
+        ...formData.petInfo,
+        // Nếu type là "Khác" thì sử dụng customType
+        type: formData.petInfo.type === 'Khác' ? formData.petInfo.customType : formData.petInfo.type,
+      };
+
+      // Chuyển đổi các giá trị số
+      if (petInfo.age) petInfo.age = Number(petInfo.age);
+      if (petInfo.weight) petInfo.weight = Number(petInfo.weight);
+      if (petInfo.height) petInfo.height = Number(petInfo.height);
+
+      // Thêm thông tin thú cưng vào FormData
+      formDataToSubmit.append('petInfo', JSON.stringify(petInfo));
+
+      // Thêm các hình ảnh vào FormData
+      if (formData.photos && formData.photos.length > 0) {
+        // Ảnh đầu tiên là avatar
+        formDataToSubmit.append('avatar', formData.photos[0].file);
+        
+        // Các ảnh còn lại vào album
+        formData.photos.slice(1).forEach((photo, index) => {
+          formDataToSubmit.append('petAlbum', photo.file);
+        });
+      }
+
+      // Gọi API tạo profile thú cưng
+      const response = await apiService.pets.profile.create(formDataToSubmit);
       
       toast({
         title: "Đăng tin thành công!",
@@ -627,11 +747,15 @@ const FindHome = () => {
         contactInfo: {}
       });
       setActiveStep(0);
+
+      // Chuyển hướng đến trang chi tiết thú cưng
+      navigate(`/pets/profile/${response.data._id}`);
       
     } catch (error) {
+      console.error('Error creating pet profile:', error);
       toast({
         title: "Có lỗi xảy ra",
-        description: "Vui lòng thử lại sau",
+        description: error.response?.data?.message || "Vui lòng thử lại sau",
         status: "error",
         duration: 3000,
         isClosable: true,

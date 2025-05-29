@@ -87,7 +87,42 @@ const apiService = {
 
 
   users: createApiService('users'),
-  pets: createApiService('pets'),
+  pets: {
+    profile: {
+      getAll: (params = {}) => api.get('/api/pet/v1/get-pets/all-pet', { 
+        params, 
+        withCredentials: true 
+      }),
+      getById: (id) => api.get(`/api/pet/pets/owner/${id}`, { 
+        withCredentials: true 
+      }),
+      create: (data) => {
+        if (data instanceof FormData) {
+          return api.post('/pets/profiles/create', data, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true
+          });
+        }
+        return api.post('/pets/profiles/create', data, { 
+          withCredentials: true 
+        });
+      },
+      update: (id, data) => {
+        if (data instanceof FormData) {
+          return api.put(`/pets/profiles/${id}`, data, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true
+          });
+        }
+        return api.put(`/pets/profiles/${id}`, data, { 
+          withCredentials: true 
+        });
+      },
+      delete: (id) => api.delete(`/pets/profiles/${id}`, { 
+        withCredentials: true 
+      })
+    }
+  },
   volunteers: {
     ...createApiService('volunteers'),
     receiveRescueRequest: (data) => api.post('/volunteers/receive-rescue-request', data),

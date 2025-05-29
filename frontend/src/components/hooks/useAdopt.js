@@ -1,124 +1,101 @@
 import { useState, useEffect } from 'react';
-import { petsMock } from '../../mocks';
+import apiService from '../../services/api.service';
 
 export const useAdopt = () => {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
-    type: '',
-    age: '',
+    breed: '',
     gender: '',
-    size: '',
-    breed: ''
+    age: '',
+    reproductiveStatus: '',
+    petState: ''
   });
   const [sortBy, setSortBy] = useState('newest');
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchPets = async () => {
-      setLoading(true);
-      try {
-        // Trong thực tế, bạn sẽ gọi API thực sự
-        // const response = await api.get('/pets', { params: { ...filters, search: searchTerm } });
-        // setPets(response.data);
-        
-        // Sử dụng mock data
-        setTimeout(() => {
-          if (isMounted) {
-            setPets(petsMock);
-            setLoading(false);
-          }
-        }, 1000);
-      } catch (error) {
-        console.error('Error fetching pets:', error);
-        if (isMounted) {
-          setLoading(false);
-        }
+  const fetchPets = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        ...filters,
+        search: searchTerm,
+        sort: sortBy
+      };
+
+      console.log('Calling API with params:', params); // Debug log
+
+      const response = await apiService.pets.profile.getAll(params);
+      
+      console.log('API Response:', response); // Debug log
+
+      if (!response || !response.data) {
+        throw new Error('Không nhận được dữ liệu từ API');
       }
-    };
 
-    fetchPets();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+      // Map dữ liệu từ API để phù hợp với PetCard
+      const mappedPets = response.data.map(pet => ({
+        id: pet._id || pet.id,
+        name: pet.name || 'Chưa đặt tên',
+        breed: pet.breed || 'Không xác định',
+        breedName: pet.breedName,
+        image: pet.avatar || '/images/default-pet.jpg',
+        status: pet.petState === 'ReadyToAdopt' ? 'available' : 
+               pet.petState === 'Adopted' ? 'adopted' : 'pending',
+        gender: pet.gender || 'Không xác định',
+        age: pet.age || 'Không xác định',
+        weight: pet.weight || 'Không xác định',
+        height: pet.height || 'Không xác định',
+        description: pet.petDetails || 'Chưa có mô tả',
+        reproductiveStatus: pet.reproductiveStatus || 'Không xác định',
+        vaccinationStatus: pet.vaccinationStatus || [],
+        microchipId: pet.microchipId || 'Không có',
+        location: pet.location || 'Không xác định',
+        specialNeeds: pet.specialNeeds || false
+      }));
+
+      setPets(mappedPets);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching pets:', error);
+      setError(
+        error.response?.data?.message || 
+        error.message ||
+        'Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.'
+      );
+      setPets([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    filterPets();
+    fetchPets();
   }, [searchTerm, filters, sortBy]);
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
   };
 
   const handleFilterChange = (filterName, value) => {
-    setFilters({
-      ...filters,
+    setFilters(prev => ({
+      ...prev,
       [filterName]: value
-    });
+    }));
   };
 
   const handleSortChange = (value) => {
     setSortBy(value);
   };
 
-  const filterPets = () => {
-    let filteredPets = [...petsMock];
-    
-    // Áp dụng bộ lọc
-    if (filters.type) {
-      filteredPets = filteredPets.filter(pet => pet.type === filters.type);
-    }
-    
-    if (filters.age) {
-      filteredPets = filteredPets.filter(pet => pet.age === filters.age);
-    }
-    
-    if (filters.gender) {
-      filteredPets = filteredPets.filter(pet => pet.gender === filters.gender);
-    }
-    
-    if (filters.size) {
-      filteredPets = filteredPets.filter(pet => pet.size === filters.size);
-    }
-    
-    if (filters.breed) {
-      filteredPets = filteredPets.filter(pet => pet.breed === filters.breed);
-    }
-    
-    // Áp dụng tìm kiếm
-    if (searchTerm) {
-      filteredPets = filteredPets.filter(pet => 
-        pet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pet.breed.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pet.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    // Áp dụng sắp xếp
-    if (sortBy === 'newest') {
-      filteredPets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (sortBy === 'oldest') {
-      filteredPets.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    } else if (sortBy === 'nameAsc') {
-      filteredPets.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortBy === 'nameDesc') {
-      filteredPets.sort((a, b) => b.name.localeCompare(a.name));
-    }
-    
-    setPets(filteredPets);
-  };
-
   const resetFilters = () => {
     setFilters({
-      type: '',
-      age: '',
+      breed: '',
       gender: '',
-      size: '',
-      breed: ''
+      age: '',
+      reproductiveStatus: '',
+      petState: ''
     });
     setSearchTerm('');
     setSortBy('newest');
@@ -127,12 +104,14 @@ export const useAdopt = () => {
   return {
     pets,
     loading,
+    error,
     searchTerm,
     filters,
     sortBy,
     handleSearchChange,
     handleFilterChange,
     handleSortChange,
-    resetFilters
+    resetFilters,
+    refetch: fetchPets
   };
 };

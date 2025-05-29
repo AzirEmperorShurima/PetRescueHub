@@ -32,7 +32,7 @@ const PetCard = ({
   pet = {}, 
   onClick = () => {}, 
   onFavorite, 
-  isFavorited = false 
+  isFavorited = false
 }) => {
   const [imageError, setImageError] = useState(false);
   
@@ -52,14 +52,20 @@ const PetCard = ({
   const {
     name = 'Chưa có tên',
     breed = '',
+    breedName = '',
     image = '',
     status = 'unknown',
     gender = 'unknown',
     age = '',
+    weight = '',
+    height = '',
     size = '',
     description = '',
     location = '',
-    specialNeeds = false
+    specialNeeds = false,
+    reproductiveStatus = '',
+    vaccinationStatus = [],
+    microchipId = '',
   } = pet;
   
   // Color mode values
@@ -191,36 +197,6 @@ const PetCard = ({
           {getStatusText(status)}
         </Badge>
 
-        {/* Favorite Button */}
-        {onFavorite && (
-          <Tooltip label={isFavorited ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}>
-            <Box
-              position="absolute"
-              top={3}
-              left={3}
-              as="button"
-              onClick={handleFavoriteClick}
-              bg="white"
-              borderRadius="full"
-              p={2}
-              shadow="md"
-              _hover={{
-                bg: 'gray.50',
-                transform: 'scale(1.1)',
-              }}
-              transition="all 0.2s"
-              aria-label={isFavorited ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
-            >
-              <Icon
-                as={FaHeart}
-                w={4}
-                h={4}
-                color={isFavorited ? 'red.500' : 'gray.400'}
-              />
-            </Box>
-          </Tooltip>
-        )}
-
         {/* Location Badge */}
         {location && (
           <Badge
@@ -309,6 +285,31 @@ const PetCard = ({
             <Tag size="sm" colorScheme="orange" variant="outline">
               <TagLeftIcon as={FaAward} />
               <TagLabel>Cần chăm sóc đặc biệt</TagLabel>
+            </Tag>
+          )}
+
+          {/* New content */}
+          {weight && (
+            <Text fontSize="sm">
+              Cân nặng: {weight} kg
+            </Text>
+          )}
+          
+          {height && (
+            <Text fontSize="sm">
+              Chiều cao: {height} cm
+            </Text>
+          )}
+          
+          {reproductiveStatus && (
+            <Tag size="sm" colorScheme={reproductiveStatus === 'neutered' ? 'green' : 'yellow'}>
+              {reproductiveStatus === 'neutered' ? 'Đã triệt sản' : 'Chưa triệt sản'}
+            </Tag>
+          )}
+          
+          {vaccinationStatus.length > 0 && (
+            <Tag size="sm" colorScheme="blue">
+              Đã tiêm chủng: {vaccinationStatus.length} mũi
             </Tag>
           )}
         </VStack>

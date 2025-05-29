@@ -26,6 +26,8 @@ import {
   CardBody,
   Collapse,
   useBreakpointValue,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Import icons từ react-icons - sử dụng các icon tồn tại
@@ -44,27 +46,7 @@ import {
 } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
-
-// Import custom hook với error handling
-const useAdoptHook = () => {
-  try {
-    // Import dynamic để tránh lỗi nếu hook không tồn tại
-    return require('../../components/hooks/useAdopt')?.useAdopt?.();
-  } catch (error) {
-    console.warn('useAdopt hook not found, using fallback data:', error);
-    return {
-      pets: [],
-      loading: false,
-      searchTerm: '',
-      filters: {},
-      sortBy: 'newest',
-      handleSearchChange: () => {},
-      handleFilterChange: () => {},
-      handleSortChange: () => {},
-      resetFilters: () => {}
-    };
-  }
-};
+import { useAdopt } from '../../components/hooks/useAdopt';
 
 // Import components với fallback
 const PetFilters = React.lazy(() => 
@@ -134,18 +116,18 @@ const Adopt = () => {
   );
 
   // Custom hook for pet data với error handling
-  const adoptHookResult = useAdoptHook();
   const {
-    pets = [],
-    loading = false,
-    searchTerm = '',
-    filters = {},
-    sortBy = 'newest',
-    handleSearchChange = () => {},
-    handleFilterChange = () => {},
-    handleSortChange = () => {},
-    resetFilters = () => {}
-  } = adoptHookResult || {};
+    pets,
+    loading,
+    error,
+    searchTerm,
+    filters,
+    sortBy,
+    handleSearchChange,
+    handleFilterChange,
+    handleSortChange,
+    resetFilters
+  } = useAdopt();
 
   useEffect(() => {
     // Safely load favorites - không sử dụng browser storage
@@ -716,36 +698,16 @@ const Adopt = () => {
           </DrawerBody>
         </DrawerContent>
       </Drawer>
+      <ScrollToTopButton />   
 
-      {/* Scroll to Top Button */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <MotionBox
-            position="fixed"
-            bottom={6}
-            right={6}
-            zIndex={1000}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <IconButton
-              icon={<Icon as={BiArrowToTop} />}
-              colorScheme="blue"
-              size="lg"
-              borderRadius="full"
-              shadow="lg"
-              onClick={scrollToTop}
-              aria-label="Scroll to top"
-            />
-          </MotionBox>
-        )}
-      </AnimatePresence>
+      {error && (
+        <Alert status="error" mb={6} borderRadius="lg">
+          <AlertIcon />
+          <Text>{error}</Text>
+        </Alert>
+      )}
     </Box>
   );
 };
-<ScrollToTopButton />
 
 export default Adopt;
