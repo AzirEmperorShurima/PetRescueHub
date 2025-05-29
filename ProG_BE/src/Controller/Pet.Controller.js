@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import * as petService from "../services/Pet/Pet.service.js";
 import PetProfile from "../models/PetProfile.js";
 import Joi from "joi";
+import mongoose from "mongoose";
 
 const petUpdateSchema = Joi.object({
     name: Joi.string().trim(),
