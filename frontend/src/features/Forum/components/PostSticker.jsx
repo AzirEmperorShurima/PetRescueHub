@@ -12,7 +12,7 @@ const PostSticker = ({ type }) => {
         bg: 'green.400',
         color: 'white'
       },
-      post: {
+      forumpost: {
         bg: 'blue.400',
         color: 'white'
       },
@@ -22,18 +22,18 @@ const PostSticker = ({ type }) => {
         border: '2px solid',
         borderColor: 'red.700',
         boxShadow: '0 0 10px red' // hiệu ứng bắt mắt
-      }
+      },
     };
   
-    return styleMap[type?.toLowerCase()] || styleMap['post'];
+    return styleMap[type?.toLowerCase()] || styleMap['forumpost'];
   };
   
   const getTypeLabel = () => {
     const typeMap = {
       question: 'Câu hỏi',
       eventpost: 'Sự kiện',
-      post: 'Bài viết',
-      findlostpetpost: 'Tìm thú đi lạc'
+      forumpost: 'Bài viết',
+      findlostpetpost: 'Tìm thú đi lạc',
     };
   
     return typeMap[type?.toLowerCase()] || 'Bài viết';

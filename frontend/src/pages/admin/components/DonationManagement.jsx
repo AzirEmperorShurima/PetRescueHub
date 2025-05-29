@@ -149,7 +149,7 @@ const DonationManagement = () => {
   return (
     <Box sx={{ width: '100%', mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Lịch sử quyên góp
+        Quản lý quyên góp
       </Typography>
       
       {/* Thêm thống kê tổng số tiền quyên góp */}

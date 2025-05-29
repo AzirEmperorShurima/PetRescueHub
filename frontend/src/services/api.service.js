@@ -43,6 +43,7 @@ const apiService = {
 },
   
   // Các API khác
+  // Trong phần forum của apiService
   forum: {
     posts: {
       ...createApiService('forum/posts'),
@@ -60,12 +61,13 @@ const apiService = {
         return api.post('/forum/posts/new', data, { withCredentials: true });
       },
       getAll: (params = {}) => api.get('/forum/GET/posts', { params }),
-      getById: (id) => api.get(`/forum/posts/${id}`),
+      getById: (id) => api.get(`/forum/GET/posts/${id}`),
     },
-    questions: createApiService('forum/questions'),
     comments: createApiService('forum/comments'),
-    categories: createApiService('forum/categories'),
-    tags: createApiService('forum/tags'),
+    reactions: {
+      addOrUpdate: (data) => api.post('/forum/reactions/post', data, { withCredentials: true }),
+      getUserReaction: (targetType, targetId) => api.get(`/forum/reaction/${targetType}/${targetId}`, { withCredentials: true })
+    }
   },
 
 

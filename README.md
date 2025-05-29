@@ -1,41 +1,55 @@
-# Pet Rescue Hub - Frontend
+# Pet Rescue Hub
 
-## Introduction
+## Giới thiệu
 
-Pet Rescue Hub is an online platform connecting pet lovers, volunteers, and animal rescue organizations. This project aims to create a supportive community for pet rescue, care, and adoption.
+Pet Rescue Hub là nền tảng trực tuyến kết nối những người yêu thú cưng, tình nguyện viên và các tổ chức cứu hộ động vật. Dự án này nhằm tạo ra một cộng đồng hỗ trợ việc cứu hộ, chăm sóc và nhận nuôi thú cưng.
 
-## Key Features
+## Tính năng chính
 
-- **Community Forum**: Share experiences, ask questions, and exchange information
-- **Pet Adoption**: Browse and apply to adopt rescue pets
-- **Donations**: Support rescue operations through financial contributions
-- **Events**: Discover rescue events, exhibitions, and community activities
-- **Volunteer Program**: Register to become a rescue volunteer
-- **Care Guides**: Educational resources for pet caregiving
+- **Diễn đàn cộng đồng**: Chia sẻ kinh nghiệm, đặt câu hỏi và trao đổi thông tin
+- **Nhận nuôi thú cưng**: Tìm kiếm và đăng ký nhận nuôi thú cưng được cứu hộ
+- **Quyên góp**: Hỗ trợ hoạt động cứu hộ thông qua đóng góp tài chính
+- **Sự kiện**: Khám phá các sự kiện cứu hộ, triển lãm và hoạt động cộng đồng
+- **Chương trình tình nguyện viên**: Đăng ký trở thành tình nguyện viên cứu hộ
+- **Hướng dẫn chăm sóc**: Tài liệu giáo dục về chăm sóc thú cưng
 
-## Technology Stack
+## Công nghệ sử dụng
 
+### Frontend
 - React 18
 - Chakra UI
 - React Router v6
 - Axios
 - React Bootstrap
-- React Toastify
+- React Icons
 - Dayjs
+- Framer Motion
 
-## Installation & Setup
+### Backend
+- Node.js
+- Express
+- MongoDB
+- Socket.io
+- JWT Authentication
 
-### System Requirements
+## Phiên bản
+
+- Hiện tại: 1.0.0 - SNAPSHOT
+
+## Yêu cầu hệ thống
 
 - Node.js (v14+)
 - npm (v6+)
+- MongoDB
 
-### Installation Steps
+## Hướng dẫn cài đặt
+
+### Frontend
 
 1. Clone repository:
-   ```bash
-   git clone https://github.com/your-username/pet-rescue-hub.git
-   ```
+```bash
+git clone https://github.com/AzirEmperorShurima/PetRescueHub.git
+```
 
 2. Navigate to the frontend directory:
    ```

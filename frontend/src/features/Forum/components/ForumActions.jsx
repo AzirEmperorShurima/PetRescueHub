@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
 import { VStack, Button, useToast } from '@chakra-ui/react';
-import { AddIcon, QuestionIcon } from '@chakra-ui/icons';
-import { CalendarIcon } from '@chakra-ui/icons';
+import { AddIcon, QuestionIcon, CalendarIcon } from '@chakra-ui/icons';
+import { useAuth } from '../../../components/contexts/AuthContext';
 
-// Custom Pet Icon component (since Chakra doesn't have a pets icon)
+// Custom Pet Icon component
 const PetsIcon = (props) => (
   <svg
     viewBox="0 0 24 24"
@@ -17,13 +17,9 @@ const PetsIcon = (props) => (
 );
 
 const ForumActions = ({ 
-  isAuthenticated, 
-  onCreatePost, 
-  onCreateQuestion, 
-  onCreateEvent, 
-  onFindLostPet,
-  postType 
+  onCreatePost // Chỉ cần một callback duy nhất
 }) => {
+  const { user } = useAuth(); // Sử dụng trực tiếp useAuth hook
   const toast = useToast();
 
   // Toast configuration for unauthenticated users
@@ -38,38 +34,31 @@ const ForumActions = ({
     });
   };
 
-  // Sử dụng useCallback để tối ưu các hàm xử lý sự kiện
-  const handleCreatePost = useCallback(() => {
-    if (isAuthenticated) {
-      onCreatePost();
+  // Generic handler for all post types
+  const handleCreatePost = useCallback((postType, message) => {
+    if (user) { // Kiểm tra user thay vì isAuthenticated
+      onCreatePost(postType);
     } else {
-      showAuthToast('Vui lòng đăng nhập để tạo bài viết mới');
+      showAuthToast(message);
     }
-  }, [isAuthenticated, onCreatePost]);
+  }, [user, onCreatePost]); // Cập nhật dependencies
+
+  // Specific handlers for each post type
+  const handleCreateForumPost = useCallback(() => {
+    handleCreatePost('ForumPost', 'Vui lòng đăng nhập để tạo bài viết mới');
+  }, [handleCreatePost]);
 
   const handleCreateQuestion = useCallback(() => {
-    if (isAuthenticated) {
-      onCreateQuestion();
-    } else {
-      showAuthToast('Vui lòng đăng nhập để đặt câu hỏi mới');
-    }
-  }, [isAuthenticated, onCreateQuestion]);
-
-  const handleCreateEvent = useCallback(() => {
-    if (isAuthenticated) {
-      onCreateEvent();
-    } else {
-      showAuthToast('Vui lòng đăng nhập để tạo sự kiện mới');
-    }
-  }, [isAuthenticated, onCreateEvent]);
+    handleCreatePost('Question', 'Vui lòng đăng nhập để đặt câu hỏi mới');
+  }, [handleCreatePost]);
 
   const handleFindLostPet = useCallback(() => {
-    if (isAuthenticated) {
-      onFindLostPet();
-    } else {
-      showAuthToast('Vui lòng đăng nhập để đăng tin tìm thú cưng');
-    }
-  }, [isAuthenticated, onFindLostPet]);
+    handleCreatePost('FindLostPetPost', 'Vui lòng đăng nhập để đăng tin tìm thú cưng');
+  }, [handleCreatePost]);
+
+  const handleCreateEvent = useCallback(() => {
+    handleCreatePost('EventPost', 'Vui lòng đăng nhập để tạo sự kiện mới');
+  }, [handleCreatePost]);
 
   return (
     <VStack spacing={3} className="forum-create-buttons" w="full">
@@ -77,7 +66,7 @@ const ForumActions = ({
         variant="outline"
         colorScheme="pink"
         leftIcon={<AddIcon />}
-        onClick={handleCreatePost}
+        onClick={handleCreateForumPost}
         w="full"
         size="sm"
         _hover={{
@@ -96,8 +85,8 @@ const ForumActions = ({
         w="full"
         size="sm"
         _hover={{
-          bg: 'blue.50',
-          borderColor: 'blue.300'
+          bg: 'orange.50',
+          borderColor: 'orange.300'
         }}
       >
         Đặt câu hỏi
@@ -106,31 +95,31 @@ const ForumActions = ({
       <Button
         variant="outline"
         colorScheme="pink"
+        leftIcon={<PetsIcon />}
+        onClick={handleFindLostPet}
+        w="full"
+        size="sm"
+        _hover={{
+          bg: 'red.50',
+          borderColor: 'red.300'
+        }}
+      >
+        Tìm thú đi lạc
+      </Button>
+
+      <Button
+        variant="outline"
+        colorScheme="pink"
         leftIcon={<CalendarIcon />}
         onClick={handleCreateEvent}
         w="full"
         size="sm"
         _hover={{
-          bg: 'blue.50',
-          borderColor: 'blue.300'
+          bg: 'green.50',
+          borderColor: 'green.300'
         }}
       >
         Tạo sự kiện
-      </Button>
-      
-      <Button
-        variant="outline"
-        colorScheme="pink"
-        leftIcon={<PetsIcon  /> }
-        onClick={handleFindLostPet}
-        w="full"
-        size="sm"
-        _hover={{
-          bg: 'blue.50',
-          borderColor: 'blue.300'
-        }}
-      >
-        Tìm thú đi lạc
       </Button>
     </VStack>
   );

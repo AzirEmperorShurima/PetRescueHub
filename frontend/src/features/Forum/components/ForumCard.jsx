@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Box,
@@ -13,14 +13,12 @@ import {
   useTheme
 } from '@chakra-ui/react';
 import {
-  FaComment,
-  FaEllipsisV,
-  FaBookmark,
-  FaRegBookmark
+  FaEllipsisV
 } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import PostSticker from './PostSticker';
-import Reaction from '../../../components/common/interactions/Reaction';
+import apiService from '../../../services/api.service';
+import PostActions from '../PostActions';
 
 const ForumCard = ({
   item,
@@ -29,9 +27,19 @@ const ForumCard = ({
   onToggleLike,
   onToggleFavorite,
   formatDate,
-  onClick
+  onClick,
+  currentUser
 }) => {
   const theme = useTheme();
+  
+  // Local state để quản lý item và loading
+  const [localItem, setLocalItem] = useState(item);
+  const [loading, setLoading] = useState(false);
+
+  // Cập nhật local state khi item props thay đổi
+  useEffect(() => {
+    setLocalItem(item);
+  }, [item]);
 
   const cardBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -40,19 +48,82 @@ const ForumCard = ({
   const tagColor = useColorModeValue('blue.600', 'blue.200');
   const shadowColor = useColorModeValue('lg', 'dark-lg');
 
-  const category = item.categoryObj || (categories && categories.find(cat => cat.id === item.category));
+  const category = localItem.categoryObj || (categories && categories.find(cat => cat.id === localItem.category));
 
   const getDetailUrl = () => {
+    const itemId = localItem.id || localItem._id;
     switch (type) {
       case 'post':
-        return `/forum/post/${item.id}`;
+      case 'ForumPost':
+        return `/forum/post/${itemId}`;
       case 'question':
-        return `/forum/question/${item.id}`;
+      case 'Question':
+        return `/forum/question/${itemId}`;
       case 'event':
-        return `/event/${item.id}`;
+      case 'EventPost':
+        return `/event/${itemId}`;
+      case 'FindLostPetPost':
+        return `/forum/findLostPet/${itemId}`;
       default:
         return '#';
     }
+  };
+
+  // Handler cho favorite
+  const handleFavoriteToggle = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (loading) return;
+    
+    const previousFavorited = localItem.isFavorited;
+    
+    try {
+      setLoading(true);
+      
+      // Optimistic update
+      setLocalItem(prev => ({
+        ...prev,
+        isFavorited: !prev.isFavorited
+      }));
+      
+      // Gọi callback từ parent component
+      if (onToggleFavorite) {
+        const targetId = localItem.id || localItem._id;
+        await onToggleFavorite(targetId);
+      }
+      
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      
+      // Rollback nếu thất bại
+      setLocalItem(prev => ({
+        ...prev,
+        isFavorited: previousFavorited
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCardClick = () => {
+    if (onClick) {
+      const itemId = localItem.id || localItem._id;
+      onClick(itemId);
+    }
+  };
+
+  // Callback cho PostActions
+  const handleReactionChange = (reactionType, updatedReactions) => {
+    if (onToggleLike) {
+      onToggleLike(reactionType, updatedReactions);
+    }
+    
+    setLocalItem(prev => ({
+      ...prev,
+      userReaction: reactionType,
+      reactions: updatedReactions
+    }));
   };
 
   return (
@@ -68,18 +139,19 @@ const ForumCard = ({
       transition="all 0.2s ease-in-out"
       cursor={onClick ? 'pointer' : 'default'}
       _hover={{ shadow: shadowColor }}
-      onClick={onClick ? () => onClick(item.id) : undefined}
+      onClick={onClick ? handleCardClick : undefined}
+      opacity={loading ? 0.7 : 1}
     >
-    <PostSticker type={type} />
+      <PostSticker type={type} />
 
       <Box p={2}>
         {/* Author Section */}
-        <HStack mb={4} spacing={3}>
-          <Avatar src={item.author?.avatar} name={item.author?.name} size="sm" />
+        <HStack mb={2} spacing={2}>
+          <Avatar src={localItem.author?.avatar} name={localItem.author?.name} size="sm" />
           <VStack align="start" spacing={0}>
-            <Text fontSize="sm" fontWeight="medium">{item.author?.name}</Text>
+            <Text fontSize="sm" fontWeight="medium">{localItem.author?.name}</Text>
             <Text fontSize="xs" color={textSecondary}>
-              {formatDate ? formatDate(item.createdAt) : new Date(item.createdAt).toLocaleDateString()}
+              {formatDate ? formatDate(localItem.createdAt) : new Date(localItem.createdAt).toLocaleDateString()}
             </Text>
           </VStack>
         </HStack>
@@ -87,16 +159,16 @@ const ForumCard = ({
         {/* Content Section */}
         <Box as={Link} to={getDetailUrl()} _hover={{ textDecoration: 'none' }}>
           <Text fontSize="25px" fontWeight="semibold" mb={1.5} lineHeight="shorter" _hover={{ color: 'blue.500' }}>
-            {item.title}
+            {localItem.title}
           </Text>
 
-          <Text fontSize="18px" color={textSecondary} mb={2} lineHeight="base">
-            {item.content?.substring(0, 150)}{item.content?.length > 150 ? '...' : ''}
+          <Text fontSize="17px" color={textSecondary} mb={2} lineHeight="base">
+            {localItem.content?.substring(0, 150)}{localItem.content?.length > 150 ? '...' : ''}
           </Text>
         </Box>
 
         {/* Image Section (iframe Google Drive) */}
-        {item.imgUrl && item.imgUrl.length > 0 && item.imgUrl.map((url, index) => {
+        {localItem.imgUrl && localItem.imgUrl.length > 0 && localItem.imgUrl.map((url, index) => {
           const driveIdMatch = url.match(/[-\w]{25,}/);
           const driveId = driveIdMatch?.[0];
           return driveId ? (
@@ -105,19 +177,18 @@ const ForumCard = ({
                 src={`https://drive.google.com/file/d/${driveId}/preview`}
                 width="90%"
                 height="350px"
-                style={{ border: 'none', borderRadius: '8px' }}
+                style={{ border: 'none', borderRadius: '8px', paddingLeft: '10px' }}
                 allow="autoplay"
                 title={`Google Drive Image ${index + 1}`}
-                padding left="10px"
               />
             </Box>
           ) : null;
         })}
 
         {/* Tags Section */}
-        {item.tags && item.tags.length > 0 && (
+        {localItem.tags && localItem.tags.length > 0 && (
           <Flex flexWrap="wrap" gap={2} mb={0}>
-            {item.tags.map((tag, index) => (
+            {localItem.tags.map((tag, index) => (
               <Badge
                 key={index}
                 px={3}
@@ -136,71 +207,27 @@ const ForumCard = ({
         )}
       </Box>
 
-      {/* Action Section */}
-      <Box px={4} pb={1} borderTop="1px" borderColor={borderColor} pt={1}>
-        <Flex justify="space-between" w="100%" align="center">
-          <HStack spacing={4}>
-            <Reaction
-              reactions={item.reactions}
-              userReaction={item.userReaction}
-              onReact={(type) => onToggleLike && onToggleLike(item.id, type)}
-              size="md"
-              variant="emoji"
-              showCount={true}
-            />
-
-            <HStack spacing={2}>
-              <IconButton
-                aria-label="comments"
-                icon={<FaComment />}
-                size="md"
-                variant="ghost"
-                colorScheme="gray"
-              />
-              <Text fontSize="sm" color={textSecondary}>
-                {item.comments || 0}
-              </Text>
-            </HStack>
-          </HStack>
-
-          <HStack spacing={3}>
-             {/* Favorite Button */}
-            <IconButton
-              aria-label="favorite"
-              icon={item.isFavorited ? <FaBookmark /> : <FaRegBookmark />}
-              size="md"
-              variant="ghost"
-              colorScheme={item.isFavorited ? 'blue' : 'gray'}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleFavorite && onToggleFavorite(item.id);
-              }}
-            />
-
-            {/* More Options Button */}
-            <IconButton
-              aria-label="more options"
-              icon={<FaEllipsisV />}
-              size="md"
-              variant="ghost"
-              colorScheme="gray"
-            />
-          </HStack>
-        </Flex>
-      </Box>
+      {/* Action Section - Thay thế bằng PostActions */}
+      <PostActions 
+        post={localItem}
+        currentUser={currentUser}
+        onReactionChange={handleReactionChange}
+        onFavoriteToggle={handleFavoriteToggle}
+        isLoading={loading}
+      />
     </Box>
   );
 };
 
 ForumCard.propTypes = {
   item: PropTypes.object.isRequired,
-  type: PropTypes.oneOf(['post', 'question', 'event']).isRequired,
+  type: PropTypes.oneOf(['ForumPost', 'Question', 'EventPost', 'FindLostPetPost']).isRequired,
   categories: PropTypes.array,
   onToggleLike: PropTypes.func,
   onToggleFavorite: PropTypes.func,
   formatDate: PropTypes.func,
-  onClick: PropTypes.func
+  onClick: PropTypes.func,
+  currentUser: PropTypes.object
 };
 
 export default memo(ForumCard);

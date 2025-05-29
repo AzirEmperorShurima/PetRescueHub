@@ -22,8 +22,8 @@ import {
   Alert
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
-import { userService } from '../../../services';
-import { handleApiError } from '../../../utils/error-handler';
+import userService  from '../../../services/user.service';
+import useApiErrorHandler from '/src/utils/error-handler';
 import { fDate } from '../../../utils/format-time';
 import { users as mockUsers } from '../../../mocks'; // Import mock data
 
@@ -58,7 +58,7 @@ const UserManagement = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
-
+  const { handleApiError } = useApiErrorHandler();
   const fetchUsers = async () => {
     setLoading(true);
     try {

@@ -2,28 +2,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/styles/animations.css';
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  Grid,
-  GridItem,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  Divider,
-  VStack,
-  HStack,
-  Button,
-  useColorModeValue,
-  Card,
-  CardBody,
+import {Box,Container,Heading,Text,Grid,GridItem,Tabs,TabList,TabPanels,Tab,TabPanel,Divider,VStack,HStack,Button,useColorModeValue,Card,CardBody,
 } from '@chakra-ui/react'
 import CreatePost from '../../features/Forum/CreatePost';
-import CreateQuestion from '../../features/Forum/CreateQuestion';
 import { useAuth } from '../../components/contexts/AuthContext';
 import ForumSkeleton from '../../features/Forum/components/ForumSkeleton';
 import ForumCard from '../../features/Forum/components/ForumCard';
@@ -37,6 +18,21 @@ const Forum = () => {
   // Navigation
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const requireLogin = (action) => {
+    if (!user) {
+      // Nếu là hành động xem (view), cho phép tiếp tục mà không cần đăng nhập
+      if (action === 'view') {
+        return true;
+      }
+      
+      // Lưu đường dẫn hiện tại để sau khi đăng nhập có thể quay lại
+      const currentPath = window.location.pathname;
+      // navigate('/auth/login', { state: { returnUrl: currentPath } });
+      return false;
+    }
+    return true;
+  };
 
   // Chakra UI color mode
   const bg = useColorModeValue('white', 'gray.800');
@@ -60,7 +56,6 @@ const Forum = () => {
     eventspost: eventspost,
     findLostPet: findlostpetpost,
     tabValue,
-    searchTerm,
     filterAnchorEl,
     sortBy,
     categoryFilter,
@@ -71,9 +66,13 @@ const Forum = () => {
     handleFilterClose,
     handleSortChange: originalHandleSortChange,
     handleCategoryChange: originalHandleCategoryChange,
-    handleToggleLike,
+    handleToggleReaction: originalHandleToggleReaction,
     handleToggleFavorite,
-    formatDate
+    formatDate,
+    setPosts, // Thêm setter functions từ useForum hook
+    setQuestions,
+    setEventspost,
+    setFindLostPet
   } = useForum();
 
   // Safe data handling
@@ -84,6 +83,82 @@ const Forum = () => {
   const safeFindPet = findlostpetpost || [];
 
   const allPosts = [...safePosts, ...safeQuestions, ...safeEvents, ...safeFindPet];
+
+  // Improved handleToggleReaction with proper state updates
+  // Cập nhật handleToggleReaction để kiểm tra đăng nhập trước khi thực hiện hành động
+  const handleToggleReaction = async (postId, userReaction, reactions) => {
+    // Kiểm tra đăng nhập trước khi thực hiện hành động
+    if (!requireLogin('reaction')) return;
+
+    try {
+      // Gọi API để toggle reaction (nếu có trong originalHandleToggleReaction)
+      if (originalHandleToggleReaction) {
+        await originalHandleToggleReaction(postId, userReaction, reactions);
+      }
+
+      // Cập nhật state cho tất cả các loại post
+      const updatePostInArray = (prevArray) => 
+        prevArray.map(post =>
+          post._id === postId || post.id === postId
+            ? { ...post, userReaction, reactions }
+            : post
+        );
+
+      // Cập nhật Posts
+      if (setPosts) {
+        setPosts(prevPosts => updatePostInArray(prevPosts));
+      }
+
+      // Cập nhật Questions
+      if (setQuestions) {
+        setQuestions(prevQuestions => updatePostInArray(prevQuestions));
+      }
+
+      // Cập nhật Events
+      if (setEventspost) {
+        setEventspost(prevEvents => updatePostInArray(prevEvents));
+      }
+
+      // Cập nhật FindLostPet
+      if (setFindLostPet) {
+        setFindLostPet(prevFindPet => updatePostInArray(prevFindPet));
+      }
+
+    } catch (error) {
+      console.error('Error toggling reaction:', error);
+      // Có thể thêm toast notification để thông báo lỗi
+    }
+  };
+
+  // Improved handleToggleFavorite with proper state updates
+  const handleToggleFavoriteImproved = async (postId, isFavorited) => {
+    // Kiểm tra đăng nhập trước khi thực hiện hành động
+    if (!requireLogin('favorite')) return;
+
+    try {
+      // Gọi API để toggle favorite
+      if (handleToggleFavorite) {
+        await handleToggleFavorite(postId);
+      }
+
+      // Cập nhật state cho tất cả các loại post
+      const updateFavoriteInArray = (prevArray) => 
+        prevArray.map(post =>
+          post._id === postId || post.id === postId
+            ? { ...post, isFavorited: !post.isFavorited }
+            : post
+        );
+
+      // Cập nhật tất cả các state arrays
+      if (setPosts) setPosts(prevPosts => updateFavoriteInArray(prevPosts));
+      if (setQuestions) setQuestions(prevQuestions => updateFavoriteInArray(prevQuestions));
+      if (setEventspost) setEventspost(prevEvents => updateFavoriteInArray(prevEvents));
+      if (setFindLostPet) setFindLostPet(prevFindPet => updateFavoriteInArray(prevFindPet));
+
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
 
   // Event handlers
   const handleSearchChange = (e) => {
@@ -167,12 +242,16 @@ const Forum = () => {
 
   // Add missing handlers
   const handleShowCreatePost = (type) => {
+    if (!requireLogin('create_post')) return;
+    
     setCurrentPostType(type);
     setShowCreatePost(true);
     setShowCreateQuestion(false);
   };
 
   const handleShowCreateQuestion = () => {
+    if (!requireLogin('create_question')) return;
+    
     setCurrentPostType('Question');
     setShowCreateQuestion(true);
     setShowCreatePost(false);
@@ -190,11 +269,7 @@ const Forum = () => {
         {showCreatePost && (
           <CreatePost postType={currentPostType} onClose={handleCloseCreateForms} />
         )}
-        {showCreateQuestion && (
-          <CreateQuestion onClose={handleCloseCreateForms} />
-        )}
-
-        {!showCreatePost && !showCreateQuestion && (
+        {!showCreatePost && (
           <>
             <Box className="forum-header animate-fadeIn" textAlign="center" mb={8}>
               <Heading as="h1" size="2xl" mb={4} className="forum-title">
@@ -242,10 +317,7 @@ const Forum = () => {
                         <Box className="forum-create-buttons">
                           <ForumActions
                             isAuthenticated={user}
-                            onCreatePost={() => handleShowCreatePost('ForumPost')}
-                            onCreateQuestion={() => handleShowCreateQuestion('Question')}
-                            onCreateEvent={() => handleShowCreatePost('EventPost')}
-                            onFindLostPet={() => handleShowCreatePost('FindLostPetPost')}
+                            onCreatePost={handleShowCreatePost}
                             PostType={listPostType}
                           />
                         </Box>
@@ -296,8 +368,8 @@ const Forum = () => {
                     <TabList borderBottom="1px" borderColor={borderColor}>
                       <Tab>Bài viết</Tab>
                       <Tab>Câu hỏi</Tab>
-                      <Tab>Sự kiện</Tab>
                       <Tab>Thú đi lạc</Tab>
+                      <Tab>Sự kiện</Tab>
                     </TabList>
 
                     <TabPanels>
@@ -314,8 +386,10 @@ const Forum = () => {
                                   item={post}
                                   type={post.postType}
                                   categories={safeCategories}
-                                  onToggleLike={() => handleToggleLike(post._id)}
-                                  onToggleFavorite={() => handleToggleFavorite(post._id)}
+                                  onToggleLike={(userReaction, reactions) => 
+                                    handleToggleReaction(post._id, userReaction, reactions)
+                                  }
+                                  onToggleFavorite={() => handleToggleFavoriteImproved(post._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/post/${post._id}`)}
                                 />
@@ -342,8 +416,10 @@ const Forum = () => {
                                   item={question}
                                   type={question.postType}
                                   categories={safeCategories}
-                                  onToggleLike={() => handleToggleLike(question._id)}
-                                  onToggleFavorite={() => handleToggleFavorite(question._id)}
+                                  onToggleLike={(userReaction, reactions) => 
+                                    handleToggleReaction(question._id, userReaction, reactions)
+                                  }
+                                  onToggleFavorite={() => handleToggleFavoriteImproved(question._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/question/${question._id}`)}
                                 />
@@ -370,8 +446,10 @@ const Forum = () => {
                                   item={event}
                                   type={event.postType}
                                   categories={safeCategories}
-                                  onToggleLike={() => handleToggleLike(event._id)}
-                                  onToggleFavorite={() => handleToggleFavorite(event._id)}
+                                  onToggleLike={(userReaction, reactions) => 
+                                    handleToggleReaction(event._id, userReaction, reactions)
+                                  }
+                                  onToggleFavorite={() => handleToggleFavoriteImproved(event._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/event/${event._id}`)}
                                 />
@@ -398,8 +476,10 @@ const Forum = () => {
                                   item={findPet}
                                   type={findPet.postType}
                                   categories={safeCategories}
-                                  onToggleLike={() => handleToggleLike(findPet._id)}
-                                  onToggleFavorite={() => handleToggleFavorite(findPet._id)}
+                                  onToggleLike={(userReaction, reactions) => 
+                                    handleToggleReaction(findPet._id, userReaction, reactions)
+                                  }
+                                  onToggleFavorite={() => handleToggleFavoriteImproved(findPet._id)}
                                   formatDate={formatDate}
                                   onClick={() => navigate(`/forum/findLostPet/${findPet._id}`)}
                                 />
@@ -426,3 +506,31 @@ const Forum = () => {
 };
 
 export default Forum;
+
+// Sửa useForum hook để xử lý lỗi khi không có người dùng đăng nhập
+const fetchPosts = async (search, sort, postType) => {
+  setLoading(true);
+  try {
+    const params = {
+      search,
+      sort,
+      postType,
+      limit: 100,
+    };
+
+    const response = await apiService.forum.posts.getAll(params);
+    const data = response.data?.data || [];
+
+    // ... rest of the existing code ...
+  } catch (err) {
+    console.error('Error fetching posts:', err);
+    // Không hiển thị thông báo lỗi cho người dùng khi không đăng nhập
+    // Chỉ log lỗi và tiếp tục với mảng rỗng
+    setPosts([]);
+    setQuestions([]);
+    setEvents([]);
+    setFindLostPet([]);
+  } finally {
+    setLoading(false);
+  }
+};

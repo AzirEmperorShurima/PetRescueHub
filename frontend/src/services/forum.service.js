@@ -38,141 +38,23 @@ class ForumService {
   }
 
   /**
-   * Thích bài viết
-   * @param {string} id - ID bài viết
+   * Thêm hoặc cập nhật reaction cho bài viết
+   * @param {Object} data - Dữ liệu reaction
+   * @param {string} data.targetId - ID của đối tượng (bài viết, bình luận)
+   * @param {string} data.targetType - Loại đối tượng ('Post', 'Comment')
+   * @param {string} data.reactionType - Loại reaction ('like', 'love', 'haha', 'wow', 'sad', 'angry')
    * @returns {Promise<Object>} Kết quả từ API
    */
-  async likePost(id) {
+  async addReaction(data) {
     try {
-      const response = await api.post(`/forum/reactions/post`, { postId: id, action: 'like' }, { withCredentials: true });
+      const response = await api.post(`/forum/reactions/post`, data, { withCredentials: true });
       return response.data;
     } catch (error) {
-      console.error('Like post API error:', error);
+      console.error('Reaction API error:', error);
       throw error;
     }
   }
-
-  /**
-   * Bỏ thích bài viết
-   * @param {string} id - ID bài viết
-   * @returns {Promise<Object>} Kết quả từ API
-   */
-  async unlikePost(id) {
-    try {
-      const response = await api.post(`/forum/reactions/post`, { postId: id, action: 'unlike' }, { withCredentials: true });
-      return response.data;
-    } catch (error) {
-      console.error('Unlike post API error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Lấy danh sách câu hỏi
-   * @param {Object} params - Tham số truy vấn
-   * @returns {Promise<Object>} Kết quả từ API
-   */
-  async getQuestions(params) {
-    try {
-      const response = await api.get('/forum/posts', { params: { ...params, postType: 'Question' } });
-      return response.data;
-    } catch (error) {
-      console.error('Get questions API error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Lấy thông tin câu hỏi theo ID
-   * @param {string} id - ID câu hỏi
-   * @returns {Promise<Object>} Kết quả từ API
-   */
-  async getQuestionById(id) {
-    try {
-      const response = await api.get(`/forum/posts/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Get question by ID API error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Tạo câu hỏi mới
-   * @param {Object} data - Dữ liệu câu hỏi
-   * @returns {Promise<Object>} Kết quả từ API
-   */
-  async createQuestion(data) {
-    try {
-      const response = await api.post('/forum/posts/new', { ...data, postType: 'Question' }, { withCredentials: true });
-      return response.data;
-    } catch (error) {
-      console.error('Create question API error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Cập nhật câu hỏi
-   * @param {string} id - ID câu hỏi
-   * @param {Object} data - Dữ liệu cập nhật
-   * @returns {Promise<Object>} Kết quả từ API
-   */
-  async updateQuestion(id, data) {
-    try {
-      const response = await api.put(`/forum/posts/${id}`, data, { withCredentials: true });
-      return response.data;
-    } catch (error) {
-      console.error('Update question API error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Xóa câu hỏi
-   * @param {string} id - ID câu hỏi
-   * @returns {Promise<Object>} Kết quả từ API
-   */
-  async deleteQuestion(id) {
-    try {
-      const response = await api.delete(`/forum/posts/${id}`, { withCredentials: true });
-      return response.data;
-    } catch (error) {
-      console.error('Delete question API error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Thích câu hỏi
-   * @param {string} id - ID câu hỏi
-   * @returns {Promise<Object>} Kết quả từ API
-   */
-  async likeQuestion(id) {
-    try {
-      const response = await api.post(`/forum/reactions/post`, { postId: id, action: 'like' }, { withCredentials: true });
-      return response.data;
-    } catch (error) {
-      console.error('Like question API error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Bỏ thích câu hỏi
-   * @param {string} id - ID câu hỏi
-   * @returns {Promise<Object>} Kết quả từ API
-   */
-  async unlikeQuestion(id) {
-    try {
-      const response = await api.post(`/forum/reactions/post`, { postId: id, action: 'unlike' }, { withCredentials: true });
-      return response.data;
-    } catch (error) {
-      console.error('Unlike question API error:', error);
-      throw error;
-    }
-  }
-
+  
   /**
    * Lấy danh sách bình luận
    * @param {Object} params - Tham số truy vấn

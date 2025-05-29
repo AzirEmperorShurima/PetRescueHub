@@ -12,7 +12,7 @@ export const NotificationProvider = ({ children }) => {
       status,
       duration,
       isClosable: true,
-      position: 'bottom-right'
+      position: 'top-center'
     });
   }, [toast]);
 

@@ -29,9 +29,7 @@ const RescueSuccess = lazy(() => import("../pages/Rescue/RescueSuccess"));
 
 const Forum = lazy(() => import("../pages/Forum/Forum"));
 const PostDetail = lazy(() => import("../features/Forum/PostDetail"));
-const QuestionDetail = lazy(() => import("../features/Forum/QuestionDetail"));
 const CreatePost = lazy(() => import("../features/Forum/CreatePost"));
-const CreateQuestion = lazy(() => import("../features/Forum/CreateQuestion"));
 
 const Event = lazy(() => import("../pages/Event/Event"));
 const CreateEvent = lazy(() => import("../features/Event/CreateEvent"));
@@ -50,7 +48,6 @@ const NotFound = lazy(() => import("../components/common/Error/NotFound"));
 const AdminApp = lazy(() => import("../pages/admin/AdminApp"));
 
 const Terms = lazy(() => import("../pages/Terms/Terms"));
-
 const AppRoutes = () => {
   return (
     <Suspense fallback={<SimpleFallback />}>
@@ -68,7 +65,6 @@ const AppRoutes = () => {
           <Route path="forum">
             <Route index element={<Forum />} />
             <Route path="post/:id" element={<PostDetail />} />
-            <Route path="question/:id" element={<QuestionDetail />} />
           </Route>
           
           {/* Event public */}
@@ -95,10 +91,10 @@ const AppRoutes = () => {
           {/* Các route bảo vệ */}
           <Route element={<ProtectedRoute />}>
             <Route path="forum/post/create" element={<CreatePost />} />
-            <Route path="forum/question/create" element={<CreateQuestion />} />
             <Route path="event/create" element={<CreateEvent />} />
             <Route path="profile" element={<Profile />} />
           </Route>
+          
         </Route>
 
         {/* Admin area với AdminLayout */}

@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Spinner, Center } from '@chakra-ui/react';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import Dashboard from './components/Dashboard';
 import UserManagement from './components/UserManagement';
 import PetManagement from './components/PetManagement';
 import VolunteerManagement from './components/VolunteerManagement';
 import EventManagement from './components/EventManagement';
-import DonationHistory from './components/DonationHistory';
+import DonationManagement from './components/DonationManagement';
 import AdminProfile from './components/AdminProfile';
 import AdminLogin from './components/AdminLogin';
 import RescueManagement from './components/RescueManagement';
@@ -55,17 +54,7 @@ const AdminApp = () => {
   }, [navigate, location.pathname]);
   
   if (isLoading) {
-    return (
-      <Center h="100vh">
-        <Spinner
-          thickness="4px"
-          speed="0.65s"
-          emptyColor="gray.200"
-          color="blue.500"
-          size="xl"
-        />
-      </Center>
-    );
+    return <div>Loading...</div>;
   }
 
   // Sử dụng Routes và Route trực tiếp thay vì useRoutes
@@ -81,7 +70,7 @@ const AdminApp = () => {
           <Route path="pets" element={<PetManagement />} />
           <Route path="volunteers" element={<VolunteerManagement />} />
           <Route path="events" element={<EventManagement />} />
-          <Route path="donations" element={<DonationHistory />} />
+          <Route path="donations" element={<DonationManagement />} />
           <Route path="rescues" element={<RescueManagement />} /> {/* Thêm route mới */}
           <Route path="profile" element={<AdminProfile />} />
         </Route>

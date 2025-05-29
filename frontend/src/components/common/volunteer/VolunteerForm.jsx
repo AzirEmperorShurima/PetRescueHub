@@ -15,14 +15,19 @@ import {
   VStack,
   CloseButton,
   FormControl,
-  FormLabel
+  FormLabel,
+  Spinner
 } from '@chakra-ui/react';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { useNotification } from '../../contexts/NotificationContext';
+import { useAuth } from '../../contexts/AuthContext';
+import volunteerService from '../../../services/volunteer.service';
 import './VolunteerForm.css';
 
 const VolunteerForm = ({ isOpen, onClose }) => {
-  const { showSuccess } = useNotification();
+  const { showSuccess, showError } = useNotification();
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -69,21 +74,50 @@ const VolunteerForm = ({ isOpen, onClose }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Volunteer form submitted:', formData);
-
-    showSuccess('Cảm ơn bạn đã đăng ký làm tình nguyện viên! Chúng tôi sẽ liên hệ với bạn sớm.');
-    onClose();
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      skills: [],
-      availability: '',
-      message: '',
-      termsAccepted: false
-    });
+    
+    // Kiểm tra người dùng đã đăng nhập chưa
+    if (!user) {
+      showError('Bạn cần đăng nhập để đăng ký làm tình nguyện viên');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      console.log('Volunteer form submitted:', formData);
+      
+      // Lưu thông tin người dùng vào localStorage để sử dụng sau này
+      localStorage.setItem('volunteerInfo', JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        skills: formData.skills,
+        availability: formData.availability,
+        message: formData.message
+      }));
+      
+      // Gọi API để đăng ký làm tình nguyện viên
+      const response = await volunteerService.requestVolunteer();
+      
+      showSuccess('Yêu cầu đăng ký tình nguyện viên đã được gửi thành công! Chúng tôi sẽ xem xét và phản hồi sớm.');
+      onClose();
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        skills: [],
+        availability: '',
+        message: '',
+        termsAccepted: false
+      });
+    } catch (error) {
+      console.error('Error submitting volunteer form:', error);
+      const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi gửi yêu cầu. Vui lòng thử lại sau.';
+      showError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -199,9 +233,10 @@ const VolunteerForm = ({ isOpen, onClose }) => {
             colorScheme="pink"
             size="lg"
             width="100%"
-            isDisabled={!formData.termsAccepted}
+            isDisabled={!formData.termsAccepted || isSubmitting}
             className="form-submit"
           >
+            {isSubmitting ? <Spinner size="sm" mr={2} /> : null}
             Đăng ký ngay
           </Button>
         </Box>

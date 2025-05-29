@@ -12,7 +12,10 @@ const volunteerService = {
   receiveRescueRequest: (data) => apiService.volunteers.receiveRescueRequest(data),
   
   // Quản lý hoạt động cứu hộ
-  manageRescueOperations: (data) => apiService.volunteers.manageRescueOperations(data)
+  manageRescueOperations: (data) => apiService.volunteers.manageRescueOperations(data),
+  
+  // Gửi yêu cầu trở thành tình nguyện viên
+  requestVolunteer: () => api.post('/volunteer/v1/requesting/grow-up/volunteer')
 };
 
 export default volunteerService;

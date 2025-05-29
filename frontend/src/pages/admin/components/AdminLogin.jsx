@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { LockOutlined, Email, Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
-import logo from '../../../assets/images/logo.svg';
+import logo from '../../../assets/images/logo.svg'; // Đảm bảo đường dẫn đúng đến logo
 import { usersMock } from '../../../mocks';
 
 const AdminLogin = () => {

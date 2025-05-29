@@ -15,7 +15,6 @@ import DonationInfo from './components/DonationInfo';
 import AnimalShowcase from './components/AnimalShowcase';
 import PaymentMethods from './components/PaymentMethods';
 import RescueStories from './components/RescueStories';
-
 // Motion components
 const MotionBox = motion(Box);
 const MotionVStack = motion(VStack);

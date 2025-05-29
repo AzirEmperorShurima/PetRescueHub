@@ -15,8 +15,6 @@ import {
   Input,
   Button,
   Avatar,
-  FormControl,
-  FormLabel,
   Select,
   Spinner,
   Tag,
@@ -59,10 +57,6 @@ import RescueActivities from './components/RescueActivities';
 import ActivityTimeline from './components/ActivityTimeline';
 import VolunteerBadges from './components/VolunteerBadges';
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
-import { pets as mockPets } from '../../mocks/pets';
-import { forumPosts as mockPosts } from '../../mocks/forum';
-import { testimonials as mockAchievements } from '../../mocks/homeMock';
-import { rescues as mockRescues } from '../../mocks/rescues';
 import apiService from '../../services/api.service';
 
 const Profile = () => {
@@ -341,10 +335,12 @@ const Profile = () => {
           <GridItem>
             <Card bg={cardBg} shadow="lg" borderRadius="xl">
               <CardBody p={6}>
-                <VStack spacing={4}>
+                <VStack spacing={3}>
                   <Avatar
                     size="2xl"
-                    src={user.avatar}
+                    // src={user.avatar}
+                    src="https://img.freepik.com/premium-photo/midsection-person-feeding-young-goat_1048944-2121589.jpg?semt=ais_hybrid&w=740"
+                    imgProps={{ crossOrigin: 'anonymous' }}
                     name={user.fullname || user.username}
                     border="4px solid"
                     borderColor="white"
@@ -391,7 +387,7 @@ const Profile = () => {
                       <Text fontSize="sm" color="gray.500" fontWeight="medium">
                         Email
                       </Text>
-                      <Text fontSize="sm" color={textColor}>
+                      <Text fontSize="sm" color={primaryColor}>
                         {user.email}
                       </Text>
                     </Box>
@@ -565,8 +561,8 @@ const Profile = () => {
                               <VStack align="stretch" spacing={4}>
                                 <Box>
                                   <HStack mb={2}>
-                                    <Box as={FaUser} color="gray.500" />
-                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                    <Box as={FaUser} color="black.500" />
+                                    <Text fontSize="sm" color="black.500" fontWeight="medium">
                                       Họ và tên
                                     </Text>
                                   </HStack>
@@ -574,11 +570,11 @@ const Profile = () => {
                                     <Input
                                       name="fullname"
                                       value={editedUser.fullname || ''}
-                                      onChange={handleInputChange}
+                                      onChange={textColor}
                                       size="sm"
                                     />
                                   ) : (
-                                    <Text fontSize="sm" color={primaryColor} fontWeight="medium">
+                                    <Text fontSize="sm" color={primaryDark} fontWeight="medium">
                                       {user.fullname || 'Chưa cập nhật'}
                                     </Text>
                                   )}
@@ -586,24 +582,24 @@ const Profile = () => {
 
                                 <Box>
                                   <HStack mb={2}>
-                                    <Box as={FaIdBadge} color="gray.500" />
-                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                    <Box as={FaIdBadge} color="black.500" />
+                                    <Text fontSize="sm" color="black.500" fontWeight="medium">
                                       Tên đăng nhập
                                     </Text>
                                   </HStack>
-                                  <Text fontSize="sm" color={textColor}>
+                                  <Text fontSize="sm" color={primaryColor}>
                                     {user.username}
                                   </Text>
                                 </Box>
 
                                 <Box>
                                   <HStack mb={2}>
-                                    <Box as={FaEnvelope} color="gray.500" />
-                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                    <Box as={FaEnvelope} color="black.500" />
+                                    <Text fontSize="sm" color="black.500" fontWeight="medium">
                                       Email
                                     </Text>
                                   </HStack>
-                                    <Text fontSize="sm" color={textColor}>
+                                    <Text fontSize="sm" color={primaryColor}>
                                       {user.email}
                                     </Text>
                                 </Box>
@@ -624,8 +620,8 @@ const Profile = () => {
                               <VStack align="stretch" spacing={4}>
                                 <Box>
                                   <HStack mb={2}>
-                                    <Box as={FaPhone} color="gray.500" />
-                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                    <Box as={FaPhone} color="black.500" />
+                                    <Text fontSize="sm" color="black.500" fontWeight="medium">
                                       Số điện thoại
                                     </Text>
                                   </HStack>
@@ -645,8 +641,8 @@ const Profile = () => {
 
                                 <Box>
                                   <HStack mb={2}>
-                                    <Box as={FaMapMarkerAlt} color="gray.500" />
-                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                    <Box as={FaMapMarkerAlt} color="black.500" />
+                                    <Text fontSize="sm" color="black.500" fontWeight="medium">
                                       Địa chỉ
                                     </Text>
                                   </HStack>
@@ -666,8 +662,8 @@ const Profile = () => {
 
                                 <Box>
                                   <HStack mb={2}>
-                                    <Box as={FaBirthdayCake} color="gray.500" />
-                                    <Text fontSize="sm" color="gray.500" fontWeight="medium">
+                                    <Box as={FaBirthdayCake} color="black.500" />
+                                    <Text fontSize="sm" color="black.500" fontWeight="medium">
                                       Ngày sinh
                                     </Text>
                                   </HStack>
@@ -694,7 +690,7 @@ const Profile = () => {
                         <GridItem colSpan={{ base: 1, md: 2 }}>
                           <Card shadow="sm" borderRadius="lg">
                             <CardBody>
-                              <Text fontSize="md" fontWeight="semibold" color={textColor} mb={4}>
+                              <Text fontSize="md" fontWeight="medium" color={'black.500'} mb={4}>
                                 Thông tin bổ sung
                               </Text>
                               <Divider mb={4} />

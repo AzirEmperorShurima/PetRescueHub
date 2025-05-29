@@ -22,6 +22,7 @@ import {
   EmojiHeartEyesFill
 } from 'react-bootstrap-icons';
 import PropTypes from 'prop-types';
+import apiService from '../../../services/api.service';
 
 // Định nghĩa các loại cảm xúc với Bootstrap Icons
 const REACTION_TYPES = {
@@ -64,15 +65,32 @@ const REACTION_TYPES = {
 };
 
 const Reaction = ({ 
+  targetId,
+  targetType = 'Post',
   reactions = {}, 
   userReaction = null, 
   onReact, 
   size = 'md', 
   showCount = true,
-  variant = 'icon' // 'icon' hoặc 'emoji'
+  variant = 'icon', // 'icon' hoặc 'emoji'
+  isLoading = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const closeTimeoutRef = useRef(null);
+  
+  // Local state để quản lý reactions và userReaction
+  const [localReactions, setLocalReactions] = useState(reactions);
+  const [localUserReaction, setLocalUserReaction] = useState(userReaction);
+  
+  // Cập nhật local state khi props thay đổi
+  useEffect(() => {
+    setLocalReactions(reactions);
+  }, [reactions]);
+  
+  useEffect(() => {
+    setLocalUserReaction(userReaction);
+  }, [userReaction]);
   
   // Color mode values
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
@@ -81,26 +99,98 @@ const Reaction = ({
   const textColor = useColorModeValue('gray.600', 'gray.400');
 
   // Tính tổng số reactions
-  const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0);
+  const totalReactions = Object.values(localReactions).reduce((sum, count) => sum + count, 0);
 
   // Lấy reaction hiện tại của user
-  const currentReaction = userReaction ? REACTION_TYPES[userReaction] : null;
+  const currentReaction = localUserReaction ? REACTION_TYPES[localUserReaction] : null;
 
-  // Xử lý click reaction
-  const handleReactionClick = (reactionType) => {
-    // Nếu click vào reaction đã chọn → bỏ reaction
-    if (userReaction === reactionType) {
-      onReact(null);
-    } else {
-      // Chọn reaction mới
-      onReact(reactionType);
+  // Helper function để tính toán reactions mới
+  const calculateNewReactions = (currentReactions, oldUserReaction, newReactionType) => {
+    const newReactions = { ...currentReactions };
+    
+    // Nếu user đã có reaction trước đó, giảm count của reaction cũ
+    if (oldUserReaction && newReactions[oldUserReaction]) {
+      newReactions[oldUserReaction] = Math.max(0, newReactions[oldUserReaction] - 1);
     }
-    setIsOpen(false);
+    
+    // Nếu có reaction mới (không phải remove), tăng count
+    if (newReactionType) {
+      newReactions[newReactionType] = (newReactions[newReactionType] || 0) + 1;
+    }
+    
+    return newReactions;
   };
 
-  // Xử lý click để thả tim
-  const handleMainButtonClick = () => {
-    handleReactionClick('love');
+  // Xử lý click reaction
+  const handleReactionClick = async (reactionType, e) => {
+    // Ngăn sự kiện lan truyền
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Tránh multiple clicks
+    if (isProcessing) return;
+    setIsProcessing(true);
+    
+    try {
+      // Lưu trạng thái hiện tại để rollback nếu cần
+      const previousReaction = localUserReaction;
+      const previousReactions = { ...localReactions };
+      
+      // Xác định reaction mới
+      let newReactionType = null;
+      if (localUserReaction === reactionType) {
+        // Nếu click vào reaction đã chọn → bỏ reaction
+        newReactionType = null;
+      } else {
+        // Nếu chọn reaction mới
+        newReactionType = reactionType;
+      }
+      
+      // Tính toán reactions mới
+      const newReactions = calculateNewReactions(
+        localReactions, 
+        localUserReaction, 
+        newReactionType
+      );
+      
+      // Optimistic UI update
+      setLocalReactions(newReactions);
+      setLocalUserReaction(newReactionType);
+      
+      // Callback để parent component cập nhật state và gọi API
+      if (onReact) {
+        await onReact(newReactionType, newReactions);
+      }
+      
+      // XÓA PHẦN GỌI API TẠI ĐÂY
+      // const response = await apiService.forum.reactions.addOrUpdate({...});
+      
+    } catch (error) {
+      console.error('Error handling reaction:', error);
+      
+      // Rollback optimistic update
+      setLocalReactions(previousReactions);
+      setLocalUserReaction(previousReaction);
+    } finally {
+      setIsProcessing(false);
+      setIsOpen(false);
+    }
+  };
+
+  // Xử lý click vào nút chính (trái tim)
+  const handleMainButtonClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Nếu chưa có reaction, mặc định là 'love'
+    // Nếu đã có reaction, remove reaction đó
+    if (!localUserReaction) {
+      handleReactionClick('love', e);
+    } else {
+      handleReactionClick(localUserReaction, e);
+    }
   };
 
   // Xử lý hover với độ trễ
@@ -114,7 +204,7 @@ const Reaction = ({
   const handleMouseLeave = () => {
     closeTimeoutRef.current = setTimeout(() => {
       setIsOpen(false);
-    }, 500); // Độ trễ 500ms
+    }, 500);
   };
 
   // Dọn dẹp timeout khi component unmount
@@ -129,33 +219,41 @@ const Reaction = ({
   // Render reaction picker
   const ReactionPicker = () => (
     <HStack spacing={2} p={2}>
-      {Object.entries(REACTION_TYPES).map(([type, config]) => (
-        <Tooltip key={type} label={config.label} placement="top">
-          <IconButton
-            size="md" // Tăng kích thước
-            variant="ghost"
-            onClick={() => handleReactionClick(type)}
-            _hover={{ 
-              bg: hoverBg,
-              transform: 'scale(1.3)', // Phóng to hơn khi hover
-              transition: 'all 0.3s'
-            }}
-            transition="all 0.3s"
-          >
-            {variant === 'emoji' ? (
-              <Text fontSize="2xl">{config.emoji}</Text> // Tăng kích thước emoji
-            ) : (
-              <Box as={config.icon} color={config.color} size={28} /> // Tăng kích thước icon
-            )}
-          </IconButton>
-        </Tooltip>
-      ))}
+      {Object.entries(REACTION_TYPES).map(([type, config]) => {
+        const isSelected = localUserReaction === type;
+        return (
+          <Tooltip key={type} label={config.label} placement="top">
+            <IconButton
+              size="md"
+              variant="ghost"
+              onClick={(e) => handleReactionClick(type, e)}
+              bg={isSelected ? hoverBg : 'transparent'}
+              _hover={{ 
+                bg: hoverBg,
+                transform: 'scale(1.3)',
+                transition: 'all 0.2s'
+              }}
+              _active={{
+                transform: 'scale(1.1)'
+              }}
+              transition="all 0.01s"
+              disabled={isProcessing}
+            >
+              {variant === 'emoji' ? (
+                <Text fontSize="2xl">{config.emoji}</Text>
+              ) : (
+                <Box as={config.icon} color={config.color} size={28} />
+              )}
+            </IconButton>
+          </Tooltip>
+        );
+      })}
     </HStack>
   );
 
   // Render reaction summary (hiển thị top reactions)
   const ReactionSummary = () => {
-    const topReactions = Object.entries(reactions)
+    const topReactions = Object.entries(localReactions)
       .filter(([_, count]) => count > 0)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 3);
@@ -166,6 +264,8 @@ const Reaction = ({
       <HStack spacing={1} fontSize="sm">
         {topReactions.map(([type, count]) => {
           const config = REACTION_TYPES[type];
+          if (!config) return null;
+          
           return (
             <HStack key={type} spacing={1}>
               {variant === 'emoji' ? (
@@ -199,6 +299,8 @@ const Reaction = ({
             onMouseLeave={handleMouseLeave}
             onClick={handleMainButtonClick}
             _hover={{ bg: hoverBg }}
+            disabled={isProcessing}
+            opacity={isProcessing ? 0.6 : 1}
           >
             {currentReaction ? (
               variant === 'emoji' ? (
@@ -209,6 +311,7 @@ const Reaction = ({
                 <Box 
                   as={currentReaction.icon} 
                   color={currentReaction.color}
+                  size={size === 'sm' ? 16 : 20}
                 />
               )
             ) : (
@@ -234,12 +337,7 @@ const Reaction = ({
       {showCount && (
         <Box>
           {totalReactions > 0 ? (
-            <HStack spacing={2}>
-              <ReactionSummary />
-              <Text fontSize="sm" color={textColor}>
-                {totalReactions}
-              </Text>
-            </HStack>
+            <ReactionSummary />
           ) : (
             <Text fontSize="sm" color={textColor}>
               0
@@ -252,7 +350,9 @@ const Reaction = ({
 };
 
 Reaction.propTypes = {
-  reactions: PropTypes.object, // { like: 5, love: 2, haha: 1, ... }
+  targetId: PropTypes.string.isRequired,
+  targetType: PropTypes.string,
+  reactions: PropTypes.object,
   userReaction: PropTypes.oneOf(['like', 'love', 'haha', 'wow', 'sad', 'angry']),
   onReact: PropTypes.func.isRequired,
   size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg']),

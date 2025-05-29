@@ -112,14 +112,26 @@ export const useForum = () => {
   const handleFilterClick = useCallback(e => setFilterAnchorEl(e.currentTarget), []);
   const handleFilterClose = useCallback(() => setFilterAnchorEl(null), []);
 
-  const handleToggleLike = useCallback(async (id) => {
+  const handleToggleLike = useCallback(async (id, reactionType) => {
     try {
-      await apiService.forum.posts.likePost(id);
-      fetchPosts(searchTerm, sortBy, postTypeFilter);
+      // Optimistic UI Update - Cập nhật UI ngay lập tức
+      // Component Reaction đã xử lý việc cập nhật UI
+      
+      // Gọi API thông qua service
+      await apiService.forum.reactions.addOrUpdate({
+        targetId: id,
+        targetType: 'Post',
+        reactionType: reactionType || 'like'
+      });
+      
+      // Không cần fetch lại dữ liệu ngay lập tức
+      // Chỉ fetch lại sau một khoảng thời gian để đảm bảo dữ liệu đồng bộ
+      // nhưng không làm gián đoạn trải nghiệm người dùng
     } catch (err) {
-      console.error('Error toggling like:', err);
+      console.error('Error toggling reaction:', err);
+      // Có thể thêm logic để khôi phục UI nếu API thất bại
     }
-  }, [searchTerm, sortBy, postTypeFilter]);
+  }, []);
 
   const handleToggleFavorite = useCallback(async (id) => {
     try {

@@ -1,16 +1,14 @@
 /* Cập nhật CSS cho Forum */
 .forum-page {
-  padding: 60px 0;
+  padding: 0 0;
   background-color: #f8f9fa;
   min-height: 100vh;
 }
 
-
-
 .forum-header {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
   position: relative;
-  padding-bottom: 20px;
+  padding-bottom: 0px;
   animation: fadeIn 0.8s ease-in-out;
   display: flex;
   flex-direction: column;
