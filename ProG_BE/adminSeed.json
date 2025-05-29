@@ -47,5 +47,23 @@
         ],
         "isVIP": true,
         "premiumExpiresAt": "2029-12-31"
+    },
+    {
+        "username": "thienCodeGa",
+        "fullname": "Phạm Minh Thiện",
+        "birthday": "2003-11-20",
+        "gender": "male",
+        "phone": "0865874627",
+        "address": "K25/1 Dũng Sĩ Thanh Khê, Thành phố Đà Nẵng",
+        "email": "tranvantri352@gmail.com",
+        "biography": "Tôi Thích nằm ườn ra và không làm gì cả , thích ngủ nướng , đá gà , cá độ đá bóng , đánh bạc",
+        "avatar": "https://mcdn.coolmate.me/image/July2023/gigachad-la-ai-2138_928.jpg",
+        "isActive": true,
+        "password": "Tri12345678@",
+        "role": [
+            "user"
+        ],
+        "isVIP": true,
+        "premiumExpiresAt": "2029-12-31"
     }
 ]

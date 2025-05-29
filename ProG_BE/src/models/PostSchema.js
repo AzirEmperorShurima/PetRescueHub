@@ -106,7 +106,7 @@ export const EventPost = PostModel.discriminator(
         approvedBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            default: null
+            required: true
         }
     })
 );

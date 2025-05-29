@@ -1,34 +1,32 @@
 // adminApproveEvent.js
 import { EventPost } from "../../models/PostSchema.js";
 
-export const approveEvent = async (req, res) => {
+export const approveEvent = async (eventId, adminId) => {
     try {
-        const { eventId } = req.params;
-        const adminId = req.user._id
 
         const event = await EventPost.findById(eventId);
         if (!event) return res.status(404).json({ message: "Event not found" });
- 
+
         event.approvalStatus = "approved";
         event.approvedBy = adminId;
         event.postStatus = "public";
 
         await event.save();
 
-        res.json({ message: "Event approved successfully", event });
+        return { success: true, event }
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Server error" });
+        return { success: false, message: err.message }
     }
 };
 
-export const rejectEvent = async (req, res) => {
+export const rejectEventService = async (eventId, adminId) => {
     try {
-        const { eventId } = req.params;
-        const adminId = req.user._id;
-
+        // Tìm sự kiện theo ID
         const event = await EventPost.findById(eventId);
-        if (!event) return res.status(404).json({ message: "Event not found" });
+        if (!event) {
+            throw new Error("Event not found");
+        }
 
         event.approvalStatus = "rejected";
         event.approvedBy = adminId;
@@ -36,10 +34,9 @@ export const rejectEvent = async (req, res) => {
 
         await event.save();
 
-        res.json({ message: "Event rejected successfully", event });
+        return { success: true, message: "Event rejected successfully", event };
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
+        throw new Error(err.message || "Server error");
     }
 };
 
@@ -57,7 +54,7 @@ export const getEventsByApprovalStatus = async (req, res) => {
 
         const events = await EventPost.find(filter)
             .sort({ createdAt: -1 })
-            .populate("author", "username email") 
+            .populate("author", "username email")
             .populate("approvedBy", "username email");
 
         res.json(events);

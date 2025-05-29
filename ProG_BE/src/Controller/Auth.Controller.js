@@ -42,7 +42,7 @@ export const Signup_Handler = async (req, res) => {
             res
         });
         const register_token_redisKey = `register:${CreateUser._id}`;
-        await getRedisClient.set(register_token_redisKey, token, { EX: 60 * 15 });
+        await redisClient.set(register_token_redisKey, token, { EX: 60 * 15 });
 
         // ✅ Trả phản hồi ngay lập tức (không chờ email gửi xong)
         res.status(StatusCodes.CREATED).json({

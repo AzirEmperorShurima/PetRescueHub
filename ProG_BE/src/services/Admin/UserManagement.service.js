@@ -100,7 +100,7 @@ export async function getUserStatistics() {
     const now = new Date();
     const lastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
-    const stats = await User.aggregate([
+    const stats = await user.aggregate([
         {
             $lookup: {
                 from: "roles",

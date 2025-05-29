@@ -67,7 +67,8 @@ export const updateForumPost = async (req, res) => {
         if (!userId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
-        const { title, content, tags, imgUrl, postStatus } = req.body;
+        const { title, content, tags, postStatus } = req.body;
+        const imgUrl = req.uploadedImageUrls || [];
         const postFound = await ForumPost.findById(req.params.post_id);
         if (!postFound) {
             return res.status(StatusCodes.NOT_FOUND).json({ message: "Bài viết không tồn tại" });
@@ -80,14 +81,17 @@ export const updateForumPost = async (req, res) => {
         }
 
         const updateData = {};
+        let contentChanged = false;
+
         if (title && title.trim() !== postFound.title) {
             updateData.title = title.trim();
+            contentChanged = true;
         }
         if (content && content.trim() !== postFound.content) {
             updateData.content = content.trim();
+            contentChanged = true;
         }
 
-        // Xử lý tags: so sánh mảng bất kể thứ tự
         const inputTags = Array.isArray(tags) ? tags : (tags ? [tags] : []);
         const sortedInputTags = [...inputTags].sort();
         const sortedPostTags = [...postFound.tags].sort();
@@ -107,7 +111,6 @@ export const updateForumPost = async (req, res) => {
             updateData.postStatus = postStatus;
         }
 
-        // Nếu không có thay đổi nào, trả về response với bài viết hiện tại
         if (Object.keys(updateData).length === 0) {
             return res.status(StatusCodes.OK).json({
                 success: true,
@@ -115,6 +118,12 @@ export const updateForumPost = async (req, res) => {
                 post: postFound
             });
         }
+
+        if (contentChanged) {
+            updateData.postStatus = 'pending';
+            updateData.violate_tags = [];
+        }
+
         const result = await forumService.updatePost(
             req.params.post_id,
             userId,
@@ -122,6 +131,25 @@ export const updateForumPost = async (req, res) => {
         );
 
         if (result.success) {
+            if (contentChanged) {
+                await moderationQueue.add('moderatePost', {
+                    postId: req.params.post_id,
+                    title: updateData.title || postFound.title,
+                    content: updateData.content || postFound.content,
+                    postType: postFound.__t || 'ForumPost',
+                    userId,
+                }, {
+                    attempts: 3,
+                    backoff: { type: 'exponential', delay: 1000 }
+                });
+
+                return res.status(StatusCodes.OK).json({
+                    success: true,
+                    message: "Cập nhật bài viết thành công, đang chờ kiểm duyệt!",
+                    post: result.post
+                });
+            }
+
             return res.status(StatusCodes.OK).json(result);
         }
         return res.status(403).json({ message: result.message });

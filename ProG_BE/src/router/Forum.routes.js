@@ -39,7 +39,10 @@ forumRoutes.post('/posts/new', [
     checkPostType,       // 2. Kiểm tra postType
     uploadPostImages()   // 3. Upload ảnh lên Google Drive
 ], createNewForumPost);
-forumRoutes.put('/posts/:post_id', updateForumPost);
+forumRoutes.put('/posts/:post_id', [
+    parseFormData(),     // 1. Xử lý form data và file uploads
+    uploadPostImages()   // 3. Upload ảnh lên Google Drive
+], updateForumPost);
 forumRoutes.delete('/posts/:post_id', deleteForumPost);
 
 // Comment-related routes
