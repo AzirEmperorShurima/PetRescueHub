@@ -217,10 +217,15 @@ export const deletePet = async (req, res) => {
  */
 export const getPetsByOwner = async (req, res) => {
     try {
-        const ownerId = req.user._id;
+        const ownerId = req.params.ownerId || req.user?._id;
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: "Bạn cần đăng nhập để thực hiện hành động này"
+            });
+        }
+         if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "ID chủ sở hữu không hợp lệ"
             });
         }
         const page = parseInt(req.query.page) || 1;

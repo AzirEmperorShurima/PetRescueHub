@@ -44,7 +44,7 @@ petRoute.put("/pets/update-state/:petId", updatePetState);
 petRoute.delete("/pets/delete/:petId", deletePet);
 
 // Pet information routes
-petRoute.get("/pets/owner/:ownerId", getPetsByOwner);
+petRoute.get("/pets/owner/:ownerId?", getPetsByOwner);
 petRoute.get("/pets/:petId", getPetDetails);
 
 petRoute.get("/pets/analysis/petStatistics", getPetStatistics)
