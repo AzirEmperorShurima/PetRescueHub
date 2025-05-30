@@ -22,6 +22,7 @@
   "homepage": "https://github.com/AzirEmperorShurima/video_Stream_ProG#readme",
   "dependencies": {
     "@google/genai": "^1.1.0",
+    "@payos/node": "^1.0.10",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vitejs/plugin-vue-jsx": "^4.1.2",
     "axios": "^1.8.4",

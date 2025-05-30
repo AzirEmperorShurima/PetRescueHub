@@ -3,7 +3,7 @@ import models_list from "./src/models/modelsExport.js";
 import { createAdminsFromJSON } from "./src/utils/admin/adminFactory.js";
 import { createPetsFromJSON } from "./src/utils/admin/petFactory.js";
 
-const mongoURI = process.env.MONGO_URI_RAILWAY || "mongodb://localhost:27017/PetRescueHub";
+const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/PetRescueHub";
 const MAX_RETRIES = 5;
 const RETRY_INTERVAL = 5000;
 

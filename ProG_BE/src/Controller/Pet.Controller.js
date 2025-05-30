@@ -11,6 +11,7 @@ const petUpdateSchema = Joi.object({
     breed: Joi.string().trim(),
     breedName: Joi.string().trim(),
     gender: Joi.string().valid('male', 'female', 'unknown'),
+    petState: Joi.string().valid('ReadyToAdopt', 'NotReadyToAdopt', 'Adopted'),
     petDetails: Joi.string(),
     weight: Joi.number().min(0),
     height: Joi.number().min(0),
@@ -224,7 +225,7 @@ export const getPetsByOwner = async (req, res) => {
                 message: "Bạn cần đăng nhập để thực hiện hành động này"
             });
         }
-         if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+        if (!mongoose.Types.ObjectId.isValid(ownerId)) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "ID chủ sở hữu không hợp lệ"
             });
@@ -517,7 +518,7 @@ export const petFilters = async (req, res) => {
 
         const filter = {
             isDeleted: false,
-            ...(petState ? { petState } : { petState: "ReadyToAdopt" }) 
+            ...(petState ? { petState } : { petState: "ReadyToAdopt" })
         };
 
         if (breed) {
