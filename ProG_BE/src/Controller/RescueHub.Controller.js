@@ -12,7 +12,7 @@ export const requestRescue = async (req, res) => {
         const userId = req.user?._id;
 
         const missionId = uuidv4();
-        
+
         // Tính thời gian timeout
         const timeoutAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
@@ -80,6 +80,17 @@ export const requestToRescue = async (req, res) => {
             return res.status(400).json({ error: 'Định dạng tọa độ không hợp lệ. Cần [kinh độ, vĩ độ]' });
         }
 
+        // Kiểm tra xem người dùng có nhiệm vụ đang hoạt động không
+        const activeMissions = await PetRescueMissionHistory.find({
+            requester: userId,
+            status: { $in: ['pending', 'in_progress'] },
+            timeoutAt: { $gt: new Date() }
+        }).limit(1);
+
+        if (activeMissions.length > 0) {
+            return res.status(400).json({ error: 'Bạn đã có nhiệm vụ đang hoạt động. Vui lòng hoàn thành hoặc hủy nhiệm vụ hiện tại trước khi tạo mới.' });
+        }
+
         const missionId = uuidv4();
         const timeoutAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
@@ -117,7 +128,7 @@ export const requestToRescue = async (req, res) => {
         const volunteerIds = volunteers.map(item => item[0]); // Lấy các userId
         const volunteerUsers = await user.find({
             _id: { $in: volunteerIds }
-        }).select('fullname phonenumber');
+        }).select('fullname phonenumber email');
 
         // Lọc các tình nguyện viên có trạng thái 'alreadyRescue'
         const filteredVolunteers = await Promise.all(volunteerUsers.map(async (user) => {
@@ -135,6 +146,16 @@ export const requestToRescue = async (req, res) => {
         }
 
         if (!autoAssign) {
+            await PetRescueMissionHistory.create({
+                missionId,
+                requester: userId,
+                location: { type: 'Point', coordinates },
+                radius,
+                selectedVolunteers: [], 
+                acceptedVolunteer: null,
+                timeoutAt,
+                status: 'pending'
+            });
             return res.json({
                 selectVolunteers: true,
                 volunteers: filteredVolunteers,
@@ -143,6 +164,8 @@ export const requestToRescue = async (req, res) => {
         }
 
         const selectedVolunteerIds = filteredVolunteers.map(v => v._id);
+        const requester = await user.findById(userId).select('fullname');
+        const acceptedVolunteer = filteredVolunteers[0];
 
         await PetRescueMissionHistory.create({
             missionId,
@@ -150,10 +173,30 @@ export const requestToRescue = async (req, res) => {
             location: { type: 'Point', coordinates },
             radius,
             selectedVolunteers: selectedVolunteerIds,
+            acceptedVolunteer: acceptedVolunteer ? acceptedVolunteer._id : null,
             timeoutAt,
+            status: 'pending'
         });
 
-        return res.json({ volunteers: filteredVolunteers });
+        if (acceptedVolunteer) {
+            await sendMailNotification({
+                email: acceptedVolunteer.email,
+                subject: 'Yêu Cầu Cứu Hộ Mới',
+                text: `Bạn đã được chọn cho một nhiệm vụ cứu hộ mới`,
+                html: `
+                    <p>Xin chào ${acceptedVolunteer.fullname},</p>
+                    <p>Bạn đã được chọn cho một nhiệm vụ cứu hộ mới. Chi tiết nhiệm vụ:</p>
+                    <ul>
+                        <li>Mã nhiệm vụ: ${missionId}</li>
+                        <li>Người yêu cầu: ${requester ? requester.fullname : 'Khách vãng lai'}</li>
+                        <li>Vị trí: [${coordinates.join(', ')}]</li>
+                    </ul>
+                    <p>Vui lòng xác nhận hoặc từ chối nhiệm vụ trong hệ thống.</p>
+                `
+            });
+        }
+
+        return res.json({ volunteers: [acceptedVolunteer] || [] });
     } catch (err) {
         console.error('Lỗi yêu cầu cứu hộ:', err);
         return res.status(500).json({ error: 'Lỗi server khi xử lý yêu cầu cứu hộ.' });
@@ -245,7 +288,7 @@ export const acceptRescueMission = async (req, res) => {
                 mission.lockExpiresAt = null;
             } else {
                 // Nếu khóa vẫn còn hiệu lực, trả về lỗi
-                return res.status(409).json({ 
+                return res.status(409).json({
                     error: 'Mission is currently being processed by another volunteer',
                     retryAfter: mission.lockExpiresAt
                 });
@@ -259,11 +302,11 @@ export const acceptRescueMission = async (req, res) => {
 
         try {
             // Kiểm tra lại một lần nữa để đảm bảo mission vẫn ở trạng thái pending
-            const updatedMission = await PetRescueMissionHistory.findOne({ 
-                missionId, 
-                status: 'pending' 
+            const updatedMission = await PetRescueMissionHistory.findOne({
+                missionId,
+                status: 'pending'
             });
-            
+
             if (!updatedMission) {
                 return res.status(409).json({ error: 'Mission status has changed' });
             }
