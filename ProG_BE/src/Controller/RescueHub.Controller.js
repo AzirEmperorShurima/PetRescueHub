@@ -1,7 +1,7 @@
 import { redisClient } from "../Config/redis.client.js";
 import geolib from 'geolib';
 import { v4 as uuidv4 } from 'uuid';
-import { getUserFieldFromToken } from "../services/User/User.service.js"
+import { sendMailNotification } from "../services/sendMailService/nodeMailer.service.js";
 import user from "../models/user.js";
 import PetRescueMissionHistory from "../models/PetRescueMissionHistory.js";
 
@@ -151,7 +151,7 @@ export const requestToRescue = async (req, res) => {
                 requester: userId,
                 location: { type: 'Point', coordinates },
                 radius,
-                selectedVolunteers: [], 
+                selectedVolunteers: [],
                 acceptedVolunteer: null,
                 timeoutAt,
                 status: 'pending'
