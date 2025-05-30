@@ -36,8 +36,8 @@ PetRescueRouter.post('/rescue/owner/cancel-request', checkUserRole, cancelRescue
 
 // ====== Nhóm routes cho Tình nguyện viên ====== //
 PetRescueRouter.post('/rescue/volunteer/accept', isVolunteer, acceptRescueMission);
-PetRescueRouter.post('/rescue/volunteer/reject', isVolunteer, rejectRescueMission);
-PetRescueRouter.post('/rescue/volunteer/cancel', isVolunteer, cancelRescueMission);
+PetRescueRouter.post('/rescue/volunteer/reject/:missionId', isVolunteer, rejectRescueMission);
+PetRescueRouter.post('/rescue/volunteer/cancel/:missionId', isVolunteer, cancelRescueMission);
 PetRescueRouter.post('/rescue/volunteer/complete/:missionId', isVolunteer, completeRescueMission);
 
 export default PetRescueRouter;
