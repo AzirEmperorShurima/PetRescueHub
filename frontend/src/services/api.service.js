@@ -86,39 +86,38 @@ const apiService = {
   },
 
 
-  users: createApiService('users'),
   pets: {
     profile: {
-      getAll: (params = {}) => api.get('/api/pet/v1/get-pets/all-pet', { 
+      getAll: (params = {}) => api.get('/pet/v1/get-pets/all-pet', { 
         params, 
         withCredentials: true 
       }),
-      getById: (id) => api.get(`/api/pet/pets/owner/${id}`, { 
+      getById: (id) => api.get(`/pet/pets/${id}`, { 
         withCredentials: true 
       }),
       create: (data) => {
         if (data instanceof FormData) {
-          return api.post('/pets/profiles/create', data, {
+          return api.post('/pet/pets/portfolio/create', data, {
             headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials: true
           });
         }
-        return api.post('/pets/profiles/create', data, { 
+        return api.post('pet/pets/profiles/create', data, { 
           withCredentials: true 
         });
       },
       update: (id, data) => {
         if (data instanceof FormData) {
-          return api.put(`/pets/profiles/${id}`, data, {
+          return api.put(`pet/pets/profiles/${id}`, data, {
             headers: { 'Content-Type': 'multipart/form-data' },
             withCredentials: true
           });
         }
-        return api.put(`/pets/profiles/${id}`, data, { 
+        return api.put(`pet/pets/profiles/${id}`, data, { 
           withCredentials: true 
         });
       },
-      delete: (id) => api.delete(`/pets/profiles/${id}`, { 
+      delete: (id) => api.delete(`pet/pets/profiles/${id}`, { 
         withCredentials: true 
       })
     }

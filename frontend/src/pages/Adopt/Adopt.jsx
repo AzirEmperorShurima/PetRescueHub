@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Box,
   Container,
@@ -44,7 +44,7 @@ import {
   BiAward,
   BiFilter
 } from 'react-icons/bi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import { useAdopt } from '../../components/hooks/useAdopt';
 
@@ -77,6 +77,33 @@ const PetSkeletonGrid = ({ count = 8 }) => (
   </SimpleGrid>
 );
 
+// Thêm component ListSkeleton mới
+const ListSkeleton = () => (
+  <VStack spacing={4} width="100%">
+    {[1, 2, 3].map((i) => (
+      <Box 
+        key={i}
+        w="100%"
+        h="200px"
+        bg="gray.100"
+        borderRadius="lg"
+        overflow="hidden"
+        display="flex"
+        flexDirection="row"
+      >
+        <Box w="300px" h="full" bg="gray.200" />
+        <Box flex={1} p={4}>
+          <VStack align="start" spacing={4}>
+            <Box h="24px" w="200px" bg="gray.200" borderRadius="md" />
+            <Box h="16px" w="150px" bg="gray.200" borderRadius="md" />
+            <Box h="16px" w="80%" bg="gray.200" borderRadius="md" />
+          </VStack>
+        </Box>
+      </Box>
+    ))}
+  </VStack>
+);
+
 // Motion components
 const MotionBox = motion(Box);
 const MotionSimpleGrid = motion(SimpleGrid);
@@ -88,6 +115,11 @@ const Adopt = () => {
   const [favorites, setFavorites] = useState(new Set());
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showHero, setShowHero] = useState(true);
+  const location = useLocation();
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerTarget = useRef(null);
   
   const { 
     isOpen: isFiltersOpen, 
@@ -115,8 +147,24 @@ const Adopt = () => {
     'linear(to-br, blue.900, purple.900, pink.900)'
   );
 
-  // Custom hook for pet data với error handling
-  const {
+  // Kiểm tra nếu có pet mới được tạo
+  useEffect(() => {
+    if (location.state?.newPetCreated) {
+      // Hiển thị thông báo
+      toast({
+        title: "Thú cưng đã được đăng thành công!",
+        description: "Bài đăng của bạn đang được xem xét và sẽ sớm xuất hiện trong danh sách.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      
+      // Xóa state để tránh hiển thị lại thông báo khi refresh
+      navigate('/adopt', { replace: true });
+    }
+  }, [location.state, toast, navigate]);
+
+  const { 
     pets,
     loading,
     error,
@@ -126,8 +174,19 @@ const Adopt = () => {
     handleSearchChange,
     handleFilterChange,
     handleSortChange,
-    resetFilters
+    resetFilters,
+    refreshPets,
+    loadMorePets
   } = useAdopt();
+
+  // Tự động refresh danh sách sau mỗi 30 giây
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshPets();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refreshPets]);
 
   useEffect(() => {
     // Safely load favorites - không sử dụng browser storage
@@ -262,6 +321,87 @@ const Adopt = () => {
       console.error('Error resetting filters:', error);
     }
   };
+
+  // Pagination Component
+  const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+    const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+    
+    return (
+      <HStack spacing={2} justify="center" my={6}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onPageChange(currentPage - 1)}
+          isDisabled={currentPage === 1}
+        >
+          Trước
+        </Button>
+        
+        {pages.map(pageNum => (
+          <Button
+            key={pageNum}
+            size="sm"
+            variant={pageNum === currentPage ? "solid" : "outline"}
+            colorScheme={pageNum === currentPage ? "blue" : "gray"}
+            onClick={() => onPageChange(pageNum)}
+          >
+            {pageNum}
+          </Button>
+        ))}
+        
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onPageChange(currentPage + 1)}
+          isDisabled={currentPage === totalPages}
+        >
+          Sau
+        </Button>
+      </HStack>
+    );
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Infinite Scroll Logic
+  useEffect(() => {
+    if (viewMode !== 'list') return;
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          setIsLoadingMore(true);
+          try {
+            await loadMorePets();
+          } catch (error) {
+            console.error('Error loading more pets:', error);
+            toast({
+              title: "Không thể tải thêm dữ liệu",
+              status: "error",
+              duration: 3000,
+              isClosable: true,
+            });
+          } finally {
+            setIsLoadingMore(false);
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [viewMode, hasMore, isLoadingMore, loadMorePets]);
 
   return (
     <Box bg={bgColor} minH="100vh" position="relative">
@@ -412,12 +552,14 @@ const Adopt = () => {
 
       {/* Main Content */}
       <Container maxW={containerMaxW} py={8}>
-        <Flex gap={6} align="start">
-          {/* Desktop Filters Sidebar */}
+        <Flex gap={4} align="start">
+          {/* Desktop Filters Sidebar - Reduced width */}
           <Box
-            w="320px"
+            w="250px"
             flexShrink={0}
             display={{ base: 'none', lg: 'block' }}
+            position="sticky"
+            top="20px"
           >
             <React.Suspense fallback={<Box p={4}>Loading filters...</Box>}>
               <PetFilters
@@ -432,7 +574,7 @@ const Adopt = () => {
             </React.Suspense>
           </Box>
 
-          {/* Main Content */}
+          {/* Main Content - Adjusted grid layout */}
           <Box flex={1} id="pet-list">
             {/* Enhanced Controls Bar */}
             <Card bg={cardBg} shadow="md" p={4} mb={6} borderRadius="xl">
@@ -516,32 +658,92 @@ const Adopt = () => {
 
             {/* Pet Grid/List with Enhanced Loading */}
             <AnimatePresence mode="wait">
-              {loading ? (
-                <PetSkeletonGrid key="skeleton" count={8} />
+              {loading && !isLoadingMore ? (
+                viewMode === 'grid' ? (
+                  <PetSkeletonGrid key="skeleton" count={8} />
+                ) : (
+                  <ListSkeleton key="list-skeleton" />
+                )
               ) : pets.length > 0 ? (
-                <MotionSimpleGrid
-                  key="pets"
-                  columns={gridColumns}
-                  spacing={6}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {pets.map((pet) => (
-                    <React.Suspense 
-                      key={pet.id} 
-                      fallback={<Box h="400px" bg="gray.100" borderRadius="lg" />}
-                    >
-                      <PetCard
-                        pet={pet}
-                        onClick={handlePetClick}
-                        onFavorite={handleFavoriteToggle}
-                        isFavorited={favorites.has(pet.id)}
+                <Box width="100%" px={{ base: 2, md: 4 }}>
+                  <SimpleGrid
+                    columns={{ 
+                      base: 1, 
+                      md: viewMode === 'grid' ? 2 : 1,
+                      lg: viewMode === 'grid' ? 3 : 1,
+                      xl: viewMode === 'grid' ? 4 : 1 
+                    }}
+                    spacing={{ base: 4, md: 4, lg: 4 }}
+                    width="100%"
+                    maxW="100%"
+                    mx="auto"
+                  >
+                    {viewMode === 'grid' 
+                      ? pets.slice((page - 1) * 8, page * 8).map((pet) => (
+                          <Box 
+                            key={pet.id}
+                            width="100%"
+                            height="100%"
+                            maxW={{ base: "400px", md: "100%" }}
+                            mx="auto"
+                          >
+                            <React.Suspense 
+                              fallback={<Box h="400px" bg="gray.100" borderRadius="lg" />}
+                            >
+                              <PetCard
+                                pet={pet}
+                                onClick={handlePetClick}
+                                onFavorite={handleFavoriteToggle}
+                                isFavorited={favorites.has(pet.id)}
+                                isListView={false}
+                              />
+                            </React.Suspense>
+                          </Box>
+                        ))
+                      : pets.map((pet) => (
+                          <Box 
+                            key={pet.id}
+                            width="100%"
+                          >
+                            <React.Suspense 
+                              fallback={<Box h="200px" bg="gray.100" borderRadius="lg" />}
+                            >
+                              <PetCard
+                                pet={pet}
+                                onClick={handlePetClick}
+                                onFavorite={handleFavoriteToggle}
+                                isFavorited={favorites.has(pet.id)}
+                                isListView={true}
+                              />
+                            </React.Suspense>
+                          </Box>
+                        ))
+                    }
+                  </SimpleGrid>
+
+                  {/* Loading indicator for infinite scroll */}
+                  {viewMode === 'list' && isLoadingMore && (
+                    <Box mt={4}>
+                      <ListSkeleton />
+                    </Box>
+                  )}
+
+                  {/* Infinite Scroll Observer */}
+                  {viewMode === 'list' && hasMore && (
+                    <Box ref={observerTarget} h="20px" mt={4} />
+                  )}
+
+                  {/* Pagination for Grid View */}
+                  {viewMode === 'grid' && (
+                    <Box mt={6}>
+                      <Pagination
+                        currentPage={page}
+                        totalPages={Math.ceil(pets.length / 8)}
+                        onPageChange={handlePageChange}
                       />
-                    </React.Suspense>
-                  ))}
-                </MotionSimpleGrid>
+                    </Box>
+                  )}
+                </Box>
               ) : (
                 <MotionBox
                   key="empty"
@@ -608,7 +810,7 @@ const Adopt = () => {
                 {
                   step: '2', 
                   title: 'Gặp mặt và tương tác',
-                  description: 'Đến trung tâm để gặp gỡ trực tiếp và tương tác với thú cưng bạn quan tâm',
+                  description: 'Đến trung tâm hoặc tự liên hệ để gặp gỡ trực tiếp và tương tác với thú cưng bạn quan tâm',
                   icon: '🤝',
                   color: 'purple'
                 },

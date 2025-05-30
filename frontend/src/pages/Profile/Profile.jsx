@@ -338,9 +338,7 @@ const Profile = () => {
                 <VStack spacing={3}>
                   <Avatar
                     size="2xl"
-                    // src={user.avatar}
-                    src="https://img.freepik.com/premium-photo/midsection-person-feeding-young-goat_1048944-2121589.jpg?semt=ais_hybrid&w=740"
-                    imgProps={{ crossOrigin: 'anonymous' }}
+                    src={user.avatar}
                     name={user.fullname || user.username}
                     border="4px solid"
                     borderColor="white"

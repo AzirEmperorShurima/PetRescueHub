@@ -22,7 +22,6 @@ import {
   EmojiHeartEyesFill
 } from 'react-bootstrap-icons';
 import PropTypes from 'prop-types';
-import apiService from '../../../services/api.service';
 
 // Định nghĩa các loại cảm xúc với Bootstrap Icons
 const REACTION_TYPES = {
@@ -164,8 +163,6 @@ const Reaction = ({
         await onReact(newReactionType, newReactions);
       }
       
-      // XÓA PHẦN GỌI API TẠI ĐÂY
-      // const response = await apiService.forum.reactions.addOrUpdate({...});
       
     } catch (error) {
       console.error('Error handling reaction:', error);

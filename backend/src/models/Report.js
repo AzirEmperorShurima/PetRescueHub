@@ -1,9 +1,15 @@
 import mongoose from "mongoose";
 
 const ReportSchema = new mongoose.Schema({
-    reporter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Người báo cáo
-    targetId: { type: mongoose.Schema.Types.ObjectId, required: true }, // ID của bài viết, bình luận, user...
-    reason: { type: String, required: true }, // Lý do báo cáo
+    reporter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    targetId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    reportType: { 
+        type: String, 
+        enum: ["User", "Post", "Comment"], 
+        required: true 
+    },
+    reason: { type: String, required: true },
+    details: { type: String },
     status: {
         type: String,
         enum: ["Pending", "Reviewed", "Resolved"],
@@ -13,8 +19,10 @@ const ReportSchema = new mongoose.Schema({
         type: String,
         enum: ["None", "Warning", "Temporary Ban", "Permanent Ban", "Content Removed"],
         default: "None"
-    }, // Hình thức xử phạt
-    adminNote: { type: String }, // Ghi chú từ admin về quyết định xử phạt
+    },
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    reviewedAt: { type: Date },
+    adminNote: { type: String },
 }, { timestamps: true });
 
 export default mongoose.model("Report", ReportSchema);

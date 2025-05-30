@@ -3,11 +3,26 @@ import { StatusCodes } from "http-status-codes";
 import {
     _getVolunteers,
     acceptApproveVolunteer,
-    deleteUser, getUsers,
+    addNewPackage,
+    aggregateUserChartData,
+    deactivateUser,
+    deleteUser,
+    getEventsByApprovalStatus,
+    getUsers,
+    getUserStatistics,
+    getUserStats,
     getVolunteers,
+    getVolunteerStatistics,
     rejectVolunteerRequest,
-    revokeVolunteerRole
+    revokeVolunteerRole,
+    getAllReports,
+    updateReport,
+    getReportStats,
+    getReportDetail,
+    approveEvent,
+    rejectEvent
 } from "../Controller/Admin.controller.js";
+
 import { checkAdminLogin, isAdmin } from "../Middlewares/Check_is_Admin.js";
 import { validatePasswordStrength } from "../Middlewares/validatePasswordStrength.js";
 import { loginHandler } from "../Controller/Auth.Controller.js";
@@ -15,7 +30,7 @@ import { verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware } from "../ut
 
 const adminRouter = Router();
 
-adminRouter.use(verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware)
+// adminRouter.use(verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware)
 adminRouter.use(isAdmin);
 
 
@@ -67,6 +82,30 @@ adminRouter.get('/v2/volunteers', _getVolunteers);
 // Quản lý yêu cầu tình nguyện viên (v1)
 adminRouter.post('/v1/volunteers/requests/accept', acceptApproveVolunteer);
 adminRouter.post('/v1/volunteers/requests/reject', rejectVolunteerRequest);
-adminRouter.post('/v1/volunteers/requests/revoke', revokeVolunteerRole);
+adminRouter.put('/v1/volunteers/requests/revoke', revokeVolunteerRole);
+
+adminRouter.get('/managent/events/event-list', getEventsByApprovalStatus)
+adminRouter.post('/managent/events/action/approved', approveEvent)
+adminRouter.post('/managent/events/action/rejected', rejectEvent)
+
+adminRouter.get('/aggregate/users', aggregateUserChartData)
+adminRouter.get('/aggregate/users/user', getUserStatistics)
+adminRouter.get('/aggregate/users/volunteers', getVolunteerStatistics)
+// Quản lý gói dịch vụ
+adminRouter.post('/packages/create', addNewPackage);
+
+// Thống kê người dùng
+adminRouter.get('/stats/users', getUserStats);
+
+// Quản lý trạng thái người dùng
+adminRouter.patch('/users/:userId/deactivate', deactivateUser);
+
+
+// Quản lý báo cáo
+adminRouter.get('/reports', getAllReports);
+adminRouter.get('/reports/stats', getReportStats);
+adminRouter.get('/reports/details/:id', getReportDetail);
+adminRouter.put('/reports/:id', updateReport);
+
 
 export default adminRouter;

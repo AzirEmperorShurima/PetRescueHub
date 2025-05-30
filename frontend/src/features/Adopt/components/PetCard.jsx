@@ -21,20 +21,26 @@ import {
 } from '@chakra-ui/react';
 import { 
   FaHeart, 
-  FaCalendarAlt, 
+  FaBirthdayCake , 
   FaUser, 
   FaAward, 
   FaEye, 
-  FaMapMarkerAlt 
+  FaMapMarkerAlt,
+  FaPaw 
 } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+
+const DEFAULT_PET_IMAGE = 'https://khoinguonsangtao.vn/wp-content/uploads/2022/08/anh-meo-cam-phong-lon-meme-meo-cosplay-hoang-thuong.jpg';
 
 const PetCard = ({ 
   pet = {}, 
   onClick = () => {}, 
   onFavorite, 
-  isFavorited = false
+  isFavorited = false,
+  isListView = false
 }) => {
   const [imageError, setImageError] = useState(false);
+  const navigate = useNavigate();
   
   // Early return nếu không có pet data
   if (!pet || typeof pet !== 'object') {
@@ -52,7 +58,6 @@ const PetCard = ({
   const {
     name = 'Chưa có tên',
     breed = '',
-    breedName = '',
     image = '',
     status = 'unknown',
     gender = 'unknown',
@@ -77,12 +82,86 @@ const PetCard = ({
   // Status color mapping
   const getStatusColorScheme = (status) => {
     const statusMap = {
-      'available': 'green',
+      'available': 'teal',
       'pending': 'orange',
       'adopted': 'red'
     };
     return statusMap[status] || 'gray';
   };
+
+  // Reproductive status tag config
+  const getReproductiveStatusInfo = (status) => {
+    return {
+      text: status === 'neutered' ? 'Đã triệt sản' : 'Chưa triệt sản',
+      colorScheme: status === 'neutered' ? 'purple' : 'red'
+    };
+  };
+
+  // Vaccination status tag config
+  const getVaccinationStatusInfo = (count) => {
+    return {
+      text: `Đã tiêm chủng: ${count} mũi`,
+      colorScheme: 'blue'
+    };
+  };
+
+  // Available status tag config
+  const getAvailableStatusInfo = () => {
+    return {
+      text: 'Sẵn sàng nhận nuôi',
+      colorScheme: 'green',
+      icon: FaPaw
+    };
+  };
+
+  // Special needs tag config
+  const getSpecialNeedsInfo = () => {
+    return {
+      text: 'Cần chăm sóc đặc biệt',
+      colorScheme: 'orange',
+      icon: FaAward
+    };
+  };
+
+  // Common status tag component
+  const StatusTag = ({ info, icon }) => (
+    <Tag size="sm" colorScheme={info.colorScheme}>
+      {icon && <TagLeftIcon as={icon} />}
+      <TagLabel>{info.text}</TagLabel>
+    </Tag>
+  );
+
+  // Common info tags component
+  const InfoTags = ({ isCompact = false }) => (
+    <VStack align="stretch" spacing={2}>
+      {!isCompact && (
+        <>
+          {weight && <Text fontSize="sm">Cân nặng: {weight} kg</Text>}
+          {height && <Text fontSize="sm">Chiều cao: {height} cm</Text>}
+        </>
+      )}
+      {isCompact && (
+        <HStack spacing={4} fontSize="sm" color={textColor}>
+          {weight && <Text>Cân nặng: {weight} kg</Text>}
+          {height && <Text>Chiều cao: {height} cm</Text>}
+        </HStack>
+      )}
+      <VStack align="stretch" spacing={2}>
+        {reproductiveStatus && (
+          <StatusTag info={getReproductiveStatusInfo(reproductiveStatus)} />
+        )}
+        {vaccinationStatus.length > 0 && (
+          <StatusTag info={getVaccinationStatusInfo(vaccinationStatus.length)} />
+        )}
+        {status === 'available' && (
+          <StatusTag info={getAvailableStatusInfo()} icon={FaPaw} />
+        )}
+        {specialNeeds && (
+          <StatusTag info={getSpecialNeedsInfo()} icon={FaAward} />
+        )}
+      </VStack>
+    </VStack>
+  );
 
   // Status text mapping
   const getStatusText = (status) => {
@@ -100,7 +179,7 @@ const PetCard = ({
       'male': { icon: '♂️', color: 'blue', text: 'Đực' },
       'female': { icon: '♀️', color: 'pink', text: 'Cái' }
     };
-    return genderMap[gender] || { icon: '❓', color: 'gray', text: 'Chưa rõ' };
+    return genderMap[gender] || { icon: '❓', color: 'gray', text: 'Chưa rõ giới tính' };
   };
 
   // Size mapping
@@ -123,6 +202,7 @@ const PetCard = ({
       if (typeof onClick === 'function') {
         onClick(pet);
       }
+      navigate(`/adopt/${pet.id}`);
     } catch (error) {
       console.error('Error in onClick handler:', error);
     }
@@ -141,8 +221,6 @@ const PetCard = ({
 
   const genderInfo = getGenderInfo(gender);
   const sizeInfo = getSizeInfo(size);
-  const defaultImage = 'https://via.placeholder.com/400x300?text=🐾+Pet+Image';
-  const fallbackImage = 'https://via.placeholder.com/400x300?text=🐾+No+Image';
 
   return (
     <Card
@@ -152,9 +230,10 @@ const PetCard = ({
       shadow="md"
       borderRadius="xl"
       overflow="hidden"
-      h="full"
+      h={isListView ? "250px" : "650"}
+      w="100%"
       display="flex"
-      flexDirection="column"
+      flexDirection={isListView ? "row" : "column"}
       position="relative"
       _hover={{
         shadow: 'xl',
@@ -166,173 +245,136 @@ const PetCard = ({
       onClick={handleCardClick}
     >
       {/* Image Container */}
-      <Box position="relative" w="full" bg="gray.100">
-        <AspectRatio ratio={4/3}>
+      <Box 
+        position="relative" 
+        w={isListView ? "40%" : "100%"} 
+        h={isListView ? "full" : "250px"}
+        bg="gray.100"
+        flexShrink={0}
+      >
+        <Box position="relative" h="100%" w="100%">
           <Image
-            src={imageError ? fallbackImage : (image || defaultImage)}
+            src={imageError ? DEFAULT_PET_IMAGE : (image || DEFAULT_PET_IMAGE)}
             alt={`Ảnh của ${name}`}
             objectFit="cover"
-            w="full"
-            h="full"
+            w="100%"
+            h="100%"
             onError={handleImageError}
-            fallbackSrc={fallbackImage}
+            fallbackSrc={DEFAULT_PET_IMAGE}
             loading="lazy"
           />
-        </AspectRatio>
 
-        {/* Status Badge */}
-        <Badge
-          position="absolute"
-          top={3}
-          right={3}
-          colorScheme={getStatusColorScheme(status)}
-          variant="solid"
-          borderRadius="full"
-          px={3}
-          py={1}
-          fontSize="xs"
-          fontWeight="bold"
-          shadow="md"
-        >
-          {getStatusText(status)}
-        </Badge>
-
-        {/* Location Badge */}
-        {location && (
-          <Badge
-            position="absolute"
-            bottom={3}
-            left={3}
-            bg="blackAlpha.700"
-            color="white"
-            borderRadius="full"
-            px={2}
-            py={1}
-            fontSize="xs"
-          >
-            <HStack spacing={1}>
-              <Icon as={FaMapMarkerAlt} w={3} h={3} />
-              <Text>{location}</Text>
-            </HStack>
-          </Badge>
-        )}
+          {/* Location Badge */}
+          {location && (
+            <Badge
+              position="absolute"
+              bottom={3}
+              left={3}
+              bg="blackAlpha.700"
+              color="white"
+              borderRadius="full"
+              px={2}
+              py={1}
+              fontSize="xs"
+            >
+              <HStack spacing={1}>
+                <Icon as={FaMapMarkerAlt} w={3} h={3} />
+                <Text>{location}</Text>
+              </HStack>
+            </Badge>
+          )}
+        </Box>
       </Box>
 
-      <CardBody flex="1" p={4}>
-        <VStack spacing={3} align="stretch">
-          {/* Pet Name and Type */}
-          <Box>
-            <Text
-              fontSize="xl"
-              fontWeight="bold"
-              color={headingColor}
-              mb={1}
-              noOfLines={1}
-              title={name} // Tooltip khi hover
-            >
-              {name}
-            </Text>
-            {breed && (
-              <Text 
-                fontSize="sm" 
-                color={textColor} 
-                noOfLines={1}
-                title={breed}
+      <Box flex="1" display="flex" flexDirection="column" w="100%">
+        <CardBody p={isListView ? 4 : 5}>
+          <VStack spacing={isListView ? 2 : 3} align="stretch">
+            {/* Pet Name and Type */}
+            <HStack justify="space-between" align="center">
+              <Box>
+                <Text
+                  fontSize={isListView ? "lg" : "xl"}
+                  fontWeight="bold"
+                  color={headingColor}
+                  noOfLines={1}
+                  title={name}
+                >
+                  {name}
+                </Text>
+                {breed && (
+                  <Text 
+                    fontSize="sm" 
+                    color={textColor} 
+                    noOfLines={1}
+                    title={breed}
+                  >
+                    {breed}
+                  </Text>
+                )}
+              </Box>
+            </HStack>
+
+            {/* Pet Details Tags */}
+            <Flex wrap="wrap" gap={2}>
+              {/* Gender Tag */}
+              <Tag size="sm" colorScheme={genderInfo.color} variant="subtle">
+                <TagLabel>{genderInfo.icon} {genderInfo.text}</TagLabel>
+              </Tag>
+
+              {/* Age Tag */}
+              {age && (
+                <Tag size="sm" colorScheme="purple" variant="subtle">
+                  <TagLeftIcon as={FaBirthdayCake} />
+                  <TagLabel>{age} tuổi</TagLabel>
+                </Tag>
+              )}
+
+              {/* Size Tag */}
+              {size && (
+                <Tag size="sm" colorScheme="teal" variant="subtle">
+                  <TagLabel>{sizeInfo.emoji} {sizeInfo.text}</TagLabel>
+                </Tag>
+              )}
+            </Flex>
+
+            {/* Description */}
+            {description && (
+              <Text
+                fontSize="sm"
+                color={textColor}
+                noOfLines={isListView ? 2 : 3}
+                lineHeight="1.4"
+                title={description}
               >
-                {breed}
+                {description}
               </Text>
             )}
-          </Box>
 
-          {/* Pet Details Tags */}
-          <Flex wrap="wrap" gap={2}>
-            {/* Gender Tag */}
-            <Tag size="sm" colorScheme={genderInfo.color} variant="subtle">
-              <TagLabel>{genderInfo.icon} {genderInfo.text}</TagLabel>
-            </Tag>
+            {/* Info Tags Section */}
+            <InfoTags isCompact={isListView} />
+          </VStack>
+        </CardBody>
 
-            {/* Age Tag */}
-            {age && (
-              <Tag size="sm" colorScheme="purple" variant="subtle">
-                <TagLeftIcon as={FaCalendarAlt} />
-                <TagLabel>{age}</TagLabel>
-              </Tag>
-            )}
-
-            {/* Size Tag */}
-            {size && (
-              <Tag size="sm" colorScheme="teal" variant="subtle">
-                <TagLabel>{sizeInfo.emoji} {sizeInfo.text}</TagLabel>
-              </Tag>
-            )}
-          </Flex>
-
-          {/* Description */}
-          {description && (
-            <Text
-              fontSize="sm"
-              color={textColor}
-              noOfLines={3}
-              lineHeight="1.4"
-              title={description} // Full text on hover
-            >
-              {description}
-            </Text>
-          )}
-
-          {/* Special Tags */}
-          {specialNeeds && (
-            <Tag size="sm" colorScheme="orange" variant="outline">
-              <TagLeftIcon as={FaAward} />
-              <TagLabel>Cần chăm sóc đặc biệt</TagLabel>
-            </Tag>
-          )}
-
-          {/* New content */}
-          {weight && (
-            <Text fontSize="sm">
-              Cân nặng: {weight} kg
-            </Text>
-          )}
-          
-          {height && (
-            <Text fontSize="sm">
-              Chiều cao: {height} cm
-            </Text>
-          )}
-          
-          {reproductiveStatus && (
-            <Tag size="sm" colorScheme={reproductiveStatus === 'neutered' ? 'green' : 'yellow'}>
-              {reproductiveStatus === 'neutered' ? 'Đã triệt sản' : 'Chưa triệt sản'}
-            </Tag>
-          )}
-          
-          {vaccinationStatus.length > 0 && (
-            <Tag size="sm" colorScheme="blue">
-              Đã tiêm chủng: {vaccinationStatus.length} mũi
-            </Tag>
-          )}
-        </VStack>
-      </CardBody>
-
-      <CardFooter p={4} pt={0}>
-        <Button
-          w="full"
-          colorScheme="blue"
-          variant="solid"
-          onClick={handleCardClick}
-          leftIcon={<Icon as={FaEye} />}
-          _hover={{
-            transform: 'translateY(-1px)',
-            shadow: 'md',
-          }}
-          transition="all 0.2s"
-          borderRadius="lg"
-          isDisabled={!onClick || typeof onClick !== 'function'}
-        >
-          Xem chi tiết
-        </Button>
-      </CardFooter>
+        <CardFooter p={isListView ? 3 : 4} pt={0}>
+          <Button
+            w="full"
+            colorScheme="blue"
+            variant="solid"
+            onClick={handleCardClick}
+            leftIcon={<Icon as={FaEye} />}
+            size={isListView ? "sm" : "md"}
+            _hover={{
+              transform: 'translateY(-1px)',
+              shadow: 'md',
+            }}
+            transition="all 0.2s"
+            borderRadius="lg"
+            isDisabled={!onClick || typeof onClick !== 'function'}
+          >
+            Xem chi tiết
+          </Button>
+        </CardFooter>
+      </Box>
     </Card>
   );
 };

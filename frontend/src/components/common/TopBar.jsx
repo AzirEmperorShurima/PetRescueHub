@@ -48,13 +48,13 @@ const TopBar = () => {
           </button>
 
           <div className="social-links">
-            <a href="#" aria-label="Facebook">
+            <a href="https://www.facebook.com/people/Pet-RescueHub/61574718733547/" aria-label="Facebook">
               <FaFacebookF />
             </a>
             <a href="#" aria-label="Twitter">
               <FaTwitter />
             </a>
-            <a href="#" aria-label="Instagram">
+            <a href="https://www.instagram.com/pet_rescuehub/" aria-label="Instagram">
               <FaInstagram />
             </a>
           </div>

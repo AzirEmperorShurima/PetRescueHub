@@ -1,6 +1,6 @@
 // middleware/avatarUpload.js
 import multer from 'multer';
-import cloudinary from '../config/Cloudinary.config.js';
+import cloudinary from '../Config/Cloudinary.config.js';
 import streamifier from 'streamifier';
 
 const allowedFormats = process.env.CLOUDINARY_ALLOWED_FORMATS?.split(',') || ['jpg', 'png', 'jpeg'];

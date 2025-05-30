@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Box,
   Heading,
@@ -22,9 +23,12 @@ import {
   FormControl,
   FormLabel,
   chakra,
+  Center,
 } from '@chakra-ui/react';
 import { CopyIcon, CheckIcon } from '@chakra-ui/icons';
 import { FaPaw } from 'react-icons/fa'; // Icon dấu chân thú cưng
+import bankQRCode from '../../../assets/images/qrCodesBank.jpg';
+import donationService from '../../../services/donation.service';
 
 // Dữ liệu mẫu
 const paymentMethods = [
@@ -33,28 +37,24 @@ const paymentMethods = [
     logo: 'https://cdn-icons-png.flaticon.com/512/2830/2830284.png',
     details: {
       bank: 'Ngân hàng Vietcombank',
-      accountNumber: '1234567890',
-      accountName: 'Pet Rescue Hub',
+      accountNumber: '9984268233',
+      accountName: 'PHAM MINH THIEN',
       content: 'Ủng hộ Pet Rescue Hub',
     },
-    qrCode: 'https://via.placeholder.com/200?text=Bank+QR',
   },
   {
     name: 'Momo',
     logo: 'https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png',
-    apiEndpoint: '/api/payments/momo',
     defaultContent: 'Ủng hộ Pet Rescue Hub qua Momo',
   },
   {
     name: 'VNPay',
     logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png',
-    apiEndpoint: '/api/payments/vnpay',
     defaultContent: 'Ủng hộ Pet Rescue Hub qua VNPay',
   },
   {
     name: 'ZaloPay',
     logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png',
-    apiEndpoint: '/api/payments/zalopay',
     defaultContent: 'Ủng hộ Pet Rescue Hub qua ZaloPay',
   },
 ];
@@ -114,12 +114,11 @@ const PaymentMethods = () => {
         </TabList>
 
         <TabPanels>
-          {paymentMethods.map((method) => (
+          {paymentMethods.map((method, index) => (
             <TabPanel key={method.name}>
               {method.name === 'Chuyển khoản' ? (
                 <BankTransferTab
                   accountDetails={method.details}
-                  qrCode={method.qrCode}
                   onCopy={(value) => {
                     navigator.clipboard.writeText(value);
                     toast({
@@ -134,8 +133,8 @@ const PaymentMethods = () => {
               ) : (
                 <PaymentAppTab
                   appName={method.name}
-                  apiEndpoint={method.apiEndpoint}
                   defaultContent={method.defaultContent}
+                  methodIndex={index}
                 />
               )}
             </TabPanel>
@@ -146,7 +145,7 @@ const PaymentMethods = () => {
   );
 };
 
-const BankTransferTab = ({ accountDetails, qrCode, onCopy }) => {
+const BankTransferTab = ({ accountDetails, onCopy }) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.700', 'gray.200');
   const accentColor = useColorModeValue('green.300', 'green.200');
@@ -160,7 +159,9 @@ const BankTransferTab = ({ accountDetails, qrCode, onCopy }) => {
         {Object.entries(accountDetails).map(([key, value]) => (
           <HStack key={key} w="full" spacing={4}>
             <Text fontWeight="bold" minW="120px" color={textColor}>
-              {key === 'bank' ? 'Ngân hàng' : key === 'accountNumber' ? 'Số tài khoản' : key === 'accountName' ? 'Tên tài khoản' : 'Nội dung'}:
+              {key === 'bank' ? 'Ngân hàng' : 
+               key === 'accountNumber' ? 'Số tài khoản' : 
+               key === 'accountName' ? 'Tên tài khoản' : 'Nội dung'}:
             </Text>
             <Text flex="1" color={textColor}>
               {value}
@@ -176,17 +177,26 @@ const BankTransferTab = ({ accountDetails, qrCode, onCopy }) => {
           </HStack>
         ))}
       </VStack>
-      <VStack spacing={4} align="center">
-        <Image
-          src={qrCode}
-          alt="QR Code Chuyển khoản"
-          boxSize={{ base: '200px', md: '250px' }}
-          objectFit="contain"
-          borderRadius="lg"
+      <VStack spacing={4} align="center" w="full">
+        <Box
+          p={2}
+          bg="white"
+          borderRadius="xl"
+          boxShadow="lg"
           border="2px solid"
           borderColor={accentColor}
-        />
-        <Text fontSize="sm" color={textColor}>
+          _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s ease-in-out' }}
+        >
+          <Image
+            src={bankQRCode}
+            alt="QR Code Chuyển khoản"
+            boxSize={{ base: "280px", md: "320px" }}
+            objectFit="cover"
+            borderRadius="lg"
+            quality={100}
+          />
+        </Box>
+        <Text fontSize="sm" color={textColor} fontWeight="medium">
           Quét mã QR để chuyển khoản
         </Text>
       </VStack>
@@ -194,31 +204,22 @@ const BankTransferTab = ({ accountDetails, qrCode, onCopy }) => {
   );
 };
 
-const PaymentAppTab = ({ appName, apiEndpoint, defaultContent }) => {
+const PaymentAppTab = ({ appName, defaultContent, methodIndex }) => {
   const [amount, setAmount] = useState('');
   const [content, setContent] = useState(defaultContent);
   const [isLoading, setIsLoading] = useState(false);
+  const [qrCode, setQrCode] = useState('');
+  const [orderUrl, setOrderUrl] = useState('');
   const toast = useToast();
   const bgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.700', 'gray.200');
   const accentColor = useColorModeValue('pink.500', 'pink.300');
 
   const handlePayment = async () => {
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+    if (!amount || isNaN(amount) || Number(amount) < 10000) {
       toast({
         title: 'Lỗi',
-        description: 'Vui lòng nhập số tiền hợp lệ lớn hơn 0.',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
-
-    if (!content) {
-      toast({
-        title: 'Lỗi',
-        description: 'Vui lòng nhập nội dung chuyển khoản.',
+        description: 'Vui lòng nhập số tiền hợp lệ (tối thiểu 10.000đ).',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -228,17 +229,35 @@ const PaymentAppTab = ({ appName, apiEndpoint, defaultContent }) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: Number(amount), content }),
-      });
+      let response;
+      switch (methodIndex) {
+        case 1: // Momo
+          response = await donationService.createMomoPayment(Number(amount));
+          if (response?.shortLink || response?.payUrl) {
+            const redirectUrl = response.shortLink || response.payUrl;
+            window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+          }
+          break;
+        case 2: // VNPay
+          response = await donationService.createVnPayPayment(Number(amount));
+          if (response?.shortLink || response?.payUrl) {
+            const redirectUrl = response.shortLink || response.payUrl;
+            window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+          }
+          break;
+        case 3: // ZaloPay
+          response = await donationService.createZaloPayment(Number(amount));
+          if (response?.qr_code) {
+            setQrCode(response.qr_code);
+            setOrderUrl(response.order_url || '');
+          }
+          break;
+        default:
+          throw new Error('Phương thức thanh toán không hợp lệ');
+      }
 
-      const data = await response.json();
-      if (response.ok && data.paymentUrl) {
-        window.location.href = data.paymentUrl;
-      } else {
-        throw new Error(data.message || 'Không thể tạo yêu cầu thanh toán.');
+      if (!response) {
+        throw new Error('Không nhận được phản hồi từ server');
       }
     } catch (error) {
       toast({
@@ -251,6 +270,19 @@ const PaymentAppTab = ({ appName, apiEndpoint, defaultContent }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOpenApp = () => {
+    if (orderUrl) {
+      window.open(orderUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const formatAmount = (value) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(value);
   };
 
   return (
@@ -268,62 +300,86 @@ const PaymentAppTab = ({ appName, apiEndpoint, defaultContent }) => {
       >
         <Heading as="h3" size="md" color={accentColor} textTransform="uppercase">
           Hỗ trợ qua {appName}
-          <FaPaw style={{ marginLeft: '8px', verticalAlign: 'middle', color: 'green.300' }} />
+          <FaPaw style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
         </Heading>
+
         <VStack align="start" spacing={5} w="full">
           <FormControl>
             <FormLabel fontWeight="bold" color={textColor}>
-              Số tiền quyên góp (VND)
+              Số tiền quyên góp
             </FormLabel>
             <Input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Nhập số tiền (VD: 100000)"
-              min="1"
+              min="10000"
               bg="gray.50"
               borderColor="gray.300"
               borderRadius="md"
               size="lg"
-              px={6}
-              py={4}
-              _focus={{ borderColor: accentColor, boxShadow: '0 0 0 1px pink.300' }}
-              _placeholder={{ color: 'gray.400' }}
+              _focus={{ borderColor: accentColor }}
             />
+            {amount && (
+              <Text fontSize="sm" color="gray.500" mt={1}>
+                {formatAmount(amount)}
+              </Text>
+            )}
           </FormControl>
-          <FormControl>
-            <FormLabel fontWeight="bold" color={textColor}>
-              Nội dung chuyển khoản
-            </FormLabel>
-            <Input
-              type="text"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Nhập nội dung (VD: Ủng hộ Pet Rescue)"
-              bg="gray.50"
-              borderColor="gray.300"
-              borderRadius="md"
+
+          {qrCode && methodIndex === 3 ? (
+            <VStack spacing={4} w="full" align="center">
+              <Box
+                p={4}
+                bg="white"
+                borderRadius="xl"
+                boxShadow="lg"
+                border="2px solid"
+                borderColor={accentColor}
+                _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s ease-in-out' }}
+              >
+                <QRCodeSVG
+                  value={qrCode}
+                  size={250}
+                  level="H"
+                  includeMargin={true}
+                  imageSettings={{
+                    src: "https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png",
+                    x: undefined,
+                    y: undefined,
+                    height: 40,
+                    width: 40,
+                    excavate: true,
+                  }}
+                />
+              </Box>
+              <Text fontSize="sm" color={textColor} textAlign="center">
+                Quét mã QR bằng ứng dụng ZaloPay để thanh toán
+              </Text>
+              <Button
+                colorScheme="blue"
+                variant="outline"
+                onClick={handleOpenApp}
+                leftIcon={<Image src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png" boxSize="20px" />}
+                w="full"
+              >
+                Mở App ZaloPay
+              </Button>
+            </VStack>
+          ) : (
+            <Button
+              colorScheme="pink"
+              onClick={handlePayment}
+              isLoading={isLoading}
+              loadingText="Đang xử lý..."
+              w="full"
               size="lg"
-              px={6}
-              py={4}
-              _focus={{ borderColor: accentColor, boxShadow: '0 0 0 1px pink.300' }}
-              _placeholder={{ color: 'gray.400' }}
-            />
-          </FormControl>
-          <Button
-            colorScheme="pink"
-            onClick={handlePayment}
-            isLoading={isLoading}
-            loadingText="Đang xử lý..."
-            w="full"
-            size="lg"
-            py={6}
-            fontSize="lg"
-            rightIcon={<FaPaw />}
-            _hover={{ bg: 'pink.600', transform: 'scale(1.05)', transition: 'all 0.2s' }}
-          >
-            Thanh toán ngay
-          </Button>
+              rightIcon={<FaPaw />}
+            >
+              {methodIndex === 3 ? 'Tạo mã QR' : 'Thanh toán ngay'}
+            </Button>
+          )}
+
           <Text fontSize="sm" color={textColor} textAlign="center" w="full">
             Hãy cùng cứu hộ những người bạn bốn chân!
           </Text>

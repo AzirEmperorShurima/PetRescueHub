@@ -1,7 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "../components/layouts/MainLayout";
-import LoadingScreen from "../components/common/display/LoadingScreen";
 import ProtectedRoute from "../components/guards/ProtectedRoute";
 // Import trực tiếp Home để trang chủ load nhanh hơn
 import Home from "../pages/Home/Home";
@@ -37,6 +36,7 @@ const EventDetail = lazy(() => import("../features/Event/EventDetail"));
 
 const FindHome = lazy(() => import("../pages/Adopt/FindHome"));
 const Adopt = lazy(() => import("../pages/Adopt/Adopt"));
+const PetDetail = lazy(() => import("../features/Adopt/components/PetDetail"));
 
 const Donate = lazy(() => import("../pages/Donate/Donate"));
 const PetGuide = lazy(() => import("../pages/PetGuide/PetGuide"));
@@ -59,6 +59,7 @@ const AppRoutes = () => {
           {/* Các route khác */}
           <Route path="findhome" element={<FindHome />} />
           <Route path="adopt" element={<Adopt />} />
+          <Route path="adopt/:id" element={<PetDetail />} />
           <Route path="donate" element={<Donate />} />
           
           {/* Forum public */}

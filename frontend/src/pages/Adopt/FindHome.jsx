@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -42,17 +42,38 @@ import { BiUpload, BiX, BiHeart, BiCheckCircle, BiCamera, BiUser, BiPlus } from 
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api.service';
+
+// Constants for pet types
+const petTypes = [
+  { value: 'dog', label: 'Chó' },
+  { value: 'cat', label: 'Mèo' },
+  { value: 'bird', label: 'Chim' },
+  { value: 'fish', label: 'Cá' },
+  { value: 'hamster', label: 'Chuột Hamster' },
+  { value: 'rabbit', label: 'Thỏ' },
+  { value: 'turtle', label: 'Rùa' },
+  { value: 'reptile', label: 'Bò sát' },
+  { value: 'other', label: 'Khác' }
+];
+
+const petTypeMapping = {
+  dog: 'Chó',
+  cat: 'Mèo',
+  bird: 'Chim',
+  fish: 'Cá',
+  hamster: 'Chuột Hamster',
+  rabbit: 'Thỏ',
+  turtle: 'Rùa',
+  reptile: 'Bò sát',
+  other: 'Khác'
+};
+
 // Pet Basic Info Component
-const PetBasicInfo = ({ formData, setFormData, errors }) => {
+const PetBasicInfo = React.memo(({ formData, setFormData, errors }) => {
   const cardBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  const petTypes = [
-    'Dog', 'Cat', 'Bird', 'Fish', 'Hamster', 'Rabbit', 
-    'Turtle', 'Reptile', 'Other'
-  ];
-
-  const handleInputChange = (field, value) => {
+  const handleInputChange = useCallback((field, value) => {
     setFormData(prev => ({
       ...prev,
       petInfo: {
@@ -60,7 +81,14 @@ const PetBasicInfo = ({ formData, setFormData, errors }) => {
         [field]: value
       }
     }));
-  };
+  }, [setFormData]);
+
+  // Memoize pet types options
+  const petTypeOptions = useMemo(() => 
+    petTypes.map(type => (
+      <option key={type.value} value={type.value}>{type.label}</option>
+    )), 
+  []);
 
   return (
     <Card bg={cardBg} shadow="lg" borderRadius="xl" border="1px" borderColor={borderColor}>
@@ -94,14 +122,12 @@ const PetBasicInfo = ({ formData, setFormData, errors }) => {
                 onChange={(e) => handleInputChange('breed', e.target.value)}
                 isInvalid={errors.breed}
               >
-                {petTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
+                {petTypeOptions}
               </Select>
-              {formData.petInfo.breed === 'Other' && (
+              {formData.petInfo.breed === 'other' && (
                 <Input
                   mt={2}
-                  placeholder="Nhập loại thú cưng khác"
+                  placeholder="Nhập loại thú ng khác"
                   value={formData.petInfo.customBreed || ''}
                   onChange={(e) => handleInputChange('customBreed', e.target.value)}
                   isInvalid={errors.customBreed}
@@ -136,8 +162,13 @@ const PetBasicInfo = ({ formData, setFormData, errors }) => {
             </FormControl>
 
             {/* Date of Birth */}
-            <FormControl isRequired>
-              <FormLabel>Ngày sinh</FormLabel>
+            <FormControl>
+              <FormLabel>
+                Ngày sinh
+                <Text as="span" fontSize="sm" color="gray.500" ml={2}>
+                  (Không bắt buộc)
+                </Text>
+              </FormLabel>
               <Input
                 type="date"
                 value={formData.petInfo.petDob || ''}
@@ -149,10 +180,12 @@ const PetBasicInfo = ({ formData, setFormData, errors }) => {
                     const today = new Date();
                     const ageInYears = Math.floor((today - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
                     handleInputChange('age', ageInYears);
+                  } else {
+                    // Reset tuổi về 0 nếu xóa ngày sinh
+                    handleInputChange('age', 0);
                   }
                 }}
                 max={new Date().toISOString().split('T')[0]}
-                isInvalid={errors.petDob}
               />
             </FormControl>
 
@@ -311,15 +344,15 @@ const PetBasicInfo = ({ formData, setFormData, errors }) => {
       </CardBody>
     </Card>
   );
-};
+});
 
 // Photo Upload Component
-const PhotoUpload = ({ formData, setFormData }) => {
+const PhotoUpload = React.memo(({ formData, setFormData }) => {
   const cardBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const bgHover = useColorModeValue('gray.50', 'gray.700');
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
     const newImages = files.map(file => ({
       id: Date.now() + Math.random(),
@@ -332,14 +365,14 @@ const PhotoUpload = ({ formData, setFormData }) => {
       ...prev,
       photos: [...(prev.photos || []), ...newImages].slice(0, 6)
     }));
-  };
+  }, [setFormData]);
 
-  const removeImage = (imageId) => {
+  const removeImage = useCallback((imageId) => {
     setFormData(prev => ({
       ...prev,
       photos: prev.photos.filter(img => img.id !== imageId)
     }));
-  };
+  }, [setFormData]);
 
   return (
     <Card bg={cardBg} shadow="lg" borderRadius="xl" border="1px" borderColor={borderColor}>
@@ -441,14 +474,14 @@ const PhotoUpload = ({ formData, setFormData }) => {
       </CardBody>
     </Card>
   );
-};
+});
 
 // Contact Information Component
-const ContactInfo = ({ formData, setFormData, errors }) => {
+const ContactInfo = React.memo(({ formData, setFormData, errors }) => {
   const cardBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = useCallback((field, value) => {
     setFormData(prev => ({
       ...prev,
       contactInfo: {
@@ -456,7 +489,7 @@ const ContactInfo = ({ formData, setFormData, errors }) => {
         [field]: value
       }
     }));
-  };
+  }, [setFormData]);
 
   return (
     <Card bg={cardBg} shadow="lg" borderRadius="xl" border="1px" borderColor={borderColor}>
@@ -598,13 +631,14 @@ const ContactInfo = ({ formData, setFormData, errors }) => {
       </CardBody>
     </Card>
   );
-};
+});
 
 // Main Form Component
 const FindHome = () => {
   const toast = useToast();
   const navigate = useNavigate();
   const bgColor = useColorModeValue('gray.50', 'gray.900');
+  const formRef = React.useRef(null);
   
   const [formData, setFormData] = useState({
     petInfo: {},
@@ -615,49 +649,87 @@ const FindHome = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const steps = [
+  // Memoize steps array
+  const steps = useMemo(() => [
     { title: 'Thông tin thú cưng', description: 'Chi tiết cơ bản' },
     { title: 'Hình ảnh', description: 'Tải lên ảnh' },
     { title: 'Thông tin liên hệ', description: 'Cách liên lạc' },
     { title: 'Xác nhận', description: 'Hoàn tất' }
-  ];
+  ], []);
 
   const { activeStep, setActiveStep } = useSteps({
     index: 0,
     count: steps.length,
   });
 
-  const validateForm = () => {
-    const newErrors = {};
+  // Xử lý cuộn trang khi chuyển bước
+  useEffect(() => {
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }, [activeStep]);
 
-    // Validate pet info
-    if (!formData.petInfo?.type) {
-      newErrors.type = true;
-    }
+  // Memoize validation function
+  const validateForm = useCallback(() => {
+    const requiredFields = {
+      petInfo: {
+        name: (val) => !val?.trim(),
+        breed: (val) => !val,
+        customBreed: (val, data) => data.breed === 'other' && !val?.trim(),
+        breedName: (val) => !val?.trim(),
+        gender: (val) => !val,
+        petDetails: (val) => !val?.trim(),
+        petState: (val) => !val
+      },
+      contactInfo: {
+        name: (val) => !val?.trim(),
+        phone: (val) => !val?.trim(),
+        location: (val) => !val
+      }
+    };
 
-    // Validate contact info
-    if (!formData.contactInfo?.name?.trim()) {
-      newErrors.contactName = true;
-    }
-    if (!formData.contactInfo?.phone?.trim()) {
-      newErrors.contactPhone = true;
-    }
-    if (!formData.contactInfo?.location) {
-      newErrors.contactLocation = true;
-    }
+    const newErrors = Object.entries(requiredFields).reduce((errors, [section, fields]) => {
+      Object.entries(fields).forEach(([field, validator]) => {
+        const value = formData[section]?.[field];
+        const isInvalid = validator(value, formData[section]);
+        if (isInvalid) {
+          errors[section === 'petInfo' ? field : `contact${field.charAt(0).toUpperCase() + field.slice(1)}`] = true;
+        }
+      });
+      return errors;
+    }, {});
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData, setErrors]);
 
-  const handleNext = () => {
+  // Memoize handlers
+  const handleNext = useCallback(() => {
     if (activeStep === 0) {
-      // Validate basic info
-      const hasRequiredInfo = formData.petInfo?.type;
+      const hasRequiredInfo = formData.petInfo?.name && 
+                            formData.petInfo?.breed && 
+                            formData.petInfo?.breedName &&
+                            formData.petInfo?.gender &&
+                            formData.petInfo?.petDetails &&
+                            formData.petInfo?.petState;
+                            
       if (!hasRequiredInfo) {
         toast({
-          title: "Vui lòng nhập thông tin bắt buộc",
-          description: "Loại thú cưng là thông tin cần thiết",
+          title: "Vui lòng nhập đầy đủ thông tin",
+          description: "Các trường có dấu * là bắt buộc",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      if (formData.petInfo?.breed === 'Khác' && !formData.petInfo?.customBreed?.trim()) {
+        toast({
+          title: "Vui lòng nhập loại thú cưng khác",
           status: "warning",
           duration: 3000,
           isClosable: true,
@@ -666,27 +738,24 @@ const FindHome = () => {
       }
     }
 
-    if (activeStep === 2) {
-      // Validate contact info
-      if (!validateForm()) {
-        toast({
-          title: "Vui lòng nhập đầy đủ thông tin liên hệ",
-          status: "warning",
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
-      }
+    if (activeStep === 2 && !validateForm()) {
+      toast({
+        title: "Vui lòng nhập đầy đủ thông tin liên hệ",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
     }
 
     setActiveStep(prev => Math.min(prev + 1, steps.length - 1));
-  };
+  }, [activeStep, formData, steps.length, validateForm, toast]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     setActiveStep(prev => Math.max(prev - 1, 0));
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!validateForm()) {
       toast({
         title: "Vui lòng kiểm tra lại thông tin",
@@ -700,37 +769,56 @@ const FindHome = () => {
     setIsSubmitting(true);
     
     try {
-      // Tạo FormData để gửi cả thông tin và hình ảnh
-      const formDataToSubmit = new FormData();
+      const petData = new FormData();
+      // Thêm các trường cơ bản
+      petData.append('name', formData.petInfo.name);
+      petData.append('breed', formData.petInfo.breed);
+      petData.append('breedName', formData.petInfo.breedName);
+      petData.append('gender', formData.petInfo.gender);
+      petData.append('petDetails', formData.petInfo.petDetails);
+      petData.append('reproductiveStatus', formData.petInfo.reproductiveStatus || 'not neutered');
 
-      // Thêm thông tin cơ bản của thú cưng
-      const petInfo = {
-        ...formData.petInfo,
-        // Nếu type là "Khác" thì sử dụng customType
-        type: formData.petInfo.type === 'Khác' ? formData.petInfo.customType : formData.petInfo.type,
-      };
+      // Thêm các trường tùy chọn nếu có giá trị
+      if (formData.petInfo.petDob) {
+        petData.append('petDob', formData.petInfo.petDob);
+      }
+      if (formData.petInfo.age) {
+        petData.append('age', Number(formData.petInfo.age));
+      }
+      if (formData.petInfo.weight) {
+        petData.append('weight', Number(formData.petInfo.weight));
+      }
+      if (formData.petInfo.height) {
+        petData.append('height', Number(formData.petInfo.height));
+      }
+      if (formData.petInfo.microchipId) {
+        petData.append('microchipId', formData.petInfo.microchipId);
+      }
 
-      // Chuyển đổi các giá trị số
-      if (petInfo.age) petInfo.age = Number(petInfo.age);
-      if (petInfo.weight) petInfo.weight = Number(petInfo.weight);
-      if (petInfo.height) petInfo.height = Number(petInfo.height);
+      // Xử lý vaccination status
+      const vaccinationStatus = formData.petInfo.vaccinationStatus || [];
+      vaccinationStatus.forEach((vaccine, index) => {
+        if (vaccine.vaccineName) {
+          petData.append(`vaccinationStatus[${index}][vaccineName]`, vaccine.vaccineName);
+        }
+        if (vaccine.vaccinationDate) {
+          petData.append(`vaccinationStatus[${index}][vaccinationDate]`, vaccine.vaccinationDate);
+        }
+        if (vaccine.vaccinationCode) {
+          petData.append(`vaccinationStatus[${index}][vaccinationCode]`, vaccine.vaccinationCode);
+        }
+      });
 
-      // Thêm thông tin thú cưng vào FormData
-      formDataToSubmit.append('petInfo', JSON.stringify(petInfo));
-
-      // Thêm các hình ảnh vào FormData
+      // Thêm các hình ảnh
       if (formData.photos && formData.photos.length > 0) {
-        // Ảnh đầu tiên là avatar
-        formDataToSubmit.append('avatar', formData.photos[0].file);
+        petData.append('avatar', formData.photos[0].file);
         
-        // Các ảnh còn lại vào album
-        formData.photos.slice(1).forEach((photo, index) => {
-          formDataToSubmit.append('petAlbum', photo.file);
+        formData.photos.slice(1).forEach((photo) => {
+          petData.append('petAlbum', photo.file);
         });
       }
 
-      // Gọi API tạo profile thú cưng
-      const response = await apiService.pets.profile.create(formDataToSubmit);
+      const response = await apiService.pets.profile.create(petData);
       
       toast({
         title: "Đăng tin thành công!",
@@ -740,7 +828,6 @@ const FindHome = () => {
         isClosable: true,
       });
 
-      // Reset form
       setFormData({
         petInfo: {},
         photos: [],
@@ -748,11 +835,15 @@ const FindHome = () => {
       });
       setActiveStep(0);
 
-      // Chuyển hướng đến trang chi tiết thú cưng
-      navigate(`/pets/profile/${response.data._id}`);
+      navigate('/adopt', { 
+        state: { 
+          newPetCreated: true,
+          petId: response.data._id 
+        }
+      });
       
     } catch (error) {
-      console.error('Error creating pet profile:', error);
+      console.error('Error submitting pet profile:', error);
       toast({
         title: "Có lỗi xảy ra",
         description: error.response?.data?.message || "Vui lòng thử lại sau",
@@ -763,9 +854,10 @@ const FindHome = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [validateForm, formData, toast, navigate, setActiveStep]);
 
-  const renderStepContent = () => {
+  // Thay đổi từ useMemo thành useCallback
+  const renderStepContent = useCallback(() => {
     switch (activeStep) {
       case 0:
         return <PetBasicInfo formData={formData} setFormData={setFormData} errors={errors} />;
@@ -785,7 +877,9 @@ const FindHome = () => {
                 </Text>
                 
                 <VStack spacing={4} align="start" w="full" maxW="md">
-                  <Text><strong>Thú cưng:</strong> {formData.petInfo?.name || 'Chưa có tên'} - {formData.petInfo?.type}</Text>
+                  <Text>
+                    <strong>Thú cưng:</strong> {formData.petInfo?.name || 'Chưa có tên'} - {petTypeMapping[formData.petInfo?.breed] || ''}
+                  </Text>
                   <Text><strong>Người liên hệ:</strong> {formData.contactInfo?.name}</Text>
                   <Text><strong>Điện thoại:</strong> {formData.contactInfo?.phone}</Text>
                   <Text><strong>Số ảnh:</strong> {formData.photos?.length || 0} ảnh</Text>
@@ -797,10 +891,10 @@ const FindHome = () => {
       default:
         return null;
     }
-  };
+  }, [activeStep, formData, errors]);
 
   return (
-    <Box bg={bgColor} minH="100vh" py={8}>
+    <Box bg={bgColor} minH="100vh" py={8} ref={formRef}>
       <Container maxW="4xl">
         <VStack spacing={8}>
           {/* Header */}

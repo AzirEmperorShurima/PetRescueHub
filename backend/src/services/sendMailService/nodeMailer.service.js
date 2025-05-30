@@ -133,46 +133,86 @@ export const sendMailNotification = async (_mail) => {
         subject: _mail.subject,
         text: _mail.text,
         html: `
-            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 15px; background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
-                <!-- Logo Section -->
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="https://i.imgur.com/CJ8HfUK.png" alt="PetRescueHub Logo" style="width: 150px; height: auto;">
-                </div>
-
-                <!-- Header Section -->
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <h1 style="color: #2c3e50; margin: 0; font-size: 28px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">${_mail.subject}</h1>
-                    <div style="width: 80px; height: 4px; background: linear-gradient(to right, #3498db, #2ecc71); margin: 15px auto; border-radius: 2px;"></div>
-                </div>
-
-                <!-- Main Content Section -->
-                <div style="background: #ffffff; border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
-                    ${_mail.html ?
-                `<div style="color: #2c3e50; font-size: 16px; line-height: 1.8; text-align: justify;">
-                            ${_mail.html}
-                        </div>`
-                : ''
-            }
-                </div>
-
-                <!-- Footer Section -->
-                <div style="text-align: center; padding-top: 20px; border-top: 1px solid #eee;">
-                    <div style="margin-bottom: 20px;">
-                        <a href="https://facebook.com/petrescuehub" style="text-decoration: none; color: #ffffff; background: #3b5998; padding: 8px 15px; border-radius: 5px; margin: 0 5px; display: inline-block; font-size: 14px;">
-                            <img src="https://i.imgur.com/QV2cR68.png" alt="Facebook" style="width: 16px; vertical-align: middle; margin-right: 5px;">Facebook
-                        </a>
-                        <a href="https://twitter.com/petrescuehub" style="text-decoration: none; color: #ffffff; background: #1da1f2; padding: 8px 15px; border-radius: 5px; margin: 0 5px; display: inline-block; font-size: 14px;">
-                            <img src="https://i.imgur.com/0LPK4Qx.png" alt="Twitter" style="width: 16px; vertical-align: middle; margin-right: 5px;">Twitter
-                        </a>
-                        <a href="https://instagram.com/petrescuehub" style="text-decoration: none; color: #ffffff; background: #e1306c; padding: 8px 15px; border-radius: 5px; margin: 0 5px; display: inline-block; font-size: 14px;">
-                            <img src="https://i.imgur.com/P6vV0X6.png" alt="Instagram" style="width: 16px; vertical-align: middle; margin-right: 5px;">Instagram
-                        </a>
-                    </div>
-                    <p style="color: #7f8c8d; font-size: 14px; margin: 5px 0;">Trân trọng,</p>
-                    <p style="color: #2c3e50; font-size: 16px; font-weight: bold; margin: 5px 0;">PetRescueHub Team</p>
-                    <p style="color: #95a5a6; font-size: 12px; margin-top: 15px;">© ${new Date().getFullYear()} PetRescueHub. All rights reserved.</p>
-                </div>
-            </div>
+            <!DOCTYPE html>
+            <html lang="vi">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <title>${_mail.subject}</title>
+                <style type="text/css">
+                    /* Reset styles */
+                    body, table, td, div, p, a { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.5; }
+                    body { margin: 0; padding: 0; width: 100% !important; }
+                    /* Responsive styles */
+                    @media only screen and (max-width: 620px) {
+                        .container { width: 100% !important; padding: 10px !important; }
+                        .content { padding: 15px !important; }
+                        .button { display: block !important; width: 100% !important; text-align: center !important; margin: 5px 0 !important; }
+                        .social-icon { width: 24px !important; height: 24px !important; }
+                    }
+                </style>
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f6f6f6;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
+                    <tr>
+                        <td align="center" style="padding: 20px 0;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="600" class="container" style="border-collapse: collapse; background-color: #ffffff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                                <!-- Logo Section -->
+                                <tr>
+                                    <td align="center" style="padding: 20px 0 10px;">
+                                        <img src="https://i.imgur.com/CJ8HfUK.png" alt="PetRescueHub Logo" style="width: 150px; height: auto;">
+                                    </td>
+                                </tr>
+                                
+                                <!-- Header Section -->
+                                <tr>
+                                    <td align="center" style="padding: 0 20px 20px;">
+                                        <h1 style="color: #2c3e50; margin: 0; font-size: 24px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">${_mail.subject}</h1>
+                                        <div style="width: 80px; height: 4px; background: linear-gradient(to right, #3498db, #2ecc71); margin: 15px auto; border-radius: 2px;"></div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Content Section -->
+                                <tr>
+                                    <td class="content" style="padding: 0 30px 30px;">
+                                        ${_mail.html ? _mail.html : `<p style="color: #2c3e50; font-size: 16px; line-height: 1.8; text-align: justify;">${_mail.text}</p>`}
+                                    </td>
+                                </tr>
+                                
+                                <!-- Footer Section -->
+                                <tr>
+                                    <td style="background-color: #f8f9fa; padding: 20px; border-top: 1px solid #eee; text-align: center;">
+                                        <!-- Social Media Links -->
+                                        <div style="margin-bottom: 15px;">
+                                            <a href="https://facebook.com/petrescuehub" style="display: inline-block; margin: 0 5px;">
+                                                <img src="https://i.imgur.com/QV2cR68.png" alt="Facebook" class="social-icon" style="width: 32px; height: 32px;">
+                                            </a>
+                                            <a href="https://twitter.com/petrescuehub" style="display: inline-block; margin: 0 5px;">
+                                                <img src="https://i.imgur.com/0LPK4Qx.png" alt="Twitter" class="social-icon" style="width: 32px; height: 32px;">
+                                            </a>
+                                            <a href="https://instagram.com/petrescuehub" style="display: inline-block; margin: 0 5px;">
+                                                <img src="https://i.imgur.com/P6vV0X6.png" alt="Instagram" class="social-icon" style="width: 32px; height: 32px;">
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- Copyright -->
+                                        <p style="color: #7f8c8d; font-size: 14px; margin: 5px 0;">Trân trọng,</p>
+                                        <p style="color: #2c3e50; font-size: 16px; font-weight: bold; margin: 5px 0;">PetRescueHub Team</p>
+                                        <p style="color: #95a5a6; font-size: 12px; margin-top: 15px;">© ${new Date().getFullYear()} PetRescueHub. All rights reserved.</p>
+                                        
+                                        <!-- Unsubscribe Link -->
+                                        <p style="color: #95a5a6; font-size: 12px; margin-top: 10px;">
+                                            Nếu bạn không muốn nhận email này, <a href="#" style="color: #3498db; text-decoration: none;">hủy đăng ký</a> tại đây.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
         `,
     });
 };

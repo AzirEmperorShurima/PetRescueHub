@@ -10,7 +10,6 @@ export const checkMissionTimeouts = async () => {
     try {
         console.log(`[${new Date().toISOString()}] Checking for mission timeouts...`);
         
-        // Tìm các mission đang pending và đã quá thời gian timeout
         const expiredMissions = await PetRescueMissionHistory.find({
             status: 'pending',
             timeoutAt: { $lte: new Date() }
@@ -19,12 +18,10 @@ export const checkMissionTimeouts = async () => {
         console.log(`Found ${expiredMissions.length} expired missions`);
         
         for (const mission of expiredMissions) {
-            // Cập nhật trạng thái mission thành timeout
             mission.status = 'timeout';
             mission.endedAt = new Date();
             await mission.save();
             
-            // Thông báo cho người yêu cầu
             if (mission.requester) {
                 await NotificationSchema.create({
                     userId: mission.requester._id.toString(),
@@ -85,7 +82,6 @@ export const checkMissionLocks = async () => {
     try {
         console.log(`[${new Date().toISOString()}] Checking for expired mission locks...`);
         
-        // Tìm các mission đang bị khóa và đã quá thời gian khóa
         const expiredLocks = await PetRescueMissionHistory.find({
             isLocked: true,
             lockExpiresAt: { $lte: new Date() }
@@ -94,7 +90,6 @@ export const checkMissionLocks = async () => {
         console.log(`Found ${expiredLocks.length} expired locks`);
         
         for (const mission of expiredLocks) {
-            // Giải phóng khóa
             mission.isLocked = false;
             mission.lockExpiresAt = null;
             await mission.save();
@@ -106,15 +101,12 @@ export const checkMissionLocks = async () => {
     }
 };
 
-// Khởi chạy job kiểm tra timeout mỗi phút
 export const startMissionTimeoutJob = () => {
-    // Chạy ngay lần đầu
     checkMissionTimeouts();
     checkMissionLocks();
-    
-    // Thiết lập interval
-    setInterval(checkMissionTimeouts, 60 * 1000); // Mỗi phút
-    setInterval(checkMissionLocks, 30 * 1000); // Mỗi 30 giây
+
+    setInterval(checkMissionTimeouts, 60 * 1000);
+    setInterval(checkMissionLocks, 30 * 1000);
     
     console.log(`[${new Date().toISOString()}] Mission timeout job started`);
 };

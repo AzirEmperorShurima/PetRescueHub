@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const checkLoggedIn = useCallback(() => {
     try {
       const currentUser = authService.getUserSession();
-      console.log("AuthContext - Current user from session:", currentUser);
+      // console.log("AuthContext - Current user from session:", currentUser);
       
       // Chỉ set user nếu có dữ liệu hợp lệ
       if (currentUser && currentUser.id) {

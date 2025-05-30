@@ -36,10 +36,11 @@ const Donate = () => {
 
   // Theme colors
   const bgGradient = useColorModeValue(
-    'linear(to-br, blue.50, teal.50, green.50)',
-    'linear(to-br, gray.900, teal.900, blue.900)'
+    'linear(to-br, blue.50, purple.50, pink.50)',
+    'linear(to-br, blue.900, purple.900, pink.900)'
   );
-  const headingColor = useColorModeValue('teal.600', 'teal.200');
+  const headingColor = useColorModeValue('purple.600', 'purple.200');
+  const bgColor = useColorModeValue('gray.50', 'gray.900');
 
   // Responsive values
   const staggerChildren = useBreakpointValue({ base: 0.15, md: 0.2, lg: 0.25 });
@@ -118,95 +119,103 @@ const Donate = () => {
   return (
     <Box
       minH="100vh"
-      bgGradient={bgGradient}
-      py={containerPadding}
+      bg={bgColor}
+      position="relative"
     >
-      <Container
-        maxW="1400px"
-        px={containerPadding}
+      <Box
+        bgGradient={bgGradient}
+        py={containerPadding}
+        position="relative"
+        _before={{
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity: 0.8,
+          zIndex: 0,
+        }}
       >
-        <MotionVStack
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-          spacing={spacing}
-          align="stretch"
+        <Container
+          maxW="1400px"
+          px={containerPadding}
         >
-          {/* Header Section */}
-          <MotionBox 
-            variants={headingVariants}
-            textAlign="center"
+          <MotionVStack
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            spacing={spacing}
+            align="stretch"
           >
-            <Heading
-              as="h1"
-              size={{ base: 'xl', md: '2xl', lg: '3xl' }}
-              color={headingColor}
-              fontWeight="bold"
-              letterSpacing="tight"
-              mb={4}
+            {/* Header Section */}
+            <MotionBox 
+              variants={headingVariants}
+              textAlign="center"
             >
-              🐾 Chia Sẻ Yêu Thương 🐾
-            </Heading>
-            <Box
-              w={{ base: '60px', md: '80px' }}
-              h="4px"
-              bg="teal.400"
-              mx="auto"
-              borderRadius="full"
-              bgGradient="linear(to-r, teal.400, blue.400)"
-            />
-          </MotionBox>
+              <Heading
+                as="h1"
+                size={{ base: 'xl', md: '2xl', lg: '3xl' }}
+                color={headingColor}
+                fontWeight="bold"
+                letterSpacing="tight"
+                mb={4}
+              >
+                🐾 Chia Sẻ Yêu Thương 🐾
+              </Heading>
+            </MotionBox>
 
-          {/* Main Content Grid */}
-          <MotionBox variants={itemVariants}>
-            <Grid
-              templateColumns={{ 
-                base: '1fr', 
-                lg: '1fr 1fr' 
-              }}
-              gap={{ base: 6, md: 8 }}
-              alignItems="start"
+            {/* Main Content Grid */}
+            <MotionBox variants={itemVariants}>
+              <Grid
+                templateColumns={{ 
+                  base: '1fr', 
+                  lg: '1fr 1fr' 
+                }}
+                gap={{ base: 6, md: 8 }}
+                alignItems="start"
+              >
+                <MotionBox
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <DonationInfo rescueStats={rescueStats} />
+                </MotionBox>
+                
+                <MotionBox
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <AnimalShowcase
+                    rescueImages={rescueImages}
+                    currentImageIndex={currentImageIndex}
+                    setCurrentImageIndex={setCurrentImageIndex}
+                  />
+                </MotionBox>
+              </Grid>
+            </MotionBox>
+
+            {/* Payment Methods */}
+            <MotionBox 
+              variants={itemVariants}
+              id="payment-methods"
             >
-              <MotionBox
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
-                <DonationInfo rescueStats={rescueStats} />
-              </MotionBox>
-              
-              <MotionBox
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
-                <AnimalShowcase
-                  rescueImages={rescueImages}
-                  currentImageIndex={currentImageIndex}
-                  setCurrentImageIndex={setCurrentImageIndex}
-                />
-              </MotionBox>
-            </Grid>
-          </MotionBox>
+              <PaymentMethods
+                activeTab={activeTab}
+                handleChangeTab={handleChangeTab}
+                qrCodes={qrCodes}
+                accountDetails={accountDetails}
+                handleCopy={handleCopy}
+              />
+            </MotionBox>
 
-          {/* Payment Methods */}
-          <MotionBox 
-            variants={itemVariants}
-            id="payment-methods"
-          >
-            <PaymentMethods
-              activeTab={activeTab}
-              handleChangeTab={handleChangeTab}
-              qrCodes={qrCodes}
-              accountDetails={accountDetails}
-              handleCopy={handleCopy}
-            />
-          </MotionBox>
-
-          {/* Rescue Stories */}
-          <MotionBox variants={itemVariants}>
-            <RescueStories rescueImages={rescueImages} />
-          </MotionBox>
-        </MotionVStack>
-      </Container>
+            {/* Rescue Stories */}
+            <MotionBox variants={itemVariants}>
+              <RescueStories rescueImages={rescueImages} />
+            </MotionBox>
+          </MotionVStack>
+        </Container>
+      </Box>
     </Box>
   );
 };

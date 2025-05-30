@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { requestVolunteer, volunteerUpdateStatus } from "../Controller/Volunteer.Controller.js";
+import { 
+    requestVolunteer, 
+    resignVolunteer,
+    volunteerUpdateStatus 
+} from "../Controller/Volunteer.Controller.js";
 import { isVolunteer } from "../Middlewares/check_is_volunteer.js";
 import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
 
@@ -79,8 +83,8 @@ volunteerRouter.get("/v2", async (req, res) => {
 });
 volunteerRouter.use(checkUserAuth)
 volunteerRouter.post("/v1/requesting/grow-up/volunteer", requestVolunteer)
+volunteerRouter.post("/v1/resign", isVolunteer, resignVolunteer)
 
-// volunteerRouter.use(isVolunteer)
 volunteerRouter.post("/v1/updating/volunteer/status", isVolunteer, volunteerUpdateStatus)
 
 export default volunteerRouter;

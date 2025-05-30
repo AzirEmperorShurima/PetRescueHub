@@ -9,7 +9,7 @@ export const verifyAccessTokenMiddleware = (req, res, next) => {
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "id");
         const userEmail = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "email");
         const userRoles = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "roles");
-        const tokenType = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, "tokenType");
+        const tokenType = getUserFieldFromToken(req, TOKEN_TYPE.ACCESS_TOKEN.name, "tokenType");
 
         if (!userId || !userEmail || !userRoles || tokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -17,7 +17,7 @@ export const verifyAccessTokenMiddleware = (req, res, next) => {
             });
         }
 
-        req.user = { id: userId, email: userEmail, roles: userRoles };
+        req.user = { _id: userId, email: userEmail, roles: userRoles, tokenType: tokenType };
 
         next();
     } catch (error) {
@@ -37,7 +37,7 @@ export const verifyRefreshTokenMiddleware = (req, res, next) => {
             });
         }
 
-        req.refreshUser = { id: userId };
+        req.refreshUser = { _id: userId, tokenType: tokenType };
 
         next();
     } catch (error) {

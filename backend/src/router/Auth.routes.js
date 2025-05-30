@@ -43,7 +43,7 @@ authRouter.post('/sign/signup', [Exist_User_Checking, validatePasswordStrength],
 authRouter.post('/re-sign/refresh-token', refreshToken);
 
 // User profile route
-authRouter.get('/get/profile/:targetUser?', [verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware], getProfile);
+authRouter.get('/get/profile/:targetUser?', [verifyAccessTokenMiddleware], getProfile);
 
 // Password Recovery
 authRouter.post('/password/forgot-password', [verified_Is_Email_Valid], forgot_password);

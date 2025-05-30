@@ -8,6 +8,8 @@ import adminRouter from './Admin.routes.js';
 import volunteerRouter from './Volunteer.routes.js';
 import PetRescueRouter from './PetRescue.routes.js';
 import privateRoute from '../Controller/private/Private.routes.js';
+import eventRouter from './Event.routes.js';
+import reportRouter from './Report.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -24,6 +26,7 @@ apiRouter.use('/volunteer', volunteerRouter);
 apiRouter.use('/pet', petRoute);
 apiRouter.use('/admin', adminRouter);
 apiRouter.use('/PetRescue', PetRescueRouter);
+apiRouter.use('/report', reportRouter);
 
 // Static routes
 apiRouter.use('/root', express.static(path.join(__dirname, '../root/image')));
@@ -38,6 +41,6 @@ apiRouter.get('/', (req, res) => {
     });
 });
 
-
+apiRouter.use('/events', eventRouter);
 
 export default apiRouter;

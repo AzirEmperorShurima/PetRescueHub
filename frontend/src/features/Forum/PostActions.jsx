@@ -32,6 +32,7 @@ import ActionMenu from '../../components/common/interactions/ActionMenu';
 import apiService from '../../services/api.service';
 import { useAuth } from '../../components/contexts/AuthContext';
 import CommentModal from '../../components/common/interactions/CommentModal';
+import { useInView } from '../../components/hooks/useInView';
 
 const PostActions = ({
   post,
@@ -81,36 +82,41 @@ const PostActions = ({
   const [loading, setLoading] = useState(false);
   const [isCommentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedComments, setSelectedComments] = useState([]);
+  const [hasFetchedReaction, setHasFetchedReaction] = useState(false);
+  const [ref, inView] = useInView({ threshold: 0.2 });
 
   // Cập nhật local state khi post props thay đổi
   useEffect(() => {
     setLocalPost(post);
+    setHasFetchedReaction(false); // Reset khi post thay đổi
   }, [post]);
 
-  // Fetch user reaction khi component mount hoặc khi post ID thay đổi
+  // Fetch user reaction khi component mount hoặc khi post ID thay đổi và chỉ khi inView
   useEffect(() => {
-    const fetchUserReaction = async () => {
-      try {
-        if ((localPost.id || localPost._id) && currentUser) {
+    if (
+      inView &&
+      !hasFetchedReaction &&
+      (localPost.id || localPost._id) &&
+      currentUser
+    ) {
+      const fetchUserReaction = async () => {
+        try {
           const targetId = localPost.id || localPost._id;
-          console.log('Fetching user reaction for:', targetId);
-          
           const response = await apiService.forum.reactions.getUserReaction('Post', targetId);
           if (response && response.data) {
-            console.log('User reaction response:', response.data);
             setLocalPost(prev => ({
               ...prev,
               userReaction: response.data.userReaction
             }));
           }
+          setHasFetchedReaction(true);
+        } catch (error) {
+          console.error('Error fetching user reaction:', error);
         }
-      } catch (error) {
-        console.error('Error fetching user reaction:', error);
-      }
-    };
-
-    fetchUserReaction();
-  }, [localPost.id, localPost._id, currentUser]);
+      };
+      fetchUserReaction();
+    }
+  }, [inView, hasFetchedReaction, localPost.id, localPost._id, currentUser]);
 
   // Handle reaction change
   const handleReaction = async (reactionType) => {
@@ -266,7 +272,7 @@ const PostActions = ({
       {/* Action Section */}
       <Box px={isDetail ? 0 : 4} pb={1} borderTop="1px" borderColor={borderColor} pt={1}>
         <Flex justify="space-between" w="100%" align="center">
-          <HStack spacing={4}>
+          <HStack spacing={4} ref={ref}>
             <Reaction
               targetId={localPost.id || localPost._id}
               targetType="Post"

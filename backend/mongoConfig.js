@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import models_list from "./src/models/modelsExport.js";
 import { createAdminsFromJSON } from "./src/utils/admin/adminFactory.js";
+import { createPetsFromJSON } from "./src/utils/admin/petFactory.js";
 
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/PetRescueHub";
 const MAX_RETRIES = 5;
@@ -85,6 +86,7 @@ export const connectToDatabase = async () => {
         await initializeCollections(models_list);
         await seedDatabase();
         await createAdminsFromJSON("./adminSeed.json");
+        await createPetsFromJSON("./petSeed.json");
 
         mongoose.connection.on('disconnected', async () => {
             console.log("⚠️ MongoDB đã ngắt kết nối! Đang thử kết nối lại...");

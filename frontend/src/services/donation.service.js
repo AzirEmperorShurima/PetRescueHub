@@ -1,14 +1,34 @@
 import api from '../utils/axios';
-import apiService from './api.service';
 
-// Sử dụng apiService hoặc trực tiếp gọi api từ axios
 const donationService = {
-  // Cách 1: Sử dụng apiService
-  ...apiService.donations,
-  
-  // Cách 2: Tự định nghĩa (nếu cần logic đặc biệt)
-  getByUser: (userId) => apiService.donations.getAll({ userId }),
-  getStatistics: () => apiService.donations.getAll({ type: 'statistics' }),
+
+  // Thêm các phương thức thanh toán
+  createMomoPayment: async (amount) => {
+    try {
+      const response = await api.post('/user/user/payments/momo/transactions/create', { amount });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Không thể tạo giao dịch MOMO');
+    }
+  },
+
+  createVnPayPayment: async (amount) => {
+    try {
+      const response = await api.post('/user/user/payments/vnpay/transactions/create', { amount });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Không thể tạo giao dịch VNPay');
+    }
+  },
+
+  createZaloPayment: async (amount) => {
+    try {
+      const response = await api.post('/user/user/payments/zalopay/transactions/create', { amount });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Không thể tạo giao dịch ZaloPay');
+    }
+  }
 };
 
 export default donationService;

@@ -312,6 +312,7 @@ export const deletePost = async (postId, userId) => {
  * @param {String} options.userId - ID người dùng (để lọc bài của họ)
  * @returns {Promise<Object>} - Danh sách bài viết và thông tin phân trang
  */
+
 export const getRefreshedListForumPosts = async ({
     limit = 10,
     cursor = null,
@@ -372,7 +373,7 @@ export const getRefreshedListForumPosts = async ({
                     foreignField: 'post',
                     as: 'comments',
                     pipeline: [
-                        { $match: { parentComment: null, isDeleted: false } }, // Chỉ lấy comment chưa xóa
+                        { $match: { parentComment: null, isDeleted: false } },
                         { $sort: { createdAt: -1 } },
                         { $limit: 1 },
                         {
@@ -416,14 +417,20 @@ export const getRefreshedListForumPosts = async ({
                     foreignField: 'post',
                     as: 'allComments',
                     pipeline: [
-                        { $match: { isDeleted: false } }, // Chỉ đếm comment chưa xóa
+                        { $match: { isDeleted: false } },
                     ],
                 },
             },
             {
                 $project: {
                     title: 1,
-                    content: { $substr: ['$content', 0, 200] },
+                    content: {
+                        $cond: {
+                            if: { $gte: [{ $strLenCP: "$content" }, 200] },
+                            then: { $substrCP: ["$content", 0, 200] },
+                            else: "$content"
+                        }
+                    },
                     author: {
                         id: '$author._id',
                         username: '$author.username',
@@ -472,7 +479,6 @@ export const getRefreshedListForumPosts = async ({
         return { success: false, message: 'Lỗi server khi lấy danh sách bài ngẫu nhiên' };
     }
 };
-
 
 
 /**

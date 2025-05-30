@@ -1,0 +1,206 @@
+[
+    {
+        "name": "Mèo Mun",
+        "age": 2,
+        "petDob": "2022-01-15",
+        "breed": "cat",
+        "breedName": "Munchkin",
+        "petState": "ReadyToAdopt",
+        "gender": "male",
+        "petDetails": "Mèo Mun là một chú mèo rất ngoan và thân thiện. Thích chơi với đồ chơi và rất thích được vuốt ve.",
+        "weight": 3.5,
+        "height": 25,
+        "reproductiveStatus": "neutered",
+        "vaccinationStatus": [
+            {
+                "vaccineName": "Rabies",
+                "vaccinationDate": "2023-05-10",
+                "vaccinationCode": "RAB123456"
+            },
+            {
+                "vaccineName": "FVRCP",
+                "vaccinationDate": "2023-04-15",
+                "vaccinationCode": "FVRCP789012"
+            }
+        ],
+        "ownerEmail": "admin1@example.com",
+        "avatar": "https://example.com/pet-images/meo-mun.jpg",
+        "microchipId": "CHIP123456789",
+        "petAlbum": [
+            "https://example.com/pet-images/meo-mun-1.jpg",
+            "https://example.com/pet-images/meo-mun-2.jpg"
+        ]
+    },
+    {
+        "name": "Cún Vàng",
+        "age": 1,
+        "petDob": "2023-02-20",
+        "breed": "dog",
+        "breedName": "Golden Retriever",
+        "petState": "ReadyToAdopt",
+        "gender": "female",
+        "petDetails": "Cún Vàng là một chú chó rất thông minh và năng động. Thích chạy nhảy và chơi đùa với mọi người.",
+        "weight": 15,
+        "height": 50,
+        "reproductiveStatus": "not neutered",
+        "vaccinationStatus": [
+            {
+                "vaccineName": "Rabies",
+                "vaccinationDate": "2023-08-15",
+                "vaccinationCode": "RAB654321"
+            },
+            {
+                "vaccineName": "DHPP",
+                "vaccinationDate": "2023-07-20",
+                "vaccinationCode": "DHPP987654"
+            }
+        ],
+        "ownerEmail": "admin12@example.com",
+        "avatar": "https://example.com/pet-images/cun-vang.jpg",
+        "microchipId": "CHIP987654321",
+        "petAlbum": [
+            "https://example.com/pet-images/cun-vang-1.jpg",
+            "https://example.com/pet-images/cun-vang-2.jpg"
+        ]
+    },
+    {
+        "name": "Thỏ Trắng",
+        "age": 1,
+        "petDob": "2023-05-10",
+        "breed": "rabbit",
+        "breedName": "Holland Lop",
+        "petState": "NotReadyToAdopt",
+        "gender": "female",
+        "petDetails": "Thỏ Trắng là một chú thỏ rất dễ thương và hiền lành. Thích ăn cà rốt và rau xanh.",
+        "weight": 1.2,
+        "height": 15,
+        "reproductiveStatus": "not neutered",
+        "vaccinationStatus": [
+            {
+                "vaccineName": "Myxomatosis",
+                "vaccinationDate": "2023-09-05",
+                "vaccinationCode": "MYX123456"
+            }
+        ],
+        "ownerEmail": "superadmin1@example.com",
+        "avatar": "https://example.com/pet-images/tho-trang.jpg",
+        "microchipId": "CHIP456789123",
+        "petAlbum": [
+            "https://example.com/pet-images/tho-trang-1.jpg"
+        ]
+    },
+    {
+        "name": "Hamster Bông",
+        "age": 0,
+        "petDob": "2024-01-01",
+        "breed": "hamster",
+        "breedName": "Syrian Hamster",
+        "petState": "ReadyToAdopt",
+        "gender": "unknown",
+        "petDetails": "Hamster Bông là một chú chuột hamster rất nhỏ và dễ thương. Thích chạy trong bánh xe và ngủ trong ổ rơm.",
+        "weight": 0.1,
+        "height": 5,
+        "reproductiveStatus": "not neutered",
+        "vaccinationStatus": [],
+        "ownerEmail": "tranvantri4@dtu.edu.vn",
+        "avatar": "https://example.com/pet-images/hamster-bong.jpg",
+        "petAlbum": [
+            "https://example.com/pet-images/hamster-bong-1.jpg",
+            "https://example.com/pet-images/hamster-bong-2.jpg"
+        ]
+    },
+    {
+        "name": "Rùa Xanh",
+        "age": 5,
+        "petDob": "2019-03-15",
+        "breed": "turtle",
+        "breedName": "Red-eared Slider",
+        "petState": "ReadyToAdopt",
+        "gender": "male",
+        "petDetails": "Rùa Xanh là một chú rùa nước ngọt rất khỏe mạnh. Thích bơi lội và phơi nắng trên đá.",
+        "weight": 0.8,
+        "height": 12,
+        "reproductiveStatus": "not neutered",
+        "vaccinationStatus": [],
+        "ownerEmail": "admin1@example.com",
+        "avatar": "https://example.com/pet-images/rua-xanh.jpg",
+        "microchipId": "CHIP567891234",
+        "petAlbum": [
+            "https://example.com/pet-images/rua-xanh-1.jpg",
+            "https://example.com/pet-images/rua-xanh-2.jpg"
+        ]
+    },
+    {
+        "name": "Vẹt Kiki",
+        "age": 3,
+        "petDob": "2021-06-10",
+        "breed": "bird",
+        "breedName": "African Grey Parrot",
+        "petState": "NotReadyToAdopt",
+        "gender": "female",
+        "petDetails": "Vẹt Kiki là một chú vẹt thông minh và biết nói. Có thể bắt chước nhiều âm thanh và từ ngữ khác nhau.",
+        "weight": 0.4,
+        "height": 30,
+        "reproductiveStatus": "not neutered",
+        "vaccinationStatus": [
+            {
+                "vaccineName": "Polyomavirus",
+                "vaccinationDate": "2023-01-20",
+                "vaccinationCode": "POLY123456"
+            },
+            {
+                "vaccineName": "Psittacosis",
+                "vaccinationDate": "2023-01-20",
+                "vaccinationCode": "PSIT789012"
+            }
+        ],
+        "ownerEmail": "superadmin1@example.com",
+        "avatar": "https://example.com/pet-images/vet-kiki.jpg",
+        "microchipId": "CHIP678912345",
+        "petAlbum": [
+            "https://example.com/pet-images/vet-kiki-1.jpg",
+            "https://example.com/pet-images/vet-kiki-2.jpg",
+            "https://example.com/pet-images/vet-kiki-3.jpg"
+        ]
+    },
+    {
+        "name": "Cá Vàng Bống",
+        "age": 1,
+        "petDob": "2023-09-05",
+        "breed": "fish",
+        "breedName": "Goldfish",
+        "petState": "ReadyToAdopt",
+        "gender": "unknown",
+        "petDetails": "Cá Vàng Bống là một chú cá vàng rất đẹp với màu sắc rực rỡ. Thích bơi lội và khám phá môi trường xung quanh.",
+        "weight": 0.05,
+        "height": 8,
+        "reproductiveStatus": "not neutered",
+        "vaccinationStatus": [],
+        "ownerEmail": "admin12@example.com",
+        "avatar": "https://example.com/pet-images/ca-vang-bong.jpg",
+        "petAlbum": [
+            "https://example.com/pet-images/ca-vang-bong-1.jpg"
+        ]
+    },
+    {
+        "name": "Rắn Python Mini",
+        "age": 2,
+        "petDob": "2022-04-12",
+        "breed": "snake",
+        "breedName": "Ball Python",
+        "petState": "NotReadyToAdopt",
+        "gender": "male",
+        "petDetails": "Rắn Python Mini là một chú rắn nhỏ và hiền lành. Thích cuộn tròn và nằm trong hang ẩm.",
+        "weight": 1.5,
+        "height": 90,
+        "reproductiveStatus": "not neutered",
+        "vaccinationStatus": [],
+        "ownerEmail": "tranvantri4@dtu.edu.vn",
+        "avatar": "https://example.com/pet-images/ran-python-mini.jpg",
+        "microchipId": "CHIP789123456",
+        "petAlbum": [
+            "https://example.com/pet-images/ran-python-mini-1.jpg",
+            "https://example.com/pet-images/ran-python-mini-2.jpg"
+        ]
+    }
+]

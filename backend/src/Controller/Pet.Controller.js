@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import * as petService from "../services/Pet/Pet.service.js";
 import PetProfile from "../models/PetProfile.js";
 import Joi from "joi";
+import mongoose from "mongoose";
 
 const petUpdateSchema = Joi.object({
     name: Joi.string().trim(),
@@ -9,6 +10,7 @@ const petUpdateSchema = Joi.object({
     petDob: Joi.date(),
     breed: Joi.string().trim(),
     breedName: Joi.string().trim(),
+    petState: Joi.string().valid('ReadyToAdopt', 'NotReadyToAdopt', 'Adopted'),
     gender: Joi.string().valid('male', 'female', 'unknown'),
     petDetails: Joi.string(),
     weight: Joi.number().min(0),
@@ -217,10 +219,15 @@ export const deletePet = async (req, res) => {
  */
 export const getPetsByOwner = async (req, res) => {
     try {
-        const ownerId = req.user._id;
+        const ownerId = req.params.ownerId || req.user?._id;
         if (!ownerId) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: "Bạn cần đăng nhập để thực hiện hành động này"
+            });
+        }
+         if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "ID chủ sở hữu không hợp lệ"
             });
         }
         const page = parseInt(req.query.page) || 1;
@@ -251,7 +258,7 @@ export const getPetDetails = async (req, res) => {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
 
-        const isOwner = await checkOwnership(petId, userId);
+        // const isOwner = await checkOwnership(petId, userId);
         const pet = await petService.getPetOrThrow(petId);
         return res.status(200).json({
             message: "Get Pet Portfolio Successfully", petData: pet, canEdit: isOwner
@@ -651,5 +658,117 @@ export const updatePetState = async (req, res) => {
             message: "Đã xảy ra lỗi khi cập nhật trạng thái!",
             error: error.message
         });
+    }
+};
+
+export const getOwnerPetStatistics = async (req, res) => {
+    try {
+        const ownerId = req.user._id;
+        if (!ownerId) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
+        }
+
+        const pets = await petService.getPetsByOwner(ownerId, true); // Include isDeleted
+        const total = pets.length;
+
+        const countAndPercent = (count) => ({
+            count,
+            percent: total > 0 ? parseFloat(((count / total) * 100).toFixed(1)) : 0
+        });
+
+        // Gender statistics
+        const genderStats = {
+            male: countAndPercent(pets.filter(p => p.gender === "male").length),
+            female: countAndPercent(pets.filter(p => p.gender === "female").length),
+            unknown: countAndPercent(pets.filter(p => p.gender === "unknown").length)
+        };
+
+        // Reproductive status
+        const reproductiveStats = {
+            neutered: countAndPercent(pets.filter(p => p.reproductiveStatus === "neutered").length),
+            notNeutered: countAndPercent(pets.filter(p => p.reproductiveStatus === "not neutered").length)
+        };
+
+        // Pet state
+        const petStateStats = {
+            ReadyToAdopt: countAndPercent(pets.filter(p => p.petState === "ReadyToAdopt").length),
+            NotReadyToAdopt: countAndPercent(pets.filter(p => p.petState === "NotReadyToAdopt").length),
+            Adopted: countAndPercent(pets.filter(p => p.petState === "Adopted").length)
+        };
+
+        // Deleted & Adopted
+        const isDeletedCount = pets.filter(p => p.isDeleted).length;
+        const adoptedAndDeleted = pets.filter(p => p.isDeleted && p.petState === "Adopted").length;
+
+        // Average values
+        const averageAge = total > 0 ? (pets.reduce((sum, pet) => sum + pet.age, 0) / total).toFixed(1) : 0;
+        const averageWeight = total > 0 ? (pets.reduce((sum, pet) => sum + (pet.weight || 0), 0) / total).toFixed(1) : 0;
+        const averageHeight = total > 0 ? (pets.reduce((sum, pet) => sum + (pet.height || 0), 0) / total).toFixed(1) : 0;
+
+        // Breed count
+        const breedCount = {};
+        pets.forEach(pet => {
+            const breed = pet.breed || "unknown";
+            breedCount[breed] = (breedCount[breed] || 0) + 1;
+        });
+
+        const breedStats = {};
+        for (const [breed, count] of Object.entries(breedCount)) {
+            breedStats[breed] = countAndPercent(count);
+        }
+
+        // Top 3 breeds
+        const top3Breeds = Object.entries(breedStats)
+            .sort((a, b) => b[1].count - a[1].count)
+            .slice(0, 3)
+            .map(([breed, stats]) => ({ breed, ...stats }));
+
+        // Year of birth stats
+        const yearOfBirthStats = {};
+        pets.forEach(pet => {
+            if (pet.dateOfBirth) {
+                const year = new Date(pet.dateOfBirth).getFullYear();
+                yearOfBirthStats[year] = (yearOfBirthStats[year] || 0) + 1;
+            }
+        });
+
+        // Created month stats
+        const createdMonthStats = {};
+        pets.forEach(pet => {
+            if (pet.createdAt) {
+                const created = new Date(pet.createdAt);
+                const key = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, "0")}`;
+                createdMonthStats[key] = (createdMonthStats[key] || 0) + 1;
+            }
+        });
+
+        // Final statistics
+        const stats = {
+            totalPets: total,
+            averageAge,
+            averageWeight,
+            averageHeight,
+
+            byGender: genderStats,
+            byReproductiveStatus: reproductiveStats,
+            byPetState: petStateStats,
+
+            deletedCount: countAndPercent(isDeletedCount),
+            adoptedAndDeletedCount: countAndPercent(adoptedAndDeleted),
+
+            byBreed: breedStats,
+            top3Breeds,
+
+            byYearOfBirth: yearOfBirthStats,
+            byCreatedMonth: createdMonthStats
+        };
+
+        return res.status(StatusCodes.OK).json({
+            message: "Lấy thống kê thành công!",
+            statistics: stats
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
     }
 };
