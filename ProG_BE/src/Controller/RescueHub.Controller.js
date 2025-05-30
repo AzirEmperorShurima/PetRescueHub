@@ -69,101 +69,80 @@ export const requestRescue = async (req, res) => {
 
 export const requestToRescue = async (req, res) => {
     try {
-        const { coordinates, radius, maxVolunteers = 5, guestInfo, autoAssign = true, timeoutMinutes = 30 } = req.body;
-        const userId = req.user._id
-        const isGuest = !userId;
+        const { coordinates, radius, maxVolunteers = 5, autoAssign = true, timeoutMinutes = 30 } = req.body;
+        const userId = req.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Yêu cầu đăng nhập để sử dụng.' });
+        }
 
         if (!Array.isArray(coordinates) || coordinates.length !== 2) {
-            return res.status(400).json({ error: 'Invalid coordinates format. Expected [longitude, latitude]' });
+            return res.status(400).json({ error: 'Định dạng tọa độ không hợp lệ. Cần [kinh độ, vĩ độ]' });
         }
 
         const missionId = uuidv4();
-
-        // Tính thời gian timeout
         const timeoutAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
-        // Save rescue request to Redis
-        await redisClient.set(`rescue:${missionId}`, JSON.stringify({
-            coordinates,
-            radius,
-            userId: isGuest ? 'guest' : userId,
-            guestInfo: isGuest ? guestInfo : undefined,
-            timeoutAt: timeoutAt.toISOString()
-        }), {
-            EX: timeoutMinutes * 60 // Thời gian hết hạn trong Redis cũng là timeoutMinutes
-        });
+        // Lưu yêu cầu cứu hộ vào Redis
+        await redisClient.set(
+            `rescue:${missionId}`,
+            JSON.stringify({
+                coordinates,
+                radius,
+                userId,
+                timeoutAt: timeoutAt.toISOString(),
+            }),
+            { EX: timeoutMinutes * 60 }
+        );
 
-        const volunteers = [];
-        let cursor = '0';
+        // Sử dụng GEORADIUS để tìm tình nguyện viên
+        const [longitude, latitude] = coordinates;
+        const volunteers = await redisClient.sendCommand([
+            'GEORADIUS',
+            'volunteers', // Tên tập hợp tọa độ trong Redis
+            longitude.toString(),
+            latitude.toString(),
+            `${radius}`, // Bán kính tính bằng km
+            'km',
+            'WITHCOORD',
+            'COUNT',
+            maxVolunteers.toString()
+        ]);
 
-        do {
-            const result = await redisClient.scan(cursor, {
-                MATCH: 'volunteer:*',
-                COUNT: 100
-            });
-
-            cursor = result.cursor;
-            const keys = result.keys;
-
-            for (const key of keys) {
-                const data = await redisClient.get(key);
-                if (!data) continue;
-
-                let parsed;
-                try {
-                    parsed = JSON.parse(data);
-                } catch (e) {
-                    console.warn(`Invalid JSON in Redis key ${key}`);
-                    continue;
-                }
-
-                if (!parsed.coordinates || parsed.coordinates.length !== 2) continue;
-
-                const distance = geolib.getDistance(
-                    { latitude: coordinates[1], longitude: coordinates[0] },
-                    { latitude: parsed.coordinates[1], longitude: parsed.coordinates[0] }
-                );
-
-                if (distance <= radius * 1000 && parsed.status === 'readyRescue') {
-                    volunteers.push({ ...parsed, distance });
-                }
-            }
-        } while (cursor !== '0');
-
-        const sorted = volunteers
-            .sort((a, b) => a.distance - b.distance)
-            .slice(0, maxVolunteers);
-
+        const volunteerIds = volunteers.map(item => item[0]); // Lấy các userId
         const volunteerUsers = await user.find({
-            _id: { $in: sorted.map(v => v.userId) }
+            _id: { $in: volunteerIds }
         }).select('fullname phonenumber');
+
+        // Lọc các tình nguyện viên có trạng thái 'alreadyRescue'
+        const filteredVolunteers = volunteerUsers.filter(user => {
+            const volunteerData = redisClient.get(`volunteer:${user._id}`);
+            return volunteerData && JSON.parse(volunteerData).status === 'alreadyRescue';
+        });
 
         if (!autoAssign) {
             return res.json({
                 selectVolunteers: true,
-                volunteers: volunteerUsers,
+                volunteers: filteredVolunteers,
                 missionId
             });
         }
 
-        // Tự động ghép: chọn người gần nhất
-        const selectedVolunteerIds = volunteerUsers.map(v => v._id);
+        const selectedVolunteerIds = filteredVolunteers.map(v => v._id);
 
         await PetRescueMissionHistory.create({
             missionId,
-            requester: isGuest ? undefined : userId,
-            guestDetails: isGuest ? guestInfo : undefined,
+            requester: userId,
             location: { type: 'Point', coordinates },
             radius,
             selectedVolunteers: selectedVolunteerIds,
-            timeoutAt // Thêm thời gian timeout
+            timeoutAt,
         });
 
-        return res.json({ volunteers: volunteerUsers });
-
+        return res.json({ volunteers: filteredVolunteers });
     } catch (err) {
-        console.error('Request Rescue Error:', err);
-        return res.status(500).json({ error: 'Server error during rescue request.' });
+        console.error('Lỗi yêu cầu cứu hộ:', err);
+        return res.status(500).json({ error: 'Lỗi server khi xử lý yêu cầu cứu hộ.' });
     }
 };
 
