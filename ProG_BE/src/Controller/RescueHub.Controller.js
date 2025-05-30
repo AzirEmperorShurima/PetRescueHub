@@ -163,9 +163,12 @@ export const requestToRescue = async (req, res) => {
             });
         }
 
+        // Khi autoAssign là true, chọn tình nguyện viên gần nhất
         const selectedVolunteerIds = filteredVolunteers.map(v => v._id);
-        const requester = await user.findById(userId).select('fullname');
-        const acceptedVolunteer = filteredVolunteers[0];
+        const requester = await user.findById(userId).select('fullname email phonenumber'); // Thêm phonenumber
+
+        // Lấy tình nguyện viên gần nhất (dựa trên thứ tự từ GEORADIUS)
+        const acceptedVolunteer = filteredVolunteers[0]; // Giả sử GEORADIUS trả về theo thứ tự gần -> xa
 
         await PetRescueMissionHistory.create({
             missionId,
@@ -178,41 +181,62 @@ export const requestToRescue = async (req, res) => {
             status: 'pending'
         });
 
+        // Gửi email cho tình nguyện viên được chọn
         if (acceptedVolunteer) {
-            const [longitude, latitude] = coordinates; // Tọa độ dạng [longitude, latitude]
-            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`; // Liên kết đến vị trí của requester
+            const requesterPhone = requester.phonenumber && requester.phonenumber.length > 0 ? requester.phonenumber.join(', ') : 'Không có số điện thoại';
+            try {
+                await sendMailNotification({
+                    email: acceptedVolunteer.email,
+                    subject: 'Yêu Cầu Cứu Hộ Mới',
+                    text: `Bạn đã được chọn cho một nhiệm vụ cứu hộ mới từ ${requester ? requester.fullname : 'Khách vãng lai'}`,
+                    html: `
+                        <p>Xin chào ${acceptedVolunteer.fullname},</p>
+                        <p>Bạn đã được chọn cho một nhiệm vụ cứu hộ mới. Chi tiết nhiệm vụ:</p>
+                        <ul>
+                            <li>Mã nhiệm vụ: ${missionId}</li>
+                            <li>Người yêu cầu: 
+                                <ul>
+                                    <li>Tên: ${requester ? requester.fullname : 'Khách vãng lai'}</li>
+                                    <li>Số điện thoại: ${requesterPhone}</li>
+                                    <li>Email: ${requester ? requester.email : 'Không có email'}</li>
+                                </ul>
+                            </li>
+                            <li>Vị trí: [${coordinates.join(', ')}] - <a href="${googleMapsLink}" target="_blank">Xem trên Google Maps</a></li>
+                        </ul>
+                        <p>Vui lòng nhanh chóng thực hiện nhiệm vụ cứu hộ trong hệ thống.</p>
+                    `
+                });
+            } catch (emailErr) {
+                console.error(`Gửi email thất bại cho ${acceptedVolunteer.email}:`, emailErr);
+            }
 
-            await sendMailNotification({
-                email: acceptedVolunteer.email,
-                subject: 'Yêu Cầu Cứu Hộ Mới',
-                text: `Bạn đã được chọn cho một nhiệm vụ cứu hộ mới`,
-                html: `
-            <p>Xin chào ${acceptedVolunteer.fullname},</p>
-            <p>Bạn đã được chọn cho một nhiệm vụ cứu hộ mới. Chi tiết nhiệm vụ:</p>
-            <ul>
-                <li>Mã nhiệm vụ: ${missionId}</li>
-                <li>Người yêu cầu: ${requester ? requester.fullname : 'Khách vãng lai'}</li>
-                <li>Vị trí: [${coordinates.join(', ')}] - <a href="${googleMapsLink}" target="_blank">Xem trên Google Maps</a></li>
-            </ul>
-            <p>Vui lòng nhanh chóng thực hiện nhiệm vụ cứu hộ trong hệ thống.</p>
-        `
-            });
-            await sendMailNotification({
-                email: requester.email,
-                subject: 'Tình Nguyện Viên Đã Được Chọn Cho Nhiệm Vụ Của Bạn',
-                text: `Một tình nguyện viên đã được chọn cho nhiệm vụ cứu hộ của bạn`,
-                html: `
-                    <p>Xin chào ${requester.fullname},</p>
-                    <p>Một tình nguyện viên đã được chọn cho nhiệm vụ cứu hộ của bạn. Chi tiết nhiệm vụ:</p>
-                    <ul>
-                        <li>Mã nhiệm vụ: ${missionId}</li>
-                        <li>Tình nguyện viên: ${acceptedVolunteer.fullname} (${acceptedVolunteer.phonenumber.join(', ')})</li>
-                        <li>Vị trí: [${coordinates.join(', ')}] - <a href="${googleMapsLink}" target="_blank">Xem trên Google Maps</a></li>
-                    </ul>
-                    <p>Vui lòng theo dõi tiến độ nhiệm vụ trong hệ thống.</p>
-                `
-            });
+            // Gửi email cho người gửi yêu cầu (requester)
+            if (requester && requester.email) {
+                try {
+                    await sendMailNotification({
+                        email: requester.email,
+                        subject: 'Tình Nguyện Viên Đã Được Chọn Cho Nhiệm Vụ Của Bạn',
+                        text: `Một tình nguyện viên đã được chọn cho nhiệm vụ cứu hộ của bạn`,
+                        html: `
+                            <p>Xin chào ${requester.fullname},</p>
+                            <p>Một tình nguyện viên đã được chọn cho nhiệm vụ cứu hộ của bạn. Chi tiết nhiệm vụ:</p>
+                            <ul>
+                                <li>Mã nhiệm vụ: ${missionId}</li>
+                                <li>Tình nguyện viên: ${acceptedVolunteer.fullname} (${acceptedVolunteer.phonenumber.join(', ') || 'Không có số điện thoại'})</li>
+                                <li>Vị trí: [${coordinates.join(', ')}] - <a href="${googleMapsLink}" target="_blank">Xem trên Google Maps</a></li>
+                            </ul>
+                            <p>Vui lòng theo dõi tiến độ nhiệm vụ trong hệ thống.</p>
+                        `
+                    });
+                } catch (emailErr) {
+                    console.error(`Gửi email thất bại cho ${requester.email}:`, emailErr);
+                }
+            } else {
+                console.warn('Không thể gửi email cho requester: Thiếu email hoặc thông tin không hợp lệ');
+            }
         }
+
         return res.json({ volunteers: [acceptedVolunteer] || [] });
     } catch (err) {
         console.error('Lỗi yêu cầu cứu hộ:', err);
