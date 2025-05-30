@@ -191,20 +191,117 @@ export const requestToRescue = async (req, res) => {
                     subject: 'Yêu Cầu Cứu Hộ Mới',
                     text: `Bạn đã được chọn cho một nhiệm vụ cứu hộ mới từ ${requester ? requester.fullname : 'Khách vãng lai'}`,
                     html: `
-                        <p>Xin chào ${acceptedVolunteer.fullname},</p>
-                        <p>Bạn đã được chọn cho một nhiệm vụ cứu hộ mới. Chi tiết nhiệm vụ:</p>
-                        <ul>
-                            <li>Mã nhiệm vụ: ${missionId}</li>
-                            <li>Người yêu cầu: 
-                                <ul>
-                                    <li>Tên: ${requester ? requester.fullname : 'Khách vãng lai'}</li>
-                                    <li>Số điện thoại: ${requesterPhone}</li>
-                                    <li>Email: ${requester ? requester.email : 'Không có email'}</li>
-                                </ul>
-                            </li>
-                            <li>Vị trí: [${coordinates.join(', ')}] - <a href="${googleMapsLink}" target="_blank">Xem trên Google Maps</a></li>
-                        </ul>
-                        <p>Vui lòng nhanh chóng thực hiện nhiệm vụ cứu hộ trong hệ thống.</p>
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                    max-width: 600px;
+                                    margin: 0 auto;
+                                    padding: 20px;
+                                }
+                                .header {
+                                    background-color: #4CAF50;
+                                    color: white;
+                                    padding: 15px;
+                                    text-align: center;
+                                    border-radius: 5px 5px 0 0;
+                                    margin-bottom: 20px;
+                                }
+                                .content {
+                                    background-color: #f9f9f9;
+                                    padding: 20px;
+                                    border-radius: 0 0 5px 5px;
+                                    border: 1px solid #ddd;
+                                }
+                                .mission-id {
+                                    background-color: #f5f5f5;
+                                    padding: 10px;
+                                    border-left: 4px solid #4CAF50;
+                                    margin: 15px 0;
+                                    font-weight: bold;
+                                }
+                                .info-section {
+                                    margin-bottom: 15px;
+                                }
+                                .info-title {
+                                    font-weight: bold;
+                                    color: #4CAF50;
+                                    margin-bottom: 5px;
+                                }
+                                .info-content {
+                                    padding-left: 15px;
+                                }
+                                .info-item {
+                                    margin-bottom: 5px;
+                                }
+                                .location {
+                                    background-color: #e9f7ef;
+                                    padding: 10px;
+                                    border-radius: 5px;
+                                    margin: 15px 0;
+                                }
+                                .map-link {
+                                    display: inline-block;
+                                    background-color: #4CAF50;
+                                    color: white;
+                                    padding: 8px 15px;
+                                    text-decoration: none;
+                                    border-radius: 4px;
+                                    margin-top: 10px;
+                                }
+                                .map-link:hover {
+                                    background-color: #45a049;
+                                }
+                                .footer {
+                                    text-align: center;
+                                    margin-top: 20px;
+                                    padding-top: 15px;
+                                    border-top: 1px solid #ddd;
+                                    font-size: 0.9em;
+                                    color: #777;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h2>Thông Báo Nhiệm Vụ Cứu Hộ Mới</h2>
+                            </div>
+                            <div class="content">
+                                <p>Xin chào <strong>${acceptedVolunteer.fullname}</strong>,</p>
+                                <p>Bạn đã được chọn cho một nhiệm vụ cứu hộ mới. Dưới đây là chi tiết nhiệm vụ:</p>
+                                
+                                <div class="mission-id">
+                                    Mã nhiệm vụ: ${missionId}
+                                </div>
+                                
+                                <div class="info-section">
+                                    <div class="info-title">Thông tin người yêu cầu:</div>
+                                    <div class="info-content">
+                                        <div class="info-item"><strong>Tên:</strong> ${requester ? requester.fullname : 'Khách vãng lai'}</div>
+                                        <div class="info-item"><strong>Số điện thoại:</strong> ${requesterPhone}</div>
+                                        <div class="info-item"><strong>Email:</strong> ${requester ? requester.email : 'Không có email'}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="location">
+                                    <div class="info-title">Vị trí cứu hộ:</div>
+                                    <div>[${coordinates.join(', ')}]</div>
+                                    <a href="${googleMapsLink}" target="_blank" class="map-link">Xem trên Google Maps</a>
+                                </div>
+                                
+                                <p><strong>Lưu ý:</strong> Vui lòng nhanh chóng thực hiện nhiệm vụ cứu hộ trong hệ thống.</p>
+                            </div>
+                            <div class="footer">
+                                <p>Email này được gửi tự động từ hệ thống Rescue Hub. Vui lòng không trả lời email này.</p>
+                            </div>
+                        </body>
+                        </html>
                     `
                 });
             } catch (emailErr) {
