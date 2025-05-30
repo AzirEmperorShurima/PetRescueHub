@@ -99,10 +99,10 @@ export const requestToRescue = async (req, res) => {
         const [longitude, latitude] = coordinates;
         const volunteers = await redisClient.sendCommand([
             'GEORADIUS',
-            'volunteers', // Tên tập hợp tọa độ trong Redis
+            'volunteers',
             longitude.toString(),
             latitude.toString(),
-            `${radius}`, // Bán kính tính bằng km
+            `${radius}`,
             'km',
             'WITHCOORD',
             'COUNT',
@@ -115,10 +115,14 @@ export const requestToRescue = async (req, res) => {
         }).select('fullname phonenumber');
 
         // Lọc các tình nguyện viên có trạng thái 'alreadyRescue'
-        const filteredVolunteers = volunteerUsers.filter(user => {
-            const volunteerData = redisClient.get(`volunteer:${user._id}`);
-            return volunteerData && JSON.parse(volunteerData).status === 'alreadyRescue';
-        });
+        const filteredVolunteers = await Promise.all(volunteerUsers.map(async (user) => {
+            const volunteerData = await redisClient.get(`volunteer:${user._id}`);
+            if (volunteerData) {
+                const parsedData = JSON.parse(volunteerData);
+                return parsedData.status === 'alreadyRescue' ? user : null;
+            }
+            return null;
+        })).then(results => results.filter(user => user !== null));
 
         if (!autoAssign) {
             return res.json({
