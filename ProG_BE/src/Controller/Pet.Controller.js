@@ -258,7 +258,7 @@ export const getPetDetails = async (req, res) => {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để thực hiện hành động này" });
         }
 
-        const isOwner = await checkOwnership(petId, userId);
+        // const isOwner = await checkOwnership(petId, userId);
         const pet = await petService.getPetOrThrow(petId);
         return res.status(200).json({
             message: "Get Pet Portfolio Successfully", petData: pet, canEdit: isOwner
