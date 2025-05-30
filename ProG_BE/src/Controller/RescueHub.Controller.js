@@ -109,6 +109,11 @@ export const requestToRescue = async (req, res) => {
             maxVolunteers.toString()
         ]);
 
+        if (!volunteers || volunteers.length === 0) {
+            console.log('Không tìm thấy tình nguyện viên trong bán kính', radius, 'km');
+            return res.json({ volunteers: [] });
+        }
+
         const volunteerIds = volunteers.map(item => item[0]); // Lấy các userId
         const volunteerUsers = await user.find({
             _id: { $in: volunteerIds }
@@ -123,6 +128,11 @@ export const requestToRescue = async (req, res) => {
             }
             return null;
         })).then(results => results.filter(user => user !== null));
+
+        if (filteredVolunteers.length === 0) {
+            console.log('Không có tình nguyện viên nào ở trạng thái alreadyRescue');
+            return res.json({ volunteers: [] });
+        }
 
         if (!autoAssign) {
             return res.json({

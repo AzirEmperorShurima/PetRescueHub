@@ -39,7 +39,6 @@ export const requestVolunteer = async (req, res) => {
 };
 
 export const volunteerUpdateStatus = async (req, res) => {
-    // Get JWT Verification and Authorization from Cookies
     const userId = getUserFieldFromToken(req, COOKIE_PATHS.ACCESS_TOKEN.CookieName, 'id');
     if (!userId) {
         return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized: Missing user ID in token" });
@@ -79,7 +78,7 @@ export const volunteerUpdateStatus = async (req, res) => {
                 return res.status(StatusCodes.BAD_REQUEST).json({ error: "longitude and latitude are required for alreadyRescue status" });
             }
             if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
-                return res.status(400).json({ error: 'Invalid coordinates' });
+                return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid coordinates' });
             }
         }
 
@@ -100,14 +99,29 @@ export const volunteerUpdateStatus = async (req, res) => {
             if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
                 return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid coordinates" });
             }
+
+            // Lưu vị trí vào tập volunteers
             const result = await redisClient.sendCommand(['GEOADD', 'volunteers', longitude.toString(), latitude.toString(), userId.toString()]);
             console.log('Result of GEOADD:', result);
-            if (!result) {
+            if (!result && result !== 0) {
                 console.error('GEOADD không thêm được vị trí cho userId:', userId);
                 return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Không thể cập nhật vị trí trong Redis" });
             }
+
+            // Lưu trạng thái vào volunteer:${userId}
+            await redisClient.set(
+                `volunteer:${userId}`,
+                JSON.stringify({
+                    userId,
+                    coordinates: [longitude, latitude],
+                    status: volunteerStatus
+                }),
+                { EX: 60 * 60 * 24 } // Hết hạn sau 24 giờ
+            );
         } else {
+            // Xóa dữ liệu khỏi Redis nếu không ở trạng thái alreadyRescue
             await redisClient.sendCommand(['ZREM', 'volunteers', userId.toString()]);
+            await redisClient.del(`volunteer:${userId}`);
         }
 
         return res.status(StatusCodes.OK).json({
@@ -140,8 +154,8 @@ export const resignVolunteer = async (req, res) => {
         const tokenType = req.token_verified.tokenType;
 
         if (!userId || !userEmail || !roles || tokenType !== TOKEN_TYPE.ACCESS_TOKEN.name) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ 
-                message: "Unauthorized: Access Denied You must be login to use this resource" 
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Unauthorized: Access Denied You must be login to use this resource"
             });
         }
 
@@ -151,7 +165,7 @@ export const resignVolunteer = async (req, res) => {
             return res.status(400).json({ message: result.message });
         }
 
-        return res.status(200).json({ 
+        return res.status(200).json({
             message: result.message,
             user: result.data
         });
