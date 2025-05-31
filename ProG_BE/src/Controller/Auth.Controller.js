@@ -65,7 +65,7 @@ export const Signup_Handler = async (req, res) => {
 
         Promise.all([
             CreateUser.save(),
-            RedisClient.set(redisKey, generateOTP, { EX: 60 * 15 })
+            redisClient.set(redisKey, generateOTP, { EX: 60 * 15 })
         ]).then(() => {
             // ✅ Gửi email OTP sau khi phản hồi API
             setImmediate(() => {
@@ -444,14 +444,14 @@ export const verified_OTP = async (req, res) => {
     try {
         const userId = getUserFieldFromToken(req, COOKIE_PATHS.REGISTER_VERIFY.CookieName, 'id');
         const redisTokenKey = `register:${userId}`;
-        const redisToken = await getRedisClient.get(redisTokenKey);
+        const redisToken = await redisClient.get(redisTokenKey);
         if (!redisToken || redisToken !== cookies) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: 'Verify OTP failed, token expired or invalid'
             });
         }
         const redisOTPKey = `otp:signup:${userId}`;
-        const redisOTP = await getRedisClient.get(redisOTPKey);
+        const redisOTP = await redisClient.get(redisOTPKey);
         if (!redisOTP) {
             return res.status(StatusCodes.FORBIDDEN).json({
                 message: 'Verify OTP failed, OTP expired or not found'
@@ -496,8 +496,8 @@ export const verified_OTP = async (req, res) => {
         );
         await foundUser.save();
         await Promise.all([
-            getRedisClient.del(redisTokenKey),
-            getRedisClient.del(redisOTPKey)
+            redisClient.del(redisTokenKey),
+            redisClient.del(redisOTPKey)
         ]);
         return res.status(StatusCodes.OK).json({
             message: 'OTP verified successfully, user activated'
@@ -544,17 +544,17 @@ export const resendActivationOTP = async (req, res) => {
         }
 
         const redisOTPKey = `otp:signup:${userId}`;
-        const otpTTL = await getRedisClient.ttl(redisOTPKey);
+        const otpTTL = await redisClient.ttl(redisOTPKey);
 
         const newOTP = otpGenerator();
 
         // Nếu vẫn còn OTP trong Redis thì ghi đè
         if (otpTTL > 0) {
-            await getRedisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
+            await redisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
         } else {
             // Nếu không còn nhưng user chưa active thì cũng cấp lại
             if (!foundUser.active) {
-                await getRedisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
+                await redisClient.set(redisOTPKey, newOTP, { EX: 60 * 15 });
             } else {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     message: "Account already activated"
@@ -606,7 +606,7 @@ export const forgot_password = async (req, res) => {
 
         const otp = otpGenerator()
 
-        await getRedisClient.setEx(`forgotpassword:${userFound.email}`, 60 * 15, otp);
+        await redisClient.setEx(`forgotpassword:${userFound.email}`, 60 * 15, otp);
         const forgotPasswordPayLoad = {
             email: userFound.email,
             tokenType: TOKEN_TYPE.FORGOT_PASSWORD.name,
@@ -656,12 +656,12 @@ export const verified_OTP_forgot_password = async (req, res) => {
         if (!userFound) {
             return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
         }
-        const storedOtp = await getRedisClient.get(`forgotpassword:${email}`);
+        const storedOtp = await redisClient.get(`forgotpassword:${email}`);
 
         if (!storedOtp || storedOtp !== otp) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid or expired OTP' });
         }
-        await getRedisClient.del(`forgotpassword:${email}`);
+        await redisClient.del(`forgotpassword:${email}`);
         res.clearCookie(TOKEN_TYPE.FORGOT_PASSWORD.name, {
             path: COOKIE_PATHS.FORGOT_PASSWORD.Path,
             httpOnly: true,
