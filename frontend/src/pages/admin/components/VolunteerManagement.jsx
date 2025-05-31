@@ -11,12 +11,6 @@ import {
   TableRow,
   TablePagination,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  IconButton,
   Snackbar,
   Alert,
   Chip,
@@ -25,18 +19,14 @@ import {
   Tab,
   Container
 } from '@mui/material';
-import { Delete as DeleteIcon } from '@mui/icons-material';
 import { fDate } from '../../../utils/format-time';
 import axios from '../../../utils/axios';
-import UserManagement from './UserManagement';
 
 const VolunteerManagement = () => {
   const [volunteers, setVolunteers] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalVolunteers, setTotalVolunteers] = useState(0);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -108,29 +98,6 @@ const VolunteerManagement = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const handleOpenDeleteDialog = (volunteer) => {
-    setSelectedVolunteer(volunteer);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-    setSelectedVolunteer(null);
-  };
-
-  const handleDeleteVolunteer = async () => {
-    try {
-      await axios.delete(`/admin/v1/volunteers/${selectedVolunteer._id}`);
-      setVolunteers(volunteers.filter(volunteer => volunteer._id !== selectedVolunteer._id));
-      setTotalVolunteers(totalVolunteers - 1);
-      showSnackbar('Xóa tình nguyện viên thành công');
-      handleCloseDeleteDialog();
-    } catch (error) {
-      console.error('Error deleting volunteer:', error);
-      showSnackbar('Lỗi khi xóa tình nguyện viên', 'error');
-    }
   };
 
   const handleApproveVolunteer = async (volunteer) => {
@@ -279,13 +246,6 @@ const VolunteerManagement = () => {
                         Thu hồi quyền tình nguyện
                       </Button>
                     )}
-                    <IconButton 
-                      color="error" 
-                      onClick={() => handleOpenDeleteDialog(volunteer)}
-                      size="small"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -325,25 +285,6 @@ const VolunteerManagement = () => {
           }}
         />
       </Paper>
-
-      {/* Dialog xóa tình nguyện viên */}
-      <Dialog
-        open={openDeleteDialog}
-        onClose={handleCloseDeleteDialog}
-      >
-        <DialogTitle>Xác nhận xóa</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Bạn có chắc chắn muốn xóa tình nguyện viên {selectedVolunteer?.fullname}?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
-          <Button onClick={handleDeleteVolunteer} color="error">
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Snackbar thông báo */}
       <Snackbar

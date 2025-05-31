@@ -12,6 +12,7 @@ import * as petRescueManageService from "../services/Admin/PetRescueManagement.s
 
 import PetRescueMissionHistory from "../models/PetRescueMissionHistory.js";
 import Report from "../models/Report.js";
+import mongoose from "mongoose";
 
 
 /**
@@ -435,74 +436,103 @@ export async function adminManageMission(req, res) {
 
 //--------------------
 // Admin: Lấy danh sách các report
+
 export const getAllReports = async (req, res) => {
     try {
         const { status, reportType, page = 1, limit = 10 } = req.query;
-        const skip = (page - 1) * limit;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        // Xây dựng query filter
+        // Validate query parameters
         const filter = {};
-        if (status) filter.status = status;
-        if (reportType) filter.reportType = reportType;
+        if (status) {
+            if (!["Pending", "Reviewed", "Resolved"].includes(status)) {
+                return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+            }
+            filter.status = status;
+        }
+        if (reportType) {
+            if (!["User", "Post", "Comment"].includes(reportType)) {
+                return res.status(400).json({ message: "Loại báo cáo không hợp lệ" });
+            }
+            filter.reportType = reportType;
+        }
 
+        // Fetch reports with population based on reportType
         const reports = await Report.find(filter)
-            .populate("reporter", "username email avatar")
-            .populate([
-                {
-                    path: "targetId",
-                    model: "User",
-                    select: "username email isActive isCompromised avatar",
-                    match: { _id: { $exists: true } }
-                },
-                {
-                    path: "targetId",
-                    model: "Post",
-                    select: "title content violate_tags violationDetails author postStatus",
-                    match: { _id: { $exists: true } },
-                    populate: {
-                        path: "author",
-                        model: "User",
-                        select: "username email avatar"
-                    }
-                },
-                {
-                    path: "targetId",
-                    model: "Comment",
-                    select: "content author post",
-                    match: { _id: { $exists: true } },
-                    populate: [
-                        {
-                            path: "author",
-                            model: "User",
-                            select: "username email avatar"
-                        },
-                        {
-                            path: "post",
-                            model: "Post",
-                            select: "title"
-                        }
-                    ]
-                }
-            ])
-            .populate("reviewedBy", "username email")
+            .populate({
+                path: "reporter",
+                select: "username email avatar",
+                match: { _id: { $exists: true } } // Ensure reporter exists
+            })
+            .populate({
+                path: "reviewedBy",
+                select: "username email",
+                match: { _id: { $exists: true } } // Ensure reviewedBy exists
+            })
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(parseInt(limit));
+            .limit(parseInt(limit))
+            .lean(); // Use lean() for performance, since we’ll manually populate targetId
 
-        const filteredReports = reports.filter(report => report.targetId !== null);
+        // Manually populate targetId based on reportType
+        const detailedReports = await Promise.all(
+            reports.map(async (report) => {
+                let targetId = null;
+
+                // Populate targetId based on reportType
+                if (report.reportType === "User") {
+                    targetId = await mongoose.model("User").findById(report.targetId, "username email avatar").lean();
+                } else if (report.reportType === "Post") {
+                    targetId = await mongoose.model("Post")
+                        .findById(report.targetId, "title content author")
+                        .populate({ path: "author", model: "User", select: "username email avatar" })
+                        .lean();
+                } else if (report.reportType === "Comment") {
+                    targetId = await mongoose.model("Comment")
+                        .findById(report.targetId, "content author post")
+                        .populate([
+                            { path: "author", model: "User", select: "username email avatar" },
+                            { path: "post", model: "Post", select: "title" }
+                        ])
+                        .lean();
+                }
+
+                return {
+                    _id: report._id,
+                    reporter: report.reporter,
+                    targetId: targetId || { _id: report.targetId, deleted: true }, // Handle deleted targets
+                    reportType: report.reportType,
+                    reason: report.reason,
+                    details: report.details,
+                    status: report.status,
+                    actionTaken: report.actionTaken,
+                    reviewedBy: report.reviewedBy,
+                    reviewedAt: report.reviewedAt,
+                    adminNote: report.adminNote,
+                    createdAt: report.createdAt,
+                    updatedAt: report.updatedAt
+                };
+            })
+        );
+
+        // Count total reports
         const total = await Report.countDocuments(filter);
 
-        res.json({
-            reports: filteredReports,
+        return res.status(200).json({
+            reports: detailedReports,
             pagination: {
                 total,
                 page: parseInt(page),
                 limit: parseInt(limit),
-                pages: Math.ceil(total / limit)
+                pages: Math.ceil(total / parseInt(limit))
             }
         });
     } catch (error) {
-        res.status(500).json({ message: "Lỗi server", error: error.message });
+        console.error("Error in getAllReports:", error);
+        return res.status(500).json({
+            message: "Lỗi server",
+            error: error.message
+        });
     }
 };
 
@@ -819,19 +849,6 @@ export const getParticipants = async (req, res) => {
 };
 
 
-// Middleware kiểm tra quyền admin
-const checkAdmin = async (req, res, next) => {
-    try {
-        const user = await User.findById(req.user._id).populate("roles");
-        if (!user || !user.roles.some(role => ["admin", "super_admin"].includes(role.name.toLowerCase()))) {
-            return res.status(403).json({ message: "Chỉ admin mới có quyền truy cập!" });
-        }
-        next();
-    } catch (error) {
-        return res.status(500).json({ message: "Lỗi khi kiểm tra quyền admin", error: error.message });
-    }
-};
-
 // API: Lấy danh sách nhiệm vụ cứu hộ
 export const getRescueMissions = async (req, res) => {
     try {
@@ -1081,5 +1098,41 @@ export const getVolunteerStats = async (req, res) => {
         return res.status(200).json({ stats });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi thống kê tình nguyện viên", error: error.message });
+    }
+};
+
+
+export const getAllStatistics = async (req, res) => {
+    try {
+
+        // Thống kê tổng số bài viết
+        const totalPosts = await mongoose.model("Post").countDocuments({ postStatus: { $in: ["public", "pending"] } });
+
+        // Thống kê tổng số thú cưng
+        const totalPets = await mongoose.model("PetProfile").countDocuments({ isDeleted: false });
+
+        // Thống kê tổng số người dùng
+        const totalUsers = await mongoose.model("User").countDocuments({ isActive: true });
+
+        // Thống kê tổng số tình nguyện viên
+        const totalVolunteers = await mongoose.model("User").countDocuments({
+            volunteerStatus: { $in: ["alreadyRescue", "not ready"] }
+        });
+
+        // Trả về kết quả thống kê
+        return res.status(200).json({
+            statistics: {
+                totalPosts,
+                totalPets,
+                totalUsers,
+                totalVolunteers
+            }
+        });
+    } catch (error) {
+        console.error("Error in getStatistics:", error);
+        return res.status(500).json({
+            message: "Lỗi server khi lấy thống kê",
+            error: error.message
+        });
     }
 };

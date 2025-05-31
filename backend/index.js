@@ -1,5 +1,6 @@
 import app from "./app.js"
 import { startSocketServer } from "./socket.js";
+import { scheduleEventReminderEmails } from "./src/Jobs/AutoSendMailUpcomingEvent.js";
 import { 
     // startMissionTimeoutJob,
      checkMissionTimeouts } from './src/Jobs/MissionTimeoutJob.js';
@@ -11,3 +12,4 @@ app.listen(PORT, () => {
 startSocketServer(SocketPort);
 // startMissionTimeoutJob();
 checkMissionTimeouts()
+scheduleEventReminderEmails()

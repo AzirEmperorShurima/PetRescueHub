@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { heroSlides, testimonials } from '../../mocks';
+import homeMock from '../../mocks/homeMock';
 import styles from './Home.module.css';
 
 import FeatureSection from './components/FeatureSection/FeatureSection';
@@ -12,6 +12,8 @@ import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
 import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider';
 import VolunteerRegistrationButton from '../../components/button/VolunteerRegistrationButton';
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
+
+const { heroSlides, testimonials } = homeMock;
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);

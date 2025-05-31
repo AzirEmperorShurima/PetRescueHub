@@ -21,7 +21,8 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  useDisclosure
+  useDisclosure,
+  useToast
 } from '@chakra-ui/react';
 import { FaPlus, FaSearch } from 'react-icons/fa';
 import './Event.css';
@@ -34,6 +35,7 @@ import EventCalendar from './components/EventCalendar';
 const Event = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -56,15 +58,17 @@ const Event = () => {
           postType: 'EventPost',
           limit: 100
         });
+        console.log('Response:', response.data);
         const eventsList = response.data?.data || [];
         
-        // Set featured event (first approved event or first event)
-        const featured = eventsList.find(event => 
-          event.status === 'approved' && event.featured
-        ) || eventsList[0];
+        // Lọc các sự kiện đã được duyệt (có postStatus là public)
+        const approvedEvents = eventsList.filter(event => event.postStatus === 'public');
+        
+        // Set featured event (first approved event)
+        const featured = approvedEvents.find(event => event.featured) || approvedEvents[0];
         
         setFeaturedEvent(featured);
-        setEvents(eventsList.filter(event => event._id !== featured?._id));
+        setEvents(approvedEvents.filter(event => event._id !== featured?._id));
         
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -86,6 +90,13 @@ const Event = () => {
       navigate('/auth/login', { state: { returnUrl: '/event/create' } });
       return;
     }
+    toast({
+      title: "Thông báo",
+      description: "Sự kiện của bạn sẽ được hiển thị sau khi được admin duyệt. Bạn có thể xem sự kiện trong lịch sự kiện.",
+      status: "info",
+      duration: 5000,
+      isClosable: true,
+    });
     navigate('/event/create');
   };
 

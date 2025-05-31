@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { VStack, Button, useToast } from '@chakra-ui/react';
 import { AddIcon, QuestionIcon, CalendarIcon } from '@chakra-ui/icons';
 import { useAuth } from '../../../components/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Custom Pet Icon component
 const PetsIcon = (props) => (
@@ -21,6 +22,7 @@ const ForumActions = ({
 }) => {
   const { user } = useAuth(); // Sử dụng trực tiếp useAuth hook
   const toast = useToast();
+  const navigate = useNavigate();
 
   // Toast configuration for unauthenticated users
   const showAuthToast = (message) => {
@@ -56,9 +58,9 @@ const ForumActions = ({
     handleCreatePost('FindLostPetPost', 'Vui lòng đăng nhập để đăng tin tìm thú cưng');
   }, [handleCreatePost]);
 
-  const handleCreateEvent = useCallback(() => {
-    handleCreatePost('EventPost', 'Vui lòng đăng nhập để tạo sự kiện mới');
-  }, [handleCreatePost]);
+  const handleCreateEvent = () => {
+    navigate('/event/create');
+  };
 
   return (
     <VStack spacing={3} className="forum-create-buttons" w="full">

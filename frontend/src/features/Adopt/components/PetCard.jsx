@@ -30,7 +30,7 @@ import {
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-const DEFAULT_PET_IMAGE = 'https://khoinguonsangtao.vn/wp-content/uploads/2022/08/anh-meo-cam-phong-lon-meme-meo-cosplay-hoang-thuong.jpg';
+const DEFAULT_PET_IMAGE = 'https://img-9gag-fun.9cache.com/photo/aGpdDgw_460s.jpg';
 
 const PetCard = ({ 
   pet = {}, 

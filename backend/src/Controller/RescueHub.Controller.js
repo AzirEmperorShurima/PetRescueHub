@@ -1030,7 +1030,7 @@ const isValidId = (id) => isValidObjectId(id);
  */
 export const searchUserRescueMissions = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user._id; // Lấy userId từ middleware xác thực
         if (!isValidId(userId)) {
             return res.status(400).json({ message: "ID người dùng không hợp lệ" });
         }
@@ -1045,12 +1045,13 @@ export const searchUserRescueMissions = async (req, res) => {
             limit = 10, // Số bản ghi mỗi trang
         } = req.query;
 
-        // Xây dựng điều kiện truy vấn
+ 
         const query = { requester: userId };
 
-        // Lọc theo trạng thái
+
+        let statuses = [];
         if (status) {
-            const statuses = status.split(",").map((s) => s.trim());
+            statuses = status.split(",").map((s) => s.trim());
             const validStatuses = ["pending", "in_progress", "completed", "cancelled", "timeout"];
             if (statuses.every((s) => validStatuses.includes(s))) {
                 query.status = { $in: statuses };
@@ -1059,7 +1060,6 @@ export const searchUserRescueMissions = async (req, res) => {
             }
         }
 
-        // Tìm kiếm theo từ khóa (missionId hoặc petRescueDetails)
         if (keyword) {
             query.$or = [
                 { missionId: { $regex: keyword, $options: "i" } },
@@ -1067,7 +1067,6 @@ export const searchUserRescueMissions = async (req, res) => {
             ];
         }
 
-        // Lọc theo khoảng thời gian
         if (startDate || endDate) {
             query.startedAt = {};
             if (startDate) {
@@ -1078,13 +1077,13 @@ export const searchUserRescueMissions = async (req, res) => {
             }
         }
 
-        // Phân loại yêu cầu hiện tại và lịch sử
+        // Định nghĩa trạng thái hiện tại và lịch sử
         const currentStatuses = ["pending", "in_progress"];
         const historyStatuses = ["completed", "cancelled", "timeout"];
-        const isCurrent = status && statuses.every((s) => currentStatuses.includes(s));
-        const isHistory = status && statuses.every((s) => historyStatuses.includes(s));
+        const isCurrent = status && statuses.length > 0 && statuses.every((s) => currentStatuses.includes(s));
+        const isHistory = status && statuses.length > 0 && statuses.every((s) => historyStatuses.includes(s));
 
-        // Tính toán phân trang
+       
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         if (isNaN(pageNum) || isNaN(limitNum) || pageNum < 1 || limitNum < 1) {
@@ -1092,20 +1091,19 @@ export const searchUserRescueMissions = async (req, res) => {
         }
         const skip = (pageNum - 1) * limitNum;
 
-        // Truy vấn cơ sở dữ liệu
+        
         const missions = await PetRescueMissionHistory.find(query)
-            .populate("requester", "fullname email") // Chỉ lấy fullname và email
+            .populate("requester", "fullname email") 
             .populate("selectedVolunteers", "fullname email")
             .populate("acceptedVolunteer", "fullname email")
-            .sort({ startedAt: -1 }) // Sắp xếp theo thời gian bắt đầu (mới nhất trước)
+            .sort({ startedAt: -1 }) 
             .skip(skip)
             .limit(limitNum)
             .lean();
 
-        // Đếm tổng số bản ghi
         const total = await PetRescueMissionHistory.countDocuments(query);
 
-        // Phân loại kết quả
+
         const response = {
             current: isHistory ? [] : missions.filter((m) => currentStatuses.includes(m.status)),
             history: isCurrent ? [] : missions.filter((m) => historyStatuses.includes(m.status)),
@@ -1115,8 +1113,7 @@ export const searchUserRescueMissions = async (req, res) => {
             totalPages: Math.ceil(total / limitNum),
         };
 
-        // Nếu không lọc trạng thái cụ thể, trả về tất cả
-        if (!isCurrent && !isHistory) {
+        if (!status || (!isCurrent && !isHistory)) {
             response.current = missions.filter((m) => currentStatuses.includes(m.status));
             response.history = missions.filter((m) => historyStatuses.includes(m.status));
         }

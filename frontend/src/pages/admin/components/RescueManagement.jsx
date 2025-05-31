@@ -51,26 +51,50 @@ const RescueManagement = () => {
   });
 
   useEffect(() => {
+    console.log('Component RescueManagement mounted');
     fetchRescues();
   }, []);
 
   const fetchRescues = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/PetRescue/rescue/requests/v1/all');
-      const rescuesData = response.data.rescues || [];
+      console.log('Bắt đầu fetch dữ liệu cứu hộ...');
+      
+      // Gọi API lấy danh sách cứu hộ
+      const rescuesResponse = await api.get('/admin/rescue-missions/');
+      console.log('Response từ API rescue-missions:', rescuesResponse.data);
+      
+      // Gọi API lấy thống kê theo trạng thái
+      const statsResponse = await api.get('/admin/rescue-missions/stats/status');
+      console.log('Response từ API stats/status:', statsResponse.data);
+
+      // Xử lý dữ liệu cứu hộ
+      const rescuesData = rescuesResponse.data.missions || rescuesResponse.data.stats || [];
+      console.log('Dữ liệu cứu hộ sau khi xử lý:', rescuesData);
+      
       setRescues(rescuesData);
       
-      // Tính toán thống kê
+      // Xử lý dữ liệu thống kê
+      const statsData = statsResponse.data.stats || [];
+      console.log('Dữ liệu thống kê gốc:', statsData);
+
+      // Tính toán stats từ dữ liệu
       const stats = {
         total: rescuesData.length,
         inProgress: rescuesData.filter(r => r.status === 'in_progress').length,
         completed: rescuesData.filter(r => r.status === 'completed').length,
         failed: rescuesData.filter(r => r.status === 'failed').length
       };
+      console.log('Stats sau khi xử lý:', stats);
+      
       setStats(stats);
     } catch (error) {
-      console.error('Error fetching rescues:', error);
+      console.error('Lỗi khi fetch dữ liệu cứu hộ:', error);
+      console.error('Chi tiết lỗi:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
     } finally {
       setLoading(false);
     }
@@ -127,6 +151,77 @@ const RescueManagement = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const formatLocation = (location) => {
+    if (!location) return 'Không có';
+    
+    // Nếu location là object GeoJSON
+    if (typeof location === 'object' && location.coordinates) {
+      const [longitude, latitude] = location.coordinates;
+      return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+    }
+    
+    // Nếu location là string
+    return location;
+  };
+
+  const formatVolunteers = (volunteers) => {
+    if (!volunteers || !Array.isArray(volunteers)) return 'Không có';
+    return volunteers.map(v => v.fullname).join(', ');
+  };
+
+  // Thêm hàm xử lý chi tiết cứu hộ
+  const handleViewDetails = async (rescueId) => {
+    try {
+      console.log('Đang fetch chi tiết cứu hộ với ID:', rescueId);
+      const response = await api.get(`/admin/rescue-missions/${rescueId}`);
+      console.log('Chi tiết cứu hộ:', response.data);
+      handleOpenDialog(response.data);
+    } catch (error) {
+      console.error('Lỗi khi fetch chi tiết cứu hộ:', error);
+      console.error('Chi tiết lỗi:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+    }
+  };
+
+  // Thêm hàm xử lý hủy cứu hộ
+  const handleCancelRescue = async (rescueId) => {
+    try {
+      console.log('Đang hủy cứu hộ với ID:', rescueId);
+      const response = await api.post(`/admin/rescue-missions/${rescueId}/cancel`);
+      console.log('Kết quả hủy cứu hộ:', response.data);
+      // Refresh lại danh sách sau khi hủy
+      fetchRescues();
+    } catch (error) {
+      console.error('Lỗi khi hủy cứu hộ:', error);
+      console.error('Chi tiết lỗi:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+    }
+  };
+
+  // Thêm hàm xử lý khóa/mở khóa cứu hộ
+  const handleToggleLock = async (rescueId) => {
+    try {
+      console.log('Đang toggle lock cứu hộ với ID:', rescueId);
+      const response = await api.post(`/admin/rescue-missions/${rescueId}/toggle-lock`);
+      console.log('Kết quả toggle lock:', response.data);
+      // Refresh lại danh sách sau khi toggle
+      fetchRescues();
+    } catch (error) {
+      console.error('Lỗi khi toggle lock cứu hộ:', error);
+      console.error('Chi tiết lỗi:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+    }
   };
 
   return (
@@ -213,13 +308,13 @@ const RescueManagement = () => {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>ID</TableCell>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Tiêu đề</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Người yêu cầu</TableCell>
                 <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Địa điểm</TableCell>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Loại động vật</TableCell>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Người báo cáo</TableCell>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 140 }}>Thời gian báo cáo</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Tình nguyện viên được chọn</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Tình nguyện viên nhận nhiệm vụ</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 140 }}>Thời gian bắt đầu</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 140 }}>Thời gian kết thúc</TableCell>
                 <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Trạng thái</TableCell>
-                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Người được giao</TableCell>
                 <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Thao tác</TableCell>
               </TableRow>
             </TableHead>
@@ -228,26 +323,35 @@ const RescueManagement = () => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((rescue) => (
                   <TableRow key={rescue._id}>
-                    <TableCell>{rescue._id}</TableCell>
-                    <TableCell>{rescue.title}</TableCell>
-                    <TableCell>{rescue.location}</TableCell>
-                    <TableCell>
-                      {rescue.animalType === 'dog' && 'Chó'}
-                      {rescue.animalType === 'cat' && 'Mèo'}
-                      {rescue.animalType === 'bird' && 'Chim'}
-                      {rescue.animalType === 'snake' && 'Rắn'}
-                      {!['dog', 'cat', 'bird', 'snake'].includes(rescue.animalType) && rescue.animalType}
-                    </TableCell>
-                    <TableCell>{rescue.reportedBy}</TableCell>
-                    <TableCell>{formatDate(rescue.reportedAt)}</TableCell>
+                    <TableCell>{rescue.missionId}</TableCell>
+                    <TableCell>{rescue.requester?.fullname || 'Không có'}</TableCell>
+                    <TableCell>{formatLocation(rescue.location)}</TableCell>
+                    <TableCell>{formatVolunteers(rescue.selectedVolunteers)}</TableCell>
+                    <TableCell>{rescue.acceptedVolunteer?.fullname || 'Chưa có'}</TableCell>
+                    <TableCell>{formatDate(rescue.startedAt)}</TableCell>
+                    <TableCell>{rescue.endedAt ? formatDate(rescue.endedAt) : 'Chưa kết thúc'}</TableCell>
                     <TableCell>{getStatusChip(rescue.status)}</TableCell>
-                    <TableCell>{rescue.assignedTo}</TableCell>
                     <TableCell>
-                      <Tooltip title="Xem chi tiết">
-                        <IconButton onClick={() => handleOpenDialog(rescue)}>
-                          <ViewIcon />
-                        </IconButton>
-                      </Tooltip>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Tooltip title="Xem chi tiết">
+                          <IconButton onClick={() => handleViewDetails(rescue._id)}>
+                            <ViewIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Hủy cứu hộ">
+                          <IconButton 
+                            onClick={() => handleCancelRescue(rescue._id)}
+                            disabled={rescue.status === 'completed' || rescue.status === 'failed' || rescue.status === 'cancelled'}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={rescue.isLocked ? "Mở khóa" : "Khóa"}>
+                          <IconButton onClick={() => handleToggleLock(rescue._id)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}

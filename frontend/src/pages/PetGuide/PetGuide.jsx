@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Box,
   Heading,
@@ -39,6 +39,9 @@ const PetGuide = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [videoLinks, setVideoLinks] = useState([]);
+  const [bookLinks, setBookLinks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const videoData = useMemo(() => [
     {
@@ -211,10 +214,12 @@ const PetGuide = () => {
       _hover={{ shadow: 'lg', borderColor: 'pink.200', transform: 'scale(1.02)' }}
       transition="all 0.3s"
       overflow="hidden"
+      cursor="pointer"
+      onClick={() => window.open(video.url, '_blank')}
     >
       <Box position="relative">
         <Image 
-          src={video.thumbnail} 
+          src={`https://img.youtube.com/vi/${video.embedID}/maxresdefault.jpg`}
           alt={video.title}
           h="48"
           objectFit="cover"
@@ -288,54 +293,36 @@ const PetGuide = () => {
       _hover={{ shadow: 'lg', borderColor: 'blue.200', transform: 'scale(1.02)' }}
       transition="all 0.3s"
       overflow="hidden"
+      cursor="pointer"
+      onClick={() => window.open(resource.link, '_blank')}
     >
       <CardBody p={6}>
         <Flex justify="space-between" align="start" mb={4}>
           <Box 
             p={3} 
             borderRadius="xl" 
-            bg={resource.type === 'pdf' ? 'red.100' : resource.type === 'doc' ? 'blue.100' : 'green.100'}
-            color={resource.type === 'pdf' ? 'red.600' : resource.type === 'doc' ? 'blue.600' : 'green.600'}
+            bg="red.100"
+            color="red.600"
           >
-            <Icon as={resource.type === 'pdf' ? FaFilePdf : resource.type === 'doc' ? FaFileWord : FaNewspaper} w={6} h={6} />
+            <Icon as={FaFilePdf} w={6} h={6} />
           </Box>
           <Badge 
-            colorScheme={resource.difficulty === 'Cơ bản' ? 'green' : resource.difficulty === 'Trung bình' ? 'yellow' : 'red'}
+            colorScheme="green"
             px={3} 
             py={1} 
             fontSize="xs"
             fontWeight="semibold"
             borderRadius="full"
           >
-            {resource.difficulty}
+            Tài liệu
           </Badge>
         </Flex>
         <Heading size="md" color="gray.800" mb={3} _groupHover={{ color: 'blue.600' }}>
-          {resource.title}
+          {resource.title || 'Tài liệu hướng dẫn'}
         </Heading>
         <Text color="gray.600" fontSize="sm" mb={4} noOfLines={2}>
-          {resource.preview}
+          {resource.preview || 'Tài liệu hướng dẫn chi tiết về cách chăm sóc thú cưng'}
         </Text>
-        <Flex justify="space-between" align="center" color="gray.500" fontSize="sm" mb={4}>
-          {resource.pages && (
-            <HStack spacing={1}>
-              <Icon as={FaBook} w={4} h={4} />
-              <Text>{resource.pages} trang</Text>
-            </HStack>
-          )}
-          {resource.readTime && (
-            <HStack spacing={1}>
-              <Icon as={FaClock} w={4} h={4} />
-              <Text>{resource.readTime}</Text>
-            </HStack>
-          )}
-          {resource.downloadCount && (
-            <HStack spacing={1}>
-              <Icon as={FaDownload} w={4} h={4} />
-              <Text>{resource.downloadCount}</Text>
-            </HStack>
-          )}
-        </Flex>
         <Button
           colorScheme="blue"
           bgGradient="linear(to-r, blue.500, purple.600)"
@@ -348,11 +335,33 @@ const PetGuide = () => {
           _groupHover={{ transform: 'scale(1.05)', boxShadow: 'xl' }}
           transition="all 0.2s"
         >
-          {resource.type === 'article' ? 'Đọc ngay' : 'Tải xuống'}
+          Xem tài liệu
         </Button>
       </CardBody>
     </Card>
   );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [videoRes, bookRes] = await Promise.all([
+          fetch('/link.json'),
+          fetch('/linksach.json')
+        ]);
+        const videoData = await videoRes.json();
+        const bookData = await bookRes.json();
+        setVideoLinks(videoData);
+        setBookLinks(bookData);
+      } catch (err) {
+        setVideoLinks([]);
+        setBookLinks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <Box minH="100vh" bgGradient="linear(to-br, pink.50, purple.50, blue.50)">
@@ -516,14 +525,14 @@ const PetGuide = () => {
           <Box p={8}>
             {activeTab === 0 ? (
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                {filteredVideos.map((video) => (
-                  <VideoCard key={video.id} video={video} />
+                {videoLinks.map((item, idx) => (
+                  <VideoCard key={idx} video={item} />
                 ))}
               </SimpleGrid>
             ) : (
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                {filteredResources.map((resource) => (
-                  <ResourceCard key={resource.id} resource={resource} />
+                {bookLinks.map((item, idx) => (
+                  <ResourceCard key={idx} resource={item} />
                 ))}
               </SimpleGrid>
             )}

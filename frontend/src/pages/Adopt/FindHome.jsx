@@ -779,6 +779,10 @@ const FindHome = () => {
       petData.append('gender', formData.petInfo.gender);
       petData.append('petDetails', formData.petInfo.petDetails);
       petData.append('reproductiveStatus', formData.petInfo.reproductiveStatus || 'not neutered');
+      
+      // Xử lý petState
+      const petState = formData.petInfo.petState === 'ReadyToAdopt' ? 'ReadyToAdopt' : 'NotReadyToAdopt';
+      petData.append('petState', petState);
 
       // Thêm các trường tùy chọn nếu có giá trị
       if (formData.petInfo.petDob) {

@@ -8,7 +8,6 @@ import UserManagement from './components/UserManagement';
 import PetManagement from './components/PetManagement';
 import VolunteerManagement from './components/VolunteerManagement';
 import PostManagement from './components/PostManagement';
-import DonationManagement from './components/DonationManagement';
 import AdminProfile from './components/AdminProfile';
 import RescueManagement from './components/RescueManagement';
 import ReportManagement from './components/ReportManagement';
@@ -39,7 +38,6 @@ const AdminApp = () => {
           <Route path="pets" element={<PetManagement />} />
           <Route path="volunteers" element={<VolunteerManagement />} />
           <Route path="post" element={<PostManagement />} />
-          <Route path="donations" element={<DonationManagement />} />
           <Route path="rescues" element={<RescueManagement />} />
           <Route path="profile" element={<AdminProfile />} />
           <Route path="reports" element={<ReportManagement />} />

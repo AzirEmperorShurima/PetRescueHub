@@ -116,24 +116,43 @@ const Profile = () => {
       setIsSaving(true);
 
       // Chuẩn bị dữ liệu để gửi lên server
-      const profileData = {
-        fullName: editedUser.fullname,
-        email: editedUser.email,
-        phonenumber: editedUser.phonenumber,
-        address: editedUser.address,
-        birthdate: editedUser.birthdate,
-        gender: editedUser.gender,
-        bio: editedUser.bio
-      };
+      const profileData = new FormData();
+      profileData.append('fullName', editedUser.fullname);
+      profileData.append('email', editedUser.email);
+      profileData.append('phonenumber', editedUser.phonenumber);
+      profileData.append('address', editedUser.address);
+      profileData.append('birthdate', editedUser.birthdate ? new Date(editedUser.birthdate).toISOString() : '');
+      profileData.append('gender', editedUser.gender === 'not_provided' ? 'not provided' : editedUser.gender);
+      profileData.append('bio', editedUser.bio || '');
+
+      // Log dữ liệu trước khi gửi
+      // console.log('Dữ liệu gửi lên server:', {
+      //   fullName: editedUser.fullname,
+      //   email: editedUser.email,
+      //   phonenumber: editedUser.phonenumber,
+      //   address: editedUser.address,
+      //   birthdate: editedUser.birthdate ? new Date(editedUser.birthdate).toISOString() : '',
+      //   gender: editedUser.gender === 'not_provided' ? 'not provided' : editedUser.gender,
+      //   bio: editedUser.bio || ''
+      // });
 
       // Gọi API để cập nhật thông tin
       const response = await apiService.auth.updateProfile(profileData);
 
       if (response && response.data) {
+        // Log response từ server
+        console.log('Response từ server:', response.data);
+
         // Cập nhật state với dữ liệu mới
         setUser({
           ...user,
-          ...profileData,
+          fullname: editedUser.fullname,
+          email: editedUser.email,
+          phonenumber: editedUser.phonenumber,
+          address: editedUser.address,
+          birthdate: editedUser.birthdate,
+          gender: editedUser.gender === 'not_provided' ? 'not provided' : editedUser.gender,
+          bio: editedUser.bio,
           updatedAt: new Date().toISOString()
         });
 
@@ -151,6 +170,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật thông tin:', error);
+      console.error('Chi tiết lỗi:', error.response?.data);
       toast({
         title: 'Lỗi',
         description: error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin!',
@@ -570,8 +590,9 @@ const Profile = () => {
                                     <Input
                                       name="fullname"
                                       value={editedUser.fullname || ''}
-                                      onChange={textColor}
+                                      onChange={handleInputChange}
                                       size="sm"
+                                      placeholder="Nhập họ và tên"
                                     />
                                   ) : (
                                     <Text fontSize="sm" color={primaryDark} fontWeight="medium">

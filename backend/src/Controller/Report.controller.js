@@ -15,6 +15,7 @@ export const createReport = async (req, res) => {
             return res.status(400).json({ message: "Thiếu các trường bắt buộc: targetId, reason hoặc reportType" });
         }
 
+        // Kiểm tra tính hợp lệ của targetId
         if (!mongoose.Types.ObjectId.isValid(targetId)) {
             return res.status(400).json({ message: "targetId không hợp lệ" });
         }
@@ -23,7 +24,7 @@ export const createReport = async (req, res) => {
         let targetExists = false;
 
         if (reportType === "User") {
-            const targetUser = await user.findById(targetId);
+            const targetUser = await user.findById(targetId); // Sửa 'user' thành 'User'
             targetExists = !!targetUser;
         } else if (reportType === "Post") {
             const targetPost = await PostModel.findById(targetId);
@@ -31,16 +32,20 @@ export const createReport = async (req, res) => {
         } else if (reportType === "Comment") {
             const targetComment = await Comment.findById(targetId);
             targetExists = !!targetComment;
+        } else {
+            return res.status(400).json({ message: "reportType không hợp lệ" });
         }
 
+        // Sửa lỗi logic: trả về lỗi khi target KHÔNG tồn tại
         if (!targetExists) {
             return res.status(404).json({ message: `Không tìm thấy đối tượng báo cáo (${reportType})` });
         }
 
         // Kiểm tra xem người dùng đã báo cáo đối tượng này chưa
         const existingReport = await Report.findOne({
-            reporter: reporter,
-            targetId: targetId,
+            reporter,
+            targetId,
+            reportType,
             status: { $in: ["Pending", "Reviewed"] }
         });
 
@@ -51,18 +56,27 @@ export const createReport = async (req, res) => {
             });
         }
 
+        // Tạo báo cáo mới
         const report = new Report({
             reporter,
             targetId,
             reportType,
             reason,
-            details: details || ""
+            details: details || "",
+            status: "Pending", // Đảm bảo status mặc định
+            actionTaken: "None" // Đảm bảo actionTaken mặc định
         });
 
         await report.save();
-        res.status(201).json({ message: "Báo cáo đã được gửi thành công", report });
+        return res.status(201).json({
+            message: "Báo cáo đã được gửi thành công",
+            report
+        });
     } catch (error) {
-        res.status(500).json({ message: "Lỗi server", error: error.message });
+        return res.status(500).json({
+            message: "Lỗi server",
+            error: error.message
+        });
     }
 };
 

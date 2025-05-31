@@ -311,7 +311,7 @@ const PetDetail = () => {
         setLoading(true);
         setError(null);
         const petData = await getPetById(id);
-        
+        console.log('PetDetail data:', petData);
         if (isMounted) {
           setPet(petData);
         }
@@ -384,6 +384,15 @@ const PetDetail = () => {
     return statusConfig[status] || { color: 'gray', text: 'Không xác định', icon: FaQuestionCircle };
   };
 
+  const getAuthorInfo = (author) => {
+    if (!author) return null;
+    return {
+      name: author.username || 'Chưa có tên',
+      avatar: author.avatar || '',
+      id: author.id || ''
+    };
+  };
+
   if (loading) {
     return (
       <Box bg={bgColor} minH="100vh" py={8}>
@@ -437,11 +446,12 @@ const PetDetail = () => {
 
   const genderInfo = getGenderInfo(pet.gender);
   const statusInfo = getStatusBadge(pet.status);
+  const authorInfo = getAuthorInfo(pet.author);
   const allImages = [pet.image, ...(pet.album || [])].filter(Boolean);
 
   return (
     <Box bg={bgColor} minH="100vh" py={8}>
-      <Container maxW="7xl">
+      <Container maxW="6xl" py={4}>
         {/* Breadcrumb */}
         <Breadcrumb mb={6} fontSize="sm">
           <BreadcrumbItem>
@@ -460,15 +470,15 @@ const PetDetail = () => {
           </BreadcrumbItem>
         </Breadcrumb>
 
-        <Grid templateColumns={{ base: '1fr', lg: '3fr 2fr' }} gap={8}>
-          {/* Left Column - Images and Info */}
+        <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={10} alignItems="start">
           <GridItem>
-            <VStack spacing={8} align="stretch">
+            <VStack spacing={6} align="stretch">
               {/* Image Gallery */}
-              <ImageGallery images={allImages} />
-              
+              <Box borderRadius="2xl" overflow="hidden" shadow="xl" mb={2}>
+                <ImageGallery images={allImages} />
+              </Box>
               {/* Pet Stats */}
-              <SimpleGrid columns={cardColumns} spacing={4}>
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={2}>
                 {pet.age && (
                   <StatCard 
                     label="Tuổi" 
@@ -500,13 +510,12 @@ const PetDetail = () => {
                   colorScheme={genderInfo.color.split('.')[0]} 
                 />
               </SimpleGrid>
-
               {/* Pet Information Tabs */}
-              <Tabs variant="soft-rounded" colorScheme="blue">
+              <Tabs variant="enclosed-colored" colorScheme="blue" borderRadius="xl" bg={useColorModeValue('white', 'gray.800')} boxShadow="md" p={4}>
                 <TabList mb={4}>
-                  <Tab>Thông tin cơ bản</Tab>
-                  <Tab>Sức khỏe</Tab>
-                  <Tab>Mô tả</Tab>
+                  <Tab _selected={{ color: 'white', bg: 'blue.400' }}>Thông tin cơ bản</Tab>
+                  <Tab _selected={{ color: 'white', bg: 'green.400' }}>Sức khỏe</Tab>
+                  <Tab _selected={{ color: 'white', bg: 'purple.400' }}>Mô tả</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel p={0}>
@@ -524,7 +533,6 @@ const PetDetail = () => {
                             </HStack>
                           )}
                         </SimpleGrid>
-
                         <Flex wrap="wrap" gap={3}>
                           <Tag size="lg" colorScheme={pet.reproductiveStatus === 'neutered' ? 'purple' : 'red'}>
                             <TagLeftIcon as={FaSyringe} />
@@ -532,23 +540,32 @@ const PetDetail = () => {
                               {pet.reproductiveStatus === 'neutered' ? 'Đã triệt sản' : 'Chưa triệt sản'}
                             </TagLabel>
                           </Tag>
-
                           {pet.specialNeeds && (
                             <Tag size="lg" colorScheme="orange">
                               <TagLeftIcon as={FaAward} />
                               <TagLabel>Cần chăm sóc đặc biệt</TagLabel>
                             </Tag>
                           )}
-
                           <Tag size="lg" colorScheme={statusInfo.color}>
                             <TagLeftIcon as={statusInfo.icon} />
                             <TagLabel>{statusInfo.text}</TagLabel>
                           </Tag>
                         </Flex>
+                        {pet.tags && pet.tags.length > 0 && (
+                          <Box w="full">
+                            <Text fontSize="sm" fontWeight="medium" mb={2}>Tags:</Text>
+                            <Flex wrap="wrap" gap={2}>
+                              {pet.tags.map((tag, index) => (
+                                <Tag key={index} size="md" colorScheme="blue" variant="subtle">
+                                  {tag}
+                                </Tag>
+                              ))}
+                            </Flex>
+                          </Box>
+                        )}
                       </VStack>
                     </InfoCard>
                   </TabPanel>
-
                   <TabPanel p={0}>
                     <InfoCard title="Thông tin sức khỏe" icon={FaShieldAlt} colorScheme="green">
                       {pet.vaccinationStatus && pet.vaccinationStatus.length > 0 ? (
@@ -559,7 +576,6 @@ const PetDetail = () => {
                               Đã tiêm chủng: {pet.vaccinationStatus.length} mũi
                             </Text>
                           </HStack>
-                          
                           <Box w="full">
                             <Text fontSize="sm" color={textColor} mb={2}>
                               Tiến độ tiêm chủng:
@@ -571,7 +587,6 @@ const PetDetail = () => {
                               borderRadius="md"
                             />
                           </Box>
-
                           <VStack align="start" spacing={2} w="full">
                             {pet.vaccinationStatus.map((vaccine, index) => (
                               <HStack 
@@ -603,11 +618,10 @@ const PetDetail = () => {
                       )}
                     </InfoCard>
                   </TabPanel>
-
                   <TabPanel p={0}>
                     <InfoCard title="Mô tả chi tiết" icon={FaStar} colorScheme="purple">
                       <Text whiteSpace="pre-line" lineHeight="1.6">
-                        {pet.description || "Chưa có mô tả chi tiết về thú cưng này."}
+                        {pet.content || pet.description || "Chưa có mô tả chi tiết về thú cưng này."}
                       </Text>
                     </InfoCard>
                   </TabPanel>
@@ -615,17 +629,15 @@ const PetDetail = () => {
               </Tabs>
             </VStack>
           </GridItem>
-
-          {/* Right Column - Contact Info */}
           <GridItem>
-            <VStack spacing={6} position="sticky" top="20px">
+            <VStack spacing={6} position="sticky" top="20px" align="stretch">
               {/* Pet Header Card */}
-              <Card w="full" overflow="hidden" variant="elevated" shadow="xl">
+              <Card w="full" overflow="hidden" variant="elevated" shadow="xl" borderRadius="2xl">
                 <CardBody p={6}>
-                  <VStack spacing={6} align="stretch">
+                  <VStack spacing={4} align="stretch">
                     <HStack justify="space-between" align="start">
                       <VStack align="start" spacing={2}>
-                        <Heading size="xl" color="blue.600" _dark={{ color: "blue.300" }}>
+                        <Heading size="lg" color="blue.600" _dark={{ color: "blue.300" }}>
                           {pet.name}
                         </Heading>
                         {pet.location && (
@@ -655,7 +667,6 @@ const PetDetail = () => {
                         />
                       </VStack>
                     </HStack>
-
                     {pet.breed && (
                       <Badge 
                         colorScheme="blue" 
@@ -671,79 +682,30 @@ const PetDetail = () => {
                   </VStack>
                 </CardBody>
               </Card>
-
-              {/* Contact Information */}
-              <InfoCard title="Thông tin liên hệ" icon={FaUser} colorScheme="teal">
-                {pet.contactInfo ? (
+              {/* Author Information */}
+              {authorInfo && (
+                <InfoCard title="Thông tin người đăng" icon={FaUser} colorScheme="teal">
                   <VStack align="start" spacing={4} w="full">
                     <HStack>
-                      <Avatar size="md" name={pet.contactInfo.name}>
-                        <AvatarBadge boxSize="1.25em" bg="green.500" />
-                      </Avatar>
+                      <Avatar size="md" src={authorInfo.avatar} name={authorInfo.name} />
                       <VStack align="start" spacing={0}>
-                        <Text fontWeight="semibold">
-                          {pet.contactInfo.name || 'Người liên hệ'}
-                        </Text>
-                        <Text fontSize="sm" color={textColor}>
-                          Chủ sở hữu
-                        </Text>
+                        <Text fontWeight="semibold">{authorInfo.name}</Text>
+                        <Text fontSize="sm" color={textColor}>Người đăng</Text>
                       </VStack>
                     </HStack>
-                    
-                    {pet.contactInfo.phone && (
-                      <Button
-                        leftIcon={<FaPhone />}
-                        colorScheme="green"
-                        variant="solid"
-                        w="full"
-                        size="lg"
-                        onClick={() => window.location.href = `tel:${pet.contactInfo.phone}`}
-                        _hover={{ transform: "translateY(-1px)", shadow: "lg" }}
-                      >
-                        {pet.contactInfo.phone}
-                      </Button>
-                    )}
-
-                    {pet.contactInfo.email && (
-                      <Button
-                        leftIcon={<FaEnvelope />}
-                        colorScheme="blue"
-                        variant="outline"
-                        w="full"
-                        size="lg"
-                        onClick={() => window.location.href = `mailto:${pet.contactInfo.email}`}
-                        _hover={{ transform: "translateY(-1px)", shadow: "lg" }}
-                      >
-                        Gửi email
-                      </Button>
-                    )}
-
-                    {pet.contactInfo.notes && (
-                      <Box
-                        bg="teal.50"
-                        p={4}
-                        borderRadius="lg"
-                        w="full"
-                        border="1px"
-                        borderColor="teal.200"
-                        _dark={{ bg: 'teal.900', borderColor: 'teal.700' }}
-                      >
-                        <Text fontSize="sm" fontStyle="italic">
-                          "{pet.contactInfo.notes}"
-                        </Text>
-                      </Box>
-                    )}
+                    <Button
+                      leftIcon={<FaEnvelope />}
+                      colorScheme="blue"
+                      variant="outline"
+                      w="full"
+                      size="lg"
+                      onClick={() => navigate(`/profile/${authorInfo.id}`)}
+                    >
+                      Xem trang cá nhân
+                    </Button>
                   </VStack>
-                ) : (
-                  <Alert status="info" borderRadius="md">
-                    <AlertIcon />
-                    <AlertDescription>
-                      Thông tin liên hệ sẽ được cập nhật sớm
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </InfoCard>
-
+                </InfoCard>
+              )}
               {/* Microchip Info */}
               {pet.microchipId && (
                 <InfoCard title="Thông tin định danh" icon={FaQrcode} colorScheme="gray">
@@ -756,6 +718,19 @@ const PetDetail = () => {
                   </HStack>
                 </InfoCard>
               )}
+              {/* Post Stats */}
+              <InfoCard title="Thống kê" icon={FaStar} colorScheme="purple">
+                <SimpleGrid columns={2} spacing={4}>
+                  <Stat>
+                    <StatLabel>Lượt thích</StatLabel>
+                    <StatNumber>{pet.favoriteCount || 0}</StatNumber>
+                  </Stat>
+                  <Stat>
+                    <StatLabel>Bình luận</StatLabel>
+                    <StatNumber>{pet.commentCount || 0}</StatNumber>
+                  </Stat>
+                </SimpleGrid>
+              </InfoCard>
             </VStack>
           </GridItem>
         </Grid>

@@ -44,10 +44,16 @@ const MyRescueRequests = () => {
     try {
       setHistoryLoading(true);
       const response = await api.get('/PetRescue/rescue/rescue-missions/me?status=completed,cancelled,timeout');
-      if (response.data.success) {
-        setHistoryRequests(response.data.data || []);
-      }
+      console.log('History response:', response.data);
+      
+      // Kiểm tra và lấy mảng history từ response
+      const historyData = response.data?.data?.history || [];
+      setHistoryRequests(Array.isArray(historyData) ? historyData : []);
+      
+      // Log để debug
+      console.log('History data after processing:', historyData);
     } catch (error) {
+      console.error('Error fetching history:', error);
       toast({
         title: 'Lỗi',
         description: 'Không thể tải lịch sử yêu cầu cứu hộ',
@@ -55,6 +61,7 @@ const MyRescueRequests = () => {
         duration: 3000,
         isClosable: true,
       });
+      setHistoryRequests([]); // Set empty array on error
     } finally {
       setHistoryLoading(false);
     }

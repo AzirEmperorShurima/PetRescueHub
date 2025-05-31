@@ -159,31 +159,54 @@ export const updateForumPost = async (req, res) => {
     }
 };
 
+
 export const createNewForumPost = async (req, res) => {
     try {
         const {
-            title, content, tags, postType,
-            questionDetails, lostPetInfo,
-            eventStartDate, eventEndDate,
-            eventLongitude, eventLatitude, eventLocation
+            title,
+            content,
+            tags,
+            postType,
+            questionDetails,
+            lostPetInfo,
+            eventStartDate,
+            eventEndDate,
+            eventLongitude,
+            eventLatitude,
+            eventLocation
         } = req.body;
 
         const imgUrl = req.uploadedImageUrls || [];
         const userId = req.user?._id;
+
+       
         console.log("Data resolving:", {
-            title, content, tags, postType,
-            questionDetails, lostPetInfo,
-            eventStartDate, eventEndDate,
-            eventLongitude, eventLatitude, eventLocation,
-            imgUrl, userId
+            title,
+            content,
+            tags,
+            postType,
+            questionDetails,
+            lostPetInfo,
+            eventStartDate,
+            eventEndDate,
+            eventLongitude,
+            eventLatitude,
+            eventLocation,
+            imgUrl,
+            userId
         });
 
-        if (!userId) {
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Bạn cần đăng nhập để đăng bài" });
         }
 
         if (!title || !content || !postType) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Thiếu thông tin bắt buộc" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Thiếu thông tin bắt buộc: title, content hoặc postType" });
+        }
+
+        const validPostTypes = ["ForumPost", "Question", "FindLostPetPost", "EventPost"];
+        if (!validPostTypes.includes(postType)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: `postType không hợp lệ. Phải là một trong: ${validPostTypes.join(", ")}` });
         }
 
         const baseData = {
@@ -192,49 +215,57 @@ export const createNewForumPost = async (req, res) => {
             tags: Array.isArray(tags) ? tags : tags ? [tags] : [],
             imgUrl: Array.isArray(imgUrl) ? imgUrl : [],
             author: new mongoose.Types.ObjectId(String(userId)),
-            postStatus: 'pending',
             violate_tags: [],
             createdAt: new Date(),
-            updatedAt: new Date(),
+            updatedAt: new Date()
         };
 
         const postTypeData = {
-            'Question': { questionDetails },
-            'FindLostPetPost': { lostPetInfo },
-            'EventPost': {
+            ForumPost: {},
+            Question: { questionDetails },
+            FindLostPetPost: { lostPetInfo },
+            EventPost: {
                 ...(eventStartDate && { eventStartDate: new Date(eventStartDate) }),
                 ...(eventEndDate && { eventEndDate: new Date(eventEndDate) }),
                 ...(eventLongitude && { eventLongitude: Number(eventLongitude) }),
                 ...(eventLatitude && { eventLatitude: Number(eventLatitude) }),
                 ...(eventLocation && { eventLocation }),
-                postStatus: 'hidden',
-                approvalStatus: 'pending',
+                postStatus: "hidden", 
+                approvalStatus: "pending"
             }
         };
-        const fullPostData = { ...baseData, ...(postTypeData[postType] || {}) };
 
+        const fullPostData = {
+            ...baseData,
+            ...(postTypeData[postType] || {})
+        };
 
-        const PostSubModel = PostModel.discriminators[postType] || PostModel;
+   
+        const PostSubModel = mongoose.model(postType) || mongoose.model("Post");
         const newPost = new PostSubModel(fullPostData);
+
         await newPost.save();
 
-        await moderationQueue.add('moderatePost', {
-            postId: newPost._id.toString(),
-            title: title.trim(),
-            content: content.trim(),
-            postType,
-            userId,
-        }, {
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 1000 }
-        });
+        await moderationQueue.add(
+            "moderatePost",
+            {
+                postId: newPost._id.toString(),
+                title: title.trim(),
+                content: content.trim(),
+                postType,
+                userId
+            },
+            {
+                attempts: 3,
+                backoff: { type: "exponential", delay: 1000 }
+            }
+        );
 
         return res.status(StatusCodes.CREATED).json({
             success: true,
             message: "Đăng bài thành công, đang chờ kiểm duyệt!",
             post: newPost
         });
-
     } catch (error) {
         console.error("❌ Lỗi controller:", error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -244,7 +275,6 @@ export const createNewForumPost = async (req, res) => {
         });
     }
 };
-
 
 
 export const addComment = async (req, res) => {

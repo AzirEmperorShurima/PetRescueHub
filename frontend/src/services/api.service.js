@@ -38,9 +38,18 @@ const apiService = {
     
     // Thông tin người dùng
     getProfile: (targetUser) => api.get(`/auth/get/profile${targetUser ? `/${targetUser}` : ''}`, { withCredentials: true } ),
-    // updateProfile: (userData) => api.put('/auth/update/profile', userData, { withCredentials: true } ),
-    // uploadAvatar: (formData) => api.upload('/auth/update/avatar', formData, { withCredentials: true }),
-},
+    updateProfile: (formData) => {
+      // Kiểm tra nếu là FormData (có upload avatar) thì sử dụng Content-Type phù hợp
+      if (formData instanceof FormData) {
+        return api.put('/user/v1/user/own/profile/update', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true
+        });
+      }
+      // Nếu không phải FormData thì sử dụng Content-Type mặc định
+      return api.put('/auth/v1/user/own/profile/update', formData, { withCredentials: true });
+    },
+  },
   
   // Các API khác
   // Trong phần forum của apiService

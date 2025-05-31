@@ -138,7 +138,6 @@ const AdminLayout = () => {
     { text: 'Quản lý thú cưng', icon: <PetsIcon />, path: '/admin/pets' },
     { text: 'Quản lý tình nguyện viên', icon: <HandshakeIcon />, path: '/admin/volunteers' },
     { text: 'Quản lý bài viết', icon: <EventIcon />, path: '/admin/post' },
-    { text: 'Lịch sử quyên góp', icon: <DonationIcon />, path: '/admin/donations' },
     { text: 'Xử lý báo cáo', icon: <ReportIcon />, path: '/admin/reports' },
   ];
 

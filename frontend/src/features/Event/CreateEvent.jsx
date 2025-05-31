@@ -27,7 +27,9 @@ import {
   ChakraProvider,
   Wrap,
   WrapItem,
-  useToast
+  useToast,
+  Spinner,
+  Center
 } from '@chakra-ui/react';
 import { FiArrowLeft, FiCalendar, FiMapPin, FiPlus, FiX } from 'react-icons/fi';
 import { GiPawPrint } from 'react-icons/gi';
@@ -134,6 +136,7 @@ const theme = extendTheme({
 const CreateEvent = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -169,9 +172,52 @@ const CreateEvent = () => {
   };
 
   const handleDateChange = (name) => (newValue) => {
+    const newDate = newValue ? new Date(newValue) : null;
+    
+    // Validation cho thời gian
+    if (name === 'startDate' && newDate) {
+      // Không cho phép chọn thời gian trong quá khứ
+      if (newDate < new Date()) {
+        toast({
+          title: 'Thời gian không hợp lệ',
+          description: 'Thời gian bắt đầu không thể là thời gian trong quá khứ',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+      
+      // Nếu đã có thời gian kết thúc, kiểm tra xem thời gian bắt đầu có trước thời gian kết thúc không
+      if (formData.endDate && newDate >= formData.endDate) {
+        toast({
+          title: 'Thời gian không hợp lệ',
+          description: 'Thời gian bắt đầu phải trước thời gian kết thúc',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+    }
+    
+    if (name === 'endDate' && newDate) {
+      // Kiểm tra xem thời gian kết thúc có sau thời gian bắt đầu không
+      if (formData.startDate && newDate <= formData.startDate) {
+        toast({
+          title: 'Thời gian không hợp lệ',
+          description: 'Thời gian kết thúc phải sau thời gian bắt đầu',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+    }
+
     setFormData({
       ...formData,
-      [name]: newValue
+      [name]: newDate
     });
   };
 
@@ -251,9 +297,51 @@ const CreateEvent = () => {
       });
       hasError = true;
     }
+
+    // Kiểm tra thời gian hợp lệ
+    if (formData.startDate && formData.endDate) {
+      if (formData.startDate >= formData.endDate) {
+        toast({
+          title: 'Thời gian không hợp lệ',
+          description: 'Thời gian bắt đầu phải trước thời gian kết thúc',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        hasError = true;
+      }
+
+      // Kiểm tra khoảng thời gian tối thiểu (ví dụ: 30 phút)
+      const minDuration = 30 * 60 * 1000; // 30 phút tính bằng milliseconds
+      if (formData.endDate - formData.startDate < minDuration) {
+        toast({
+          title: 'Thời gian không hợp lệ',
+          description: 'Sự kiện phải kéo dài ít nhất 30 phút',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        hasError = true;
+      }
+
+      // Kiểm tra khoảng thời gian tối đa (ví dụ: 7 ngày)
+      const maxDuration = 7 * 24 * 60 * 60 * 1000; // 7 ngày tính bằng milliseconds
+      if (formData.endDate - formData.startDate > maxDuration) {
+        toast({
+          title: 'Thời gian không hợp lệ',
+          description: 'Sự kiện không thể kéo dài quá 7 ngày',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        hasError = true;
+      }
+    }
+
     if (hasError) return;
 
     try {
+      setIsSubmitting(true); // Bắt đầu loading
       const submitData = new FormData();
       submitData.append('title', formData.title);
       submitData.append('content', formData.description);
@@ -289,6 +377,8 @@ const CreateEvent = () => {
         duration: 5000,
         isClosable: true,
       });
+    } finally {
+      setIsSubmitting(false); // Kết thúc loading
     }
   };
 
@@ -464,6 +554,7 @@ const CreateEvent = () => {
                     size="lg"
                     borderRadius="md"
                     fontSize="md"
+                    min={dayjs().format('YYYY-MM-DDTHH:mm')}
                   />
                 </FormControl>
 
@@ -484,6 +575,7 @@ const CreateEvent = () => {
                     size="lg"
                     borderRadius="md"
                     fontSize="md"
+                    min={formData.startDate ? dayjs(formData.startDate).add(30, 'minute').format('YYYY-MM-DDTHH:mm') : dayjs().format('YYYY-MM-DDTHH:mm')}
                   />
                 </FormControl>
 
@@ -611,21 +703,54 @@ const CreateEvent = () => {
                   size="lg"
                   _hover={{ bg: 'gray.100', transform: 'scale(1.05)' }}
                   transition="all 0.2s"
+                  isDisabled={isSubmitting}
                 >
                   Hủy
                 </Button>
                 <Button
                   type="submit"
                   colorScheme="teal"
-                  leftIcon={<FiPlus />}
+                  leftIcon={isSubmitting ? <Spinner size="sm" /> : <FiPlus />}
                   size="lg"
                   _hover={{ transform: 'scale(1.05)', transition: 'all 0.2s' }}
+                  isLoading={isSubmitting}
+                  loadingText="Đang tạo sự kiện..."
+                  isDisabled={isSubmitting}
                 >
-                  Tạo sự kiện
+                  {isSubmitting ? 'Đang tạo sự kiện...' : 'Tạo sự kiện'}
                 </Button>
               </Flex>
             </VStack>
           </form>
+
+          {/* Loading Overlay */}
+          {isSubmitting && (
+            <Center
+              position="fixed"
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+              bg="rgba(0, 0, 0, 0.5)"
+              zIndex={9999}
+            >
+              <VStack spacing={4} bg="white" p={8} borderRadius="lg" boxShadow="xl">
+                <Spinner
+                  thickness="4px"
+                  speed="0.65s"
+                  emptyColor="gray.200"
+                  color="teal.500"
+                  size="xl"
+                />
+                <Text fontSize="lg" fontWeight="medium" color="gray.600">
+                  Đang tạo sự kiện...
+                </Text>
+                <Text fontSize="sm" color="gray.500">
+                  Vui lòng đợi trong giây lát
+                </Text>
+              </VStack>
+            </Center>
+          )}
         </Box>
       </Container>
     </ChakraProvider>
