@@ -24,12 +24,12 @@ export const resignVolunteerService = async (userId) => {
         // Xóa role volunteer
         user.roles = user.roles.filter(role => !role._id.equals(volunteerRole._id));
         user.volunteerRequestStatus = "none";
-        user.volunteerStatus = "not ready";
-        
+        user.volunteerStatus = "none";
+
         await user.save();
 
-        return { 
-            success: true, 
+        return {
+            success: true,
             message: "Đã từ bỏ quyền volunteer thành công!",
             data: user
         };

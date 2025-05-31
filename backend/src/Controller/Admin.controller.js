@@ -296,6 +296,8 @@ export const revokeVolunteerRole = async (req, res) => {
         }
 
         _user.roles = _user.roles.filter(role => role.toString() !== volunteerRole._id.toString());
+        _user.volunteerRequestStatus = "none";
+        _user.volunteerStatus = "none"
         await _user.save();
 
         return res.status(200).json({ message: "Quyền volunteer đã bị thu hồi!" });
@@ -793,3 +795,13 @@ export const deleteAllPosts = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+export const getPetStatistics = async (req, res) => {
+    try {
+        const result = await petManageService.getAllPetStatistics();
+        res.status(200).json(result);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+}

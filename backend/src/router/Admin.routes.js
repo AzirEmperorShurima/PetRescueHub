@@ -27,6 +27,7 @@ import { checkAdminLogin, isAdmin } from "../Middlewares/Check_is_Admin.js";
 import { validatePasswordStrength } from "../Middlewares/validatePasswordStrength.js";
 import { loginHandler } from "../Controller/Auth.Controller.js";
 import { verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware } from "../utils/auth/authUtils.js";
+import { getPetStatistics } from "../Controller/Pet.Controller.js";
 
 const adminRouter = Router();
 
@@ -101,6 +102,7 @@ adminRouter.get('/stats/users', getUserStats);
 adminRouter.patch('/users/:userId/deactivate', deactivateUser);
 
 
+adminRouter.get('/pet/getStatistic', getPetStatistics);
 // Quản lý báo cáo
 adminRouter.get('/reports', getAllReports);
 adminRouter.get('/reports/stats', getReportStats);

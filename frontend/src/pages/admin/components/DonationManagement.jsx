@@ -19,7 +19,8 @@ import {
   IconButton,
   Snackbar,
   Alert,
-  Chip
+  Chip,
+  Container
 } from '@mui/material';
 import { Visibility as VisibilityIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { fDate, fDateTime } from '../../../utils/format-time';
@@ -147,127 +148,129 @@ const DonationManagement = () => {
 
   // Trong phần render của component DonationManagement
   return (
-    <Box sx={{ width: '100%', mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Quản lý quyên góp
-      </Typography>
-      
-      {/* Thêm thống kê tổng số tiền quyên góp */}
-      <Paper elevation={3} sx={{ p: 3, mb: 3, bgcolor: '#f8f9fa' }}>
-        <Typography variant="h6" gutterBottom>
-          Tổng quan
+    <Container maxWidth={false} disableGutters sx={{ px: { xs: 0.5, sm: 2, md: 0.1 }, py: 2 }}>
+      <Box sx={{ width: '100%', mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Quản lý quyên góp
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-          <Box>
-            <Typography variant="body1" color="text.secondary">
-              Tổng số người quyên góp
-            </Typography>
-            <Typography variant="h5">
-              {donations.length} người
-            </Typography>
+        
+        {/* Thêm thống kê tổng số tiền quyên góp */}
+        <Paper elevation={3} sx={{ p: 3, mb: 3, bgcolor: '#f8f9fa' }}>
+          <Typography variant="h6" gutterBottom>
+            Tổng quan
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box>
+              <Typography variant="body1" color="text.secondary">
+                Tổng số người quyên góp
+              </Typography>
+              <Typography variant="h5">
+                {donations.length} người
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body1" color="text.secondary">
+                Tổng số tiền quyên góp
+              </Typography>
+              <Typography variant="h5">
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                  donations.reduce((sum, donation) => sum + donation.amount, 0)
+                )}
+              </Typography>
+            </Box>
           </Box>
-          <Box>
-            <Typography variant="body1" color="text.secondary">
-              Tổng số tiền quyên góp
-            </Typography>
-            <Typography variant="h5">
-              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                donations.reduce((sum, donation) => sum + donation.amount, 0)
-              )}
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
-      
-      <Paper elevation={3} sx={{ width: '100%', mb: 2 }}>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Người quyên góp</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Số tiền</TableCell>
-                <TableCell>Phương thức</TableCell>
-                <TableCell>Trạng thái</TableCell>
-                <TableCell>Ngày quyên góp</TableCell>
-                <TableCell align="center">Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {donations
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((donation) => (
-                  <TableRow key={donation.id}>
-                    <TableCell>{donation.id}</TableCell>
-                    <TableCell>{donation.donorName}</TableCell>
-                    <TableCell>{donation.email}</TableCell>
-                    <TableCell>
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(donation.amount)}
-                    </TableCell>
-                    <TableCell>{donation.paymentMethod}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={donation.status === 'completed' ? 'Hoàn thành' : 'Đang xử lý'} 
-                        color={donation.status === 'completed' ? 'success' : 'warning'}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>{fDate(donation.createdAt)}</TableCell>
-                    <TableCell align="center">
-                      <IconButton 
-                        color="primary" 
-                        onClick={() => handleOpenViewDialog(donation)}
-                        size="small"
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      <IconButton 
-                        color="error" 
-                        onClick={() => handleOpenDeleteDialog(donation)}
-                        size="small"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={donations.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Rows per page:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} of ${count}`}
-          sx={{
-            '.MuiTablePagination-toolbar': {
-              alignItems: 'center',
-              '& > p:first-of-type': {
+        </Paper>
+        
+        <Paper elevation={3} sx={{ width: '100%', mb: 2, boxShadow: 2 }}>
+          <TableContainer sx={{ maxHeight: { xs: 400, md: 650 }, minHeight: 350, overflowX: 'auto' }}>
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 80 }}>ID</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Người quyên góp</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 160, display: { xs: 'none', md: 'table-cell' } }}>Email</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Số tiền</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Phương thức</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Trạng thái</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 140 }}>Ngày quyên góp</TableCell>
+                  <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Thao tác</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {donations
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((donation) => (
+                    <TableRow key={donation.id}>
+                      <TableCell>{donation.id}</TableCell>
+                      <TableCell>{donation.donorName}</TableCell>
+                      <TableCell>{donation.email}</TableCell>
+                      <TableCell>
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(donation.amount)}
+                      </TableCell>
+                      <TableCell>{donation.paymentMethod}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={donation.status === 'completed' ? 'Hoàn thành' : 'Đang xử lý'} 
+                          color={donation.status === 'completed' ? 'success' : 'warning'}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>{fDate(donation.createdAt)}</TableCell>
+                      <TableCell align="center">
+                        <IconButton 
+                          color="primary" 
+                          onClick={() => handleOpenViewDialog(donation)}
+                          size="small"
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                        <IconButton 
+                          color="error" 
+                          onClick={() => handleOpenDeleteDialog(donation)}
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={donations.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Rows per page:"
+            labelDisplayedRows={({ from, to, count }) => `${from}-${to} of ${count}`}
+            sx={{
+              '.MuiTablePagination-toolbar': {
+                alignItems: 'center',
+                '& > p:first-of-type': {
+                  margin: 0,
+                },
+              },
+              '.MuiTablePagination-selectLabel': {
                 margin: 0,
               },
-            },
-            '.MuiTablePagination-selectLabel': {
-              margin: 0,
-            },
-            '.MuiTablePagination-displayedRows': {
-              margin: 0,
-            },
-            '.MuiTablePagination-select': {
-              marginRight: 2,
-              marginLeft: 1,
-            },
-            '.MuiTablePagination-actions': {
-              marginLeft: 2,
-            }
-          }}
-        />
-      </Paper>
+              '.MuiTablePagination-displayedRows': {
+                margin: 0,
+              },
+              '.MuiTablePagination-select': {
+                marginRight: 2,
+                marginLeft: 1,
+              },
+              '.MuiTablePagination-actions': {
+                marginLeft: 2,
+              }
+            }}
+          />
+        </Paper>
+      </Box>
       
       {/* Dialog xóa thông tin quyên góp */}
       <Dialog
@@ -343,7 +346,7 @@ const DonationManagement = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Container>
   );
 };
 

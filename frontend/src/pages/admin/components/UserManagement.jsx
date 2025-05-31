@@ -19,7 +19,8 @@ import {
   IconButton,
   Snackbar,
   Alert,
-  Chip
+  Chip,
+  Container
 } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
@@ -44,7 +45,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get('/api/admin/users');
-      console.log('API users response:', response.data);
+      // console.log('API users response:', response.data);
       const usersData = Array.isArray(response.data.users) ? response.data.users : [];
       setUsers(usersData);
     } catch (error) {
@@ -75,13 +76,26 @@ const UserManagement = () => {
 
   const handleDeleteUser = async () => {
     try {
-      await axios.delete(`/api/admin/users/${selectedUser._id || selectedUser.id}`);
-      setUsers(users.filter(user => user._id !== selectedUser._id && user.id !== selectedUser.id));
-      showSnackbar('Xóa người dùng thành công');
-      handleCloseDeleteDialog();
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/admin/users`,
+        { 
+          data: { id_delete: selectedUser._id },
+          withCredentials: true 
+        }
+      );
+      console.log('API delete response:', response.data);
+
+      if (response.data.success || response.status === 200) {
+        setUsers(users.filter(user => user._id !== selectedUser._id));
+        showSnackbar('Xóa người dùng thành công', 'success');
+        handleCloseDeleteDialog();
+      } else {
+        showSnackbar(response.data.message || 'Không thể xóa người dùng', 'error');
+      }
     } catch (error) {
       console.error('Error deleting user:', error);
-      showSnackbar('Lỗi khi xóa người dùng', 'error');
+      const errorMessage = error?.response?.data?.message || 'Lỗi khi xóa người dùng';
+      showSnackbar(errorMessage, 'error');
     }
   };
 
@@ -104,69 +118,68 @@ const UserManagement = () => {
   const paginatedUsers = Array.isArray(users) ? users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
 
   return (
-    <Box>
+    <Container maxWidth={false} disableGutters sx={{ px: { xs: 0.5, sm: 2, md: 0.1 }, py: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4">Quản lý người dùng</Typography>
       </Box>
 
-      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
+      <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 2 }}>
+        <TableContainer sx={{ maxHeight: { xs: 400, md: 650 }, minHeight: 350, overflowX: 'auto' }}>
+          <Table stickyHeader aria-label="sticky table" size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Avatar</TableCell>
-                <TableCell>Họ tên</TableCell>
-                <TableCell>Giới tính</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Số điện thoại</TableCell>
-                <TableCell>Địa chỉ</TableCell>
-                <TableCell>Vai trò</TableCell>
-                <TableCell>Trạng thái hoạt động</TableCell>
-                <TableCell>Trạng thái TNV</TableCell>
-                <TableCell>Yêu cầu TNV</TableCell>
-                <TableCell>Ngày tạo</TableCell>
-                <TableCell>Hành động</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>ID</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 80 }}>Avatar</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Họ tên</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 80 }}>Giới tính</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 160, display: { xs: 'none', md: 'table-cell' } }}>Email</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Số điện thoại</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 160, display: { xs: 'none', md: 'table-cell' } }}>Địa chỉ</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Vai trò</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Trạng thái hoạt động</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Trạng thái TNV</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Yêu cầu TNV</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Ngày tạo</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 80 }}>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedUsers.map((user) => (
                 <TableRow hover key={user._id || user.id}>
-                  <TableCell>
+                  <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user._id}</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>
                     <img
                       src={user.avatar}
                       alt="avatar"
-                      width={36}
-                      height={36}
-                      style={{ borderRadius: 18, objectFit: 'cover' }}
+                      width={32}
+                      height={32}
+                      style={{ borderRadius: 16, objectFit: 'cover' }}
                       onError={e => { e.target.src = 'https://ui-avatars.com/api/?name=' + (user.fullname || user.username); }}
                     />
                   </TableCell>
-                  <TableCell>{user.fullname}</TableCell>
+                  <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.fullname}</TableCell>
                   <TableCell>{user.gender}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{Array.isArray(user.phonenumber) ? user.phonenumber.join(', ') : user.phonenumber}</TableCell>
-                  <TableCell>{user.address}</TableCell>
-                  <TableCell>
-                    {Array.isArray(user.roles)
-                      ? user.roles.map(r => r.name).join(', ')
-                      : user.roles}
-                  </TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{user.email}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{Array.isArray(user.phonenumber) ? user.phonenumber.join(', ') : user.phonenumber}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.address}</TableCell>
+                  <TableCell>{Array.isArray(user.roles) ? user.roles.map(r => r.name).join(', ') : user.roles}</TableCell>
                   <TableCell>
                     <Chip
                       label={user.isActive ? 'Hoạt động' : 'Khoá'}
                       color={user.isActive ? 'success' : 'error'}
+                      size="small"
                     />
                   </TableCell>
-                  <TableCell>
-                    <Chip label={user.volunteerStatus || 'none'} color={user.volunteerStatus === 'approved' ? 'success' : user.volunteerStatus === 'pending' ? 'warning' : user.volunteerStatus === 'rejected' ? 'error' : 'default'} />
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                    <Chip label={user.volunteerStatus || 'none'} color={user.volunteerStatus === 'approved' ? 'success' : user.volunteerStatus === 'pending' ? 'warning' : user.volunteerStatus === 'rejected' ? 'error' : 'default'} size="small" />
                   </TableCell>
-                  <TableCell>
-                    <Chip label={user.volunteerRequestStatus || 'none'} color={user.volunteerRequestStatus === 'pending' ? 'warning' : user.volunteerRequestStatus === 'approved' ? 'success' : user.volunteerRequestStatus === 'rejected' ? 'error' : 'default'} />
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                    <Chip label={user.volunteerRequestStatus || 'none'} color={user.volunteerRequestStatus === 'pending' ? 'warning' : user.volunteerRequestStatus === 'approved' ? 'success' : user.volunteerRequestStatus === 'rejected' ? 'error' : 'default'} size="small" />
                   </TableCell>
-                  <TableCell>{fDate(user.createdAt)}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{fDate(user.createdAt)}</TableCell>
                   <TableCell>
                     <IconButton color="error" onClick={() => handleOpenDeleteDialog(user)}>
-                      <DeleteIcon />
+                      <DeleteIcon fontSize="small" />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -230,14 +243,14 @@ const UserManagement = () => {
       {/* Snackbar thông báo */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={4000}
         onClose={handleCloseSnackbar}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity || 'success'} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Container>
   );
 };
 

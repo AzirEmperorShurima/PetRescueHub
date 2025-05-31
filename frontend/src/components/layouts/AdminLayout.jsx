@@ -137,9 +137,9 @@ const AdminLayout = () => {
     { text: 'Quản lý người dùng', icon: <PeopleIcon />, path: '/admin/users' },
     { text: 'Quản lý thú cưng', icon: <PetsIcon />, path: '/admin/pets' },
     { text: 'Quản lý tình nguyện viên', icon: <HandshakeIcon />, path: '/admin/volunteers' },
-    { text: 'Quản lý sự kiện', icon: <EventIcon />, path: '/admin/events' },
-    { text: 'Quản lý quyên góp', icon: <DonationIcon />, path: '/admin/donations' },
-    { text: 'Quản lý báo cáo', icon: <ReportIcon />, path: '/admin/reports' },
+    { text: 'Quản lý bài viết', icon: <EventIcon />, path: '/admin/post' },
+    { text: 'Lịch sử quyên góp', icon: <DonationIcon />, path: '/admin/donations' },
+    { text: 'Xử lý báo cáo', icon: <ReportIcon />, path: '/admin/reports' },
   ];
 
   return (
@@ -423,14 +423,15 @@ const AdminLayout = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          px: { xs: 0.5, sm: 1, md: 2 },
+          py: { xs: 2, sm: 3 },
+          width: '100%',
           bgcolor: '#f8f9fa',
           minHeight: '100vh',
         }}
       >
         <Toolbar />
-        <Container maxWidth="xl">
+        <Container maxWidth={false} disableGutters sx={{ px: 0 }}>
           <Outlet />
         </Container>
       </Box>

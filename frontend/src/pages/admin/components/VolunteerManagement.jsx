@@ -22,7 +22,8 @@ import {
   Chip,
   Avatar,
   Tabs,
-  Tab
+  Tab,
+  Container
 } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import { fDate } from '../../../utils/format-time';
@@ -183,7 +184,7 @@ const VolunteerManagement = () => {
   };
 
   return (
-    <Box>
+    <Container maxWidth={false} disableGutters sx={{ px: { xs: 0.5, sm: 2, md: 0.1 }, py: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4">Quản lý tình nguyện viên</Typography>
       </Box>
@@ -195,43 +196,44 @@ const VolunteerManagement = () => {
         </Tabs>
       </Box>
 
-      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
+      <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 2 }}>
+        <TableContainer sx={{ maxHeight: { xs: 400, md: 650 }, minHeight: 350, overflowX: 'auto' }}>
+          <Table stickyHeader aria-label="sticky table" size="small">
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Avatar</TableCell>
-                <TableCell>Họ tên</TableCell>
-                <TableCell>Giới tính</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Số điện thoại</TableCell>
-                <TableCell>Địa chỉ</TableCell>
-                <TableCell>Trạng thái tình nguyện</TableCell>
-                <TableCell>Trạng thái yêu cầu</TableCell>
-                <TableCell>Ngày tạo</TableCell>
-                <TableCell>Hành động</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>ID</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 80 }}>Avatar</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Họ tên</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 80 }}>Giới tính</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 160, display: { xs: 'none', md: 'table-cell' } }}>Email</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Số điện thoại</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 160, display: { xs: 'none', md: 'table-cell' } }}>Địa chỉ</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Trạng thái tình nguyện</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Trạng thái yêu cầu</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Ngày tạo</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {displayedVolunteers.map((volunteer) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={volunteer._id}>
-                  <TableCell>{volunteer._id}</TableCell>
-                  <TableCell>
-                    <Avatar src={volunteer.avatar} alt={volunteer.fullname} />
+                <TableRow hover key={volunteer._id}>
+                  <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{volunteer._id}</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>
+                    <Avatar src={volunteer.avatar} alt={volunteer.fullname} sx={{ width: 32, height: 32 }} />
                   </TableCell>
-                  <TableCell>{volunteer.fullname}</TableCell>
+                  <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{volunteer.fullname}</TableCell>
                   <TableCell>{volunteer.gender}</TableCell>
-                  <TableCell>{volunteer.email}</TableCell>
-                  <TableCell>{volunteer.phonenumber?.[0]}</TableCell>
-                  <TableCell>{volunteer.address}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{volunteer.email}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{volunteer.phonenumber?.[0]}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{volunteer.address}</TableCell>
                   <TableCell>
                     <Chip 
                       label={volunteer.volunteerStatus} 
                       color={volunteer.volunteerStatus === 'ready' ? 'success' : 'default'}
+                      size="small"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                     <Chip 
                       label={volunteer.volunteerRequestStatus} 
                       color={
@@ -239,9 +241,10 @@ const VolunteerManagement = () => {
                         volunteer.volunteerRequestStatus === 'pending' ? 'warning' :
                         'error'
                       }
+                      size="small"
                     />
                   </TableCell>
-                  <TableCell>{fDate(volunteer.createdAt)}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{fDate(volunteer.createdAt)}</TableCell>
                   <TableCell>
                     {currentTab === 1 && volunteer.volunteerRequestStatus === 'pending' && (
                       <>
@@ -352,7 +355,7 @@ const VolunteerManagement = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Container>
   );
 };
 

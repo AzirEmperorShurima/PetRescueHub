@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   TablePagination, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogContentText,
-  DialogActions, Button, Snackbar, Alert
+  DialogActions, Button, Snackbar, Alert, Container
 } from '@mui/material';
 import { Delete as DeleteIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import axios from 'axios';
@@ -21,7 +21,7 @@ const ReportManagement = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get('/admin/reports');
+      const response = await axios.get('/api/report/user-reports');
       setReports(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       setSnackbar({ open: true, message: 'Lỗi khi tải danh sách báo cáo', severity: 'error' });
@@ -34,14 +34,9 @@ const ReportManagement = () => {
     setPage(0);
   };
 
-  const handleOpenDetailDialog = async (report) => {
-    try {
-      const response = await axios.get(`/admin/reports/details/${report.id}`);
-      setSelectedReport(response.data);
-      setOpenDetailDialog(true);
-    } catch (error) {
-      setSnackbar({ open: true, message: 'Lỗi khi lấy chi tiết báo cáo', severity: 'error' });
-    }
+  const handleOpenDetailDialog = (report) => {
+    setSelectedReport(report);
+    setOpenDetailDialog(true);
   };
 
   const handleCloseDetailDialog = () => {
@@ -49,9 +44,9 @@ const ReportManagement = () => {
     setSelectedReport(null);
   };
 
-  const handleUpdateReport = async (id, updateData) => {
+  const handleUpdateReport = async (id) => {
     try {
-      await axios.put(`/admin/reports/${id}`, updateData);
+      await axios.delete(`/api/report/cancel/${id}`);
       setSnackbar({ open: true, message: 'Cập nhật báo cáo thành công', severity: 'success' });
       fetchReports();
       handleCloseDetailDialog();
@@ -64,27 +59,30 @@ const ReportManagement = () => {
   const paginatedReports = reports.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Box>
+    <Container maxWidth={false} disableGutters sx={{ px: { xs: 0.5, sm: 2, md: 0.1 }, py: 2 }}>
       <Typography variant="h4" mb={3}>Quản lý báo cáo</Typography>
-      <Paper>
-        <TableContainer>
-          <Table stickyHeader>
+      <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 2 }}>
+        <TableContainer sx={{ maxHeight: { xs: 400, md: 650 }, minHeight: 350, overflowX: 'auto' }}>
+          <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Loại</TableCell>
-                <TableCell>Trạng thái</TableCell>
-                <TableCell>Ngày tạo</TableCell>
-                <TableCell>Hành động</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>ID</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Loại báo cáo</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Trạng thái</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 140 }}>Ngày tạo</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedReports.map((report) => (
-                <TableRow key={report.id}>
-                  <TableCell>{report.id}</TableCell>
-                  <TableCell>{report.type}</TableCell>
+                <TableRow key={report._id}>
+                  <TableCell>{report._id}</TableCell>
+                  <TableCell>{report.reportType}</TableCell>
                   <TableCell>
-                    <Chip label={report.status} color={report.status === 'resolved' ? 'success' : 'warning'} />
+                    <Chip 
+                      label={report.status} 
+                      color={report.status === 'Reviewed' ? 'success' : 'warning'} 
+                    />
                   </TableCell>
                   <TableCell>{new Date(report.createdAt).toLocaleString()}</TableCell>
                   <TableCell>
@@ -115,23 +113,24 @@ const ReportManagement = () => {
           <DialogContentText>
             {selectedReport && (
               <>
-                <div><b>ID:</b> {selectedReport.id}</div>
-                <div><b>Loại:</b> {selectedReport.type}</div>
+                <div><b>ID:</b> {selectedReport._id}</div>
+                <div><b>Loại báo cáo:</b> {selectedReport.reportType}</div>
                 <div><b>Trạng thái:</b> {selectedReport.status}</div>
-                <div><b>Nội dung:</b> {selectedReport.content}</div>
-                {/* Thêm các trường khác nếu cần */}
+                <div><b>Lý do:</b> {selectedReport.reason}</div>
+                <div><b>Chi tiết:</b> {selectedReport.details}</div>
+                <div><b>Ngày tạo:</b> {new Date(selectedReport.createdAt).toLocaleString()}</div>
               </>
             )}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDetailDialog}>Đóng</Button>
-          {selectedReport && selectedReport.status !== 'resolved' && (
+          {selectedReport && selectedReport.status === 'Pending' && (
             <Button
-              color="success"
-              onClick={() => handleUpdateReport(selectedReport.id, { status: 'resolved' })}
+              color="error"
+              onClick={() => handleUpdateReport(selectedReport._id)}
             >
-              Đánh dấu đã xử lý
+              Hủy báo cáo
             </Button>
           )}
         </DialogActions>
@@ -147,7 +146,7 @@ const ReportManagement = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Container>
   );
 };
 

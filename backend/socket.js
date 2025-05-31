@@ -2,8 +2,8 @@ import { Server } from "socket.io";
 import http from "http";
 import NotificationSchema, { createNotificationModel } from "./src/models/NotificationSchema.js";
 import User from "./src/models/user.js";
+import Message from "./src/models/Message.js"; // Import Message model
 import { redisClient } from './src/Config/redis.client.js';
-
 
 const server = http.createServer();
 const io = new Server(server, {
@@ -37,18 +37,12 @@ const broadcastToRoom = (roomId, event, data, except = null) => {
 
 io.on("connection", (socket) => {
     const clientKey = socket.handshake.auth.privateKey;
-    // const clientKey = socket.handshake.headers['privatekey'];
-    console.log('clientKey: ', clientKey);
-    console.log('process.env.PRIVATE_KEY_SOCKET: ', process.env.PRIVATE_KEY_SOCKET);
-    console.log('clientKey!== process.env.PRIVATE_KEY_SOCKET: ', clientKey!== process.env.PRIVATE_KEY_SOCKET);
-    console.log('clientKey: ', clientKey);
     if (!clientKey || clientKey !== process.env.PRIVATE_KEY_SOCKET) {
         console.error(`[${new Date().toISOString()}] Unauthorized connection attempt: ${socket.id}`);
         socket.disconnect(true);
         return;
     }
     console.log(`[${new Date().toISOString()}] New authorized connection: ${socket.id}`);
-    console.log(`[${new Date().toISOString()}] New connection: ${socket.id}`);
 
     // Đăng ký người dùng
     socket.on("register", (userId) => {
@@ -61,6 +55,7 @@ io.on("connection", (socket) => {
             socket.emit("error", { message: "Registration failed" });
         }
     });
+
     // Tạo/Tham gia phòng
     socket.on("join_room", ({ roomId, userId }) => {
         try {
@@ -83,11 +78,20 @@ io.on("connection", (socket) => {
     });
 
     // Xử lý cuộc gọi
-    socket.on("call_offer", ({ toUserId, offer, roomId }) => {
+    socket.on("call_offer", async ({ toUserId, offer, roomId }) => {
         try {
             const targetSocket = onlineUsers.get(toUserId);
+            const fromUserId = getUserBySocketId(socket.id);
             if (targetSocket) {
-                const fromUserId = getUserBySocketId(socket.id);
+                // Lưu call-offer vào database
+                await Message.create({
+                    sender: fromUserId,
+                    receiver: toUserId,
+                    type: 'call-offer',
+                    content: JSON.stringify(offer),
+                    isRead: false
+                });
+
                 io.to(targetSocket).emit("call_offer", {
                     from: fromUserId,
                     offer,
@@ -100,11 +104,20 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("call_answer", ({ toUserId, answer, roomId }) => {
+    socket.on("call_answer", async ({ toUserId, answer, roomId }) => {
         try {
             const targetSocket = onlineUsers.get(toUserId);
+            const fromUserId = getUserBySocketId(socket.id);
             if (targetSocket) {
-                const fromUserId = getUserBySocketId(socket.id);
+                // Lưu call-answer vào database
+                await Message.create({
+                    sender: fromUserId,
+                    receiver: toUserId,
+                    type: 'call-answer',
+                    content: JSON.stringify(answer),
+                    isRead: false
+                });
+
                 io.to(targetSocket).emit("call_answer", {
                     from: fromUserId,
                     answer,
@@ -117,11 +130,20 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("ice_candidate", ({ toUserId, candidate, roomId }) => {
+    socket.on("ice_candidate", async ({ toUserId, candidate, roomId }) => {
         try {
             const targetSocket = onlineUsers.get(toUserId);
+            const fromUserId = getUserBySocketId(socket.id);
             if (targetSocket) {
-                const fromUserId = getUserBySocketId(socket.id);
+                // Lưu ice-candidate vào database
+                await Message.create({
+                    sender: fromUserId,
+                    receiver: toUserId,
+                    type: 'ice-candidate',
+                    content: JSON.stringify(candidate),
+                    isRead: false
+                });
+
                 io.to(targetSocket).emit("ice_candidate", {
                     from: fromUserId,
                     candidate,
@@ -234,8 +256,8 @@ export const startSocketServer = (port) => {
         console.log('\x1b[32m%s\x1b[0m', '├──────────────────────────────────────────┤');
         console.log('\x1b[32m%s\x1b[0m', `│ Time: ${new Date().toISOString()}           │`);
         console.log('\x1b[32m%s\x1b[0m', `│ Port: ${port}                            │`);
-        console.log('\x1b[32m%s\x1b[0m', '└──────────────────────────────────────────┘');
+        console.log('\x1b[32m%s\x1b[0m', '└──────────────────────────────────────────┐');
     });
 };
-export default io;
 // startSocketServer(8080)
+export default io;

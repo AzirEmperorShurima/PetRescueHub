@@ -16,7 +16,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  // Remove unused TextField import
   FormControl,
   InputLabel,
   Select,
@@ -25,23 +24,20 @@ import {
   Card,
   CardContent,
   IconButton,
-  Tooltip
+  Tooltip,
+  Container
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
   FilterList as FilterIcon
 } from '@mui/icons-material';
-// Remove unused axios import since we're using mock data
-// import axios from '../../../utils/axios';
+import api from '../../../utils/axios';
 
 const RescueManagement = () => {
   const [rescues, setRescues] = useState([]);
-  // Either use the loading state or add a comment to indicate future use
-  const [loading, setLoading] = useState(true); // Will be used for loading indicators
-  
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [openDialog, setOpenDialog] = useState(false);
@@ -54,23 +50,31 @@ const RescueManagement = () => {
     failed: 0
   });
 
-  // Mock data - thay thế bằng API call thực tế
   useEffect(() => {
-    // Fetch rescues data
-    const fetchRescues = async () => {
-      setLoading(true); // Now using the loading state
-      try {
-        // Fetch logic
-        // ...
-      } catch (error) {
-        console.error('Error fetching rescues:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchRescues();
   }, []);
+
+  const fetchRescues = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/PetRescue/rescue/requests/v1/all');
+      const rescuesData = response.data.rescues || [];
+      setRescues(rescuesData);
+      
+      // Tính toán thống kê
+      const stats = {
+        total: rescuesData.length,
+        inProgress: rescuesData.filter(r => r.status === 'in_progress').length,
+        completed: rescuesData.filter(r => r.status === 'completed').length,
+        failed: rescuesData.filter(r => r.status === 'failed').length
+      };
+      setStats(stats);
+    } catch (error) {
+      console.error('Error fetching rescues:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Lọc dữ liệu theo trạng thái
   const filteredRescues = filterStatus === 'all' 
@@ -126,7 +130,7 @@ const RescueManagement = () => {
   };
 
   return (
-    <Box sx={{ py: 3 }}>
+    <Container maxWidth={false} disableGutters sx={{ px: { xs: 0.5, sm: 2, md: 0.1 }, py: 2 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Quản lý cứu hộ
       </Typography>
@@ -184,15 +188,7 @@ const RescueManagement = () => {
       </Grid>
 
       {/* Công cụ */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-        >
-          Thêm ca cứu hộ mới
-        </Button>
-        
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel id="status-filter-label">Lọc theo trạng thái</InputLabel>
           <Select
@@ -211,103 +207,95 @@ const RescueManagement = () => {
       </Box>
 
       {/* Bảng dữ liệu */}
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Tiêu đề</TableCell>
-              <TableCell>Địa điểm</TableCell>
-              <TableCell>Loại động vật</TableCell>
-              <TableCell>Người báo cáo</TableCell>
-              <TableCell>Thời gian báo cáo</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Người được giao</TableCell>
-              <TableCell>Thao tác</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredRescues
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((rescue) => (
-                <TableRow key={rescue.id}>
-                  <TableCell>{rescue.id}</TableCell>
-                  <TableCell>{rescue.title}</TableCell>
-                  <TableCell>{rescue.location}</TableCell>
-                  <TableCell>
-                    {rescue.animalType === 'dog' && 'Chó'}
-                    {rescue.animalType === 'cat' && 'Mèo'}
-                    {rescue.animalType === 'bird' && 'Chim'}
-                    {rescue.animalType === 'snake' && 'Rắn'}
-                    {!['dog', 'cat', 'bird', 'snake'].includes(rescue.animalType) && rescue.animalType}
-                  </TableCell>
-                  <TableCell>{rescue.reportedBy}</TableCell>
-                  <TableCell>{formatDate(rescue.reportedAt)}</TableCell>
-                  <TableCell>{getStatusChip(rescue.status)}</TableCell>
-                  <TableCell>{rescue.assignedTo}</TableCell>
-                  <TableCell>
-                    <Tooltip title="Xem chi tiết">
-                      <IconButton onClick={() => handleOpenDialog(rescue)}>
-                        <ViewIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Chỉnh sửa">
-                      <IconButton color="primary">
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Xóa">
-                      <IconButton color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={filteredRescues.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        labelRowsPerPage="Rows per page:"
-        labelDisplayedRows={({ from, to, count }) => `${from}-${to} of ${count}`}
-        sx={{
-          '.MuiTablePagination-toolbar': {
-            alignItems: 'center',
-            '& > p:first-of-type': {
+      <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 2 }}>
+        <TableContainer sx={{ maxHeight: { xs: 400, md: 650 }, minHeight: 350, overflowX: 'auto' }}>
+          <Table stickyHeader size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>ID</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Tiêu đề</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120 }}>Địa điểm</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Loại động vật</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Người báo cáo</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 140 }}>Thời gian báo cáo</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Trạng thái</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 120, display: { xs: 'none', md: 'table-cell' } }}>Người được giao</TableCell>
+                <TableCell sx={{ color: 'black', fontWeight: 'bold', textAlign: 'center', minWidth: 100 }}>Thao tác</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredRescues
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((rescue) => (
+                  <TableRow key={rescue._id}>
+                    <TableCell>{rescue._id}</TableCell>
+                    <TableCell>{rescue.title}</TableCell>
+                    <TableCell>{rescue.location}</TableCell>
+                    <TableCell>
+                      {rescue.animalType === 'dog' && 'Chó'}
+                      {rescue.animalType === 'cat' && 'Mèo'}
+                      {rescue.animalType === 'bird' && 'Chim'}
+                      {rescue.animalType === 'snake' && 'Rắn'}
+                      {!['dog', 'cat', 'bird', 'snake'].includes(rescue.animalType) && rescue.animalType}
+                    </TableCell>
+                    <TableCell>{rescue.reportedBy}</TableCell>
+                    <TableCell>{formatDate(rescue.reportedAt)}</TableCell>
+                    <TableCell>{getStatusChip(rescue.status)}</TableCell>
+                    <TableCell>{rescue.assignedTo}</TableCell>
+                    <TableCell>
+                      <Tooltip title="Xem chi tiết">
+                        <IconButton onClick={() => handleOpenDialog(rescue)}>
+                          <ViewIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={filteredRescues.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Số hàng mỗi trang:"
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} của ${count}`}
+          sx={{
+            '.MuiTablePagination-toolbar': {
+              alignItems: 'center',
+              '& > p:first-of-type': {
+                margin: 0,
+              },
+            },
+            '.MuiTablePagination-selectLabel': {
               margin: 0,
             },
-          },
-          '.MuiTablePagination-selectLabel': {
-            margin: 0,
-          },
-          '.MuiTablePagination-displayedRows': {
-            margin: 0,
-          },
-          '.MuiTablePagination-select': {
-            marginRight: 2,
-            marginLeft: 1,
-          },
-          '.MuiTablePagination-actions': {
-            marginLeft: 2,
-          }
-        }}
-      />
+            '.MuiTablePagination-displayedRows': {
+              margin: 0,
+            },
+            '.MuiTablePagination-select': {
+              marginRight: 2,
+              marginLeft: 1,
+            },
+            '.MuiTablePagination-actions': {
+              marginLeft: 2,
+            }
+          }}
+        />
+      </Paper>
 
       {/* Dialog chi tiết cứu hộ */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>
-          {currentRescue ? 'Chi tiết ca cứu hộ' : 'Thêm ca cứu hộ mới'}
+          Chi tiết ca cứu hộ
         </DialogTitle>
         <DialogContent>
-          {currentRescue ? (
+          {currentRescue && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="h6">{currentRescue.title}</Typography>
               
@@ -354,44 +342,36 @@ const RescueManagement = () => {
                   <Typography paragraph>{currentRescue.description}</Typography>
                 </Grid>
                 
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Hình ảnh</Typography>
-                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 1 }}>
-                    {currentRescue.images.map((image, index) => (
-                      <Box
-                        key={index}
-                        component="img"
-                        src={`/images/rescues/${image}`}
-                        alt={`Hình ảnh ${index + 1}`}
-                        sx={{
-                          width: 150,
-                          height: 150,
-                          objectFit: 'cover',
-                          borderRadius: 1
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Grid>
+                {currentRescue.images && currentRescue.images.length > 0 && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Hình ảnh</Typography>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 1 }}>
+                      {currentRescue.images.map((image, index) => (
+                        <Box
+                          key={index}
+                          component="img"
+                          src={image}
+                          alt={`Hình ảnh ${index + 1}`}
+                          sx={{
+                            width: 150,
+                            height: 150,
+                            objectFit: 'cover',
+                            borderRadius: 1
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Grid>
+                )}
               </Grid>
-            </Box>
-          ) : (
-            <Box sx={{ mt: 2 }}>
-              <Typography>Form thêm ca cứu hộ mới sẽ được hiển thị ở đây</Typography>
-              {/* Form thêm mới sẽ được phát triển sau */}
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Đóng</Button>
-          {!currentRescue && (
-            <Button variant="contained" color="primary">
-              Lưu
-            </Button>
-          )}
         </DialogActions>
       </Dialog>
-    </Box>
+    </Container>
   );
 };
 

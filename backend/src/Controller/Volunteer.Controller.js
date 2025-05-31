@@ -198,9 +198,10 @@ export const getCurrentMission = async (req, res) => {
                 { acceptedVolunteer: userId, status: { $in: ['pending', 'in_progress'] } }
             ]
         })
-        .populate('requester', 'fullname username avatar')
-        .populate('selectedVolunteers', 'fullname username avatar')
-        .populate('acceptedVolunteer', 'fullname username avatar');
+            .populate('requester', 'fullname username avatar')
+            .populate('selectedVolunteers', 'fullname username avatar')
+            .populate('acceptedVolunteer', 'fullname username avatar')
+            .select('missionId requester requesterBaseInf petRescueDetails petRescueImage location radius status startedAt endedAt notes timeoutAt isLocked lockExpiresAt');
 
         if (!currentMission) {
             return res.status(200).json({
@@ -224,10 +225,10 @@ export const getCurrentMission = async (req, res) => {
             error: error.message
         });
     }
-};
+}
 
 // Lấy lịch sử nhiệm vụ của volunteer
-export const getMissionHistory =async (req, res) => {
+export const getMissionHistory = async (req, res) => {
     try {
         const userId = req.user._id;
         const { page = 1, limit = 10, status } = req.query;
@@ -263,10 +264,11 @@ export const getMissionHistory =async (req, res) => {
         const totalMissions = await PetRescueMissionHistory.countDocuments(query);
 
         // Lấy danh sách nhiệm vụ
-        const missions = await PetRescueMissionHistory.find(query)
+        const missions = await RescueMissionHistory.find(query)
             .populate('requester', 'fullname username avatar')
             .populate('selectedVolunteers', 'fullname username avatar')
             .populate('acceptedVolunteer', 'fullname username avatar')
+            .select('missionId requester requesterBaseInf petRescueDetails petRescueImage location radius status startedAt endedAt notes timeoutAt isLocked lockExpiresAt')
             .sort({ startedAt: -1 })
             .skip(skip)
             .limit(limitNum);

@@ -324,13 +324,30 @@ export const getRefreshedListForumPosts = async ({
 }) => {
     try {
         const filter = {
-            $or: [
-                { postStatus: 'public' },
-                ...(userId ? [{ author: new mongoose.Types.ObjectId(userId) }] : []),
-            ],
-            ...(excludeIds.length > 0 && {
-                _id: { $nin: excludeIds.map(id => new mongoose.Types.ObjectId(id)) },
-            }),
+            $and: [
+                // Điều kiện cho postStatus
+                {
+                    $or: [
+                        {
+                            $and: [
+                                { postStatus: 'public' },
+                                // Chỉ áp dụng approvalStatus cho EventPost
+                                {
+                                    $or: [
+                                        { postType: { $ne: 'EventPost' } },
+                                        { $and: [{ postType: 'EventPost' }, { approvalStatus: 'approved' }] }
+                                    ]
+                                }
+                            ]
+                        },
+                        ...(userId ? [{ author: new mongoose.Types.ObjectId(userId) }] : []),
+                    ]
+                },
+                // Điều kiện excludeIds
+                ...(excludeIds.length > 0 ? [{
+                    _id: { $nin: excludeIds.map(id => new mongoose.Types.ObjectId(id)) }
+                }] : []),
+            ]
         };
 
         if (tag) filter.tags = { $in: [tag] };
@@ -449,7 +466,7 @@ export const getRefreshedListForumPosts = async ({
                     score: 1,
                     ...(postType === 'Question' && { questionDetails: 1 }),
                     ...(postType === 'FindLostPetPost' && { lostPetInfo: 1 }),
-                    ...(postType === 'EventPost' && { eventDate: 1 }),
+                    ...(postType === 'EventPost' && { eventStartDate: 1, eventEndDate: 1, eventLocation: 1 }),
                 },
             },
         ];
