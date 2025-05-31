@@ -12,6 +12,7 @@ import * as petRescueManageService from "../services/Admin/PetRescueManagement.s
 
 import PetRescueMissionHistory from "../models/PetRescueMissionHistory.js";
 import Report from "../models/Report.js";
+import mongoose from "mongoose";
 
 
 /**
@@ -818,19 +819,6 @@ export const getParticipants = async (req, res) => {
     }
 };
 
-
-// Middleware kiểm tra quyền admin
-const checkAdmin = async (req, res, next) => {
-    try {
-        const user = await User.findById(req.user._id).populate("roles");
-        if (!user || !user.roles.some(role => ["admin", "super_admin"].includes(role.name.toLowerCase()))) {
-            return res.status(403).json({ message: "Chỉ admin mới có quyền truy cập!" });
-        }
-        next();
-    } catch (error) {
-        return res.status(500).json({ message: "Lỗi khi kiểm tra quyền admin", error: error.message });
-    }
-};
 
 // API: Lấy danh sách nhiệm vụ cứu hộ
 export const getRescueMissions = async (req, res) => {
