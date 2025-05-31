@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { 
-    requestVolunteer, 
+import {
+    getCurrentMission,
+    getMissionHistory,
+    requestVolunteer,
     resignVolunteer,
-    volunteerUpdateStatus 
+    volunteerUpdateStatus
 } from "../Controller/Volunteer.Controller.js";
 import { isVolunteer } from "../Middlewares/check_is_volunteer.js";
 import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
@@ -83,8 +85,16 @@ volunteerRouter.get("/v2", async (req, res) => {
 });
 volunteerRouter.use(checkUserAuth)
 volunteerRouter.post("/v1/requesting/grow-up/volunteer", requestVolunteer)
-volunteerRouter.post("/v1/resign", isVolunteer, resignVolunteer)
 
-volunteerRouter.post("/v1/updating/volunteer/status", isVolunteer, volunteerUpdateStatus)
+volunteerRouter.use(isVolunteer)
+volunteerRouter.post("/v1/resign", resignVolunteer)
+
+volunteerRouter.post("/v1/updating/volunteer/status", volunteerUpdateStatus)
+
+// Lấy nhiệm vụ hiện tại của volunteer
+volunteerRouter.get('/current-mission', getCurrentMission);
+
+// Lấy lịch sử nhiệm vụ của volunteer
+volunteerRouter.get('/mission-history', getMissionHistory);
 
 export default volunteerRouter;
