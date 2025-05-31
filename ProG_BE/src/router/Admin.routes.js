@@ -20,7 +20,8 @@ import {
     getReportStats,
     getReportDetail,
     approveEvent,
-    rejectEvent
+    rejectEvent,
+    getParticipants
 } from "../Controller/Admin.controller.js";
 
 import { checkAdminLogin, isAdmin } from "../Middlewares/Check_is_Admin.js";
@@ -87,6 +88,8 @@ adminRouter.put('/v1/volunteers/requests/revoke', revokeVolunteerRole);
 adminRouter.get('/managent/events/event-list', getEventsByApprovalStatus)
 adminRouter.post('/managent/events/action/approved', approveEvent)
 adminRouter.post('/managent/events/action/rejected', rejectEvent)
+
+adminRouter.get('/managent/event/joiner/list', getParticipants)
 
 adminRouter.get('/aggregate/users', aggregateUserChartData)
 adminRouter.get('/aggregate/users/user', getUserStatistics)

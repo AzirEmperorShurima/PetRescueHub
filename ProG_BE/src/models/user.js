@@ -1,204 +1,119 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
-import { v4 as uuidv4 } from 'uuid';
-import { avatarConfig } from "../../config.js";
 
-const userSchema = new mongoose.Schema(
+const PostSchema = new mongoose.Schema(
     {
-        id: {
-            type: String,
-            unique: true,
-            required: true
-        },
-        username: {
-            type: String,
-            unique: true,
-            required: true,
-        },
-        fullname: {
-            type: String,
-            default: "Anonymous"
-        },
-        birthdate: {
-            type: Date,
-            default: null
-        },
-        gender: {
-            type: String,
-            enum: ["male", "female", "not provided"],
-            default: "not provided"
-        },
-        biography: {
-            type: String,
-            default: ""
-        },
-        email: {
-            type: String,
-            unique: true,
-            required: true,
-        },
-        avatar: {
-            type: String,
-            default: function () {
-                if (this.gender === "male") {
-                    return avatarConfig.defaultAvatars.male
-                } else if (this.gender === "female") {
-                    return avatarConfig.defaultAvatars.female
-                } else {
-                    return avatarConfig.defaultAvatars.neutral
-                }
-            }
-        },
-        phonenumber: [{
-            type: String,
+        title: { type: String, required: true, trim: true },
+        content: { type: String, required: true, trim: true },
+        author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        tags: [{ type: String, index: true }],
+        violate_tags: [{ type: String, index: true }],
+        violationDetails: [{
+            tag: { type: String, required: true },
+            reason: { type: String, required: true },
+            triggerPhrase: { type: String, default: "" }
         }],
-        address: {
-            type: String,
+        imgUrl: [{ type: String }],
+        commentCount: { type: Number, default: 0 },
+        favoriteCount: { type: Number, default: 0 },
+        reactions: {
+            type: Map,
+            of: Number,
+            default: () => new Map([
+                ['like', 0],
+                ['love', 0],
+                ['haha', 0],
+                ['wow', 0],
+                ['sad', 0],
+                ['angry', 0],
+            ]),
         },
-        password: {
-            type: String,
-            required: true,
+        postStatus: {
+            type: String, enum: ["public", "private", "hidden", "pending"], default: "public"
         },
-        secondaryPassword: {
-            type: String,
-            default: null,
-        },
-        tokens: [{ type: Object }],
-        roles: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Role",
-            },
-        ],
-        isPrivate: {
-            type: Boolean,
-            default: false
-        },
-        isActive: {
-            type: Boolean,
-            default: false
-        },
-        isCompromised: {
-            type: Boolean,
-            default: false
-        },
-        volunteerStatus: {
-            type: String,
-            enum: ["alreadyRescue", "not ready", "none"],
-            default: "none"
-        },
-        volunteerRequestStatus: {
-            type: String,
-            enum: ["pending", "approved", "rejected", "none"],
-            default: "none"
-        },
-        isVIP: { type: Boolean, default: false },
-        premiumExpiresAt: { type: Date },
-        lastLoginAt: { type: Date },
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date, default: Date.now }
     },
-    {
-        timestamps: true,
-        versionKey: false,
-    }
+    { timestamps: true, discriminatorKey: "postType" }
 );
 
-// Middleware để tự động cập nhật volunteerStatus dựa trên roles
-userSchema.pre("save", async function (next) {
-    const user = this;
-    if (user.isModified("roles") || user.isNew) {
-        await user.populate("roles");
-        const hasVolunteerRole = user.roles.some(role => role.name.toLowerCase() === "volunteer");
-
-        if (hasVolunteerRole) {
-            if (!["alreadyRescue", "not ready"].includes(user.volunteerStatus)) {
-                user.volunteerStatus = "not ready";
-            }
-        } else {
-            user.volunteerStatus = "none";
-        }
-    }
-
+// Middleware cập nhật thời gian `updatedAt` trước khi cập nhật
+PostSchema.pre("findOneAndUpdate", function (next) {
+    this.set({ updatedAt: Date.now() });
     next();
 });
 
-// Middleware để xử lý cập nhật roles qua findOneAndUpdate
-userSchema.pre("findOneAndUpdate", async function (next) {
-    const update = this.getUpdate();
-    if (update.roles) {
-        const roles = await mongoose.model("Role").find({ _id: { $in: update.roles } });
-        const hasVolunteerRole = roles.some(role => role.name.toLowerCase() === "volunteer");
-
-        this.set({
-            volunteerStatus: hasVolunteerRole ? (update.volunteerStatus || "not ready") : "none"
-        });
-    }
-    next();
-});
-
-// Middleware để tạo id tự động
-userSchema.pre("validate", async function (next) {
-    const user = this;
-    if (!user.id) {
-        user.id = uuidv4();
-    }
-    next();
-});
-
-// Phương thức mã hóa mật khẩu
-userSchema.statics.encryptPassword = async function (password) {
-    const salt = await bcrypt.genSalt(10);
-    return await bcrypt.hash(password, salt);
-};
-
-// Phương thức so sánh mật khẩu
-userSchema.statics.comparePassword = async function (password, receivedPassword) {
-    return await bcrypt.compare(password, receivedPassword);
-};
-
-// Middleware để mã hóa mật khẩu trước khi lưu
-userSchema.pre("save", async function (next) {
-    const user = this;
-    if (!user.isModified("password")) {
-        return next();
-    }
-    if (user.isModified("secondaryPassword") && user.secondaryPassword) {
-        const hash = await bcrypt.hash(user.secondaryPassword, 10);
-        user.secondaryPassword = hash;
-    }
-
-    const hash = await bcrypt.hash(user.password, 10);
-    user.password = hash;
-    if (user.isModified("gender")) {
-        const defaultMaleAvatar = avatarConfig.defaultAvatars.male;
-        const defaultFemaleAvatar = avatarConfig.defaultAvatars.female;
-        const defaultNeutralAvatar = avatarConfig.defaultAvatars.neutral;
-
-        const isUsingDefaultAvatar = user.avatar === defaultMaleAvatar ||
-            user.avatar === defaultFemaleAvatar ||
-            user.avatar === defaultNeutralAvatar;
-
-        if (isUsingDefaultAvatar && !user.isModified("avatar")) {
-            if (user.gender === "male") {
-                user.avatar = defaultMaleAvatar;
-            } else if (user.gender === "female") {
-                user.avatar = defaultFemaleAvatar;
-            } else {
-                user.avatar = defaultNeutralAvatar;
-            }
-        }
-    }
-    next();
-});
-
-// Phương thức so sánh mật khẩu của instance
-userSchema.methods.comparePassword = async function (password) {
-    if (!password) throw new Error('Mật khẩu bị thiếu, không thể so sánh!');
+// Middleware xóa liên quan khi xóa bài viết
+PostSchema.pre("deleteOne", async function (next) {
     try {
-        return await bcrypt.compare(password, this.password);
+        await Promise.all([
+            mongoose.model("Comment").deleteMany({ post: this._id }),
+            mongoose.model("FavouriteList").deleteMany({ post: this._id }),
+            mongoose.model("Reaction").deleteMany({ targetType: "Post", targetId: this._id })
+        ]);
+        next();
     } catch (error) {
-        console.error('Lỗi khi so sánh mật khẩu!', error.message);
-        throw new Error('Lỗi khi so sánh mật khẩu');
+        next(error);
     }
-};
+});
 
-export default mongoose.model("User", userSchema);
+PostSchema.index({ 'reactions.like': 1 });
+PostSchema.index({ title: "text", content: "text" });
+PostSchema.index({ author: 1 });
+PostSchema.index({ createdAt: -1 });
+PostSchema.index({ updatedAt: -1 });
+
+export const PostModel = mongoose.model("Post", PostSchema);
+export const ForumPost = PostModel.discriminator("ForumPost", new mongoose.Schema({}));
+export const Question = PostModel.discriminator(
+    "Question",
+    new mongoose.Schema({
+        questionDetails: { type: String }
+    })
+);
+export const FindLostPetPost = PostModel.discriminator(
+    "FindLostPetPost",
+    new mongoose.Schema({
+        lostPetInfo: { type: String },
+        contactInfo: {
+            type: {
+                phoneNumber: { type: String },
+                email: { type: String },
+                address: { type: String },
+                breed: { type: String },
+                breedName: { type: String },
+                petColor: { type: String },
+                petAge: { type: Number },
+                petGender: { type: String },
+                petDetails: { type: String },
+            }
+        },
+    })
+);
+export const EventPost = PostModel.discriminator(
+    "EventPost",
+    new mongoose.Schema({
+        eventStartDate: { type: Date },
+        eventEndDate: { type: Date },
+        eventLongitude: { type: String }, // kinh độ
+        eventLatitude: { type: String }, // vĩ độ
+        eventLocation: { type: String },
+        postStatus: { type: String, enum: ["public", "private", "hidden", "pending"], default: "hidden" },
+        approvalStatus: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending"
+        },
+        approvedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
+        participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Danh sách user tham gia
+    })
+);
+export default {
+    PostModel,
+    ForumPost,
+    Question,
+    FindLostPetPost,
+    EventPost
+};

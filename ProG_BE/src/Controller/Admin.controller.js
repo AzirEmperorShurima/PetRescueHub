@@ -795,3 +795,25 @@ export const deleteAllPosts = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+export const getParticipants = async (req, res) => {
+    try {
+        const { eventId } = req.body;
+
+        if (!mongoose.isValidObjectId(eventId)) {
+            return res.status(400).json({ message: "ID sự kiện không hợp lệ" });
+        }
+
+        const event = await EventPost.findById(eventId).populate(
+            "participants",
+            "username email fullname avatar"
+        );
+        if (!event) {
+            return res.status(404).json({ message: "Không tìm thấy sự kiện" });
+        }
+
+        return res.status(200).json({ eventId, participants: event.participants });
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi lấy danh sách người tham gia", error: error.message });
+    }
+};

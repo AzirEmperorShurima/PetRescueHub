@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import models_list from "./src/models/modelsExport.js";
 import { createAdminsFromJSON } from "./src/utils/admin/adminFactory.js";
 import { createPetsFromJSON } from "./src/utils/admin/petFactory.js";
+import { createPostsFromJSON } from "./src/utils/admin/postFactory.js";
 
 const mongoURI = process.env.MONGO_URI_RAILWAY || "mongodb://localhost:27017/PetRescueHub";
 const MAX_RETRIES = 5;
@@ -86,20 +87,23 @@ export const connectToDatabase = async () => {
         await initializeCollections(models_list);
         await seedDatabase();
         await createAdminsFromJSON("./adminSeed.json");
-        await createPetsFromJSON("./petSeed.json");
+        await Promise.all([
+            createPetsFromJSON("./petSeed.json"),
+            createPostsFromJSON("./postSeed.json")
+        ])
 
-        mongoose.connection.on('disconnected', async () => {
-            console.log("⚠️ MongoDB đã ngắt kết nối! Đang thử kết nối lại...");
-            await reconnectWithRetry();
-        })
-        mongoose.connection.on('error', (error) => {
-            console.error("❌ Lỗi kết nối MongoDB:", error);
-        });
+mongoose.connection.on('disconnected', async () => {
+    console.log("⚠️ MongoDB đã ngắt kết nối! Đang thử kết nối lại...");
+    await reconnectWithRetry();
+})
+mongoose.connection.on('error', (error) => {
+    console.error("❌ Lỗi kết nối MongoDB:", error);
+});
 
     } catch (err) {
-        console.error("❌ Lỗi trong quá trình kết nối database:", err);
-        throw err;
-    }
+    console.error("❌ Lỗi trong quá trình kết nối database:", err);
+    throw err;
+}
 };
 
 process.on('SIGINT', async () => {

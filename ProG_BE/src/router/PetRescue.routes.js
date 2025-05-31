@@ -11,6 +11,7 @@ import {
 } from "../Controller/RescueHub.Controller.js";
 import { isVolunteer } from "../Middlewares/check_is_volunteer.js";
 import { checkUserAuth, checkUserRole } from "../Middlewares/userAuthChecker.js";
+import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.Middlware.js";
 
 const PetRescueRouter = Router();
 
@@ -28,7 +29,7 @@ PetRescueRouter.get("/", (req, res) => {
 
 // ====== Nhóm routes tạo yêu cầu cứu hộ ====== //
 PetRescueRouter.post('/rescue/requests/v1/create', checkUserRole, requestRescue);
-PetRescueRouter.post('/rescue/requests/v2/create', checkUserRole, requestToRescue);
+PetRescueRouter.post('/rescue/requests/v2/create', [checkUserRole, avatarUploadMiddleware('pet_rescue')], requestToRescue);
 
 // ====== Nhóm routes cho Chủ sở hữu ====== //
 PetRescueRouter.post('/rescue/owner/confirm-volunteer', checkUserRole, confirmSelectedVolunteers);

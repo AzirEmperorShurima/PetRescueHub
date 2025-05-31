@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { getEventsByDateRange, getUpcomingEvents, getEventById } from "../services/Event/Event.service.js";
 import mongoose from "mongoose";
+import { getEventsByApprovalStatusService } from "../services/Admin/EventManagement.service.js";
 
 /**
  * Lấy danh sách event theo khoảng thời gian (cho calendar view)
@@ -102,5 +103,82 @@ export const getEventDetails = async (req, res) => {
       success: false,
       message: error.message || "Lỗi server khi lấy chi tiết event"
     });
+  }
+};
+
+// export const getEventsByApprovalStatus = async (req, res) => {
+//   try {
+//     const { approvalStatus } = req.body;
+//     const { limit, page } = req.query;
+
+//     const result = await getEventsByApprovalStatusService({ status: approvalStatus, limit, page });
+
+//     return res.status(StatusCodes.OK).json({
+//       success: true,
+//       data: result
+//     })
+//   }
+//   catch (error) {
+//     console.error("Error in getEventsByApprovalStatusService:", error);
+//     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//       success: false,
+//       message: error.message || "Lỗi server khi lấy danh sách event"
+//     });
+//   }
+// }
+
+export const joinEvent = async (req, res) => {
+  try {
+    const { eventId } = req.body;
+    const userId = req.user._id;
+
+    if (!mongoose.isValidObjectId(eventId)) {
+      return res.status(400).json({ message: "ID sự kiện không hợp lệ" });
+    }
+
+    const event = await EventPost.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Không tìm thấy sự kiện" });
+    }
+
+    // Kiểm tra xem user đã tham gia chưa
+    if (event.participants.includes(userId)) {
+      return res.status(400).json({ message: "Bạn đã tham gia sự kiện này rồi" });
+    }
+
+    // Kiểm tra trạng thái sự kiện
+    if (event.approvalStatus !== "approved" || event.postStatus !== "public") {
+      return res.status(403).json({ message: "Sự kiện chưa được phê duyệt hoặc không công khai" });
+    }
+
+    // Thêm user vào danh sách participants
+    event.participants.push(userId);
+    await event.save();
+
+    return res.status(200).json({ message: "Tham gia sự kiện thành công", event });
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi khi tham gia sự kiện", error: error.message });
+  }
+};
+
+// API: Thống kê số người tham gia
+export const getParticipantCount = async (req, res) => {
+  try {
+    const { eventId } = req.body;
+
+    if (!mongoose.isValidObjectId(eventId)) {
+      return res.status(400).json({ message: "ID sự kiện không hợp lệ" });
+    }
+
+    const event = await EventPost.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Không tìm thấy sự kiện" });
+    }
+
+    const participantCount = event.participants.length;
+
+    return res.status(200).json({ eventId, participantCount });
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi khi lấy số người tham gia", error: error.message });
   }
 };

@@ -268,6 +268,20 @@ export const requestToRescue = async (req, res) => {
                                 .map-link:hover {
                                     background-color: #45a049;
                                 }
+                                .pet-details {
+                                    background-color: #f0f8ff;
+                                    padding: 15px;
+                                    border-radius: 5px;
+                                    margin: 15px 0;
+                                    border-left: 4px solid #3498db;
+                                }
+                                .pet-image {
+                                    max-width: 100%;
+                                    height: auto;
+                                    border-radius: 5px;
+                                    margin: 10px 0;
+                                    border: 1px solid #ddd;
+                                }
                                 .footer {
                                     text-align: center;
                                     margin-top: 20px;
@@ -275,6 +289,17 @@ export const requestToRescue = async (req, res) => {
                                     border-top: 1px solid #ddd;
                                     font-size: 0.9em;
                                     color: #777;
+                                }
+                                .urgent {
+                                    color: #e74c3c;
+                                    font-weight: bold;
+                                }
+                                .notes {
+                                    font-style: italic;
+                                    background-color: #fffde7;
+                                    padding: 10px;
+                                    border-radius: 5px;
+                                    margin: 10px 0;
                                 }
                             </style>
                         </head>
@@ -296,7 +321,16 @@ export const requestToRescue = async (req, res) => {
                                         <div class="info-item"><strong>Tên:</strong> ${requester ? requester.fullname : 'Khách vãng lai'}</div>
                                         <div class="info-item"><strong>Số điện thoại:</strong> ${requesterPhone}</div>
                                         <div class="info-item"><strong>Email:</strong> ${requester ? requester.email : 'Không có email'}</div>
+                                        ${userNote ? `<div class="notes"><strong>Ghi chú:</strong> ${userNote}</div>` : ''}
                                     </div>
+                                </div>
+                                
+                                <div class="pet-details">
+                                    <div class="info-title">Chi tiết thú cưng cần cứu hộ:</div>
+                                    <div class="info-content">
+                                        ${petRescueDetails ? `<div>${petRescueDetails}</div>` : '<div>Không có thông tin chi tiết</div>'}
+                                    </div>
+                                    ${petImg ? `<div><img src="${petImg}" alt="Hình ảnh thú cưng" class="pet-image"></div>` : ''}
                                 </div>
                                 
                                 <div class="location">
