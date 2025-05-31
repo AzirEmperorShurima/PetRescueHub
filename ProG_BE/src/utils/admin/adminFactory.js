@@ -18,11 +18,11 @@ export const createAdminsFromJSON = async (jsonPath = "./adminSeed.json") => {
     const users = JSON.parse(rawData);
 
     for (const user of users) {
-        const { 
-            email, 
-            username, 
-            password, 
-            secondaryPassword, 
+        const {
+            email,
+            username,
+            password,
+            secondaryPassword,
             role,
             fullname,
             birthday,
@@ -87,7 +87,7 @@ export const createAdminsFromJSON = async (jsonPath = "./adminSeed.json") => {
             volunteerRequestStatus: volunteerRequestStatus || "none",
             isVIP: isVIP || false,
             premiumExpiresAt: premiumExpiresAt ? new Date(premiumExpiresAt) : null,
-            avatar: avatar || undefined 
+            avatar: avatar || undefined
         });
 
         await newUser.save();

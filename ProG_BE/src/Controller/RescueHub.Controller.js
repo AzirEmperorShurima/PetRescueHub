@@ -77,6 +77,7 @@ export const requestToRescue = async (req, res) => {
         } = req.body;
         const userId = req.user?._id;
         const petImg = req.avatarUrl
+
         if (!userId) {
             return res.status(401).json({ error: 'Yêu cầu đăng nhập để sử dụng.' });
         }
@@ -127,7 +128,14 @@ export const requestToRescue = async (req, res) => {
 
         if (!volunteers || volunteers.length === 0) {
             console.log('Không tìm thấy tình nguyện viên trong bán kính', radius, 'km');
-            return res.json({ volunteers: [] });
+            return res.status(404).json({
+                error: 'Không tìm thấy tình nguyện viên trong khu vực. Vui lòng liên hệ admin để được hỗ trợ.',
+                adminContact: {
+                    name: 'Admin Rescue Hub',
+                    email: 'admin@rescuehub.com',
+                    phone: '+84-123-456-7890'
+                }
+            });
         }
 
         const volunteerIds = volunteers.map(item => item[0]);
@@ -147,7 +155,185 @@ export const requestToRescue = async (req, res) => {
 
         if (filteredVolunteers.length === 0) {
             console.log('Không có tình nguyện viên nào ở trạng thái alreadyRescue');
-            return res.json({ volunteers: [] });
+
+            // Lấy thông tin requester để gửi email
+            const requester = await user.findById(userId).select('fullname email');
+            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+            // Gửi email thông báo cho requester
+            if (requester && requester.email) {
+                try {
+                    await sendMailNotification({
+                        email: requester.email,
+                        subject: 'Không Tìm Thấy Tình Nguyện Viên Cho Nhiệm Vụ Cứu Hộ',
+                        text: `Không tìm thấy tình nguyện viên nào sẵn sàng cho nhiệm vụ cứu hộ của bạn. Vui lòng liên hệ admin để được hỗ trợ.`,
+                        html: `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <style>
+                                    body {
+                                        font-family: Arial, sans-serif;
+                                        line-height: 1.6;
+                                        color: #333;
+                                        max-width: 600px;
+                                        margin: 0 auto;
+                                        padding: 20px;
+                                    }
+                                    .header {
+                                        background-color: #e74c3c;
+                                        color: white;
+                                        padding: 15px;
+                                        text-align: center;
+                                        border-radius: 5px 5px 0 0;
+                                        margin-bottom: 20px;
+                                    }
+                                    .content {
+                                        background-color: #f9f9f9;
+                                        padding: 20px;
+                                        border-radius: 0 0 5px 5px;
+                                        border: 1px solid #ddd;
+                                    }
+                                    .mission-id {
+                                        background-color: #f5f5f5;
+                                        padding: 10px;
+                                        border-left: 4px solid #e74c3c;
+                                        margin: 15px 0;
+                                        font-weight: bold;
+                                    }
+                                    .info-section {
+                                        margin-bottom: 15px;
+                                    }
+                                    .info-title {
+                                        font-weight: bold;
+                                        color: #e74c3c;
+                                        margin-bottom: 5px;
+                                    }
+                                    .info-content {
+                                        padding-left: 15px;
+                                    }
+                                    .info-item {
+                                        margin-bottom: 5px;
+                                    }
+                                    .location {
+                                        background-color: #fdedec;
+                                        padding: 10px;
+                                        border-radius: 5px;
+                                        margin: 15px 0;
+                                    }
+                                    .map-link {
+                                        display: inline-block;
+                                        background-color: #e74c3c;
+                                        color: white;
+                                        padding: 8px 15px;
+                                        text-decoration: none;
+                                        border-radius: 4px;
+                                        margin-top: 10px;
+                                    }
+                                    .map-link:hover {
+                                        background-color: #c0392b;
+                                    }
+                                    .pet-details {
+                                        background-color: #f0f8ff;
+                                        padding: 15px;
+                                        border-radius: 5px;
+                                        margin: 15px 0;
+                                        border-left: 4px solid #3498db;
+                                    }
+                                    .pet-image {
+                                        max-width: 100%;
+                                        height: auto;
+                                        border-radius: 5px;
+                                        margin: 10px 0;
+                                        border: 1px solid #ddd;
+                                    }
+                                    .footer {
+                                        text-align: center;
+                                        margin-top: 20px;
+                                        padding-top: 15px;
+                                        border-top: 1px solid #ddd;
+                                        font-size: 0.9em;
+                                        color: #777;
+                                    }
+                                    .notes {
+                                        font-style: italic;
+                                        background-color: #fffde7;
+                                        padding: 10px;
+                                        border-radius: 5px;
+                                        margin: 10px 0;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="header">
+                                    <h2>Thông Báo: Không Tìm Thấy Tình Nguyện Viên</h2>
+                                </div>
+                                <div class="content">
+                                    <p>Xin chào <strong>${requester.fullname}</strong>,</p>
+                                    <p>Chúng tôi rất tiếc thông báo rằng không tìm thấy tình nguyện viên nào sẵn sàng trong khu vực cho nhiệm vụ cứu hộ của bạn. Dưới đây là chi tiết nhiệm vụ:</p>
+                                    
+                                    <div class="mission-id">
+                                        Mã nhiệm vụ: ${missionId}
+                                    </div>
+                                    
+                                    <div class="info-section">
+                                        <div class="info-title">Thông tin yêu cầu:</div>
+                                        <div class="info-content">
+                                            <div class="info-item"><strong>Tên:</strong> ${userfullName || 'Khách vãng lai'}</div>
+                                            <div class="info-item"><strong>Số điện thoại:</strong> ${userPhoneNumber || 'Không có số điện thoại'}</div>
+                                            ${userNote ? `<div class="notes"><strong>Ghi chú:</strong> ${userNote}</div>` : ''}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="pet-details">
+                                        <div class="info-title">Chi tiết thú cưng cần cứu hộ:</div>
+                                        <div class="info-content">
+                                            ${petRescueDetails ? `<div>${petRescueDetails}</div>` : '<div>Không có thông tin chi tiết</div>'}
+                                        </div>
+                                        ${petImg ? `<div><img src="${petImg}" alt="Hình ảnh thú cưng" class="pet-image"></div>` : ''}
+                                    </div>
+                                    
+                                    <div class="location">
+                                        <div class="info-title">Vị trí cứu hộ:</div>
+                                        <div>[${coordinates.join(', ')}]</div>
+                                        <a href="${googleMapsLink}" target="_blank" class="map-link">Xem trên Google Maps</a>
+                                    </div>
+                                    
+                                    <div class="info-section">
+                                        <div class="info-title">Liên hệ hỗ trợ:</div>
+                                        <div class="info-content">
+                                            <div class="info-item"><strong>Tên:</strong> Phạm Minh Thiện</div>
+                                            <div class="info-item"><strong>Email:</strong> phamminhthienp50@gmail.com</div>
+                                            <div class="info-item"><strong>Số điện thoại:</strong> +84 865874627</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p>Vui lòng liên hệ admin để được hỗ trợ thêm.</p>
+                                </div>
+                                <div class="footer">
+                                    <p>Email này được gửi tự động từ hệ thống Rescue Hub. Vui lòng không trả lời email này.</p>
+                                </div>
+                            </body>
+                            </html>
+                        `
+                    });
+                } catch (emailErr) {
+                    console.error(`Gửi email thất bại cho ${requester.email}:`, emailErr);
+                }
+            } else {
+                console.warn('Không thể gửi email cho requester: Thiếu email hoặc thông tin không hợp lệ');
+            }
+
+            return res.status(404).json({
+                error: 'Không có tình nguyện viên nào sẵn sàng trong khu vực. Vui lòng liên hệ admin để được hỗ trợ.',
+                adminContact: {
+                    name: 'Admin Rescue Hub',
+                    email: 'admin@rescuehub.com',
+                    phone: '+84-123-456-7890'
+                }
+            });
         }
 
         if (!autoAssign) {

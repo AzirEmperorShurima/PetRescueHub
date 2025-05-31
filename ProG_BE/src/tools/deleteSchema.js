@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 async function clearDatabase() {
-    const mongoURI = "mongodb://mongo:OstLDytMFfNSdkRPXkLBSkkSfUnLnLEC@caboose.proxy.rlwy.net:33837"
+    const mongoURI = "mongodb://localhost:27017/PetRescueHub"
     try {
         await mongoose.connect(mongoURI, {
         });
