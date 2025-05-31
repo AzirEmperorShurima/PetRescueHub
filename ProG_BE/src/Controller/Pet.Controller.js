@@ -261,7 +261,8 @@ export const getPetDetails = async (req, res) => {
         // const isOwner = await checkOwnership(petId, userId);
         const pet = await petService.getPetOrThrow(petId);
         return res.status(200).json({
-            message: "Get Pet Portfolio Successfully", petData: pet, canEdit: isOwner
+            message: "Get Pet Portfolio Successfully", petData: pet
+            // , canEdit: isOwner
         });
     } catch (error) {
         res.status(400).json({ message: error.message });

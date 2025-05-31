@@ -5,8 +5,11 @@ export const approveEvent = async (eventId, adminId) => {
     try {
 
         const event = await EventPost.findById(eventId);
-        if (!event) return res.status(404).json({ message: "Event not found" });
+        if (!event) return res.status(404).json({ message: "Event not found" })
 
+        if (event.approvalStatus === "approved" && event.postStatus === "public") {
+            return { success: false, message: "Event already approved" }
+        }
         event.approvalStatus = "approved";
         event.approvedBy = adminId;
         event.postStatus = "public";
@@ -27,7 +30,9 @@ export const rejectEventService = async (eventId, adminId) => {
         if (!event) {
             throw new Error("Event not found");
         }
-
+        if (event.approvalStatus === "rejected" && event.postStatus === "hidden") {
+            return { success: false, message: "Event already Rejected" }
+        }
         event.approvalStatus = "rejected";
         event.approvedBy = adminId;
         event.postStatus = "hidden";
