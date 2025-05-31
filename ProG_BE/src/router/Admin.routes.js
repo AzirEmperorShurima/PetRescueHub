@@ -23,7 +23,15 @@ import {
     rejectEvent,
     getParticipants
 } from "../Controller/Admin.controller.js";
-
+import {
+    getRescueMissions,
+    getRescueMissionById,
+    cancelRescueMission,
+    toggleLockRescueMission,
+    getMissionStatsByStatus,
+    getMissionStatsByArea,
+    getVolunteerStats
+} from "../Controller/rescueMissionController.js"; // Import các hàm từ rescueMissionController.js
 import { checkAdminLogin, isAdmin } from "../Middlewares/Check_is_Admin.js";
 import { validatePasswordStrength } from "../Middlewares/validatePasswordStrength.js";
 import { loginHandler } from "../Controller/Auth.Controller.js";
@@ -32,7 +40,6 @@ import { verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware } from "../ut
 const adminRouter = Router();
 
 // adminRouter.use(verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware)
-
 
 adminRouter.get("/", (req, res) => {
     res.status(StatusCodes.OK).json({
@@ -85,15 +92,28 @@ adminRouter.post('/v1/volunteers/requests/accept', acceptApproveVolunteer);
 adminRouter.post('/v1/volunteers/requests/reject', rejectVolunteerRequest);
 adminRouter.put('/v1/volunteers/requests/revoke', revokeVolunteerRole);
 
-adminRouter.get('/managent/events/event-list', getEventsByApprovalStatus)
-adminRouter.post('/managent/events/action/approved', approveEvent)
-adminRouter.post('/managent/events/action/rejected', rejectEvent)
+// Quản lý sự kiện
+adminRouter.get('/managent/events/event-list', getEventsByApprovalStatus);
+adminRouter.post('/managent/events/action/approved', approveEvent);
+adminRouter.post('/managent/events/action/rejected', rejectEvent);
+adminRouter.get('/managent/event/joiner/list', getParticipants);
 
-adminRouter.get('/managent/event/joiner/list', getParticipants)
+// Quản lý nhiệm vụ cứu hộ
+adminRouter.get('/rescue-missions', getRescueMissions); // Lấy danh sách nhiệm vụ
+adminRouter.get('/rescue-missions/:id', getRescueMissionById); // Lấy chi tiết nhiệm vụ
+adminRouter.post('/rescue-missions/:id/cancel', cancelRescueMission); // Hủy nhiệm vụ
+adminRouter.post('/rescue-missions/:id/toggle-lock', toggleLockRescueMission); // Khóa/mở khóa nhiệm vụ
 
-adminRouter.get('/aggregate/users', aggregateUserChartData)
-adminRouter.get('/aggregate/users/user', getUserStatistics)
-adminRouter.get('/aggregate/users/volunteers', getVolunteerStatistics)
+// Thống kê nhiệm vụ cứu hộ
+adminRouter.get('/rescue-missions/stats/status', getMissionStatsByStatus); // Thống kê theo trạng thái
+adminRouter.get('/rescue-missions/stats/area', getMissionStatsByArea); // Thống kê theo khu vực
+adminRouter.get('/rescue-missions/stats/volunteers', getVolunteerStats); // Thống kê tình nguyện viên
+
+// Thống kê người dùng
+adminRouter.get('/aggregate/users', aggregateUserChartData);
+adminRouter.get('/aggregate/users/user', getUserStatistics);
+adminRouter.get('/aggregate/users/volunteers', getVolunteerStatistics);
+
 // Quản lý gói dịch vụ
 adminRouter.post('/packages/create', addNewPackage);
 
@@ -103,12 +123,10 @@ adminRouter.get('/stats/users', getUserStats);
 // Quản lý trạng thái người dùng
 adminRouter.patch('/users/:userId/deactivate', deactivateUser);
 
-
 // Quản lý báo cáo
 adminRouter.get('/reports', getAllReports);
 adminRouter.get('/reports/stats', getReportStats);
 adminRouter.get('/reports/details/:id', getReportDetail);
 adminRouter.put('/reports/:id', updateReport);
-
 
 export default adminRouter;

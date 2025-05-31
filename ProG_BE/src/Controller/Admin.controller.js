@@ -817,3 +817,269 @@ export const getParticipants = async (req, res) => {
         return res.status(500).json({ message: "Lỗi khi lấy danh sách người tham gia", error: error.message });
     }
 };
+
+
+// Middleware kiểm tra quyền admin
+const checkAdmin = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id).populate("roles");
+        if (!user || !user.roles.some(role => ["admin", "super_admin"].includes(role.name.toLowerCase()))) {
+            return res.status(403).json({ message: "Chỉ admin mới có quyền truy cập!" });
+        }
+        next();
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi kiểm tra quyền admin", error: error.message });
+    }
+};
+
+// API: Lấy danh sách nhiệm vụ cứu hộ
+export const getRescueMissions = async (req, res) => {
+    try {
+        const { status, startDate, endDate, latitude, longitude, maxDistance } = req.query;
+        const query = {};
+
+        // Lọc theo trạng thái
+        if (status) query.status = status;
+
+        // Lọc theo khoảng thời gian
+        if (startDate || endDate) {
+            query.startedAt = {};
+            if (startDate) query.startedAt.$gte = new Date(startDate);
+            if (endDate) query.startedAt.$lte = new Date(endDate);
+        }
+
+        // Lọc theo vị trí địa lý
+        if (latitude && longitude && maxDistance) {
+            query.location = {
+                $near: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: [parseFloat(longitude), parseFloat(latitude)],
+                    },
+                    $maxDistance: parseFloat(maxDistance) * 1000, // Chuyển km thành mét
+                },
+            };
+        }
+
+        const missions = await PetRescueMissionHistory.find(query)
+            .populate("requester", "username email fullname")
+            .populate("selectedVolunteers", "username email fullname")
+            .populate("acceptedVolunteer", "username email fullname")
+            .sort({ startedAt: -1 });
+
+        return res.status(200).json({ missions });
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi lấy danh sách nhiệm vụ cứu hộ", error: error.message });
+    }
+};
+
+// API: Lấy chi tiết một nhiệm vụ cứu hộ
+export const getRescueMissionById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "ID nhiệm vụ không hợp lệ" });
+        }
+
+        const mission = await PetRescueMissionHistory.findById(id)
+            .populate("requester", "username email fullname")
+            .populate("selectedVolunteers", "username email fullname")
+            .populate("acceptedVolunteer", "username email fullname");
+
+        if (!mission) {
+            return res.status(404).json({ message: "Không tìm thấy nhiệm vụ cứu hộ" });
+        }
+
+        return res.status(200).json({ mission });
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi lấy chi tiết nhiệm vụ", error: error.message });
+    }
+};
+
+// API: Hủy nhiệm vụ cứu hộ
+export const cancelRescueMission = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { adminNote } = req.body;
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "ID nhiệm vụ không hợp lệ" });
+        }
+
+        const mission = await PetRescueMissionHistory.findById(id);
+        if (!mission) {
+            return res.status(404).json({ message: "Không tìm thấy nhiệm vụ cứu hộ" });
+        }
+
+        if (mission.status === "cancelled") {
+            return res.status(400).json({ message: "Nhiệm vụ đã bị hủy trước đó" });
+        }
+
+        mission.status = "cancelled";
+        mission.endedAt = new Date();
+        mission.notes = adminNote || mission.notes || "Hủy bởi admin";
+
+        await mission.save();
+
+        return res.status(200).json({ message: "Hủy nhiệm vụ thành công", mission });
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi hủy nhiệm vụ", error: error.message });
+    }
+};
+
+// API: Khóa/mở khóa nhiệm vụ cứu hộ
+export const toggleLockRescueMission = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isLocked, lockExpiresAt } = req.body;
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "ID nhiệm vụ không hợp lệ" });
+        }
+
+        const mission = await PetRescueMissionHistory.findById(id);
+        if (!mission) {
+            return res.status(404).json({ message: "Không tìm thấy nhiệm vụ cứu hộ" });
+        }
+
+        mission.isLocked = isLocked !== undefined ? isLocked : !mission.isLocked;
+        mission.lockExpiresAt = lockExpiresAt ? new Date(lockExpiresAt) : mission.lockExpiresAt;
+
+        await mission.save();
+
+        return res.status(200).json({ message: `Nhiệm vụ đã được ${mission.isLocked ? "khóa" : "mở khóa"}`, mission });
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi khóa/mở khóa nhiệm vụ", error: error.message });
+    }
+};
+
+// API: Thống kê nhiệm vụ cứu hộ theo trạng thái
+export const getMissionStatsByStatus = async (req, res) => {
+    try {
+        const stats = await PetRescueMissionHistory.aggregate([
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $sum: 1 },
+                },
+            },
+            {
+                $project: {
+                    status: "$_id",
+                    count: 1,
+                    _id: 0,
+                },
+            },
+        ]);
+
+        return res.status(200).json({ stats });
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi thống kê nhiệm vụ theo trạng thái", error: error.message });
+    }
+};
+
+// API: Thống kê nhiệm vụ theo khu vực
+export const getMissionStatsByArea = async (req, res) => {
+    try {
+        const { latitude, longitude, maxDistance } = req.query;
+
+        if (!latitude || !longitude || !maxDistance) {
+            return res.status(400).json({ message: "Vui lòng cung cấp latitude, longitude và maxDistance" });
+        }
+
+        const missions = await PetRescueMissionHistory.find({
+            location: {
+                $near: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: [parseFloat(longitude), parseFloat(latitude)],
+                    },
+                    $maxDistance: parseFloat(maxDistance) * 1000, // Chuyển km thành mét
+                },
+            },
+        });
+
+        const stats = await PetRescueMissionHistory.aggregate([
+            {
+                $match: {
+                    location: {
+                        $near: {
+                            $geometry: {
+                                type: "Point",
+                                coordinates: [parseFloat(longitude), parseFloat(latitude)],
+                            },
+                            $maxDistance: parseFloat(maxDistance) * 1000,
+                        },
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $sum: 1 },
+                },
+            },
+            {
+                $project: {
+                    status: "$_id",
+                    count: 1,
+                    _id: 0,
+                },
+            },
+        ]);
+
+        return res.status(200).json({
+            totalMissions: missions.length,
+            statsByStatus: stats,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi thống kê nhiệm vụ theo khu vực", error: error.message });
+    }
+};
+
+// API: Thống kê số lượng tình nguyện viên tham gia
+export const getVolunteerStats = async (req, res) => {
+    try {
+        const stats = await PetRescueMissionHistory.aggregate([
+            {
+                $unwind: "$selectedVolunteers",
+            },
+            {
+                $group: {
+                    _id: "$selectedVolunteers",
+                    missionCount: { $sum: 1 },
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "user",
+                },
+            },
+            {
+                $unwind: "$user",
+            },
+            {
+                $project: {
+                    volunteer: {
+                        _id: "$_id",
+                        username: "$user.username",
+                        email: "$user.email",
+                        fullname: "$user.fullname",
+                    },
+                    missionCount: 1,
+                    _id: 0,
+                },
+            },
+            {
+                $sort: { missionCount: -1 },
+            },
+        ]);
+
+        return res.status(200).json({ stats });
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi khi thống kê tình nguyện viên", error: error.message });
+    }
+};
