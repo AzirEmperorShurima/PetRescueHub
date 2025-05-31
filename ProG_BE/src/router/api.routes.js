@@ -23,7 +23,7 @@ const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/forum', forumRoutes);
 apiRouter.use('/user', userRoute);
-appRouter.use('/messaging', messagingRouter);
+apiRouter.use('/messaging', messagingRouter);
 apiRouter.use('/volunteer', volunteerRouter);
 apiRouter.use('/pet', petRoute);
 apiRouter.use('/admin', adminRouter);
