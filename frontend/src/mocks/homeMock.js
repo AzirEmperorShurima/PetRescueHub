@@ -1,21 +1,35 @@
+import banner1 from '../assets/images/banner1.jpg';
+import banner2 from '../assets/images/banner2.jpg';
+import banner3 from '../assets/images/banner3.jpg';
+import banner4 from '../assets/images/banner4.jpg';
+
 export const heroSlides = [
   {
     id: 1,
-    image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    title: 'Mỗi thú cưng đều xứng đáng có một mái ấm',
-    description: 'Hãy cùng chúng tôi mang lại tương lai tươi sáng cho những người bạn bốn chân'
+    image: banner3,
+    title: 'Lan Tỏa Lòng Trắc Ẩn: Cứu Giúp Một Thú Cưng, Thay Đổi Một Cuộc Đời!',
+    description: 'Hãy cùng chúng tôi mang đến một tương lai tươi sáng cho những người bạn bốn chân đáng yêu.',
+    bgColor: '#e2e8f0'
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    title: 'Cứu hộ - Chăm sóc - Tìm mái ấm mới',
-    description: 'Mỗi năm chúng tôi giúp hàng trăm thú cưng tìm được gia đình mới'
+    image: banner1,
+    title: 'Khám Phá Tình Yêu Vô Điều Kiện: Hãy Nhận Nuôi Một Thú Cưng Ngay Hôm Nay!',
+    description: 'Tìm kiếm người bạn đồng hành hoàn hảo và mang niềm vui về nhà bằng cách chọn nhận nuôi thay vì mua sắm.',
+    bgColor: '#FFF4D6'
   },
   {
     id: 3,
-    image: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    title: 'Trở thành tình nguyện viên',
-    description: 'Tham gia cùng chúng tôi trong hành trình cứu trợ và bảo vệ thú cưng'
+    image: banner2,
+    title: 'Khám Phá Tình Yêu Vô Điều Kiện: Hãy Nhận Nuôi Một Thú Cưng Ngay Hôm Nay!',
+    description: 'Tìm kiếm người bạn đồng hành hoàn hảo và mang niềm vui về nhà bằng cách chọn nhận nuôi thay vì mua sắm.',
+    bgColor: '#FCEBED'
+  },
+  {
+    id: 4,
+    image: banner4,
+    title: 'Thay Đổi Cuộc Đời: Chọn Nhận Nuôi, Chọn Yêu Thương!',
+    description: 'Tạo nên một dấu ấn ý nghĩa bằng cách nhận nuôi một thú cưng đang cần, và trở thành một phần trong hành trình kỳ diệu của chúng hướng tới một tương lai tốt đẹp hơn.'
   }
 ];
 

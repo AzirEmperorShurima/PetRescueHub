@@ -1,0 +1,82 @@
+.actionSection {
+  width: 100%;
+  background: #fff;
+  padding: 56px 0 32px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+}
+
+.actionImgWrapper {
+  flex: 0 0 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.actionImg {
+  min-width: 295px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.actionContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 260px;
+  max-width: 520px;
+  padding-left: 32px;
+}
+
+.actionLine {
+  width: 100%;
+  border: none;
+  border-top: 2px solid #e0e0e0;
+  margin: 1.2rem 0;
+}
+
+.actionTitle {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #1a2233;
+  margin: 0.5rem 0 1.5rem 0;
+  letter-spacing: -1px;
+}
+
+.actionDonateRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 2rem;
+}
+
+.actionDonate {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #d42a5c;
+  letter-spacing: 1px;
+}
+
+.actionIcon {
+  width: 2.2rem;
+  height: 2.2rem;
+  color: #d42a5c;
+}
+
+@media (max-width: 1100px) {
+  .actionSection { gap: 32px; padding-left: 16px; padding-right: 16px; }
+  .actionTitle { font-size: 2.2rem; }
+  .actionImg { max-width: 120px; }
+}
+
+@media (max-width: 800px) {
+  .actionSection { flex-direction: column; gap: 24px; padding: 32px 8px 16px 8px; }
+  .actionContent { align-items: center; min-width: 0; max-width: 100%; padding-left: 0; }
+  .actionTitle { font-size: 1.5rem; }
+  .actionImg { max-width: 100px; }
+  .actionImgWrapper { flex-basis: auto; }
+}

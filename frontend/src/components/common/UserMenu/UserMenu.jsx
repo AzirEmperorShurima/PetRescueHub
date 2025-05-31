@@ -76,6 +76,10 @@ const UserMenu = ({ user }) => {
     ? contextUser.roles.some(r => (typeof r === 'string' ? r === 'volunteer' : r.name === 'volunteer'))
     : false;
 
+  const isNormalUser = contextUser && Array.isArray(contextUser.roles)
+    ? contextUser.roles.some(r => (typeof r === 'string' ? r === 'user' : r.name === 'user'))
+    : false;
+
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -136,7 +140,7 @@ const UserMenu = ({ user }) => {
     { icon: <FaPaw />, text: 'Thú cưng của tôi', path: '/my-pets' },
     { icon: <FaHeart />, text: 'Yêu thích', path: '/favorites' },
     { icon: <FiSettings />, text: 'Cài đặt', path: '/settings' },
-    { icon: <FiHelpCircle />, text: 'Trợ giúp', path: '/help' },
+    { icon: <FiHelpCircle />, text: 'Trợ giúp', path: '/rescue' },
     // Thêm option quản trị viên nếu là admin
     ...(isAdmin ? [{
       icon: <FiUser />,
@@ -179,6 +183,22 @@ const UserMenu = ({ user }) => {
           borderRadius: 'md',
           _hover: {
             backgroundColor: 'blue.100'
+          }
+        }
+      }
+    ] : []),
+    ...(isNormalUser ? [
+      {
+        icon: <FiList />,
+        text: 'Yêu cầu cứu hộ của tôi',
+        path: '/my-rescue-requests',
+        style: {
+          color: 'teal.600',
+          fontWeight: 'bold',
+          backgroundColor: 'teal.50',
+          borderRadius: 'md',
+          _hover: {
+            backgroundColor: 'teal.100'
           }
         }
       }

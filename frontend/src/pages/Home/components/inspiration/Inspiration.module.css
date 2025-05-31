@@ -1,0 +1,90 @@
+.inspirationSection {
+  width: 100%;
+  background: #fff;
+  padding: 0 0 64px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.inspirationContentRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 56px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 48px auto;
+}
+
+.inspirationText {
+  flex: 1;
+  max-width: 600px;
+  text-align: left;
+  font-size: 1.25rem;
+}
+
+.inspirationTitle {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  color: #1a2233;
+}
+
+.inspirationImgWrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.inspirationImg {
+  min-width: 390px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.inspirationWhyTitle {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 2.5rem 0 1.5rem 0;
+  text-align: center;
+  color: #1a2233;
+}
+
+.inspirationWhyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.inspirationWhyBox {
+  background: #fce4ec;
+  border-radius: 16px;
+  padding: 32px 24px;
+  font-size: 1.1rem;
+  color: #222;
+  min-height: 160px;
+}
+
+.inspirationWhyBox span {
+  font-weight: 700;
+  color: #111;
+}
+
+@media (max-width: 1100px) {
+  .inspirationContentRow { gap: 24px; }
+  .inspirationImg { max-width: 220px; }
+  .inspirationText { font-size: 1.05rem; }
+  .inspirationTitle { font-size: 1.5rem; }
+  .inspirationWhyTitle { font-size: 1.5rem; }
+}
+
+@media (max-width: 900px) {
+  .inspirationContentRow { flex-direction: column; gap: 24px; }
+  .inspirationImg { max-width: 180px; }
+  .inspirationWhyGrid { grid-template-columns: 1fr; }
+}

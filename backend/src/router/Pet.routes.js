@@ -10,7 +10,8 @@ import {
     getPetDetails,
     getAllPets,
     updatePetState,
-    getPetStatistics
+    getPetStatistics,
+    getOwnerPetStatistics
 } from "../Controller/Pet.Controller.js";
 import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
 import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.Middlware.js";
@@ -48,6 +49,7 @@ petRoute.get("/pets/owner/:ownerId?", getPetsByOwner);
 petRoute.get("/pets/:petId", getPetDetails);
 
 petRoute.get("/pets/analysis/petStatistics", getPetStatistics)
+petRoute.get("/pets/analysis/owner/petStatistics", getOwnerPetStatistics)
 // Error handling middleware
 petRoute.use((err, req, res, next) => {
     console.error("Lỗi xảy ra:", err);

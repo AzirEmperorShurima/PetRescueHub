@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { sendMailNotification } from "../services/sendMailService/nodeMailer.service.js";
 import user from "../models/user.js";
 import PetRescueMissionHistory from "../models/PetRescueMissionHistory.js";
+import { isValidObjectId } from "mongoose";
 
 
 export const requestRescue = async (req, res) => {
@@ -77,6 +78,7 @@ export const requestToRescue = async (req, res) => {
         } = req.body;
         const userId = req.user?._id;
         const petImg = req.avatarUrl
+
         if (!userId) {
             return res.status(401).json({ error: 'Yêu cầu đăng nhập để sử dụng.' });
         }
@@ -127,7 +129,14 @@ export const requestToRescue = async (req, res) => {
 
         if (!volunteers || volunteers.length === 0) {
             console.log('Không tìm thấy tình nguyện viên trong bán kính', radius, 'km');
-            return res.json({ volunteers: [] });
+            return res.status(404).json({
+                error: 'Không tìm thấy tình nguyện viên trong khu vực. Vui lòng liên hệ admin để được hỗ trợ.',
+                adminContact: {
+                    name: 'Phạm Minh Thiện',
+                    email: 'minhthienp50@gmail.com',
+                    phone: '+84 865874627'
+                }
+            });
         }
 
         const volunteerIds = volunteers.map(item => item[0]);
@@ -147,7 +156,185 @@ export const requestToRescue = async (req, res) => {
 
         if (filteredVolunteers.length === 0) {
             console.log('Không có tình nguyện viên nào ở trạng thái alreadyRescue');
-            return res.json({ volunteers: [] });
+
+            // Lấy thông tin requester để gửi email
+            const requester = await user.findById(userId).select('fullname email');
+            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+            // Gửi email thông báo cho requester
+            if (requester && requester.email) {
+                try {
+                    await sendMailNotification({
+                        email: requester.email,
+                        subject: 'Không Tìm Thấy Tình Nguyện Viên Cho Nhiệm Vụ Cứu Hộ',
+                        text: `Không tìm thấy tình nguyện viên nào sẵn sàng cho nhiệm vụ cứu hộ của bạn. Vui lòng liên hệ admin để được hỗ trợ.`,
+                        html: `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <style>
+                                    body {
+                                        font-family: Arial, sans-serif;
+                                        line-height: 1.6;
+                                        color: #333;
+                                        max-width: 600px;
+                                        margin: 0 auto;
+                                        padding: 20px;
+                                    }
+                                    .header {
+                                        background-color: #e74c3c;
+                                        color: white;
+                                        padding: 15px;
+                                        text-align: center;
+                                        border-radius: 5px 5px 0 0;
+                                        margin-bottom: 20px;
+                                    }
+                                    .content {
+                                        background-color: #f9f9f9;
+                                        padding: 20px;
+                                        border-radius: 0 0 5px 5px;
+                                        border: 1px solid #ddd;
+                                    }
+                                    .mission-id {
+                                        background-color: #f5f5f5;
+                                        padding: 10px;
+                                        border-left: 4px solid #e74c3c;
+                                        margin: 15px 0;
+                                        font-weight: bold;
+                                    }
+                                    .info-section {
+                                        margin-bottom: 15px;
+                                    }
+                                    .info-title {
+                                        font-weight: bold;
+                                        color: #e74c3c;
+                                        margin-bottom: 5px;
+                                    }
+                                    .info-content {
+                                        padding-left: 15px;
+                                    }
+                                    .info-item {
+                                        margin-bottom: 5px;
+                                    }
+                                    .location {
+                                        background-color: #fdedec;
+                                        padding: 10px;
+                                        border-radius: 5px;
+                                        margin: 15px 0;
+                                    }
+                                    .map-link {
+                                        display: inline-block;
+                                        background-color: #e74c3c;
+                                        color: white;
+                                        padding: 8px 15px;
+                                        text-decoration: none;
+                                        border-radius: 4px;
+                                        margin-top: 10px;
+                                    }
+                                    .map-link:hover {
+                                        background-color: #c0392b;
+                                    }
+                                    .pet-details {
+                                        background-color: #f0f8ff;
+                                        padding: 15px;
+                                        border-radius: 5px;
+                                        margin: 15px 0;
+                                        border-left: 4px solid #3498db;
+                                    }
+                                    .pet-image {
+                                        max-width: 100%;
+                                        height: auto;
+                                        border-radius: 5px;
+                                        margin: 10px 0;
+                                        border: 1px solid #ddd;
+                                    }
+                                    .footer {
+                                        text-align: center;
+                                        margin-top: 20px;
+                                        padding-top: 15px;
+                                        border-top: 1px solid #ddd;
+                                        font-size: 0.9em;
+                                        color: #777;
+                                    }
+                                    .notes {
+                                        font-style: italic;
+                                        background-color: #fffde7;
+                                        padding: 10px;
+                                        border-radius: 5px;
+                                        margin: 10px 0;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="header">
+                                    <h2>Thông Báo: Không Tìm Thấy Tình Nguyện Viên</h2>
+                                </div>
+                                <div class="content">
+                                    <p>Xin chào <strong>${requester.fullname}</strong>,</p>
+                                    <p>Chúng tôi rất tiếc thông báo rằng không tìm thấy tình nguyện viên nào sẵn sàng trong khu vực cho nhiệm vụ cứu hộ của bạn. Dưới đây là chi tiết nhiệm vụ:</p>
+                                    
+                                    <div class="mission-id">
+                                        Mã nhiệm vụ: ${missionId}
+                                    </div>
+                                    
+                                    <div class="info-section">
+                                        <div class="info-title">Thông tin yêu cầu:</div>
+                                        <div class="info-content">
+                                            <div class="info-item"><strong>Tên:</strong> ${userfullName || 'Khách vãng lai'}</div>
+                                            <div class="info-item"><strong>Số điện thoại:</strong> ${userPhoneNumber || 'Không có số điện thoại'}</div>
+                                            ${userNote ? `<div class="notes"><strong>Ghi chú:</strong> ${userNote}</div>` : ''}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="pet-details">
+                                        <div class="info-title">Chi tiết thú cưng cần cứu hộ:</div>
+                                        <div class="info-content">
+                                            ${petRescueDetails ? `<div>${petRescueDetails}</div>` : '<div>Không có thông tin chi tiết</div>'}
+                                        </div>
+                                        ${petImg ? `<div><img src="${petImg}" alt="Hình ảnh thú cưng" class="pet-image"></div>` : ''}
+                                    </div>
+                                    
+                                    <div class="location">
+                                        <div class="info-title">Vị trí cứu hộ:</div>
+                                        <div>[${coordinates.join(', ')}]</div>
+                                        <a href="${googleMapsLink}" target="_blank" class="map-link">Xem trên Google Maps</a>
+                                    </div>
+                                    
+                                    <div class="info-section">
+                                        <div class="info-title">Liên hệ hỗ trợ:</div>
+                                        <div class="info-content">
+                                            <div class="info-item"><strong>Tên:</strong> Phạm Minh Thiện</div>
+                                            <div class="info-item"><strong>Email:</strong> phamminhthienp50@gmail.com</div>
+                                            <div class="info-item"><strong>Số điện thoại:</strong> +84 865874627</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p>Vui lòng liên hệ admin để được hỗ trợ thêm.</p>
+                                </div>
+                                <div class="footer">
+                                    <p>Email này được gửi tự động từ hệ thống Rescue Hub. Vui lòng không trả lời email này.</p>
+                                </div>
+                            </body>
+                            </html>
+                        `
+                    });
+                } catch (emailErr) {
+                    console.error(`Gửi email thất bại cho ${requester.email}:`, emailErr);
+                }
+            } else {
+                console.warn('Không thể gửi email cho requester: Thiếu email hoặc thông tin không hợp lệ');
+            }
+
+            return res.status(404).json({
+                error: 'Không có tình nguyện viên nào sẵn sàng trong khu vực. Vui lòng liên hệ admin để được hỗ trợ.',
+                adminContact: {
+                    name: 'Admin Rescue Hub',
+                    email: 'admin@rescuehub.com',
+                    phone: '+84-123-456-7890'
+                }
+            });
         }
 
         if (!autoAssign) {
@@ -188,7 +375,7 @@ export const requestToRescue = async (req, res) => {
             selectedVolunteers: selectedVolunteerIds,
             acceptedVolunteer: acceptedVolunteer ? acceptedVolunteer._id : null,
             timeoutAt,
-            status: 'pending'
+            status: 'in_progress'
         });
 
         // Gửi email cho tình nguyện viên được chọn
@@ -268,6 +455,20 @@ export const requestToRescue = async (req, res) => {
                                 .map-link:hover {
                                     background-color: #45a049;
                                 }
+                                .pet-details {
+                                    background-color: #f0f8ff;
+                                    padding: 15px;
+                                    border-radius: 5px;
+                                    margin: 15px 0;
+                                    border-left: 4px solid #3498db;
+                                }
+                                .pet-image {
+                                    max-width: 100%;
+                                    height: auto;
+                                    border-radius: 5px;
+                                    margin: 10px 0;
+                                    border: 1px solid #ddd;
+                                }
                                 .footer {
                                     text-align: center;
                                     margin-top: 20px;
@@ -275,6 +476,17 @@ export const requestToRescue = async (req, res) => {
                                     border-top: 1px solid #ddd;
                                     font-size: 0.9em;
                                     color: #777;
+                                }
+                                .urgent {
+                                    color: #e74c3c;
+                                    font-weight: bold;
+                                }
+                                .notes {
+                                    font-style: italic;
+                                    background-color: #fffde7;
+                                    padding: 10px;
+                                    border-radius: 5px;
+                                    margin: 10px 0;
                                 }
                             </style>
                         </head>
@@ -296,7 +508,16 @@ export const requestToRescue = async (req, res) => {
                                         <div class="info-item"><strong>Tên:</strong> ${requester ? requester.fullname : 'Khách vãng lai'}</div>
                                         <div class="info-item"><strong>Số điện thoại:</strong> ${requesterPhone}</div>
                                         <div class="info-item"><strong>Email:</strong> ${requester ? requester.email : 'Không có email'}</div>
+                                        ${userNote ? `<div class="notes"><strong>Ghi chú:</strong> ${userNote}</div>` : ''}
                                     </div>
+                                </div>
+                                
+                                <div class="pet-details">
+                                    <div class="info-title">Chi tiết thú cưng cần cứu hộ:</div>
+                                    <div class="info-content">
+                                        ${petRescueDetails ? `<div>${petRescueDetails}</div>` : '<div>Không có thông tin chi tiết</div>'}
+                                    </div>
+                                    ${petImg ? `<div><img src="${petImg}" alt="Hình ảnh thú cưng" class="pet-image"></div>` : ''}
                                 </div>
                                 
                                 <div class="location">
@@ -797,5 +1018,116 @@ export const completeRescueMission = async (req, res) => {
     } catch (err) {
         console.error('Lỗi khi hoàn thành nhiệm vụ cứu hộ:', err);
         return res.status(500).json({ error: 'Lỗi server khi hoàn thành nhiệm vụ cứu hộ' });
+    }
+};
+
+const isValidId = (id) => isValidObjectId(id);
+
+/**
+ * API tìm kiếm yêu cầu cứu hộ của người dùng
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+export const searchUserRescueMissions = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        if (!isValidId(userId)) {
+            return res.status(400).json({ message: "ID người dùng không hợp lệ" });
+        }
+
+        // Lấy các tham số truy vấn
+        const {
+            status, // Lọc theo trạng thái: pending, in_progress, completed, cancelled, timeout
+            keyword, // Tìm kiếm theo missionId hoặc petRescueDetails
+            startDate, // Lọc theo startedAt
+            endDate, // Lọc theo endedAt
+            page = 1, // Trang hiện tại
+            limit = 10, // Số bản ghi mỗi trang
+        } = req.query;
+
+        // Xây dựng điều kiện truy vấn
+        const query = { requester: userId };
+
+        // Lọc theo trạng thái
+        if (status) {
+            const statuses = status.split(",").map((s) => s.trim());
+            const validStatuses = ["pending", "in_progress", "completed", "cancelled", "timeout"];
+            if (statuses.every((s) => validStatuses.includes(s))) {
+                query.status = { $in: statuses };
+            } else {
+                return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+            }
+        }
+
+        // Tìm kiếm theo từ khóa (missionId hoặc petRescueDetails)
+        if (keyword) {
+            query.$or = [
+                { missionId: { $regex: keyword, $options: "i" } },
+                { petRescueDetails: { $regex: keyword, $options: "i" } },
+            ];
+        }
+
+        // Lọc theo khoảng thời gian
+        if (startDate || endDate) {
+            query.startedAt = {};
+            if (startDate) {
+                query.startedAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                query.startedAt.$lte = new Date(endDate);
+            }
+        }
+
+        // Phân loại yêu cầu hiện tại và lịch sử
+        const currentStatuses = ["pending", "in_progress"];
+        const historyStatuses = ["completed", "cancelled", "timeout"];
+        const isCurrent = status && statuses.every((s) => currentStatuses.includes(s));
+        const isHistory = status && statuses.every((s) => historyStatuses.includes(s));
+
+        // Tính toán phân trang
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        if (isNaN(pageNum) || isNaN(limitNum) || pageNum < 1 || limitNum < 1) {
+            return res.status(400).json({ message: "Tham số phân trang không hợp lệ" });
+        }
+        const skip = (pageNum - 1) * limitNum;
+
+        // Truy vấn cơ sở dữ liệu
+        const missions = await PetRescueMissionHistory.find(query)
+            .populate("requester", "fullname email") // Chỉ lấy fullname và email
+            .populate("selectedVolunteers", "fullname email")
+            .populate("acceptedVolunteer", "fullname email")
+            .sort({ startedAt: -1 }) // Sắp xếp theo thời gian bắt đầu (mới nhất trước)
+            .skip(skip)
+            .limit(limitNum)
+            .lean();
+
+        // Đếm tổng số bản ghi
+        const total = await PetRescueMissionHistory.countDocuments(query);
+
+        // Phân loại kết quả
+        const response = {
+            current: isHistory ? [] : missions.filter((m) => currentStatuses.includes(m.status)),
+            history: isCurrent ? [] : missions.filter((m) => historyStatuses.includes(m.status)),
+            total,
+            page: pageNum,
+            limit: limitNum,
+            totalPages: Math.ceil(total / limitNum),
+        };
+
+        // Nếu không lọc trạng thái cụ thể, trả về tất cả
+        if (!isCurrent && !isHistory) {
+            response.current = missions.filter((m) => currentStatuses.includes(m.status));
+            response.history = missions.filter((m) => historyStatuses.includes(m.status));
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: response,
+            message: "Tìm kiếm yêu cầu cứu hộ thành công",
+        });
+    } catch (error) {
+        console.error("Error in searchUserRescueMissions:", error);
+        return res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
     }
 };

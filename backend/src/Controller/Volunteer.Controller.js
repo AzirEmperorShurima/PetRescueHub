@@ -264,7 +264,7 @@ export const getMissionHistory = async (req, res) => {
         const totalMissions = await PetRescueMissionHistory.countDocuments(query);
 
         // Lấy danh sách nhiệm vụ
-        const missions = await RescueMissionHistory.find(query)
+        const missions = await PetRescueMissionHistory.find(query)
             .populate('requester', 'fullname username avatar')
             .populate('selectedVolunteers', 'fullname username avatar')
             .populate('acceptedVolunteer', 'fullname username avatar')

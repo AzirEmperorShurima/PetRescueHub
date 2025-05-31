@@ -28,6 +28,13 @@ import {
   FormLabel,
   Image,
   IconButton,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { 
   FiMapPin,
@@ -72,6 +79,10 @@ const Rescue = () => {
 
   // State để lưu trữ preview của ảnh
   const [imagePreview, setImagePreview] = useState([]);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [errorPopup, setErrorPopup] = useState({ show: false, message: '' });
+  const [successPopup, setSuccessPopup] = useState({ show: false, message: '' });
 
   // Lấy vị trí hiện tại của người dùng
   const getCurrentLocation = () => {
@@ -235,60 +246,62 @@ const Rescue = () => {
   // Xử lý gửi form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    
-    try {
-      // Tạo FormData để gửi cả dữ liệu và hình ảnh
-      const rescueFormData = new FormData();
-      
-      // Thêm các trường dữ liệu vào FormData
-      Object.keys(formData).forEach(key => {
-        if (key !== 'images' && key !== 'location' && key !== 'selectedVolunteers') {
-          rescueFormData.append(key, formData[key]);
-        }
-      });
-      
-      // Thêm vị trí
-      rescueFormData.append('longitude', formData.location.coordinates[0]);
-      rescueFormData.append('latitude', formData.location.coordinates[1]);
-      
-      // Thêm danh sách tình nguyện viên được chọn
-      formData.selectedVolunteers.forEach(volunteerId => {
-        rescueFormData.append('selectedVolunteers[]', volunteerId);
-      });
-      
-      // Thêm hình ảnh
-      formData.images.forEach(image => {
-        rescueFormData.append('images', image);
-      });
-      
-      // Gửi yêu cầu cứu hộ
-      const response = await axios.post('/api/rescues', rescueFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      
-      // Hiển thị thông báo thành công
+    // Kiểm tra vị trí đã được lấy chưa
+    if (
+      !formData.location ||
+      !Array.isArray(formData.location.coordinates) ||
+      formData.location.coordinates[0] === 0 ||
+      formData.location.coordinates[1] === 0
+    ) {
       toast({
-        title: "Thành công",
-        description: "Yêu cầu cứu hộ đã được gửi thành công!",
-        status: "success",
-        duration: 5000,
+        title: "Thiếu vị trí cứu hộ",
+        description: "Vui lòng nhấn nút 'Lấy vị trí hiện tại' trước khi gửi yêu cầu cứu hộ.",
+        status: "error",
+        duration: 4000,
         isClosable: true,
       });
-      
-      // Chuyển hướng đến trang chi tiết cứu hộ
-      navigate(`/rescues/${response.data.id}`);
+      return;
+    }
+    setLoading(true);
+
+    try {
+      const rescueFormData = new FormData();
+
+      // Gửi từng phần tử coordinates[] (không stringify)
+      rescueFormData.append('coordinates[]', formData.location.coordinates[0]);
+      rescueFormData.append('coordinates[]', formData.location.coordinates[1]);
+
+      rescueFormData.append('radius', formData.radius);
+      rescueFormData.append('maxVolunteers', 5); // hoặc cho phép user chọn
+      rescueFormData.append('autoAssign', formData.autoAssignVolunteer);
+      rescueFormData.append('timeoutMinutes', 30); // hoặc cho phép user chọn
+
+      // Ảnh (nếu nhiều ảnh, backend phải hỗ trợ mảng avatar)
+      rescueFormData.append('avatar', formData.images[0]);
+
+      // Gọi API qua apiService
+      const response = await apiService.rescues.create(rescueFormData);
+
+      let msg = "Yêu cầu cứu hộ đã được gửi thành công!";
+      if (response && response.data) {
+        msg += "\n\n" + JSON.stringify(response.data, null, 2);
+      }
+      setSuccessPopup({ show: true, message: msg });
+
+      // navigate(`/rescues/${response.data.id}`);
     } catch (error) {
       console.error('Lỗi khi gửi yêu cầu cứu hộ:', error);
-      toast({
-        title: "Lỗi",
-        description: error.response?.data?.message || "Không thể gửi yêu cầu cứu hộ. Vui lòng thử lại.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Không thể gửi yêu cầu cứu hộ. Vui lòng thử lại.";
+      const adminContact = error.response?.data?.adminContact;
+
+      let description = errorMsg;
+      if (adminContact) {
+        description += `\nLiên hệ admin: ${adminContact.name} - ${adminContact.email} - ${adminContact.phone}`;
+      }
+
+      setErrorPopup({ show: true, message: description });
+      onOpen();
     } finally {
       setLoading(false);
     }
@@ -588,6 +601,34 @@ const Rescue = () => {
         </Grid>
       </form>
       <ScrollToTopButton />
+      <Modal isOpen={errorPopup.show} onClose={() => setErrorPopup({ ...errorPopup, show: false })}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Lỗi</ModalHeader>
+          <ModalBody whiteSpace="pre-line">
+            {errorPopup.message}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" mr={3} onClick={() => setErrorPopup({ ...errorPopup, show: false })}>
+              Đóng
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal isOpen={successPopup.show} onClose={() => setSuccessPopup({ ...successPopup, show: false })}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Thành công</ModalHeader>
+          <ModalBody whiteSpace="pre-line">
+            {successPopup.message}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="green" mr={3} onClick={() => setSuccessPopup({ ...successPopup, show: false })}>
+              Đóng
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Container>
   );
 };

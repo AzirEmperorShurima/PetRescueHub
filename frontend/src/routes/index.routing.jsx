@@ -26,7 +26,7 @@ const ForgotPassword = lazy(() => import("../features/Auth/ForgotPassword"));
 const Rescue = lazy(() => import("../pages/Rescue/Rescue"));
 const RescueSuccess = lazy(() => import("../pages/Rescue/RescueSuccess"));
 const RescueTasks = lazy(() => import("../pages/volunteer/RescueTasks"));
-
+import MyRescueRequests from '../pages/user/MyRescueRequests';
 const Forum = lazy(() => import("../pages/Forum/Forum"));
 const PostDetail = lazy(() => import("../features/Forum/PostDetail"));
 const CreatePost = lazy(() => import("../features/Forum/CreatePost"));
@@ -97,6 +97,7 @@ const AppRoutes = () => {
             <Route path="volunteer/rescue-tasks" element={<RescueTasks />} />
           </Route>
           
+          <Route path="/my-rescue-requests" element={<MyRescueRequests />} />
         </Route>
 
         {/* Admin area với AdminLayout */}

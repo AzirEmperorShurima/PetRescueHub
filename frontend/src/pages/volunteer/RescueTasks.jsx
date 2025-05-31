@@ -175,14 +175,13 @@ const RescueTasks = () => {
   const startCancelTimeout = (taskId) => {
     let progress = 0;
     const interval = setInterval(() => {
-      progress += 1;
+      progress += 20;
       setCancelProgress(progress);
       if (progress >= 100) {
         clearInterval(interval);
         onCancelOpen();
       }
-    }, 150); // 15 seconds total (150 * 100ms = 15s)
-
+    }, 50);
     setCancelTimeout(interval);
   };
 
@@ -218,7 +217,8 @@ const RescueTasks = () => {
   };
 
   const handleCancelClick = (taskId) => {
-    startCancelTimeout(taskId);
+    setSelectedTask(activeTasks.find(t => t._id === taskId));
+    onCancelOpen();
   };
 
   const handleCancelClose = () => {
@@ -338,6 +338,35 @@ const RescueTasks = () => {
           )}
         </VStack>
       </Flex>
+
+      {!isHistory && (
+        <Flex justify="flex-end" mt={4} gap={2}>
+          <Button
+            colorScheme="green"
+            size="sm"
+            leftIcon={<FiCheckCircle />}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedTask(task);
+              onCompleteOpen();
+            }}
+          >
+            Hoàn thành
+          </Button>
+          <Button
+            colorScheme="red"
+            size="sm"
+            leftIcon={<FiAlertCircle />}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedTask(task);
+              handleCancelClick(task._id);
+            }}
+          >
+            Hủy
+          </Button>
+        </Flex>
+      )}
     </Box>
   );
 

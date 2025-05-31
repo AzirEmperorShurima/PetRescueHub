@@ -1,0 +1,136 @@
+[
+    {
+        "postType": "ForumPost",
+        "title": "Thảo luận về chăm sóc thú cưng mùa đông",
+        "content": "Mọi người có mẹo gì để giữ ấm cho thú cưng trong mùa đông không? Đặc biệt là đối với các giống chó lông ngắn.",
+        "authorEmail": "admin1@example.com",
+        "tags": [
+            "chăm sóc thú cưng",
+            "mùa đông",
+            "chó"
+        ],
+        "violate_tags": [],
+        "violationDetails": [],
+        "imgUrl": [
+            "https://example.com/images/pet_winter.jpg"
+        ],
+        "commentCount": 5,
+        "favoriteCount": 10,
+        "reactions": {
+            "like": 15,
+            "love": 8,
+            "haha": 2,
+            "wow": 1,
+            "sad": 0,
+            "angry": 0
+        },
+        "postStatus": "public",
+        "createdAt": "2025-05-01T10:00:00.000Z",
+        "updatedAt": "2025-05-01T10:00:00.000Z"
+    },
+    {
+        "postType": "Question",
+        "title": "Chó của tôi bị rụng lông nhiều, có bình thường không?",
+        "content": "Chó của tôi là giống Poodle, gần đây rụng lông rất nhiều. Có ai biết nguyên nhân và cách khắc phục không?",
+        "authorEmail": "tranvantri4@dtu.edu.vn",
+        "tags": [
+            "sức khỏe thú cưng",
+            "rụng lông",
+            "poodle"
+        ],
+        "violate_tags": [],
+        "violationDetails": [],
+        "imgUrl": [],
+        "commentCount": 3,
+        "favoriteCount": 7,
+        "reactions": {
+            "like": 10,
+            "love": 5,
+            "haha": 0,
+            "wow": 2,
+            "sad": 1,
+            "angry": 0
+        },
+        "postStatus": "public",
+        "questionDetails": "Rụng lông theo mảng nhỏ, không có dấu hiệu ngứa.",
+        "createdAt": "2025-05-10T14:30:00.000Z",
+        "updatedAt": "2025-05-10T14:30:00.000Z"
+    },
+    {
+        "postType": "FindLostPetPost",
+        "title": "Tìm chú mèo bị lạc ở Đà Nẵng",
+        "content": "Mèo của tôi bị lạc ở khu vực Cầu Giấy, Đà Nẵng. Nếu ai thấy xin liên hệ giúp tôi!",
+        "authorEmail": "tranvantri352@gmail.com",
+        "tags": [
+            "mèo lạc",
+            "tìm thú cưng",
+            "hà nội"
+        ],
+        "violate_tags": [],
+        "violationDetails": [],
+        "imgUrl": [
+            "https://example.com/images/lost_cat.jpg"
+        ],
+        "commentCount": 2,
+        "favoriteCount": 12,
+        "reactions": {
+            "like": 20,
+            "love": 10,
+            "haha": 0,
+            "wow": 0,
+            "sad": 5,
+            "angry": 0
+        },
+        "postStatus": "public",
+        "lostPetInfo": "Mèo tam thể, 2 tuổi, có đeo vòng cổ màu xanh.",
+        "contactInfo": {
+            "phoneNumber": "0123456789",
+            "email": "user@example.com",
+            "address": "Hà Huy Tập, Đà Nẵng",
+            "breed": "Mèo tam thể",
+            "breedName": "Domestic Shorthair",
+            "petColor": "Tam thể",
+            "petAge": 2,
+            "petGender": "Female",
+            "petDetails": "Có vòng cổ màu xanh, rất thân thiện."
+        },
+        "createdAt": "2025-05-15T09:00:00.000Z",
+        "updatedAt": "2025-05-15T09:00:00.000Z"
+    },
+    {
+        "postType": "EventPost",
+        "title": "Ngày hội thú cưng 2025",
+        "content": "Tham gia ngày hội thú cưng tại công viên 29/3, Đà Nẵng! Có nhiều hoạt động thú vị cho thú cưng và chủ nhân.",
+        "authorEmail": "superadmin1@example.com",
+        "tags": [
+            "sự kiện",
+            "thú cưng",
+            "hà nội"
+        ],
+        "violate_tags": [],
+        "violationDetails": [],
+        "imgUrl": [
+            "https://example.com/images/pet_event.jpg"
+        ],
+        "commentCount": 8,
+        "favoriteCount": 15,
+        "reactions": {
+            "like": 25,
+            "love": 12,
+            "haha": 3,
+            "wow": 4,
+            "sad": 0,
+            "angry": 0
+        },
+        "postStatus": "hidden",
+        "eventStartDate": "2025-06-01T08:00:00.000Z",
+        "eventEndDate": "2025-06-01T17:00:00.000Z",
+        "eventLongitude": "105.8431",
+        "eventLatitude": "21.0245",
+        "eventLocation": "Công viên Thống Nhất, Đà Nẵng",
+        "approvalStatus": "pending",
+        "approvedBy": null,
+        "createdAt": "2025-05-20T12:00:00.000Z",
+        "updatedAt": "2025-05-20T12:00:00.000Z"
+    }
+]

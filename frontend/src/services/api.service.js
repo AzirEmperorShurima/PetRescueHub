@@ -166,7 +166,14 @@ const apiService = {
   },
   donations: createApiService('donations'),
   events: createApiService('events'),
-  rescues: createApiService('rescues'),
+  rescues: {
+    create: (formData) => {
+      return api.post('/PetRescue/rescue/requests/v2/create', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      });
+    }
+  },
 };
 
 export default apiService;

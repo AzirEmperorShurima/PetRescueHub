@@ -92,40 +92,48 @@
 }
 
 .hero__slide {
-  background-size: cover;
-  background-position: center;
-  transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateZ(0);
-  will-change: transform, opacity;
-}
-
-.hero__overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6));
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 0 20px;
+  min-height: 600px;
+  padding: 0 5vw;
+  gap: 5px;
 }
 
-.hero__content {
-  max-width: 800px;
-  color: var(--bg-white);
+.hero__left {
+  flex: 1;
+  max-width: 700px;
+  text-align: left;
+}
+
+.hero__right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero__img {
+  max-width: 445px;
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
 }
 
 .hero__title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  margin-bottom: 1.5rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #111;
+  margin-bottom: 1.2rem;
+  line-height: 1.1;
 }
 
 .hero__description {
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  font-size: 1.2rem;
+  color: #555;
+  font-weight: 400;
+  margin-bottom: 0;
 }
 
 .hero__navButtons {
@@ -278,75 +286,34 @@
 .rescueBtn__icon--4 { top: 50%; right: -70px; transform: translateY(-50%); }
 
 /* Volunteer Banner */
-/* Volunteer Banner – luôn hiển thị ngay, tắt fadeIn */
 .volunteerBanner {
-  padding: 100px 0;
   position: relative;
-  color: var(--bg-white);
-  text-align: center;
-  overflow: hidden;
-  z-index: 1;
-
-  /* Mình thay đổi ở đây: */
-  opacity: 1;         /* luôn hiển thị */
-  animation: none;    /* tắt fadeIn nếu không cần */
-}
-
-/* Pseudo-elements hiển thị ảnh full-cover */
-.volunteerBanner::before,
-.volunteerBanner::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-size: cover;     /* đảm bảo cover toàn phần */
-  background-position: center; /* canh giữa */
-  background-repeat: no-repeat;
-  filter: brightness(0.85) contrast(1.05);
-  transform: scale(1.02);
-  z-index: -2;
-  transition: opacity 1.5s ease-in-out;
-  /* giữ nguyên animation optimizedZoom nếu cần */
-  animation: optimizedZoom 20s ease infinite alternate;
-}
-
-.volunteerBanner::before {
+  width: 100%;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-image: var(--current-volunteer-image);
-  opacity: 1;
-  animation: optimizedZoom 20s ease infinite alternate;
-}
-
-.volunteerBanner::after {
-  background-image: var(--next-volunteer-image);
-  opacity: 0;
-  animation: optimizedZoom 20s ease infinite alternate;
-  animation-delay: 10s;
-}
-
-.volunteerBanner.transitioning::before {
-  opacity: 0;
-}
-
-.volunteerBanner.transitioning::after {
-  opacity: 1;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 1s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden;
 }
 
 .volunteerBanner__overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6));
-  z-index: -1;
+  inset: 0;
+  background: rgba(0,0,0,0.28); /* chỉ mờ nhẹ */
+  z-index: 1;
+  pointer-events: none;
 }
 
 .volunteerBanner__content {
   position: relative;
   z-index: 2;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 20px;
+  color: #fff;
+  text-align: center;
+  padding: 32px 16px;
 }
 
 .volunteerBanner__title {
@@ -412,11 +379,12 @@
 
 @media (max-width: 992px) {
   .hero__title {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
+    margin-bottom: 1.2rem;
   }
-  
   .hero__description {
-    font-size: 1.3rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
   }
   
   .volunteerBanner__title {
@@ -502,12 +470,13 @@
   }
   
   .hero__title {
-    font-size: 1.8rem;
+    font-size: 2rem;
+    margin-bottom: 1rem;
   }
   
   .hero__description {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.7rem;
   }
   
   .sectionTitle {
@@ -587,4 +556,97 @@
     padding: 8px 20px;
     font-size: 0.85rem;
   }
+}
+
+@media (max-width: 900px) {
+  .hero__slide { flex-direction: column; gap: 24px; height: auto; min-height: 400px; }
+  .hero__left, .hero__right { max-width: 100%; }
+  .hero__img { max-width: 220px; }
+  .hero__title { font-size: 2.1rem; }
+}
+
+.bannerSection {
+  width: 100%;
+  background: #fff;
+  padding: 60px 0 40px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.bannerWrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.bannerContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+}
+
+.bannerLeft {
+  flex: 1;
+  max-width: 600px;
+}
+
+.bannerTitle {
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #111;
+  margin-bottom: 1.2rem;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.bannerDesc {
+  font-size: 1.2rem;
+  color: #555;
+  font-weight: 400;
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.bannerRight {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.bannerImg {
+  max-width: 350px;
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+.bannerNav {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.bannerNavBtn {
+  background: #FFF4D6;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.bannerNavBtn:hover {
+  background: #111;
+}
+
+@media (max-width: 900px) {
+  .bannerContent { flex-direction: column; gap: 24px; }
+  .bannerLeft, .bannerRight { max-width: 100%; }
+  .bannerTitle { font-size: 2.1rem; }
+  .bannerImg { max-width: 220px; }
 }

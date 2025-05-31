@@ -1,7 +1,7 @@
 /* variables.css */
 :root {
   /* Colors */
-  --primary-color: #E91E63;
+  --primary-color: black;
   --secondary-color: #FF9800;
   --primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));  /* dùng var() nesting :contentReference[oaicite:1]{index=1} */
 

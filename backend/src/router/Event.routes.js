@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getEventCalendar, getUpcomingEventsList, getEventDetails } from "../Controller/Event.Controller.js";
+import { getEventCalendar, getUpcomingEventsList, getEventDetails, joinEvent, getParticipantCount } from "../Controller/Event.Controller.js";
 import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
 
 const eventRouter = Router();
@@ -15,5 +15,11 @@ eventRouter.get("/upcoming", getUpcomingEventsList);
 
 // Route lấy chi tiết event
 eventRouter.get("/:eventId", getEventDetails);
+
+eventRouter.post("/event/joining", joinEvent)
+eventRouter.get("/event/joining/count", getParticipantCount)
+
+
+
 
 export default eventRouter;

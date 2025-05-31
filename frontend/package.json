@@ -34,7 +34,8 @@
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.16.0",
     "react-responsive": "^10.0.1",
-    "react-router-dom": "^6.30.0"
+    "react-router-dom": "^6.30.0",
+    "swiper": "^11.2.8"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",

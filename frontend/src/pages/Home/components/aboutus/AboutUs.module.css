@@ -1,0 +1,133 @@
+.aboutUsSection {
+  position: relative;
+  width: 100%;
+  min-height: 600px;
+  background: #444;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aboutUsBg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  filter: brightness(0.6) blur(0.5px);
+}
+
+.aboutUsOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 2;
+}
+
+.aboutUsContentWrapper {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  margin: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 64px;
+  padding: 80px 48px;
+}
+
+.aboutUsTextCol {
+  flex: 2;
+  color: #fff;
+  padding-left: 48px;
+  padding-right: 12px;
+}
+
+.aboutUsTitle {
+  color: #c26175;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-align: left;
+  letter-spacing: 1px;
+}
+
+.aboutUsHeading {
+  font-size: 2.8rem;
+  font-weight: 900;
+  margin-bottom: 2.5rem;
+  text-align: left;
+  color: #fff;
+  letter-spacing: -1px;
+}
+
+.aboutUsBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+  margin-bottom: 2.2rem;
+}
+
+.aboutUsIcon {
+  font-size: 2.3rem;
+  margin-top: 2px;
+  background: rgba(255,255,255,0.13);
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aboutUsBlockTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+  color: #fff;
+  text-align: left;
+}
+
+.aboutUsBlockDesc {
+  font-size: 1.05rem;
+  color: #eaeaea;
+  line-height: 1.7;
+  text-align: left;
+}
+
+.aboutUsImgCol {
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.aboutUsImg {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 22px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+  object-fit: cover;
+}
+
+@media (max-width: 1100px) {
+  .aboutUsContentWrapper { flex-direction: column; gap: 36px; padding: 40px 12px; align-items: stretch; }
+  .aboutUsImgCol { justify-content: flex-start; margin-top: 18px; }
+  .aboutUsHeading { font-size: 2rem; }
+  .aboutUsImg { max-width: 320px; }
+  .aboutUsTextCol { padding-left: 12px; padding-right: 12px; }
+}
+
+@media (max-width: 700px) {
+  .aboutUsContentWrapper { padding: 12px 2px; gap: 12px; }
+  .aboutUsHeading { font-size: 1.2rem; }
+  .aboutUsImg { max-width: 100%; }
+  .aboutUsBlockTitle { font-size: 1rem; }
+  .aboutUsBlockDesc { font-size: 0.93rem; }
+  .aboutUsTextCol { padding: 0; }
+}

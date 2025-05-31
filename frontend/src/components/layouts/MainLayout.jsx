@@ -16,6 +16,7 @@ const MainLayout = () => {
       flexDirection="column"
       minH="100vh"
       pt={isAuthPage ? 0 : '40px'}
+      overflowX="hidden"
     >
       {!isAuthPage && <TopBar />}
       {!isAuthPage && <Navigation />}

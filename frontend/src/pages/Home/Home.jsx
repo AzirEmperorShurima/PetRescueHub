@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { heroSlides, testimonials} from '../../mocks';
+import { heroSlides, testimonials } from '../../mocks';
 import styles from './Home.module.css';
 
-import AboutSection from './components/AboutSection/AboutSection';
 import FeatureSection from './components/FeatureSection/FeatureSection';
-import ImpactCounter from './components/ImpactCounter/ImpactCounter';
 import TestimonialsSection from './components/TestimonialsSection/TestimonialsSection';
-import SuccessStories from './components/SuccessStories/SuccessStories';
+import Action from './components/Action/Action';
+import Inspiration from './components/inspiration/Inspiration';
+import AboutUs from './components/aboutus/AboutUs';
+
 import VolunteerForm from '../../components/common/volunteer/VolunteerForm';
 import VolunteerBannerSlider from '../../components/hooks/VolunteerBannerSlider';
 import VolunteerRegistrationButton from '../../components/button/VolunteerRegistrationButton';
@@ -16,26 +16,25 @@ import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showVolunteerModal, setShowVolunteerModal] = useState(false);
-  const navigate = useNavigate();
   const slideInterval = useRef(null);
 
   // Slide navigation
   const changeSlide = useCallback((direction) => {
-    // setCurrentSlide((prev) => {
-    //   const newSlide = direction === 'next' 
-    //     ? (prev + 1) % heroSlides.length 
-    //     : (prev === 0 ? heroSlides.length - 1 : prev - 1);
-    //   clearInterval(slideInterval.current);
-    //   slideInterval.current = setInterval(() => setCurrentSlide((p) => (p + 1) % heroSlides.length), 5000);
-    //   return newSlide;
-    // });
+    setCurrentSlide((prev) => {
+      const newSlide = direction === 'next'
+        ? (prev + 1) % heroSlides.length
+        : (prev === 0 ? heroSlides.length - 1 : prev - 1);
+      clearInterval(slideInterval.current);
+      slideInterval.current = setInterval(() => setCurrentSlide((p) => (p + 1) % heroSlides.length), 5000);
+      return newSlide;
+    });
   }, []);
 
   // Auto slide
   useEffect(() => {
-    // slideInterval.current = setInterval(() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length), 5000);
-    // window.scrollTo({ top: 0, behavior: 'smooth' });
-    // return () => clearInterval(slideInterval.current);
+    slideInterval.current = setInterval(() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length), 5000);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return () => clearInterval(slideInterval.current);
   }, []);
 
   // Volunteer form handler
@@ -47,66 +46,49 @@ const Home = () => {
 
   return (
     <div className={styles.home}>
-      {/* Hero Section */}
-      <section className={styles.hero}>
-        {heroSlides.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={styles.hero__slide}
-            style={{ 
-              backgroundImage: `url(${slide.image})`, 
-              display: index === currentSlide ? 'block' : 'none' 
-            }}
-          >
-            <div className={styles.hero__overlay}>
-              <div className={styles.hero__content}>
-                <h1 className={styles.hero__title}>{slide.title}</h1>
-                <p className={styles.hero__description}>{slide.description}</p>
-              </div>
-            </div>
+      {/* Banner Slide Section */}
+      <section
+        className={styles.hero}
+        style={{
+          background: heroSlides[currentSlide].bgColor || '#fff',
+          minHeight: '400px',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0',
+          transition: 'background 0.5s',
+        }}
+      >
+        <div className={styles.hero__slide} style={{ background: 'none', boxShadow: 'none', width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 1vw', gap: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className={styles.hero__left} style={{ flex: 1, maxWidth: 1000, textAlign: 'left' }}>
+            <h1 className={styles.hero__title} style={{ color: '#111', fontWeight: 900, fontSize: '4rem', marginBottom: '1.5rem', lineHeight: 1.1 }}>{heroSlides[currentSlide].title}</h1>
+            <p className={styles.hero__description} style={{ color: '#555', fontWeight: 400, fontSize: '1.2rem', marginBottom: 0 }}>{heroSlides[currentSlide].description}</p>
           </div>
-        ))}
-        <div className={styles.hero__navButtons}>
-          <button 
-            className={`${styles.hero__navButton} ${styles['hero__navButton--prev']}`} 
-            onClick={() => changeSlide('prev')} 
-            aria-label="Previous slide"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <button 
-            className={`${styles.hero__navButton} ${styles['hero__navButton--next']}`} 
-            onClick={() => changeSlide('next')} 
-            aria-label="Next slide"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
+          <div className={styles.hero__right} style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <img
+              src={heroSlides[currentSlide].image}
+              alt={heroSlides[currentSlide].title}
+              style={{ maxWidth: 400, width: '100%', height: 'auto', borderRadius: 0, boxShadow: 'none', background: 'transparent' }}
+            />
+          </div>
+        </div>
+        <div style={{ position: 'absolute', bottom: 40, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 16 }}>
+          <button onClick={() => changeSlide('prev')} className={styles.bannerNavBtn}>&lt;</button>
+          <button onClick={() => changeSlide('next')} className={styles.bannerNavBtn}>&gt;</button>
         </div>
       </section>
-
-      {/* About Section */}
-      <AboutSection />
 
       {/* Feature Section */}
       <FeatureSection />
 
-      {/* Impact Counter */}
-      <ImpactCounter />
-
-      {/* Success Stories */}
-      <SuccessStories />
-
-      {/* Testimonials Section */}
-      <TestimonialsSection testimonials={testimonials} />
+      <Action></Action>
+      <Inspiration></Inspiration>
+      <AboutUs></AboutUs>
 
       {/* Volunteer Banner Slider */}
       <VolunteerBannerSlider />
 
-      <ScrollToTopButton />
       {/* Volunteer Banner */}
       <section className={styles.volunteerBanner}>
         <div className={styles.volunteerBanner__overlay}></div>
@@ -115,19 +97,23 @@ const Home = () => {
           <p className={styles.volunteerBanner__description}>
             Tham gia cùng chúng tôi trong hành trình cứu trợ và bảo vệ thú cưng. Mỗi sự giúp đỡ đều ý nghĩa.
           </p>
-          <VolunteerRegistrationButton 
-            onClick={() => setShowVolunteerModal(true)} 
+          <VolunteerRegistrationButton
+            onClick={() => setShowVolunteerModal(true)}
             className={styles.button}
           />
         </div>
       </section>
 
-      <VolunteerForm 
-        isOpen={showVolunteerModal} 
+      <VolunteerForm
+        isOpen={showVolunteerModal}
         onClose={() => setShowVolunteerModal(false)}
       />
+
+      {/* Testimonials Section */}
+      <TestimonialsSection testimonials={testimonials} />
+
+      <ScrollToTopButton />
     </div>
-    
   );
 };
 
