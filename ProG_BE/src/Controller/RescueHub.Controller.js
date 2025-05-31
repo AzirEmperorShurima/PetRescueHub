@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { sendMailNotification } from "../services/sendMailService/nodeMailer.service.js";
 import user from "../models/user.js";
 import PetRescueMissionHistory from "../models/PetRescueMissionHistory.js";
+import { isValidObjectId } from "mongoose";
 
 
 export const requestRescue = async (req, res) => {
@@ -131,9 +132,9 @@ export const requestToRescue = async (req, res) => {
             return res.status(404).json({
                 error: 'Không tìm thấy tình nguyện viên trong khu vực. Vui lòng liên hệ admin để được hỗ trợ.',
                 adminContact: {
-                    name: 'Admin Rescue Hub',
-                    email: 'admin@rescuehub.com',
-                    phone: '+84-123-456-7890'
+                    name: 'Phạm Minh Thiện',
+                    email: 'minhthienp50@gmail.com',
+                    phone: '+84 865874627'
                 }
             });
         }
@@ -374,7 +375,7 @@ export const requestToRescue = async (req, res) => {
             selectedVolunteers: selectedVolunteerIds,
             acceptedVolunteer: acceptedVolunteer ? acceptedVolunteer._id : null,
             timeoutAt,
-            status: 'pending'
+            status: 'in_progress'
         });
 
         // Gửi email cho tình nguyện viên được chọn
@@ -1017,5 +1018,116 @@ export const completeRescueMission = async (req, res) => {
     } catch (err) {
         console.error('Lỗi khi hoàn thành nhiệm vụ cứu hộ:', err);
         return res.status(500).json({ error: 'Lỗi server khi hoàn thành nhiệm vụ cứu hộ' });
+    }
+};
+
+const isValidId = (id) => isValidObjectId(id);
+
+/**
+ * API tìm kiếm yêu cầu cứu hộ của người dùng
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+export const searchUserRescueMissions = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        if (!isValidId(userId)) {
+            return res.status(400).json({ message: "ID người dùng không hợp lệ" });
+        }
+
+        // Lấy các tham số truy vấn
+        const {
+            status, // Lọc theo trạng thái: pending, in_progress, completed, cancelled, timeout
+            keyword, // Tìm kiếm theo missionId hoặc petRescueDetails
+            startDate, // Lọc theo startedAt
+            endDate, // Lọc theo endedAt
+            page = 1, // Trang hiện tại
+            limit = 10, // Số bản ghi mỗi trang
+        } = req.query;
+
+        // Xây dựng điều kiện truy vấn
+        const query = { requester: userId };
+
+        // Lọc theo trạng thái
+        if (status) {
+            const statuses = status.split(",").map((s) => s.trim());
+            const validStatuses = ["pending", "in_progress", "completed", "cancelled", "timeout"];
+            if (statuses.every((s) => validStatuses.includes(s))) {
+                query.status = { $in: statuses };
+            } else {
+                return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+            }
+        }
+
+        // Tìm kiếm theo từ khóa (missionId hoặc petRescueDetails)
+        if (keyword) {
+            query.$or = [
+                { missionId: { $regex: keyword, $options: "i" } },
+                { petRescueDetails: { $regex: keyword, $options: "i" } },
+            ];
+        }
+
+        // Lọc theo khoảng thời gian
+        if (startDate || endDate) {
+            query.startedAt = {};
+            if (startDate) {
+                query.startedAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                query.startedAt.$lte = new Date(endDate);
+            }
+        }
+
+        // Phân loại yêu cầu hiện tại và lịch sử
+        const currentStatuses = ["pending", "in_progress"];
+        const historyStatuses = ["completed", "cancelled", "timeout"];
+        const isCurrent = status && statuses.every((s) => currentStatuses.includes(s));
+        const isHistory = status && statuses.every((s) => historyStatuses.includes(s));
+
+        // Tính toán phân trang
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        if (isNaN(pageNum) || isNaN(limitNum) || pageNum < 1 || limitNum < 1) {
+            return res.status(400).json({ message: "Tham số phân trang không hợp lệ" });
+        }
+        const skip = (pageNum - 1) * limitNum;
+
+        // Truy vấn cơ sở dữ liệu
+        const missions = await PetRescueMissionHistory.find(query)
+            .populate("requester", "fullname email") // Chỉ lấy fullname và email
+            .populate("selectedVolunteers", "fullname email")
+            .populate("acceptedVolunteer", "fullname email")
+            .sort({ startedAt: -1 }) // Sắp xếp theo thời gian bắt đầu (mới nhất trước)
+            .skip(skip)
+            .limit(limitNum)
+            .lean();
+
+        // Đếm tổng số bản ghi
+        const total = await PetRescueMissionHistory.countDocuments(query);
+
+        // Phân loại kết quả
+        const response = {
+            current: isHistory ? [] : missions.filter((m) => currentStatuses.includes(m.status)),
+            history: isCurrent ? [] : missions.filter((m) => historyStatuses.includes(m.status)),
+            total,
+            page: pageNum,
+            limit: limitNum,
+            totalPages: Math.ceil(total / limitNum),
+        };
+
+        // Nếu không lọc trạng thái cụ thể, trả về tất cả
+        if (!isCurrent && !isHistory) {
+            response.current = missions.filter((m) => currentStatuses.includes(m.status));
+            response.history = missions.filter((m) => historyStatuses.includes(m.status));
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: response,
+            message: "Tìm kiếm yêu cầu cứu hộ thành công",
+        });
+    } catch (error) {
+        console.error("Error in searchUserRescueMissions:", error);
+        return res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
     }
 };

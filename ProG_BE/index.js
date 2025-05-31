@@ -1,10 +1,13 @@
 import app from "./app.js"
 import { startSocketServer } from "./socket.js";
-import { startMissionTimeoutJob } from './src/Jobs/MissionTimeoutJob.js';
+import { 
+    // startMissionTimeoutJob,
+     checkMissionTimeouts } from './src/Jobs/MissionTimeoutJob.js';
 const PORT = process.env.PORT
 const SocketPort = process.env.SOCKET_PORT || 8080
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 startSocketServer(SocketPort);
-startMissionTimeoutJob();
+// startMissionTimeoutJob();
+checkMissionTimeouts()
