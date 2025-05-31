@@ -207,6 +207,7 @@ export const createNewForumPost = async (req, res) => {
                 ...(eventLongitude && { eventLongitude: Number(eventLongitude) }),
                 ...(eventLatitude && { eventLatitude: Number(eventLatitude) }),
                 ...(eventLocation && { eventLocation }),
+                postStatus: 'hidden',
                 approvalStatus: 'pending',
             }
         };

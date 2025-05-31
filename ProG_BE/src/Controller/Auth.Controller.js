@@ -65,7 +65,7 @@ export const Signup_Handler = async (req, res) => {
 
         Promise.all([
             CreateUser.save(),
-            getRedisClient.set(redisKey, generateOTP, { EX: 60 * 15 })
+            RedisClient.set(redisKey, generateOTP, { EX: 60 * 15 })
         ]).then(() => {
             // ✅ Gửi email OTP sau khi phản hồi API
             setImmediate(() => {

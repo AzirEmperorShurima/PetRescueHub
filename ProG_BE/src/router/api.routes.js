@@ -12,6 +12,7 @@ import eventRouter from './Event.routes.js';
 import reportRouter from './Report.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import messagingRouter from './Messaging.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +23,7 @@ const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/forum', forumRoutes);
 apiRouter.use('/user', userRoute);
+appRouter.use('/messaging', messagingRouter);
 apiRouter.use('/volunteer', volunteerRouter);
 apiRouter.use('/pet', petRoute);
 apiRouter.use('/admin', adminRouter);

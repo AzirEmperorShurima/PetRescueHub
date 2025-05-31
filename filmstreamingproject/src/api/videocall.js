@@ -1,169 +1,186 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
+import './videocall.css'; // Import CSS
 
-const VideoCall = ({ userId = "hshhshhs", roomId ="concackhonglo" }) => {
-    const [localStream, setLocalStream] = useState(null);
-    const [remoteStream, setRemoteStream] = useState(null);
-    const [isConnected, setIsConnected] = useState(false);
+const socket = io('http://localhost:8080', {
+    auth: {
+        privateKey: process.env.REACT_APP_PRIVATE_KEY_SOCKET||"petrescuehub"
+    }
+});
 
+const VideoCall = ({ currentUserId }) => {
+    const [targetUserId, setTargetUserId] = useState('');
+    const [roomId, setRoomId] = useState('');
+    const [callStatus, setCallStatus] = useState('idle'); // idle, calling, in-call
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
     const peerConnectionRef = useRef(null);
-    const socketRef = useRef(null);
+    const localStreamRef = useRef(null);
+    const remoteStreamRef = useRef(null);
 
-    const initializeMedia = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
-            });
-            setLocalStream(stream);
-            localVideoRef.current.srcObject = stream;
-        } catch (error) {
-            console.error("Không thể truy cập camera/mic:", error);
-        }
+    // Cấu hình WebRTC
+    const configuration = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' } // Server STUN công cộng
+        ]
     };
 
-    const initializePeerConnection = () => {
-        const configuration = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                {
-                    urls: 'turn:your-turn-server.com',
-                    username: 'username',
-                    credential: 'credential'
-                }
-            ]
-        };
+    // Đăng ký user khi component mount
+    useEffect(() => {
+        socket.emit('register', currentUserId);
 
-        const pc = new RTCPeerConnection(configuration);
-
-        // Thêm local stream vào peer connection
-        localStream.getTracks().forEach(track => {
-            pc.addTrack(track, localStream);
+        socket.on('register_success', ({ userId }) => {
+            console.log(`Registered successfully as ${userId}`);
         });
 
-        // Xử lý remote stream
-        pc.ontrack = (event) => {
-            setRemoteStream(event.streams[0]);
-            remoteVideoRef.current.srcObject = event.streams[0];
-        };
+        socket.on('error', ({ message }) => {
+            console.error('Socket error:', message);
+            alert(`Error: ${message}`);
+        });
 
-        // Xử lý ICE candidates
-        pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                socketRef.current.emit('ice_candidate', {
-                    toUserId: roomId, // hoặc ID của người nhận cụ thể
-                    candidate: event.candidate,
-                    roomId: roomId
-                });
-            }
-        };
+        // Xử lý call_offer
+        socket.on('call_offer', async ({ from, offer, roomId: receivedRoomId }) => {
+            setRoomId(receivedRoomId);
+            setTargetUserId(from);
+            setCallStatus('calling');
 
-        peerConnectionRef.current = pc;
-    };
-
-    const createOffer = async () => {
-        try {
-            const offer = await peerConnectionRef.current.createOffer();
-            await peerConnectionRef.current.setLocalDescription(offer);
-
-            socketRef.current.emit('call_offer', {
-                toUserId: roomId, // hoặc ID của người nhận cụ thể
-                offer: offer,
-                roomId: roomId
-            });
-        } catch (error) {
-            console.error("Lỗi khi tạo offer:", error);
-        }
-    };
-
-    const handleCallAnswer = async (answer) => {
-        try {
-            await peerConnectionRef.current.setRemoteDescription(answer);
-        } catch (error) {
-            console.error("Lỗi khi xử lý answer:", error);
-        }
-    };
-
-    const handleIncomingCall = async (offer) => {
-        try {
-            await peerConnectionRef.current.setRemoteDescription(offer);
+            await initWebRTC();
+            await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(offer));
             const answer = await peerConnectionRef.current.createAnswer();
             await peerConnectionRef.current.setLocalDescription(answer);
 
-            socketRef.current.emit('call_answer', {
-                toUserId: roomId, // hoặc ID của người gọi
-                answer: answer,
-                roomId: roomId
+            socket.emit('call_answer', {
+                toUserId: from,
+                answer,
+                roomId: receivedRoomId
             });
-        } catch (error) {
-            console.error("Lỗi khi xử lý cuộc gọi đến:", error);
-        }
-    };
+        });
 
-    useEffect(() => {
-        // Khởi tạo socket connection
-        socketRef.current = io('http://localhost:8000', {
-            header: {
-                privateKey: 'petrescuehub'
+        // Xử lý call_answer
+        socket.on('call_answer', async ({ answer }) => {
+            await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+            setCallStatus('in-call');
+        });
+
+        // Xử lý ice_candidate
+        socket.on('ice_candidate', async ({ candidate }) => {
+            if (candidate) {
+                await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
             }
         });
 
-        // Đăng ký người dùng
-        socketRef.current.emit('register', userId);
-
-        // Tham gia phòng
-        socketRef.current.emit('join_room', { roomId, userId });
-
-        // Khởi tạo media và peer connection
-        initializeMedia().then(() => {
-            initializePeerConnection();
-        });
-
-        // Lắng nghe các sự kiện
-        socketRef.current.on('call_offer', ({ from, offer }) => {
-            handleIncomingCall(offer);
-        });
-
-        socketRef.current.on('call_answer', ({ from, answer }) => {
-            handleCallAnswer(answer);
-        });
-
-        socketRef.current.on('ice_candidate', ({ from, candidate }) => {
-            peerConnectionRef.current.addIceCandidate(candidate);
-        });
-
         return () => {
-            // Cleanup khi component unmount
-            localStream?.getTracks().forEach(track => track.stop());
-            peerConnectionRef.current?.close();
-            socketRef.current?.disconnect();
+            socket.off('register_success');
+            socket.off('call_offer');
+            socket.off('call_answer');
+            socket.off('ice_candidate');
+            socket.off('error');
         };
-    }, []);
+    }, [currentUserId]);
+
+    // Khởi tạo WebRTC
+    const initWebRTC = async () => {
+        peerConnectionRef.current = new RTCPeerConnection(configuration);
+
+        // Lấy stream từ camera/mic
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
+        localVideoRef.current.srcObject = localStreamRef.current;
+        localStreamRef.current.getTracks().forEach(track =>
+            peerConnectionRef.current.addTrack(track, localStreamRef.current)
+        );
+
+        // Xử lý remote stream
+        remoteStreamRef.current = new MediaStream();
+        remoteVideoRef.current.srcObject = remoteStreamRef.current;
+        peerConnectionRef.current.ontrack = (event) => {
+            event.streams[0].getTracks().forEach(track =>
+                remoteStreamRef.current.addTrack(track)
+            );
+        };
+
+        // Xử lý ICE candidates
+        peerConnectionRef.current.onicecandidate = (event) => {
+            if (event.candidate) {
+                socket.emit('ice_candidate', {
+                    toUserId: targetUserId,
+                    candidate: event.candidate,
+                    roomId
+                });
+            }
+        };
+    };
+
+    // Bắt đầu cuộc gọi
+    const startCall = async () => {
+        if (!targetUserId) {
+            alert('Vui lòng nhập ID người nhận');
+            return;
+        }
+
+        const newRoomId = `call_${currentUserId}_${targetUserId}_${Date.now()}`;
+        setRoomId(newRoomId);
+        setCallStatus('calling');
+
+        socket.emit('join_room', { roomId: newRoomId, userId: currentUserId });
+
+        await initWebRTC();
+        const offer = await peerConnectionRef.current.createOffer();
+        await peerConnectionRef.current.setLocalDescription(offer);
+
+        socket.emit('call_offer', {
+            toUserId: targetUserId,
+            offer,
+            roomId: newRoomId
+        });
+    };
+
+    // Kết thúc cuộc gọi
+    const endCall = () => {
+        if (peerConnectionRef.current) {
+            peerConnectionRef.current.close();
+            peerConnectionRef.current = null;
+        }
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+        }
+        localVideoRef.current.srcObject = null;
+        remoteVideoRef.current.srcObject = null;
+        socket.emit('leave_room', { roomId, userId: currentUserId });
+        setCallStatus('idle');
+        setRoomId('');
+        setTargetUserId('');
+    };
 
     return (
-        <div>
-            <div>
-                <h3>Local Video</h3>
-                <video
-                    ref={localVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    style={{ width: '300px' }}
-                />
+        <div className="video-call-container">
+            <h2>Video Call</h2>
+            <div className="video-section">
+                <video ref={localVideoRef} autoPlay playsInline muted />
+                <video ref={remoteVideoRef} autoPlay playsInline />
             </div>
-            <div>
-                <h3>Remote Video</h3>
-                <video
-                    ref={remoteVideoRef}
-                    autoPlay
-                    playsInline
-                    style={{ width: '300px' }}
-                />
+            <div className="controls">
+                {callStatus === 'idle' && (
+                    <div>
+                        <label>Target User ID:</label>
+                        <input
+                            type="text"
+                            value={targetUserId}
+                            onChange={(e) => setTargetUserId(e.target.value)}
+                            placeholder="Enter target user ID"
+                        />
+                        <button onClick={startCall}>Bắt đầu gọi</button>
+                    </div>
+                )}
+                {callStatus !== 'idle' && (
+                    <div>
+                        <p>Trạng thái: {callStatus === 'calling' ? 'Đang gọi...' : 'Đang trong cuộc gọi'}</p>
+                        <button onClick={endCall}>Kết thúc gọi</button>
+                    </div>
+                )}
             </div>
-            <button onClick={createOffer}>Bắt đầu cuộc gọi</button>
         </div>
     );
 };

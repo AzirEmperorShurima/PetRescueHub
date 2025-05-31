@@ -21,96 +21,104 @@ import VideoCall from './api/videocall';
 // import { registerUser } from './socket'; // Import socket logic
 import Notification from './components/Notification/Notification';
 
-function App() {
-  const [isNotFound, setIsNotFound] = useState(false);
-  const [mode, setMode] = useState(() => {
-    return localStorage.getItem('mode') === 'dark';
-  });
-  const [loading, setLoading] = useState(false);
+// function App() {
+//   const [isNotFound, setIsNotFound] = useState(false);
+//   const [mode, setMode] = useState(() => {
+//     return localStorage.getItem('mode') === 'dark';
+//   });
+//   const [loading, setLoading] = useState(false);
 
-  const handleDarkLightToogleSwitch = () => {
-    const newMode = !mode;
-    setMode(newMode);
-    localStorage.setItem('mode', newMode ? 'dark' : 'light');
-  };
+//   const handleDarkLightToogleSwitch = () => {
+//     const newMode = !mode;
+//     setMode(newMode);
+//     localStorage.setItem('mode', newMode ? 'dark' : 'light');
+//   };
 
-  const fetchData = async () => {
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setLoading(false);
-  };
+//   const fetchData = async () => {
+//     setLoading(true);
+//     await new Promise((resolve) => setTimeout(resolve, 2000));
+//     setLoading(false);
+//   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+//   useEffect(() => {
+//     fetchData();
+//   }, []);
 
-  const videos = [
-    { id: '1', title: 'Video 1', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '2', title: 'Video 2', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '4', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '5', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '6', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '7', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '8', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '9', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '10', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '11', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '12', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-    { id: '13', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
-  ];
+//   const videos = [
+//     { id: '1', title: 'Video 1', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '2', title: 'Video 2', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '4', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '5', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '6', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '7', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '8', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '9', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '10', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '11', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '12', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//     { id: '13', title: 'Video 3', src: 'https://www.youtube.com/watch?v=2vo14Zw_RYo' },
+//   ];
 
+//   return (
+//     <Router>
+//       <AuthProvider>
+//         <div className={`App App-Container ${mode ? 'dark-mode' : 'light-mode'}`} id="wrapper">
+//           <AuthContext.Consumer>
+//             {({ auth, logout }) => (
+//               <>
+//                 <HEADER
+//                   user={auth?.user}
+//                   onLogout={logout}
+//                   Authorization={auth?.Authorization}
+//                   Authentication={true}
+//                 />
+//                 <SIDEBAR mode={mode} handleToggle={handleDarkLightToogleSwitch} />
+//                 <div className="main-body" id="main">
+//                   {loading ? (
+//                     <>
+//                       <div className="loader-container">
+//                         <LOADER />
+//                       </div>
+//                       <div className="hamster-loader-container">
+//                         <HamsterLoader />
+//                       </div>
+//                     </>
+//                   ) : (
+//                     <>
+//                       {/* Thêm Notification component */}
+//                       {auth?.user?._id && <Notification userId={auth.user._id} />}
+//                       <Routes>
+//                         <Route exact path="/" element={<EmptyPage />} />
+//                         <Route
+//                           path="/products/action/createvideocontent"
+//                           element={<ProtectedRoute element={CreateVideoContent} />}
+//                         />
+//                         <Route path="/Auth/register" element={<Register />} />
+//                         <Route path="/listVideo/:id" element={<VideoDetail videos={videos} />} />
+//                         <Route path="/Auth/login" element={<LOGIN />} />
+//                         <Route path="/listVideo" element={<VideoList videos={videos} />} />
+//                         <Route path="/callVideo" element={<VideoCall />} />
+//                         <Route path="*" element={<NotFound Auth={false} />} />
+//                       </Routes>
+//                     </>
+//                   )}
+//                 </div>
+//                 <Footer darkLight={mode} />
+//               </>
+//             )}
+//           </AuthContext.Consumer>
+//         </div>
+//       </AuthProvider>
+//     </Router>
+//   );
+// }
+const App = () => {
+  const currentUserId = 'YOUR_USER_ID'; // Lấy từ auth (JWT, session, v.v.)
   return (
-    <Router>
-      <AuthProvider>
-        <div className={`App App-Container ${mode ? 'dark-mode' : 'light-mode'}`} id="wrapper">
-          <AuthContext.Consumer>
-            {({ auth, logout }) => (
-              <>
-                <HEADER
-                  user={auth?.user}
-                  onLogout={logout}
-                  Authorization={auth?.Authorization}
-                  Authentication={true}
-                />
-                <SIDEBAR mode={mode} handleToggle={handleDarkLightToogleSwitch} />
-                <div className="main-body" id="main">
-                  {loading ? (
-                    <>
-                      <div className="loader-container">
-                        <LOADER />
-                      </div>
-                      <div className="hamster-loader-container">
-                        <HamsterLoader />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Thêm Notification component */}
-                      {auth?.user?._id && <Notification userId={auth.user._id} />}
-                      <Routes>
-                        <Route exact path="/" element={<EmptyPage />} />
-                        <Route
-                          path="/products/action/createvideocontent"
-                          element={<ProtectedRoute element={CreateVideoContent} />}
-                        />
-                        <Route path="/Auth/register" element={<Register />} />
-                        <Route path="/listVideo/:id" element={<VideoDetail videos={videos} />} />
-                        <Route path="/Auth/login" element={<LOGIN />} />
-                        <Route path="/listVideo" element={<VideoList videos={videos} />} />
-                        <Route path="/callVideo" element={<VideoCall />} />
-                        <Route path="*" element={<NotFound Auth={false} />} />
-                      </Routes>
-                    </>
-                  )}
-                </div>
-                <Footer darkLight={mode} />
-              </>
-            )}
-          </AuthContext.Consumer>
-        </div>
-      </AuthProvider>
-    </Router>
+    <div>
+      <VideoCall currentUserId={currentUserId} />
+    </div>
   );
-}
+};
 
 export default App;
