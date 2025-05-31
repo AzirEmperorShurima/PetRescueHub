@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getEventCalendar, getUpcomingEventsList, getEventDetails, joinEvent } from "../Controller/Event.Controller.js";
+import { getEventCalendar, getUpcomingEventsList, getEventDetails, joinEvent, getParticipantCount } from "../Controller/Event.Controller.js";
 import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
 
 const eventRouter = Router();

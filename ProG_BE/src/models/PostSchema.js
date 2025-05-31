@@ -106,7 +106,8 @@ export const EventPost = PostModel.discriminator(
         approvedBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-        }
+        },
+        participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
     })
 );
 export default {

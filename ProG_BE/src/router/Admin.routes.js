@@ -21,9 +21,7 @@ import {
     getReportDetail,
     approveEvent,
     rejectEvent,
-    getParticipants
-} from "../Controller/Admin.controller.js";
-import {
+    getParticipants,
     getRescueMissions,
     getRescueMissionById,
     cancelRescueMission,
@@ -31,7 +29,8 @@ import {
     getMissionStatsByStatus,
     getMissionStatsByArea,
     getVolunteerStats
-} from "../Controller/rescueMissionController.js"; // Import các hàm từ rescueMissionController.js
+} from "../Controller/Admin.controller.js";
+
 import { checkAdminLogin, isAdmin } from "../Middlewares/Check_is_Admin.js";
 import { validatePasswordStrength } from "../Middlewares/validatePasswordStrength.js";
 import { loginHandler } from "../Controller/Auth.Controller.js";

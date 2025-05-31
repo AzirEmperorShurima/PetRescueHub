@@ -23,22 +23,6 @@ export const createPostsFromJSON = async (jsonPath = "./postSeed.json") => {
                     continue;
                 }
 
-                // Xử lý participants cho EventPost
-                let participants = [];
-                if (post.postType === "EventPost" && post.participants) {
-                    participants = await Promise.all(
-                        post.participants.map(async (email) => {
-                            const user = await models_list.user.findOne({ email });
-                            if (!user) {
-                                console.warn(`⚠️ Không tìm thấy user với email "${email}" trong participants của "${post.title}"`);
-                                return null;
-                            }
-                            return user._id;
-                        })
-                    );
-                    participants = participants.filter(id => id !== null); // Loại bỏ các user không tồn tại
-                }
-
                 // Xác định model dựa trên postType
                 let PostModel;
                 switch (post.postType) {
@@ -93,7 +77,6 @@ export const createPostsFromJSON = async (jsonPath = "./postSeed.json") => {
                         eventLocation: post.eventLocation,
                         approvalStatus: post.approvalStatus || "pending",
                         approvedBy: post.approvedBy || null,
-                        participants: participants,
                     }),
                     createdAt: post.createdAt ? new Date(post.createdAt) : Date.now(),
                     updatedAt: post.updatedAt ? new Date(post.updatedAt) : Date.now(),
