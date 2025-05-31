@@ -28,7 +28,8 @@ import {
     toggleLockRescueMission,
     getMissionStatsByStatus,
     getMissionStatsByArea,
-    getVolunteerStats
+    getVolunteerStats,
+    getAllStatistics
 } from "../Controller/Admin.controller.js";
 
 import { checkAdminLogin, isAdmin } from "../Middlewares/Check_is_Admin.js";
@@ -86,6 +87,7 @@ adminRouter.get('/v1/volunteers', getVolunteers);
 // API v2 - Quản lý tình nguyện viên
 adminRouter.get('/v2/volunteers', _getVolunteers);
 
+adminRouter.get('/statistic/all', getAllStatistics)
 // Quản lý yêu cầu tình nguyện viên (v1)
 adminRouter.post('/v1/volunteers/requests/accept', acceptApproveVolunteer);
 adminRouter.post('/v1/volunteers/requests/reject', rejectVolunteerRequest);

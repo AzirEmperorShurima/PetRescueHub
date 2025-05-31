@@ -485,7 +485,7 @@ export const getAllReports = async (req, res) => {
                 } else if (report.reportType === "Post") {
                     targetId = await mongoose.model("Post")
                         .findById(report.targetId, "title content author")
-                        . populate({ path: "author", model: "User", select: "username email avatar" })
+                        .populate({ path: "author", model: "User", select: "username email avatar" })
                         .lean();
                 } else if (report.reportType === "Comment") {
                     targetId = await mongoose.model("Comment")
@@ -1098,5 +1098,41 @@ export const getVolunteerStats = async (req, res) => {
         return res.status(200).json({ stats });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi thống kê tình nguyện viên", error: error.message });
+    }
+};
+
+
+export const getAllStatistics = async (req, res) => {
+    try {
+
+        // Thống kê tổng số bài viết
+        const totalPosts = await mongoose.model("Post").countDocuments({ postStatus: { $in: ["public", "pending"] } });
+
+        // Thống kê tổng số thú cưng
+        const totalPets = await mongoose.model("PetProfile").countDocuments({ isDeleted: false });
+
+        // Thống kê tổng số người dùng
+        const totalUsers = await mongoose.model("User").countDocuments({ isActive: true });
+
+        // Thống kê tổng số tình nguyện viên
+        const totalVolunteers = await mongoose.model("User").countDocuments({
+            volunteerStatus: { $in: ["alreadyRescue", "not ready"] }
+        });
+
+        // Trả về kết quả thống kê
+        return res.status(200).json({
+            statistics: {
+                totalPosts,
+                totalPets,
+                totalUsers,
+                totalVolunteers
+            }
+        });
+    } catch (error) {
+        console.error("Error in getStatistics:", error);
+        return res.status(500).json({
+            message: "Lỗi server khi lấy thống kê",
+            error: error.message
+        });
     }
 };
