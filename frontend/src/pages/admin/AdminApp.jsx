@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useAuth } from '../../components/contexts/AuthContext';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import Dashboard from './components/Dashboard';
 import UserManagement from './components/UserManagement';
@@ -8,62 +10,28 @@ import VolunteerManagement from './components/VolunteerManagement';
 import EventManagement from './components/EventManagement';
 import DonationManagement from './components/DonationManagement';
 import AdminProfile from './components/AdminProfile';
-import AdminLogin from './components/AdminLogin';
 import RescueManagement from './components/RescueManagement';
+import ReportManagement from './components/ReportManagement';
+const theme = createTheme();
 
 const AdminApp = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  useEffect(() => {
-    const verifyAdminToken = async () => {
-      const adminToken = localStorage.getItem('adminToken');
-      
-      if (!adminToken) {
-        setIsAuthenticated(false);
-        setIsLoading(false);
-        
-        // Chỉ chuyển hướng nếu không phải đang ở trang login
-        if (!location.pathname.includes('/admin/login')) {
-          navigate('/admin/login');
-        }
-        return;
-      }
-      
-      try {
-        // Giả lập xác thực thành công
-        setIsAuthenticated(true);
-        setIsLoading(false);
-        
-        // Nếu đã đăng nhập và đang ở trang login, chuyển hướng đến dashboard
-        if (location.pathname === '/admin/login') {
-          navigate('/admin');
-        }
-      } catch (error) {
-        console.error('Token verification failed:', error);
-        localStorage.removeItem('adminToken');
-        setIsAuthenticated(false);
-        setIsLoading(false);
-        navigate('/admin/login');
-      }
-    };
-    
-    verifyAdminToken();
-  }, [navigate, location.pathname]);
-  
-  if (isLoading) {
-    return <div>Loading...</div>;
+  const { user, loading } = useAuth();
+
+  // Kiểm tra quyền admin
+  const isAdmin = user && Array.isArray(user.roles)
+    ? user.roles.some(r => (typeof r === 'string' ? (r === 'admin' || r === 'super_admin') : (r.name === 'admin' || r.name === 'super_admin')))
+    : false;
+
+  if (loading) return <div>Loading...</div>;
+
+  if (!isAdmin) {
+    // Nếu không phải admin, chuyển về trang chủ hoặc 404
+    return <Navigate to="/" replace />;
   }
 
-  // Sử dụng Routes và Route trực tiếp thay vì useRoutes
   return (
-    <Routes>
-      <Route path="login" element={<AdminLogin />} />
-      
-      {/* Các route cần xác thực */}
-      {isAuthenticated ? (
+    <ThemeProvider theme={theme}>
+      <Routes>
         <Route element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="users" element={<UserManagement />} />
@@ -71,11 +39,12 @@ const AdminApp = () => {
           <Route path="volunteers" element={<VolunteerManagement />} />
           <Route path="events" element={<EventManagement />} />
           <Route path="donations" element={<DonationManagement />} />
-          <Route path="rescues" element={<RescueManagement />} /> {/* Thêm route mới */}
+          <Route path="rescues" element={<RescueManagement />} />
           <Route path="profile" element={<AdminProfile />} />
+          <Route path="reports" element={<ReportManagement />} />
         </Route>
-      ) : null}
-    </Routes>
+      </Routes>
+    </ThemeProvider>
   );
 };
 

@@ -1,7 +1,7 @@
 .rescueBtn {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  left: 20px;
   width: 90px;
   height: 90px;
   border-radius: 50%;
@@ -66,12 +66,12 @@
 }
 .rescueBtn__tooltip {
   position: absolute;
-  top: -50px; /* Tăng khoảng cách để tránh bị cắt */
-  left: -40%;
-  transform: translateX(-50%) translateY(10px);
-  background-color: rgba(0, 0, 0, 0.9); /* Tăng độ đậm */
+  top: -50px;
+  right: -40%;
+  transform: translateX(50%) translateY(10px);
+  background-color: rgba(0, 0, 0, 0.9);
   color: white;
-  padding: 10px 15px; /* Tăng padding */
+  padding: 10px 15px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -79,23 +79,23 @@
   opacity: 0;
   transition: all 0.3s ease;
   pointer-events: none;
-  z-index: 9999; /* Z-index rất cao */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Thêm shadow */
-  min-width: max-content; /* Đảm bảo không bị cắt text */
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: max-content;
 }
 
 .rescueBtn:hover .rescueBtn__tooltip {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  visibility: visible; /* Thêm visibility */
+  transform: translateX(50%) translateY(0);
+  visibility: visible;
 }
 
 .rescueBtn__tooltip::after {
   content: '';
   position: absolute;
-  bottom: -6px; /* Điều chỉnh vị trí mũi tên */
-  left: 80%;
-  margin-left: -6px;
+  bottom: -6px;
+  right: 80%;
+  margin-right: -6px;
   width: 12px;
   height: 12px;
   background-color: rgba(0, 0, 0, 0.9);

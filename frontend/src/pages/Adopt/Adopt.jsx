@@ -47,6 +47,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import { useAdopt } from '../../components/hooks/useAdopt';
+import { useAuth } from '../../components/contexts/AuthContext';
 
 // Import components với fallback
 const PetFilters = React.lazy(() => 
@@ -146,6 +147,11 @@ const Adopt = () => {
     'linear(to-br, blue.50, purple.50, pink.50)',
     'linear(to-br, blue.900, purple.900, pink.900)'
   );
+
+  const { user } = useAuth();
+  const isAdmin = user && Array.isArray(user.roles)
+    ? user.roles.some(r => (typeof r === 'string' ? (r === 'admin' || r === 'super_admin') : (r.name === 'admin' || r.name === 'super_admin')))
+    : false;
 
   // Kiểm tra nếu có pet mới được tạo
   useEffect(() => {
@@ -520,11 +526,11 @@ const Adopt = () => {
                   flexWrap="wrap"
                 >
                   <VStack spacing={1}>
-                    <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-                      {loading ? '...' : pets.length}+
+                    <Text fontWeight="bold" fontSize="lg">
+                      {isAdmin ? `${pets.length} thú cưng đang tìm kiếm ngôi nhà mới` : ''}
                     </Text>
                     <Text fontSize="sm" color={textSecondary}>
-                      Thú cưng
+                      {isAdmin ? 'Tổng số thú cưng trong hệ thống' : 'Cùng PetRescueHub lan tỏa yêu thương!'}
                     </Text>
                   </VStack>
                   <VStack spacing={1}>
@@ -592,10 +598,10 @@ const Adopt = () => {
                   
                   <VStack align="start" spacing={0}>
                     <Text fontWeight="bold" fontSize="lg">
-                      {loading ? 'Đang tải...' : `${pets.length} thú cưng`}
+                      {isAdmin ? `${pets.length} thú cưng đang tìm kiếm ngôi nhà mới` : 'Cùng PetRescueHub lan tỏa yêu thương!'}
                     </Text>
                     <Text fontSize="sm" color={textSecondary}>
-                      đang tìm kiếm ngôi nhà mới
+                      {isAdmin ? 'Tổng số thú cưng trong hệ thống' : ''}
                     </Text>
                   </VStack>
                 </HStack>

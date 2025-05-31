@@ -80,7 +80,10 @@ import {
   FaHome,
   FaClock,
   FaStar,
-  FaCheck
+  FaCheck,
+  FaComment,
+  FaBookmark,
+  FaRegBookmark
 } from 'react-icons/fa';
 import { useAdopt } from '../../../components/hooks/useAdopt';
 

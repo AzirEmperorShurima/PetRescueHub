@@ -70,10 +70,47 @@ const apiService = {
     },
     comments: {
       ...createApiService('forum/comments'),
-      getByPost: (postId, params = {}) => api.get(`/forum/comments/post/${postId}`, { params }),
-      create: (data) => api.post('/forum/comments', data, { withCredentials: true }),
-      update: (id, data) => api.put(`/forum/comments/${id}`, data, { withCredentials: true }),
-      delete: (id) => api.delete(`/forum/comments/${id}`, { withCredentials: true })
+      getByPost: (postId, params = {}) => api.get(`/forum/comments/${postId}`, { params, withCredentials: true }),
+      create: (data) => {
+        const simpleData = {
+          postId: data.postId,
+          content: data.content
+        };
+        return api.post('/forum/comments/new', simpleData, { 
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true 
+        });
+      },
+      reply: (data) => {
+        // Đảm bảo data là object đơn giản
+        const simpleData = {
+          postId: data.postId,
+          content: data.content,
+          parentComment: data.parentComment
+        };
+        return api.post('/forum/comments/reply', simpleData, { 
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true 
+        });
+      },
+      update: (id, data) => {
+        // Đảm bảo data là object đơn giản
+        const simpleData = {
+          content: data.content
+        };
+        return api.put(`/forum/comments/${id}`, simpleData, { 
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true 
+        });
+      },
+      delete: (id) => api.delete(`/forum/comments/${id}`, { withCredentials: true }),
+      getReplies: (commentId, params = {}) => api.get(`/forum/comments/GET-ReplyComments/${commentId}`, { params, withCredentials: true })
     },
     reactions: {
       addOrUpdate: (data) => api.post('/forum/reactions/post', data, { withCredentials: true }),

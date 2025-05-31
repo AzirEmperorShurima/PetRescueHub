@@ -43,7 +43,7 @@ forumRoutes.put('/posts/:post_id', [
     parseFormData(),     // 1. Xử lý form data và file uploads
     uploadPostImages()   // 3. Upload ảnh lên Google Drive
 ], updateForumPost);
-forumRoutes.delete('/posts/:post_id', deleteForumPost);
+forumRoutes.delete('/posts/delete-post', deleteForumPost);
 
 // Comment-related routes
 forumRoutes.post('/comments/new', addComment);              // Thêm comment mới

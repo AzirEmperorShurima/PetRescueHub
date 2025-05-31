@@ -589,7 +589,7 @@ export const deleteForumPost = async (req, res) => {
             });
         }
 
-        const postId = req.params.post_id;
+        const { postId } = req.body
         const result = await forumService.deletePost(postId, userId);
 
         if (!result.success) {

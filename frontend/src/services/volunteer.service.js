@@ -15,7 +15,10 @@ const volunteerService = {
   manageRescueOperations: (data) => apiService.volunteers.manageRescueOperations(data),
   
   // Gửi yêu cầu trở thành tình nguyện viên
-  requestVolunteer: () => api.post('/volunteer/v1/requesting/grow-up/volunteer')
+  requestVolunteer: () => api.post('/volunteer/v1/requesting/grow-up/volunteer'),
+  
+  // Từ chức tình nguyện viên
+  resignVolunteer: () => api.post('/volunteer/v1/resign')
 };
 
 export default volunteerService;

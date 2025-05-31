@@ -23,19 +23,19 @@ export const isAdmin = RoleChecking('admin', {
 
 export const checkAdminLogin = async (req, res, next) => {
     try {
-        const { emailOrUsername, password } = req.body;
+        const { email, username, password } = req.body;
 
-        if (!emailOrUsername || !password) {
+        if (!email && !username && !password) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: !emailOrUsername ? "Email hoặc username là bắt buộc" : "Mật khẩu là bắt buộc"
+                message: !username ? "Email hoặc username là bắt buộc" : "Mật khẩu là bắt buộc"
             });
         }
 
         const foundUser = await user.findOne({
             $or: [
-                { email: emailOrUsername },
-                { username: emailOrUsername }
+                { email: email },
+                { username: username }
             ]
         })
             .select('password roles isActive')

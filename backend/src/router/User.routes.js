@@ -8,9 +8,10 @@ import { checkUserAuth } from "../Middlewares/userAuthChecker.js";
 import { avatarUploadMiddleware } from "../Middlewares/CloudinaryUploader.Middlware.js";
 // import { get_Transaction_Status } from "../services/PaymentService/MOMO/Momo.payment.js";
 import { verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware } from "../utils/auth/authUtils.js";
+import { createPayment, handleWebhook } from "../services/PaymentService/PayOS/PayOS.controller.js";
 
 const userRoute = Router()
-userRoute.use(checkUserAuth)
+// userRoute.use(checkUserAuth)
 userRoute.get('/', (req, res) => {
     res.status(200).json({ message: 'User API is working' })
 })
@@ -33,7 +34,7 @@ userRoute.get("/v2", async (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
-userRoute.use(verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware)
+// userRoute.use(verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware)
 
 userRoute.put('/v1/user/own/profile/update', [avatarUploadMiddleware("user_avatar")], updateUserProfile)
 
@@ -52,5 +53,7 @@ userRoute.post('/user/payments/vnpay/transactions/create', VnPayCreatePaymentUrl
 userRoute.post('/user/payments/vnpay/ipn-url', VnPayIPN_URL);
 userRoute.post('/user/payments/vnpay/transactions/refund', VnPayReturnURL);
 
+userRoute.post('/user/payments/payos/transaction/create', checkUserAuth, createPayment);
+userRoute.post('/user/payments/payos/callback', handleWebhook);
 
 export default userRoute

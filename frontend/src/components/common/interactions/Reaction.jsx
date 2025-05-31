@@ -22,6 +22,7 @@ import {
   EmojiHeartEyesFill
 } from 'react-bootstrap-icons';
 import PropTypes from 'prop-types';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Định nghĩa các loại cảm xúc với Bootstrap Icons
 const REACTION_TYPES = {
@@ -120,8 +121,14 @@ const Reaction = ({
     return newReactions;
   };
 
+  const { user } = useAuth();
+
   // Xử lý click reaction
   const handleReactionClick = async (reactionType, e) => {
+    if (!user) {
+      // Show tooltip hoặc toast: "Đăng nhập để tương tác"
+      return;
+    }
     // Ngăn sự kiện lan truyền
     if (e) {
       e.preventDefault();
@@ -219,7 +226,7 @@ const Reaction = ({
       {Object.entries(REACTION_TYPES).map(([type, config]) => {
         const isSelected = localUserReaction === type;
         return (
-          <Tooltip key={type} label={config.label} placement="top">
+          <Tooltip key={type} label={user ? config.label : 'Đăng nhập để tương tác'} placement="top">
             <IconButton
               size="md"
               variant="ghost"
@@ -234,7 +241,7 @@ const Reaction = ({
                 transform: 'scale(1.1)'
               }}
               transition="all 0.01s"
-              disabled={isProcessing}
+              disabled={!user || isProcessing}
             >
               {variant === 'emoji' ? (
                 <Text fontSize="2xl">{config.emoji}</Text>

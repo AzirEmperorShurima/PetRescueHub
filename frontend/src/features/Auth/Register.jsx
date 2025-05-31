@@ -196,7 +196,7 @@ function Register() {
 
         <form className="form" onSubmit={handleSubmitForm}>
           <div className="form-group">
-            <label htmlFor="username">Tên người dùng</label>
+            <label htmlFor="username">Username</label>
             <input
               required
               className="input"
@@ -226,7 +226,7 @@ function Register() {
           </div>
 
           <div className="form-group password-group">
-            <label htmlFor="password">Mật khẩu</label>
+            <label htmlFor="password">Password</label>
             <div className="password-input-wrapper">
               <input
                 required

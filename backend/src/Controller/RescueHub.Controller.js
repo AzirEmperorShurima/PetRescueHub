@@ -1,7 +1,7 @@
 import { redisClient } from "../Config/redis.client.js";
 import geolib from 'geolib';
 import { v4 as uuidv4 } from 'uuid';
-import { getUserFieldFromToken } from "../services/User/User.service.js"
+import { sendMailNotification } from "../services/sendMailService/nodeMailer.service.js";
 import user from "../models/user.js";
 import PetRescueMissionHistory from "../models/PetRescueMissionHistory.js";
 
@@ -12,7 +12,7 @@ export const requestRescue = async (req, res) => {
         const userId = req.user?._id;
 
         const missionId = uuidv4();
-        
+
         // Tính thời gian timeout
         const timeoutAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
@@ -69,101 +69,275 @@ export const requestRescue = async (req, res) => {
 
 export const requestToRescue = async (req, res) => {
     try {
-        const { coordinates, radius, maxVolunteers = 5, guestInfo, autoAssign = true, timeoutMinutes = 30 } = req.body;
-        const userId = req.user._id
-        const isGuest = !userId;
+        const { coordinates, radius, maxVolunteers = 5, autoAssign = true, timeoutMinutes = 30 } = req.body;
+        const userId = req.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Yêu cầu đăng nhập để sử dụng.' });
+        }
 
         if (!Array.isArray(coordinates) || coordinates.length !== 2) {
-            return res.status(400).json({ error: 'Invalid coordinates format. Expected [longitude, latitude]' });
+            return res.status(400).json({ error: 'Định dạng tọa độ không hợp lệ. Cần [kinh độ, vĩ độ]' });
+        }
+
+        // Kiểm tra xem người dùng có nhiệm vụ đang hoạt động không
+        const activeMissions = await PetRescueMissionHistory.find({
+            requester: userId,
+            status: { $in: ['pending', 'in_progress'] },
+            timeoutAt: { $gt: new Date() }
+        }).limit(1);
+
+        if (activeMissions.length > 0) {
+            return res.status(400).json({ error: 'Bạn đã có nhiệm vụ đang hoạt động. Vui lòng hoàn thành hoặc hủy nhiệm vụ hiện tại trước khi tạo mới.' });
         }
 
         const missionId = uuidv4();
-
-        // Tính thời gian timeout
         const timeoutAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
-        // Save rescue request to Redis
-        await redisClient.set(`rescue:${missionId}`, JSON.stringify({
-            coordinates,
-            radius,
-            userId: isGuest ? 'guest' : userId,
-            guestInfo: isGuest ? guestInfo : undefined,
-            timeoutAt: timeoutAt.toISOString()
-        }), {
-            EX: timeoutMinutes * 60 // Thời gian hết hạn trong Redis cũng là timeoutMinutes
-        });
+        // Lưu yêu cầu cứu hộ vào Redis
+        await redisClient.set(
+            `rescue:${missionId}`,
+            JSON.stringify({
+                coordinates,
+                radius,
+                userId,
+                timeoutAt: timeoutAt.toISOString(),
+            }),
+            { EX: timeoutMinutes * 60 }
+        );
 
-        const volunteers = [];
-        let cursor = '0';
+        // Sử dụng GEORADIUS để tìm tình nguyện viên
+        const [longitude, latitude] = coordinates;
+        const volunteers = await redisClient.sendCommand([
+            'GEORADIUS',
+            'volunteers',
+            longitude.toString(),
+            latitude.toString(),
+            `${radius}`,
+            'km',
+            'WITHCOORD',
+            'COUNT',
+            maxVolunteers.toString()
+        ]);
 
-        do {
-            const result = await redisClient.scan(cursor, {
-                MATCH: 'volunteer:*',
-                COUNT: 100
-            });
+        if (!volunteers || volunteers.length === 0) {
+            console.log('Không tìm thấy tình nguyện viên trong bán kính', radius, 'km');
+            return res.json({ volunteers: [] });
+        }
 
-            cursor = result.cursor;
-            const keys = result.keys;
-
-            for (const key of keys) {
-                const data = await redisClient.get(key);
-                if (!data) continue;
-
-                let parsed;
-                try {
-                    parsed = JSON.parse(data);
-                } catch (e) {
-                    console.warn(`Invalid JSON in Redis key ${key}`);
-                    continue;
-                }
-
-                if (!parsed.coordinates || parsed.coordinates.length !== 2) continue;
-
-                const distance = geolib.getDistance(
-                    { latitude: coordinates[1], longitude: coordinates[0] },
-                    { latitude: parsed.coordinates[1], longitude: parsed.coordinates[0] }
-                );
-
-                if (distance <= radius * 1000 && parsed.status === 'readyRescue') {
-                    volunteers.push({ ...parsed, distance });
-                }
-            }
-        } while (cursor !== '0');
-
-        const sorted = volunteers
-            .sort((a, b) => a.distance - b.distance)
-            .slice(0, maxVolunteers);
-
+        const volunteerIds = volunteers.map(item => item[0]); // Lấy các userId
         const volunteerUsers = await user.find({
-            _id: { $in: sorted.map(v => v.userId) }
-        }).select('fullname phonenumber');
+            _id: { $in: volunteerIds }
+        }).select('fullname phonenumber email');
+
+        // Lọc các tình nguyện viên có trạng thái 'alreadyRescue'
+        const filteredVolunteers = await Promise.all(volunteerUsers.map(async (user) => {
+            const volunteerData = await redisClient.get(`volunteer:${user._id}`);
+            if (volunteerData) {
+                const parsedData = JSON.parse(volunteerData);
+                return parsedData.status === 'alreadyRescue' ? user : null;
+            }
+            return null;
+        })).then(results => results.filter(user => user !== null));
+
+        if (filteredVolunteers.length === 0) {
+            console.log('Không có tình nguyện viên nào ở trạng thái alreadyRescue');
+            return res.json({ volunteers: [] });
+        }
 
         if (!autoAssign) {
+            await PetRescueMissionHistory.create({
+                missionId,
+                requester: userId,
+                location: { type: 'Point', coordinates },
+                radius,
+                selectedVolunteers: [],
+                acceptedVolunteer: null,
+                timeoutAt,
+                status: 'pending'
+            });
             return res.json({
                 selectVolunteers: true,
-                volunteers: volunteerUsers,
+                volunteers: filteredVolunteers,
                 missionId
             });
         }
 
-        // Tự động ghép: chọn người gần nhất
-        const selectedVolunteerIds = volunteerUsers.map(v => v._id);
+        // Khi autoAssign là true, chọn tình nguyện viên gần nhất
+        const selectedVolunteerIds = filteredVolunteers.map(v => v._id);
+        const requester = await user.findById(userId).select('fullname email phonenumber'); // Thêm phonenumber
+
+        // Lấy tình nguyện viên gần nhất (dựa trên thứ tự từ GEORADIUS)
+        const acceptedVolunteer = filteredVolunteers[0]; // Giả sử GEORADIUS trả về theo thứ tự gần -> xa
 
         await PetRescueMissionHistory.create({
             missionId,
-            requester: isGuest ? undefined : userId,
-            guestDetails: isGuest ? guestInfo : undefined,
+            requester: userId,
             location: { type: 'Point', coordinates },
             radius,
             selectedVolunteers: selectedVolunteerIds,
-            timeoutAt // Thêm thời gian timeout
+            acceptedVolunteer: acceptedVolunteer ? acceptedVolunteer._id : null,
+            timeoutAt,
+            status: 'pending'
         });
 
-        return res.json({ volunteers: volunteerUsers });
+        // Gửi email cho tình nguyện viên được chọn
+        if (acceptedVolunteer) {
+            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`; // Liên kết đến vị trí của requester
+            const requesterPhone = requester.phonenumber && requester.phonenumber.length > 0 ? requester.phonenumber.join(', ') : 'Không có số điện thoại';
+            try {
+                await sendMailNotification({
+                    email: acceptedVolunteer.email,
+                    subject: 'Yêu Cầu Cứu Hộ Mới',
+                    text: `Bạn đã được chọn cho một nhiệm vụ cứu hộ mới từ ${requester ? requester.fullname : 'Khách vãng lai'}`,
+                    html: `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                    max-width: 600px;
+                                    margin: 0 auto;
+                                    padding: 20px;
+                                }
+                                .header {
+                                    background-color: #4CAF50;
+                                    color: white;
+                                    padding: 15px;
+                                    text-align: center;
+                                    border-radius: 5px 5px 0 0;
+                                    margin-bottom: 20px;
+                                }
+                                .content {
+                                    background-color: #f9f9f9;
+                                    padding: 20px;
+                                    border-radius: 0 0 5px 5px;
+                                    border: 1px solid #ddd;
+                                }
+                                .mission-id {
+                                    background-color: #f5f5f5;
+                                    padding: 10px;
+                                    border-left: 4px solid #4CAF50;
+                                    margin: 15px 0;
+                                    font-weight: bold;
+                                }
+                                .info-section {
+                                    margin-bottom: 15px;
+                                }
+                                .info-title {
+                                    font-weight: bold;
+                                    color: #4CAF50;
+                                    margin-bottom: 5px;
+                                }
+                                .info-content {
+                                    padding-left: 15px;
+                                }
+                                .info-item {
+                                    margin-bottom: 5px;
+                                }
+                                .location {
+                                    background-color: #e9f7ef;
+                                    padding: 10px;
+                                    border-radius: 5px;
+                                    margin: 15px 0;
+                                }
+                                .map-link {
+                                    display: inline-block;
+                                    background-color: #4CAF50;
+                                    color: white;
+                                    padding: 8px 15px;
+                                    text-decoration: none;
+                                    border-radius: 4px;
+                                    margin-top: 10px;
+                                }
+                                .map-link:hover {
+                                    background-color: #45a049;
+                                }
+                                .footer {
+                                    text-align: center;
+                                    margin-top: 20px;
+                                    padding-top: 15px;
+                                    border-top: 1px solid #ddd;
+                                    font-size: 0.9em;
+                                    color: #777;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h2>Thông Báo Nhiệm Vụ Cứu Hộ Mới</h2>
+                            </div>
+                            <div class="content">
+                                <p>Xin chào <strong>${acceptedVolunteer.fullname}</strong>,</p>
+                                <p>Bạn đã được chọn cho một nhiệm vụ cứu hộ mới. Dưới đây là chi tiết nhiệm vụ:</p>
+                                
+                                <div class="mission-id">
+                                    Mã nhiệm vụ: ${missionId}
+                                </div>
+                                
+                                <div class="info-section">
+                                    <div class="info-title">Thông tin người yêu cầu:</div>
+                                    <div class="info-content">
+                                        <div class="info-item"><strong>Tên:</strong> ${requester ? requester.fullname : 'Khách vãng lai'}</div>
+                                        <div class="info-item"><strong>Số điện thoại:</strong> ${requesterPhone}</div>
+                                        <div class="info-item"><strong>Email:</strong> ${requester ? requester.email : 'Không có email'}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="location">
+                                    <div class="info-title">Vị trí cứu hộ:</div>
+                                    <div>[${coordinates.join(', ')}]</div>
+                                    <a href="${googleMapsLink}" target="_blank" class="map-link">Xem trên Google Maps</a>
+                                </div>
+                                
+                                <p><strong>Lưu ý:</strong> Vui lòng nhanh chóng thực hiện nhiệm vụ cứu hộ trong hệ thống.</p>
+                            </div>
+                            <div class="footer">
+                                <p>Email này được gửi tự động từ hệ thống Rescue Hub. Vui lòng không trả lời email này.</p>
+                            </div>
+                        </body>
+                        </html>
+                    `
+                });
+            } catch (emailErr) {
+                console.error(`Gửi email thất bại cho ${acceptedVolunteer.email}:`, emailErr);
+            }
 
+            // Gửi email cho người gửi yêu cầu (requester)
+            if (requester && requester.email) {
+                try {
+                    await sendMailNotification({
+                        email: requester.email,
+                        subject: 'Tình Nguyện Viên Đã Được Chọn Cho Nhiệm Vụ Của Bạn',
+                        text: `Một tình nguyện viên đã được chọn cho nhiệm vụ cứu hộ của bạn`,
+                        html: `
+                            <p>Xin chào ${requester.fullname},</p>
+                            <p>Một tình nguyện viên đã được chọn cho nhiệm vụ cứu hộ của bạn. Chi tiết nhiệm vụ:</p>
+                            <ul>
+                                <li>Mã nhiệm vụ: ${missionId}</li>
+                                <li>Tình nguyện viên: ${acceptedVolunteer.fullname} (${acceptedVolunteer.phonenumber.join(', ') || 'Không có số điện thoại'})</li>
+                                <li>Vị trí: [${coordinates.join(', ')}] - <a href="${googleMapsLink}" target="_blank">Xem trên Google Maps</a></li>
+                            </ul>
+                            <p>Vui lòng theo dõi tiến độ nhiệm vụ trong hệ thống.</p>
+                        `
+                    });
+                } catch (emailErr) {
+                    console.error(`Gửi email thất bại cho ${requester.email}:`, emailErr);
+                }
+            } else {
+                console.warn('Không thể gửi email cho requester: Thiếu email hoặc thông tin không hợp lệ');
+            }
+        }
+
+        return res.json({ volunteers: [acceptedVolunteer] || [] });
     } catch (err) {
-        console.error('Request Rescue Error:', err);
-        return res.status(500).json({ error: 'Server error during rescue request.' });
+        console.error('Lỗi yêu cầu cứu hộ:', err);
+        return res.status(500).json({ error: 'Lỗi server khi xử lý yêu cầu cứu hộ.' });
     }
 };
 
@@ -252,7 +426,7 @@ export const acceptRescueMission = async (req, res) => {
                 mission.lockExpiresAt = null;
             } else {
                 // Nếu khóa vẫn còn hiệu lực, trả về lỗi
-                return res.status(409).json({ 
+                return res.status(409).json({
                     error: 'Mission is currently being processed by another volunteer',
                     retryAfter: mission.lockExpiresAt
                 });
@@ -266,11 +440,11 @@ export const acceptRescueMission = async (req, res) => {
 
         try {
             // Kiểm tra lại một lần nữa để đảm bảo mission vẫn ở trạng thái pending
-            const updatedMission = await PetRescueMissionHistory.findOne({ 
-                missionId, 
-                status: 'pending' 
+            const updatedMission = await PetRescueMissionHistory.findOne({
+                missionId,
+                status: 'pending'
             });
-            
+
             if (!updatedMission) {
                 return res.status(409).json({ error: 'Mission status has changed' });
             }

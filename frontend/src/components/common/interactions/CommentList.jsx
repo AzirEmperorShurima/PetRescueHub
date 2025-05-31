@@ -52,6 +52,7 @@ const CommentItem = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
+  const [isReplying, setIsReplying] = useState(false);
   const cancelRef = React.useRef();
 
   // Color mode values
@@ -105,14 +106,14 @@ const CommentItem = ({
           <Avatar
             size="sm"
             src={comment.authorAvatar}
-            name={comment.author}
+            name={comment.author?.username || comment.author || 'User'}
           />
           
           <Box flex={1}>
             {/* Comment Header */}
             <HStack mb={2} justify="space-between">
               <HStack>
-                <Text fontWeight="bold">{comment.author}</Text>
+                <Text fontWeight="bold">{comment.author?.username || comment.author}</Text>
                 <Text fontSize="sm" color={textColor}>
                   {formatTime(comment.timestamp)}
                 </Text>
@@ -197,9 +198,9 @@ const CommentItem = ({
                   size="sm"
                   leftIcon={<FiMessageCircle />}
                   variant="ghost"
-                  onClick={() => onReply?.(comment.id)}
+                  onClick={() => setIsReplying(!isReplying)}
                 >
-                  Trả lời
+                  {isReplying ? 'Hủy' : 'Trả lời'}
                 </Button>
               )}
 
@@ -214,6 +215,24 @@ const CommentItem = ({
                 </Button>
               )}
             </HStack>
+
+            {/* Reply Form */}
+            {isReplying && (
+              <Box mt={3}>
+                <CommentForm
+                  onSubmit={async (replyObj) => {
+                    await onReply?.(replyObj.content, comment.id);
+                    setIsReplying(false);
+                  }}
+                  isReply={true}
+                  replyTo={comment.author?.username || comment.author}
+                  userAvatar={null}
+                  userName={null}
+                  buttonText="Gửi trả lời"
+                  autoFocus
+                />
+              </Box>
+            )}
           </Box>
         </Flex>
       </Box>

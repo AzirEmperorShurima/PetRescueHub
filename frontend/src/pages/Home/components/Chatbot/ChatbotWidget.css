@@ -29,7 +29,7 @@
 .chatbot-tooltip {
   position: absolute;
   top: -40px;
-  left: 15%;
+  right: 15%;
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 8px 12px;
@@ -40,6 +40,9 @@
   transform: translateY(10px);
   transition: all 0.3s ease;
   pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: max-content;
 }
 
 .chatbot-button:hover .chatbot-tooltip {
@@ -51,7 +54,7 @@
   content: '';
   position: absolute;
   bottom: -5px;
-  left: 25px;
+  right: 25px;
   width: 10px;
   height: 10px;
   background-color: rgba(0, 0, 0, 0.8);

@@ -269,7 +269,7 @@ export const deletePost = async (postId, userId) => {
     try {
         const post = await PostModel.findOneAndDelete(
             { _id: new mongoose.Types.ObjectId(postId), author: new mongoose.Types.ObjectId(userId) },
-            { lean: true, session }
+            { lean: true }
         ).exec();
 
         if (!post) {

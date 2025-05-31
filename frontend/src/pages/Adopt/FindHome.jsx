@@ -42,6 +42,7 @@ import { BiUpload, BiX, BiHeart, BiCheckCircle, BiCamera, BiUser, BiPlus } from 
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api.service';
+import { useAuth } from '../../components/contexts/AuthContext';
 
 // Constants for pet types
 const petTypes = [
@@ -639,6 +640,7 @@ const FindHome = () => {
   const navigate = useNavigate();
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const formRef = React.useRef(null);
+  const { user } = useAuth();
   
   const [formData, setFormData] = useState({
     petInfo: {},
@@ -972,8 +974,9 @@ const FindHome = () => {
                 minW="120px"
                 isLoading={isSubmitting}
                 loadingText="Đang đăng tin..."
+                disabled={!user}
               >
-                Đăng tin
+                {user ? 'Đăng tin' : 'Đăng nhập để đăng tin'}
               </Button>
             )}
           </HStack>

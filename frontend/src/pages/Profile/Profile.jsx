@@ -230,6 +230,8 @@ const Profile = () => {
     fetchData();
   }, []);
 
+  console.log('User context:', user);
+
   // Thêm tab "Thông tin cá nhân"
   const getTabs = () => {
     const tabs = [

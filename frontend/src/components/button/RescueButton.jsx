@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Text, Image, useColorModeValue } from '@chakra-ui/react';
 import rescuseIcon from '../../assets/images/rescuseIcon.svg';
 import styles from './RescueButton.module.css';
-import { useAuth } from '../contexts/AuthContext';
 
 const RescueButton = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const rescueBtnRef = useRef(null);
   const isDragging = useRef(false);
@@ -71,17 +69,13 @@ const RescueButton = () => {
     };
   }, []);
 
-  // Chỉ render component nếu user đã đăng nhập
-  if (!user) {
-    return null;
-  }
-
   return (
     <Box
       className={styles.rescueBtn}
       ref={rescueBtnRef}
       onMouseDown={handleMouseDown}
       onClick={handleClick}
+      style={{ left: '20px', right: 'auto' }}
     >
       <Image
         src={rescuseIcon}

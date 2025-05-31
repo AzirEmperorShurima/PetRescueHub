@@ -14,7 +14,14 @@ import {
   VStack,
   HStack,
   Center,
-  Skeleton
+  Skeleton,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  useDisclosure
 } from '@chakra-ui/react';
 import { FaPlus, FaSearch } from 'react-icons/fa';
 import './Event.css';
@@ -22,6 +29,7 @@ import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import EventCard from './components/EventCard';
 import { useAuth } from '../../components/contexts/AuthContext';
 import apiService from '../../services/api.service';
+import EventCalendar from './components/EventCalendar';
 
 const Event = () => {
   const navigate = useNavigate();
@@ -36,6 +44,8 @@ const Event = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const textSecondary = useColorModeValue('gray.600', 'gray.400');
   const searchBg = useColorModeValue('white', 'gray.700');
+
+  const { isOpen: isCalendarOpen, onOpen: onCalendarOpen, onClose: onCalendarClose } = useDisclosure();
 
   // Fetch events from API
   useEffect(() => {
@@ -216,12 +226,10 @@ const Event = () => {
               }}
             />
           </InputGroup>
-          <Button
-            colorScheme="pink"
-            leftIcon={<FaPlus />}
-            onClick={handleCreateEvent}
-            className="create-event-btn"
-          >
+          <Button colorScheme="blue" variant="outline" onClick={onCalendarOpen} className="calendar-event-btn">
+            Lịch sự kiện
+          </Button>
+          <Button colorScheme="pink" leftIcon={<FaPlus />} onClick={handleCreateEvent} className="create-event-btn">
             Tạo sự kiện
           </Button>
         </HStack>
@@ -299,6 +307,17 @@ const Event = () => {
         )}
       </Container>
       <ScrollToTopButton />
+
+      <Modal isOpen={isCalendarOpen} onClose={onCalendarClose} size="5xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Lịch sự kiện</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <EventCalendar events={events.concat(featuredEvent ? [featuredEvent] : [])} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };

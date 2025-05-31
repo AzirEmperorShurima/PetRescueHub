@@ -15,25 +15,37 @@ import {
   Select,
   Tag,
   TagLabel,
+  TagCloseButton,
   InputGroup,
   InputLeftElement,
+  InputRightElement,
   Divider,
   useColorModeValue,
   VStack,
   HStack,
   extendTheme,
-  ChakraProvider
+  ChakraProvider,
+  Wrap,
+  WrapItem,
+  useToast
 } from '@chakra-ui/react';
 import { FiArrowLeft, FiCalendar, FiMapPin, FiPlus, FiX } from 'react-icons/fi';
 import { GiPawPrint } from 'react-icons/gi';
 import { FaDog, FaCat } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import DateTimePicker from 'react-datetime-picker';
-import CreatableSelect from 'react-select/creatable';
+import dayjs from 'dayjs';
 import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
+import forumService from '../../services/forum.service';
 
 // Danh sách thẻ có sẵn
 const availableTags = [
+  'nhận nuôi', 'chó', 'mèo', 'hội thảo', 'chăm sóc', 'khám sức khỏe',
+  'miễn phí', 'cuộc thi', 'giải thưởng', 'huấn luyện', 'workshop',
+  'triển lãm', 'sản phẩm', 'từ thiện', 'quyên góp'
+];
+
+// Danh sách gợi ý tag cho sự kiện
+const eventTagSuggestions = [
   'nhận nuôi', 'chó', 'mèo', 'hội thảo', 'chăm sóc', 'khám sức khỏe',
   'miễn phí', 'cuộc thi', 'giải thưởng', 'huấn luyện', 'workshop',
   'triển lãm', 'sản phẩm', 'từ thiện', 'quyên góp'
@@ -121,6 +133,7 @@ const theme = extendTheme({
 
 const CreateEvent = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -132,6 +145,8 @@ const CreateEvent = () => {
     images: []
   });
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [currentTag, setCurrentTag] = useState('');
+  const [tags, setTags] = useState([]);
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -181,12 +196,147 @@ const CreateEvent = () => {
     setImagePreviews(newPreviews);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form data:', formData);
-    alert('Tạo sự kiện thành công!');
-    navigate('/event');
+    let hasError = false;
+
+    // Validation checks
+    if (!formData.title.trim()) {
+      toast({
+        title: 'Thiếu tiêu đề',
+        description: 'Vui lòng nhập tiêu đề sự kiện',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      hasError = true;
+    }
+    if (!formData.description.trim()) {
+      toast({
+        title: 'Thiếu mô tả',
+        description: 'Vui lòng nhập mô tả sự kiện',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      hasError = true;
+    }
+    if (!formData.location.trim()) {
+      toast({
+        title: 'Thiếu địa điểm',
+        description: 'Vui lòng nhập địa điểm tổ chức',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      hasError = true;
+    }
+    if (!formData.startDate) {
+      toast({
+        title: 'Thiếu thời gian bắt đầu',
+        description: 'Vui lòng chọn thời gian bắt đầu',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      hasError = true;
+    }
+    if (!formData.endDate) {
+      toast({
+        title: 'Thiếu thời gian kết thúc',
+        description: 'Vui lòng chọn thời gian kết thúc',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      hasError = true;
+    }
+    if (hasError) return;
+
+    try {
+      const submitData = new FormData();
+      submitData.append('title', formData.title);
+      submitData.append('content', formData.description);
+      submitData.append('location', formData.location);
+      submitData.append('startDate', formData.startDate ? new Date(formData.startDate).toISOString() : '');
+      submitData.append('endDate', formData.endDate ? new Date(formData.endDate).toISOString() : '');
+      submitData.append('postType', 'EventPost');
+      tags.forEach(tag => submitData.append('tags', tag));
+      if (formData.images?.length > 0) {
+        formData.images.forEach(img => submitData.append('images', img));
+      }
+
+      const response = await forumService.createNewPostWithImage(submitData);
+      if (response?.success) {
+        toast({
+          title: 'Tạo sự kiện thành công',
+          description: 'Sự kiện đã gửi, chờ admin phê duyệt!',
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
+        setTimeout(() => {
+          navigate('/event');
+        }, 1200);
+      } else {
+        throw new Error(response?.message || 'Lỗi không xác định');
+      }
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: error.message || 'Đã xảy ra lỗi khi tạo sự kiện. Vui lòng thử lại sau.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
+
+  const handleAddTag = (tagValue) => {
+    if (!tagValue || !tagValue.trim()) return;
+    
+    let trimmedTag = tagValue.trim();
+    trimmedTag = trimmedTag.replace(/^#+/, '');
+    
+    if (!trimmedTag) return;
+    
+    const normalizedTag = `#${trimmedTag}`;
+    
+    if (tags.includes(normalizedTag)) {
+      toast({
+        title: 'Tag đã tồn tại',
+        status: 'info',
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
+    
+    setTags([...tags, normalizedTag]);
+    setCurrentTag('');
+  };
+
+  const handleRemoveTag = (indexToRemove) => {
+    setTags(tags.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    handleAddTag(suggestion);
+  };
+
+  const handleTagKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag(currentTag);
+    }
+  };
+
+  // Lọc gợi ý tag dựa trên input hiện tại
+  const filteredSuggestions = eventTagSuggestions.filter(
+    suggestion => 
+      !tags.includes(`#${suggestion}`) && 
+      suggestion.toLowerCase().includes(currentTag.toLowerCase())
+  );
 
   // Tùy chỉnh style cho CreatableSelect
   const selectStyles = {
@@ -259,8 +409,8 @@ const CreateEvent = () => {
             <VStack spacing={8}>
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} w="full">
                 <FormControl isRequired>
-                  <FormLabel fontWeight="medium" color={textColor}>
-                    <HStack>
+                  <FormLabel display="flex" alignItems="center" color="black" fontWeight="bold" fontSize="md" mb={1}>
+                    <HStack spacing={2}>
                       <FaDog />
                       <Text>Tiêu đề sự kiện</Text>
                     </HStack>
@@ -272,36 +422,15 @@ const CreateEvent = () => {
                     placeholder="Nhập tiêu đề sự kiện"
                     size="lg"
                     borderRadius="md"
+                    width="100%"
+                    minW="350px"
+                    fontSize="md"
                   />
                 </FormControl>
 
                 <FormControl isRequired>
-                  <FormLabel fontWeight="medium" color={textColor}>
-                    <HStack>
-                      <FaCat />
-                      <Text>Danh mục</Text>
-                    </HStack>
-                  </FormLabel>
-                  <Select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    placeholder="Chọn danh mục"
-                    size="lg"
-                    borderRadius="md"
-                  >
-                    <option value="adoption">Nhận nuôi</option>
-                    <option value="workshop">Hội thảo</option>
-                    <option value="health">Sức khỏe</option>
-                    <option value="competition">Cuộc thi</option>
-                    <option value="charity">Từ thiện</option>
-                    <option value="other">Khác</option>
-                  </Select>
-                </FormControl>
-
-                <FormControl gridColumn={{ base: 'span 1', md: 'span 2' }} isRequired>
-                  <FormLabel fontWeight="medium" color={textColor}>
-                    <HStack>
+                  <FormLabel display="flex" alignItems="center" color="black" fontWeight="bold" fontSize="md" mb={1}>
+                    <HStack spacing={2}>
                       <GiPawPrint />
                       <Text>Mô tả</Text>
                     </HStack>
@@ -314,12 +443,53 @@ const CreateEvent = () => {
                     rows={4}
                     size="lg"
                     borderRadius="md"
+                    fontSize="md"
                   />
                 </FormControl>
 
-                <FormControl gridColumn={{ base: 'span 1', md: 'span 2' }} isRequired>
-                  <FormLabel fontWeight="medium" color={textColor}>
-                    <HStack>
+                <FormControl isRequired>
+                  <FormLabel display="flex" alignItems="center" color="black" fontWeight="bold" fontSize="md" mb={1}>
+                    <HStack spacing={2}>
+                      <FiCalendar />
+                      <Text>Thời gian bắt đầu</Text>
+                    </HStack>
+                  </FormLabel>
+                  <Input
+                    type="datetime-local"
+                    value={formData.startDate ? dayjs(formData.startDate).format('YYYY-MM-DDTHH:mm') : ''}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : null;
+                      handleDateChange('startDate')(date);
+                    }}
+                    size="lg"
+                    borderRadius="md"
+                    fontSize="md"
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel display="flex" alignItems="center" color="black" fontWeight="bold" fontSize="md" mb={1}>
+                    <HStack spacing={2}>
+                      <FiCalendar />
+                      <Text>Thời gian kết thúc</Text>
+                    </HStack>
+                  </FormLabel>
+                  <Input
+                    type="datetime-local"
+                    value={formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DDTHH:mm') : ''}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : null;
+                      handleDateChange('endDate')(date);
+                    }}
+                    size="lg"
+                    borderRadius="md"
+                    fontSize="md"
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel display="flex" alignItems="center" color="black" fontWeight="bold" fontSize="md" mb={1}>
+                    <HStack spacing={2}>
                       <FiMapPin />
                       <Text>Địa điểm</Text>
                     </HStack>
@@ -335,78 +505,102 @@ const CreateEvent = () => {
                       placeholder="Nhập địa điểm tổ chức"
                       pl={10}
                       borderRadius="md"
+                      fontSize="md"
                     />
                   </InputGroup>
                 </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel fontWeight="medium" color={textColor}>
-                    <HStack>
-                      <FiCalendar />
-                      <Text>Thời gian bắt đầu</Text>
-                    </HStack>
-                  </FormLabel>
-                  <Box position="relative">
-                    <DateTimePicker
-                      onChange={handleDateChange('startDate')}
-                      value={formData.startDate}
-                      format="dd/MM/yyyy HH:mm"
-                      calendarIcon={<FiCalendar color={textColor} />}
-                      clearIcon={<FiX color={textColor} />}
-                      className="custom-datetime-picker"
-                    />
-                  </Box>
-                </FormControl>
-
-                <FormControl isRequired>
-                  <FormLabel fontWeight="medium" color={textColor}>
-                    <HStack>
-                      <FiCalendar />
-                      <Text>Thời gian kết thúc</Text>
-                    </HStack>
-                  </FormLabel>
-                  <Box position="relative">
-                    <DateTimePicker
-                      onChange={handleDateChange('endDate')}
-                      value={formData.endDate}
-                      format="dd/MM/yyyy HH:mm"
-                      calendarIcon={<FiCalendar color={textColor} />}
-                      clearIcon={<FiX color={textColor} />}
-                      className="custom-datetime-picker"
-                    />
-                  </Box>
-                </FormControl>
-
-                <FormControl gridColumn={{ base: 'span 1', md: 'span 2' }}>
-                  <FormLabel fontWeight="medium" color={textColor}>
-                    <HStack>
+                <FormControl>
+                  <FormLabel display="flex" alignItems="center" color="black" fontWeight="bold" fontSize="md" mb={1}>
+                    <HStack spacing={2}>
                       <FaDog />
                       <Text>Thẻ</Text>
                     </HStack>
                   </FormLabel>
-                  <CreatableSelect
-                    isMulti
-                    value={formData.tags.map(tag => ({ value: tag, label: tag }))}
-                    onChange={handleTagChange}
-                    options={availableTags.map(tag => ({ value: tag, label: tag }))}
-                    placeholder="Chọn hoặc nhập thẻ"
-                    styles={selectStyles}
-                    formatCreateLabel={(inputValue) => `Tạo thẻ "${inputValue}"`}
-                  />
-                </FormControl>
-
-                <FormControl gridColumn={{ base: 'span 1', md: 'span 2' }}>
-                  <ImageUploaderComponent
-                    images={formData.images}
-                    previews={imagePreviews}
-                    onUpload={handleImageUpload}
-                    onRemove={handleRemoveImage}
-                    maxImages={3}
-                    label="Hình ảnh sự kiện"
-                    acceptTypes="image/*"
-                  />
+                  <VStack align="stretch" spacing={3}>
+                    {tags.length > 0 && (
+                      <Wrap>
+                        {tags.map((tag, index) => (
+                          <WrapItem key={index}>
+                            <Tag size="md" colorScheme="teal" variant="solid">
+                              <TagLabel>{tag}</TagLabel>
+                              <TagCloseButton onClick={() => handleRemoveTag(index)} />
+                            </Tag>
+                          </WrapItem>
+                        ))}
+                      </Wrap>
+                    )}
+                    {tags.length < 5 && (
+                      <InputGroup>
+                        <Input
+                          value={currentTag}
+                          onChange={(e) => setCurrentTag(e.target.value)}
+                          onKeyPress={handleTagKeyPress}
+                          placeholder="Nhập thẻ và nhấn Enter"
+                          size="lg"
+                        />
+                        {currentTag && (
+                          <InputRightElement>
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddTag(currentTag)}
+                              variant="ghost"
+                            >
+                              Thêm
+                            </Button>
+                          </InputRightElement>
+                        )}
+                      </InputGroup>
+                    )}
+                    
+                    {/* Tag Suggestions */}
+                    {currentTag && filteredSuggestions.length > 0 && (
+                      <Box
+                        border="1px"
+                        borderColor={borderColor}
+                        borderRadius="md"
+                        p={3}
+                        maxH="120px"
+                        overflowY="auto"
+                      >
+                        <Text fontSize="sm" color="gray.600" mb={2}>
+                          Gợi ý:
+                        </Text>
+                        <Wrap>
+                          {filteredSuggestions.slice(0, 10).map((suggestion, index) => (
+                            <WrapItem key={index}>
+                              <Tag
+                                size="sm"
+                                variant="outline"
+                                cursor="pointer"
+                                onClick={() => handleSuggestionClick(suggestion)}
+                                _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
+                              >
+                                {suggestion}
+                              </Tag>
+                            </WrapItem>
+                          ))}
+                        </Wrap>
+                      </Box>
+                    )}
+                  </VStack>
                 </FormControl>
               </SimpleGrid>
+
+              <FormControl mt={6}>
+                <FormLabel display="flex" alignItems="center" color="black" fontWeight="bold" fontSize="md" mb={1}>
+                  <Text>Hình ảnh sự kiện</Text>
+                </FormLabel>
+                <ImageUploaderComponent
+                  images={formData.images}
+                  previews={imagePreviews}
+                  onUpload={handleImageUpload}
+                  onRemove={handleRemoveImage}
+                  maxImages={3}
+                  label="Hình ảnh sự kiện"
+                  acceptTypes="image/*"
+                />
+              </FormControl>
 
               <Flex justify="space-between" w="full" mt={6}>
                 <Button

@@ -25,6 +25,7 @@ const ForgotPassword = lazy(() => import("../features/Auth/ForgotPassword"));
 
 const Rescue = lazy(() => import("../pages/Rescue/Rescue"));
 const RescueSuccess = lazy(() => import("../pages/Rescue/RescueSuccess"));
+const RescueTasks = lazy(() => import("../pages/volunteer/RescueTasks"));
 
 const Forum = lazy(() => import("../pages/Forum/Forum"));
 const PostDetail = lazy(() => import("../features/Forum/PostDetail"));
@@ -84,7 +85,6 @@ const AppRoutes = () => {
           <Route path="terms" element={<Terms />} />
           <Route path="rescue" element={<Rescue />} />
           <Route path="rescue/success" element={<RescueSuccess />} />
-          {/* <Route path="chatbot" element={<Chatbot />} /> */}
           
           {/* Pet Guide */}
           <Route path="petguide" element={<PetGuide />} />
@@ -94,6 +94,7 @@ const AppRoutes = () => {
             <Route path="forum/post/create" element={<CreatePost />} />
             <Route path="event/create" element={<CreateEvent />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="volunteer/rescue-tasks" element={<RescueTasks />} />
           </Route>
           
         </Route>

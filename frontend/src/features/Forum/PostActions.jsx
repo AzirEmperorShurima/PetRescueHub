@@ -21,7 +21,8 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalCloseButton
+  ModalCloseButton,
+  Tooltip
 } from '@chakra-ui/react';
 import { FaComment, FaBookmark, FaRegBookmark, FaEllipsisV } from 'react-icons/fa';
 import PropTypes from 'prop-types';
@@ -59,7 +60,7 @@ const PostActions = ({
   // Định nghĩa các hàm xử lý authentication
   const requireLogin = () => {
     if (!user) {
-      goToLogin();
+      // Có thể show toast hoặc tooltip: "Đăng nhập để tương tác"
       return false;
     }
     return true;
@@ -120,58 +121,44 @@ const PostActions = ({
 
   // Handle reaction change
   const handleReaction = async (reactionType) => {
-    if (!requireLogin()) {
-      return;
-    }
+    if (!requireLogin()) return;
+    if (!hasFetchedReaction) return;
 
     const previousReaction = localPost.userReaction;
     const previousReactions = { ...localPost.reactions };
-  
+
     try {
       setLoading(true);
-      
-      const updatedReactions = { ...localPost.reactions };
-      if (reactionType === null) {
-        if (previousReaction && updatedReactions[previousReaction]) {
-          updatedReactions[previousReaction] -= 1;
-        }
-      } else {
-        if (previousReaction && updatedReactions[previousReaction]) {
-          updatedReactions[previousReaction] -= 1;
-        }
-        updatedReactions[reactionType] = (updatedReactions[reactionType] || 0) + 1;
+
+      // Xác định cảm xúc gửi lên backend: nếu nhấn lại cảm xúc cũ thì gửi null (bỏ), còn lại gửi cảm xúc mới
+      let apiReaction = reactionType;
+      if (previousReaction === reactionType) {
+        apiReaction = null;
       }
-  
-      // Optimistic UI Update
-      setLocalPost({
-        ...localPost,
-        userReaction: reactionType,
-        reactions: updatedReactions,
-      });
-  
+
       // Gọi API để cập nhật reaction
       const targetId = localPost.id || localPost._id;
       const response = await apiService.forum.reactions.addOrUpdate({
         targetId: targetId,
         targetType: 'Post',
-        reactionType: reactionType
+        reactionType: apiReaction
       });
-      
+
       if (response && response.data) {
         setLocalPost(prev => ({
           ...prev,
-          userReaction: response.data.userReaction || reactionType,
-          reactions: response.data.reactions || updatedReactions
+          userReaction: response.data.userReaction,
+          reactions: response.data.reactions
         }));
-      }
-  
-      if (onReactionChange) {
-        onReactionChange(reactionType, updatedReactions);
+        if (onReactionChange) {
+          onReactionChange(
+            response.data.userReaction,
+            response.data.reactions
+          );
+        }
       }
     } catch (error) {
-      console.error('Error handling reaction:', error);
-      
-      // Rollback optimistic update
+      // Nếu lỗi, giữ nguyên trạng thái cũ
       setLocalPost({
         ...localPost,
         userReaction: previousReaction,
@@ -224,14 +211,42 @@ const PostActions = ({
   };
 
   const handleOpenCommentModal = async (post) => {
-    if (!requireLogin()) return;
-    
     setCommentModalOpen(true);
     try {
-      const res = await apiService.forum.comments.getAll({ postId: post._id || post.id });
-      setSelectedComments(res.data?.data || []);
-    } catch (e) {
-      console.error('Error fetching comments:', e);
+      const postId = post._id || post.id;
+      const response = await apiService.forum.comments.getByPost(postId, {
+        page: 1,
+        limit: 10
+      });
+      
+      if (response?.data?.data) {
+        // Lấy thêm replies cho mỗi comment
+        const commentsWithReplies = await Promise.all(
+          response.data.data.map(async (comment) => {
+            try {
+              const repliesResponse = await apiService.forum.comments.getReplies(comment._id, {
+                page: 1,
+                limit: 5
+              });
+              return {
+                ...comment,
+                replies: repliesResponse?.data?.data || []
+              };
+            } catch (error) {
+              console.error('Error fetching replies:', error);
+              return {
+                ...comment,
+                replies: []
+              };
+            }
+          })
+        );
+        setSelectedComments(commentsWithReplies);
+      } else {
+        setSelectedComments([]);
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error);
       setSelectedComments([]);
     }
   };
@@ -241,14 +256,71 @@ const PostActions = ({
     setSelectedComments([]);
   };
 
-  const handleModalCommentSubmit = async (commentText) => {
+  const handleModalCommentSubmit = async (commentText, parentCommentId = null) => {
     if (!requireLogin()) return;
 
     try {
-      await onCommentSubmit?.(commentText);
+      const postId = localPost._id || localPost.id;
+      
+      if (parentCommentId) {
+        // Nếu là reply comment
+        const replyData = {
+          postId: postId,
+          content: typeof commentText === 'object' ? commentText.content : commentText,
+          parentComment: parentCommentId
+        };
+        console.log('Sending reply data:', replyData);
+        await apiService.forum.comments.reply(replyData);
+      } else {
+        // Nếu là comment mới
+        const commentData = {
+          postId: postId,
+          content: typeof commentText === 'object' ? commentText.content : commentText
+        };
+        console.log('Sending comment data:', commentData);
+        await apiService.forum.comments.create(commentData);
+      }
+
+      // Refresh comments sau khi thêm mới
       handleOpenCommentModal(localPost);
+      
+      if (onCommentSubmit) {
+        await onCommentSubmit(commentText, parentCommentId);
+      }
     } catch (error) {
       console.error('Error submitting comment:', error);
+    }
+  };
+
+  const handleCommentDelete = async (commentId) => {
+    if (!requireLogin()) return;
+
+    try {
+      await apiService.forum.comments.delete(commentId);
+      // Refresh comments sau khi xóa
+      handleOpenCommentModal(localPost);
+      
+      if (onCommentDelete) {
+        await onCommentDelete(commentId);
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
+  const handleCommentEdit = async (commentId, newContent) => {
+    if (!requireLogin()) return;
+
+    try {
+      await apiService.forum.comments.update(commentId, { content: newContent });
+      // Refresh comments sau khi sửa
+      handleOpenCommentModal(localPost);
+      
+      if (onCommentEdit) {
+        await onCommentEdit(commentId, newContent);
+      }
+    } catch (error) {
+      console.error('Error editing comment:', error);
     }
   };
 
@@ -325,13 +397,16 @@ const PostActions = ({
               onClick={handleFavoriteToggle}
               display="flex"
               alignItems="center"
+              disabled={!user}
             >
-              <Icon 
-                as={localPost.isFavorited ? FaBookmark : FaRegBookmark}
-                boxSize={4}
-                color={localPost.isFavorited ? 'blue.500' : textSecondary}
-                transition="all 0.2s"
-              />
+              <Tooltip label={user ? (localPost.isFavorited ? 'Bỏ lưu' : 'Lưu bài viết') : 'Đăng nhập để tương tác'}>
+                <Icon 
+                  as={localPost.isFavorited ? FaBookmark : FaRegBookmark}
+                  boxSize={4}
+                  color={localPost.isFavorited ? 'blue.500' : textSecondary}
+                  transition="all 0.2s"
+                />
+              </Tooltip>
             </Box>
 
             {/* More Options Button */}
@@ -368,8 +443,8 @@ const PostActions = ({
         comments={selectedComments}
         currentUser={user}
         onCommentSubmit={handleModalCommentSubmit}
-        onCommentDelete={onCommentDelete}
-        onCommentEdit={onCommentEdit}
+        onCommentDelete={handleCommentDelete}
+        onCommentEdit={handleCommentEdit}
         commentLoading={commentLoading}
       />
     </>

@@ -33,13 +33,13 @@ const Footer = ({ darkLight }) => {
                                     Nhóm sinh viên Đại học Duy Tân, hoạt động vì tình yêu thương động vật.
                                 </p>
                                 <div className="f_social_icon social-icons">
-                                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://www.facebook.com/people/Pet-RescueHub/61574718733547/" target="_blank" rel="noopener noreferrer">
                                         <FaFacebook />
                                     </a>
                                     <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
                                         <FaXTwitter />
                                     </a>
-                                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://www.instagram.com/pet_rescuehub/" target="_blank" rel="noopener noreferrer">
                                         <FaInstagram />
                                     </a>
                                     <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">

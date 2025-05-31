@@ -82,11 +82,11 @@ axiosInstance.interceptors.response.use(
         if (isAdminPage) {
           localStorage.removeItem('adminToken');
           localStorage.removeItem('adminRefreshToken');
-          window.location.href = '/admin/login';
+          // window.location.href = '/admin/login';
         } else {
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
-          window.location.href = '/auth/login';
+          // window.location.href = '/auth/login';
         }
         return Promise.reject(error);
       }

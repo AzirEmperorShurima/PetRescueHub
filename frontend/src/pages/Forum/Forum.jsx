@@ -298,6 +298,11 @@ const Forum = () => {
     }
   };
 
+  // Thêm hàm kiểm tra quyền admin
+  const isAdmin = user && Array.isArray(user.roles)
+    ? user.roles.some(r => (typeof r === 'string' ? (r === 'admin' || r === 'super_admin') : (r.name === 'admin' || r.name === 'super_admin')))
+    : false;
+
   // JSX
   return (
     <Box className="forum-page" minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
@@ -315,7 +320,9 @@ const Forum = () => {
                 Chia sẻ kinh nghiệm, đặt câu hỏi và tham gia các sự kiện về thú cưng
               </Text>
             </Box>
-            <ForumSearch />
+            <ForumSearch
+              categoryFilter={categoryFilter}
+            />
             <Grid templateColumns={{ base: "1fr", md: "300px 1fr" }} gap={6}>
               {/* Sidebar */}
               <GridItem>
@@ -362,29 +369,31 @@ const Forum = () => {
                       <Divider />
 
                       {/* Stats Section */}
-                      <Box>
-                        <Heading size="md" mb={4}>
-                          Thống kê
-                        </Heading>
-                        <VStack spacing={2} align="stretch" className="forum-stats">
-                          <HStack justify="space-between">
-                            <Text fontWeight="semibold">Bài viết:</Text>
-                            <Text>{safePosts.length}</Text>
-                          </HStack>
-                          <HStack justify="space-between">
-                            <Text fontWeight="semibold">Câu hỏi:</Text>
-                            <Text>{safeQuestions.length}</Text>
-                          </HStack>
-                          <HStack justify="space-between">
-                            <Text fontWeight="semibold">Sự kiện:</Text>
-                            <Text>{safeEvents.length}</Text>
-                          </HStack>
-                          <HStack justify="space-between">
-                            <Text fontWeight="semibold">Tìm thú đi lạc:</Text>
-                            <Text>{safeFindPet.length}</Text>
-                          </HStack>
-                        </VStack>
-                      </Box>
+                      {isAdmin && (
+                        <Box>
+                          <Heading size="md" mb={4}>
+                            Thống kê
+                          </Heading>
+                          <VStack spacing={2} align="stretch" className="forum-stats">
+                            <HStack justify="space-between">
+                              <Text fontWeight="semibold">Bài viết:</Text>
+                              <Text>{safePosts.length}</Text>
+                            </HStack>
+                            <HStack justify="space-between">
+                              <Text fontWeight="semibold">Câu hỏi:</Text>
+                              <Text>{safeQuestions.length}</Text>
+                            </HStack>
+                            <HStack justify="space-between">
+                              <Text fontWeight="semibold">Sự kiện:</Text>
+                              <Text>{safeEvents.length}</Text>
+                            </HStack>
+                            <HStack justify="space-between">
+                              <Text fontWeight="semibold">Tìm thú đi lạc:</Text>
+                              <Text>{safeFindPet.length}</Text>
+                            </HStack>
+                          </VStack>
+                        </Box>
+                      )}
                     </VStack>
                   </CardBody>
                 </Card>

@@ -149,7 +149,9 @@ const ForumCard = ({
         <HStack mb={3} spacing={2}>
           <Avatar src={item.author?.avatar} name={item.author?.fullname} size="sm" />
           <VStack align="start" spacing={0}>
-            <Text fontSize="sm" fontWeight="medium">{item.author?.fullname}</Text>
+            <Text fontSize="sm" fontWeight="medium">
+              {item.author?.fullname}
+            </Text>
             <Text fontSize="xs" color={textSecondary}>
               {formatDate ? formatDate(item.createdAt) : new Date(item.createdAt).toLocaleDateString()}
             </Text>

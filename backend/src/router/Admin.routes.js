@@ -31,7 +31,6 @@ import { verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware } from "../ut
 const adminRouter = Router();
 
 // adminRouter.use(verifyAccessTokenMiddleware, verifyRefreshTokenMiddleware)
-adminRouter.use(isAdmin);
 
 
 adminRouter.get("/", (req, res) => {
@@ -67,6 +66,7 @@ adminRouter.post(
     [validatePasswordStrength, checkAdminLogin],
     loginHandler
 );
+adminRouter.use(isAdmin);
 
 // Quản lý người dùng
 adminRouter.route('/users')

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate, Outlet, NavLink } from 'react-router-dom';
 import {
   Box,
   Drawer,
@@ -36,10 +36,14 @@ import {
   Lock as LockIcon,
   ExitToApp as LogoutIcon,
   Notifications as NotificationsIcon,
-  LocalHospital as RescueIcon // Thêm icon cho cứu hộ
+  LocalHospital as RescueIcon,
+  Report as ReportIcon
 } from '@mui/icons-material';
 // Import logo
 import logo from '../../assets/images/logo.svg';
+import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
+import axios from 'axios';
 
 const drawerWidth = 260;
 
@@ -47,8 +51,24 @@ const AdminLayout = () => {
   const [open, setOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  // const { showSuccess, showError } = useNotification();
+
+  // Fetch notifications thật từ API
+  useEffect(() => {
+    // const fetchNotifications = async () => {
+    //   try {
+    //     const res = await axios.get('/api/admin/notifications', { withCredentials: true });
+    //     setNotifications(res.data || []);
+    //   } catch (error) {
+    //     setNotifications([]);
+    //   }
+    // };
+    // fetchNotifications();
+  }, []);
 
   const handleDrawerToggle = () => {
     setOpen(!open);
@@ -93,31 +113,33 @@ const AdminLayout = () => {
     navigate('/admin/settings');
   };
 
-  const handleLockScreenClick = () => {
+  const handleBackToUserPage = () => {
     handleMenuClose();
-    // Lưu trạng thái đã khóa vào localStorage
-    localStorage.setItem('screenLocked', 'true');
-    // Điều hướng đến trang khóa màn hình
-    navigate('/admin/lock-screen');
+    localStorage.removeItem('screenLocked');
+    navigate('/');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     handleMenuClose();
-    // Xóa token và thông tin người dùng
-    localStorage.removeItem('adminToken');
-    // Chuyển hướng về trang đăng nhập
-    window.location.href = '/admin/login';
+    try {
+      await logout();
+      showSuccess('Đăng xuất thành công!');
+      navigate('/');
+    } catch (error) {
+      showError('Đăng xuất thất bại. Vui lòng thử lại.');
+      navigate('/');
+    }
   };
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
-   { text: 'Quản lý cứu hộ', icon: <RescueIcon />, path: '/admin/rescues' },
+    { text: 'Quản lý cứu hộ', icon: <RescueIcon />, path: '/admin/rescues' },
     { text: 'Quản lý người dùng', icon: <PeopleIcon />, path: '/admin/users' },
     { text: 'Quản lý thú cưng', icon: <PetsIcon />, path: '/admin/pets' },
     { text: 'Quản lý tình nguyện viên', icon: <HandshakeIcon />, path: '/admin/volunteers' },
     { text: 'Quản lý sự kiện', icon: <EventIcon />, path: '/admin/events' },
     { text: 'Quản lý quyên góp', icon: <DonationIcon />, path: '/admin/donations' },
-    
+    { text: 'Quản lý báo cáo', icon: <ReportIcon />, path: '/admin/reports' },
   ];
 
   return (
@@ -165,7 +187,7 @@ const AdminLayout = () => {
               onClick={handleNotificationMenuOpen}
               sx={{ mr: 2 }}
             >
-              <Badge badgeContent={5} color="error">
+              <Badge badgeContent={notifications.length} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
@@ -190,27 +212,23 @@ const AdminLayout = () => {
               sx: { width: 320, maxHeight: 400, mt: 1 }
             }}
           >
-            <MenuItem onClick={handleNotificationMenuClose}>
-              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Thông báo mới</Typography>
-                <Typography variant="body2">Có 3 thú cưng mới cần được giải cứu</Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>5 phút trước</Typography>
-              </Box>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleNotificationMenuClose}>
-              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Quyên góp mới</Typography>
-                <Typography variant="body2">Nguyễn Văn A vừa quyên góp 500.000đ</Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>30 phút trước</Typography>
-              </Box>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleNotificationMenuClose}>
-              <Typography sx={{ textAlign: 'center', color: 'primary.main' }}>
-                Xem tất cả thông báo
-              </Typography>
-            </MenuItem>
+            {notifications.length === 0 ? (
+              <MenuItem disabled>
+                <Typography variant="body2" color="text.secondary">Không có thông báo mới</Typography>
+              </MenuItem>
+            ) : (
+              notifications.map((noti) => (
+                <MenuItem key={noti.id} onClick={handleNotificationMenuClose}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{noti.title}</Typography>
+                    <Typography variant="body2">{noti.content}</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      {new Date(noti.createdAt).toLocaleString('vi-VN')}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              ))
+            )}
           </Menu>
           
           {/* Nút profile */}
@@ -274,11 +292,11 @@ const AdminLayout = () => {
             
             <Divider />
             
-            <MenuItem onClick={handleLockScreenClick}>
+            <MenuItem onClick={handleBackToUserPage}>
               <ListItemIcon sx={{ color: '#1976d2' }}>
                 <LockIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary="Lock Screen" />
+              <ListItemText primary="About user page" />
             </MenuItem>
             
             <MenuItem onClick={handleLogout}>
@@ -339,47 +357,41 @@ const AdminLayout = () => {
           }}
         >
           {menuItems.map((item) => (
-            <ListItem 
-              key={item.text} 
-              disablePadding
-              sx={{ 
-                display: 'block',
-                mb: 2,
-              }}
-            >
+            <ListItem key={item.path} disablePadding sx={{ display: 'block', mb: 2 }}>
               <ListItemButton
-                component={Link}
+                component={NavLink}
                 to={item.path}
-                selected={location.pathname === item.path}
                 sx={{
                   minHeight: 48,
-                  px: open ? 2.5 : 0, 
+                  px: open ? 2.5 : 0,
                   justifyContent: open ? 'initial' : 'center',
                   borderRadius: '8px',
-                  '&.Mui-selected': {
+                  '&.active': {
                     bgcolor: 'rgba(211, 79, 129, 0.1)',
                     color: '#D34F81',
                     '& .MuiListItemIcon-root': {
                       color: '#D34F81',
                     },
+                    fontWeight: 'bold',
                   },
                   '&:hover': {
                     bgcolor: 'rgba(211, 79, 129, 0.05)',
                   },
                   ...(open ? {} : { py: 1.5 }),
                 }}
+                end
               >
                 <ListItemIcon
                   sx={{
                     minWidth: 0,
                     mr: open ? 3 : 'auto',
                     justifyContent: 'center',
-                    color: location.pathname === item.path ? '#D34F81' : 'inherit',
+                    color: 'inherit',
                     fontSize: !open ? '1.5rem' : 'inherit',
                     '& .MuiSvgIcon-root': {
                       fontSize: !open ? '1.75rem' : '1.5rem',
                     },
-                    ...(open ? {} : { 
+                    ...(open ? {} : {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -391,15 +403,15 @@ const AdminLayout = () => {
                 >
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText 
-                  primary={item.text} 
-                  sx={{ 
+                <ListItemText
+                  primary={item.text}
+                  sx={{
                     opacity: open ? 1 : 0,
                     display: open ? 'block' : 'none',
                     '& .MuiTypography-root': {
-                      fontWeight: location.pathname === item.path ? 'bold' : 'normal',
+                      fontWeight: 'normal',
                     }
-                  }} 
+                  }}
                 />
               </ListItemButton>
             </ListItem>

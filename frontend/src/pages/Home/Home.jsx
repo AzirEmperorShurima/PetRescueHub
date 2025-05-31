@@ -21,21 +21,21 @@ const Home = () => {
 
   // Slide navigation
   const changeSlide = useCallback((direction) => {
-    setCurrentSlide((prev) => {
-      const newSlide = direction === 'next' 
-        ? (prev + 1) % heroSlides.length 
-        : (prev === 0 ? heroSlides.length - 1 : prev - 1);
-      clearInterval(slideInterval.current);
-      slideInterval.current = setInterval(() => setCurrentSlide((p) => (p + 1) % heroSlides.length), 5000);
-      return newSlide;
-    });
+    // setCurrentSlide((prev) => {
+    //   const newSlide = direction === 'next' 
+    //     ? (prev + 1) % heroSlides.length 
+    //     : (prev === 0 ? heroSlides.length - 1 : prev - 1);
+    //   clearInterval(slideInterval.current);
+    //   slideInterval.current = setInterval(() => setCurrentSlide((p) => (p + 1) % heroSlides.length), 5000);
+    //   return newSlide;
+    // });
   }, []);
 
   // Auto slide
   useEffect(() => {
-    slideInterval.current = setInterval(() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length), 5000);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return () => clearInterval(slideInterval.current);
+    // slideInterval.current = setInterval(() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length), 5000);
+    // window.scrollTo({ top: 0, behavior: 'smooth' });
+    // return () => clearInterval(slideInterval.current);
   }, []);
 
   // Volunteer form handler

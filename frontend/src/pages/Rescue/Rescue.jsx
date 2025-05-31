@@ -33,39 +33,41 @@ import {
   FiMapPin,
   FiNavigation,
   FiSend,
+  FiUser,
 } from 'react-icons/fi';
 import { FaPaw, FaImage, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../components/contexts/AuthContext';
-import axios from 'axios';
+import apiService from '../../services/api.service';
 import './Rescue.css';
 import ImageUploader from '../../components/common/ImageUploader/ImageUploader';
 import ScrollToTopButton from '../../components/button/ScrollToTopButton';
+import { EditIcon, CheckIcon } from '@chakra-ui/icons';
+
 const Rescue = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [volunteers, setVolunteers] = useState([]);
   const [loadingVolunteers, setLoadingVolunteers] = useState(false);
+  const [editProfile, setEditProfile] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
-    fullname: user?.fullname || '',
-    phone: user?.phone || '',
+    fullname: '',
+    phone: '',
     notes: '',
-    petDetails: '', // Thêm trường mô tả chi tiết về thú cưng
-    radius: 1, // Bán kính mặc định 1km
+    petDetails: '',
+    radius: 1,
     location: {
       type: 'Point',
-      coordinates: [0, 0] // [longitude, latitude]
+      coordinates: [0, 0]
     },
-    isGuest: !user?.id,
+    isGuest: true,
     status: 'pending',
-    autoAssignVolunteer: true, // Mặc định tự động chọn tình nguyện viên
-    selectedVolunteers: [], // Danh sách tình nguyện viên được chọn
-    images: [] // Thêm mảng để lưu trữ hình ảnh
+    autoAssignVolunteer: true,
+    selectedVolunteers: [],
+    images: []
   });
 
   // State để lưu trữ preview của ảnh
@@ -292,6 +294,31 @@ const Rescue = () => {
     }
   };
 
+  // Thêm useEffect để tự động set formData khi user thay đổi
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await apiService.auth.getProfile();
+        const userProfile = res.data?.userProfile;
+        if (userProfile) {
+          setFormData(prev => ({
+            ...prev,
+            fullname: userProfile?.fullName || '',
+            phone: Array.isArray(userProfile?.phonenumber) ? userProfile.phonenumber[0] : userProfile?.phonenumber || '',
+            isGuest: false
+          }));
+        }
+      } catch (err) {
+        // Nếu chưa đăng nhập thì set isGuest = true
+        setFormData(prev => ({
+          ...prev,
+          isGuest: true
+        }));
+      }
+    };
+    fetchProfile();
+  }, []);
+
   return (
     <Container maxW="container.lg" py={8}>
       <Heading as="h1" mb={6} textAlign="center">
@@ -306,7 +333,7 @@ const Rescue = () => {
               <CardBody>
                 <Heading as="h2" size="md" mb={4}>
                   <Flex alignItems="center">
-                    <Box mr={2}><FiMapPin /></Box>
+                    <Box mr={2}><FiUser /></Box>
                     Thông tin liên hệ
                   </Flex>
                 </Heading>
@@ -314,22 +341,68 @@ const Rescue = () => {
                 <Stack spacing={4}>
                   <FormControl isRequired>
                     <FormLabel>Họ và tên</FormLabel>
-                    <Input
-                      name="fullname"
-                      value={formData.fullname}
-                      onChange={handleInputChange}
-                      placeholder="Nhập họ và tên của bạn"
-                    />
+                    <Flex alignItems="center">
+                      <Input
+                        name="fullname"
+                        value={formData.fullname}
+                        onChange={handleInputChange}
+                        placeholder="Chưa có thông tin, vui lòng cập nhật"
+                        disabled={formData.isGuest}
+                        opacity={formData.isGuest ? 0.7 : 1}
+                        readOnly={formData.isGuest}
+                      />
+                      {formData.isGuest && (
+                        <IconButton
+                          icon={<EditIcon />}
+                          size="sm"
+                          ml={2}
+                          aria-label="Chỉnh sửa họ tên"
+                          onClick={() => setEditProfile(true)}
+                        />
+                      )}
+                      {formData.isGuest && (
+                        <IconButton
+                          icon={<CheckIcon />}
+                          size="sm"
+                          ml={2}
+                          aria-label="Lưu họ tên"
+                          onClick={() => setEditProfile(false)}
+                        />
+                      )}
+                    </Flex>
                   </FormControl>
                   
                   <FormControl isRequired>
                     <FormLabel>Số điện thoại</FormLabel>
-                    <Input
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="Nhập số điện thoại của bạn"
-                    />
+                    <Flex alignItems="center">
+                      <Input
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="Chưa có thông tin, vui lòng cập nhật"
+                        disabled={formData.isGuest}
+                        opacity={formData.isGuest ? 0.7 : 1}
+                        readOnly={formData.isGuest}
+                      />
+                      {formData.isGuest && (
+                        <IconButton
+                          icon={<EditIcon />}
+                          size="sm"
+                          ml={2}
+                          aria-label="Chỉnh sửa số điện thoại"
+                          onClick={() => setEditProfile(true)}
+                        />
+                      )}
+                      {formData.isGuest && (
+                        <IconButton
+                          icon={<CheckIcon />}
+                          size="sm"
+                          ml={2}
+                          aria-label="Lưu số điện thoại"
+                          onClick={() => setEditProfile(false)}
+                        />
+                      )}
+                    </Flex>
                   </FormControl>
                   
                   <FormControl>
@@ -431,7 +504,7 @@ const Rescue = () => {
                   <FormLabel>Bán kính tìm kiếm tình nguyện viên (km): {formData.radius}</FormLabel>
                   <Slider
                     min={1}
-                    max={10}
+                    max={5}
                     step={1}
                     value={formData.radius}
                     onChange={handleRadiusChange}

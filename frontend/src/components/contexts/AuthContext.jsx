@@ -3,6 +3,17 @@ import authService from '../../services/auth.service';
 
 const AuthContext = createContext();
 
+function normalizeUser(user) {
+  if (!user) return {};
+  // Ưu tiên fullname, sau đó fullName, sau đó username
+  const fullname = user.fullname || user.fullName || user.username || '';
+  return {
+    ...user,
+    fullname,
+    phone: user.phone || (Array.isArray(user.phonenumber) ? user.phonenumber[0] : user.phonenumber) || ''
+  };
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,13 +22,8 @@ export const AuthProvider = ({ children }) => {
   const checkLoggedIn = useCallback(() => {
     try {
       const currentUser = authService.getUserSession();
-      // console.log("AuthContext - Current user from session:", currentUser);
-      
-      // Chỉ set user nếu có dữ liệu hợp lệ
       if (currentUser && currentUser.id) {
-        setUser(currentUser);
-      } else {
-        setUser(null);
+        setUser(normalizeUser(currentUser));
       }
     } catch (error) {
       console.error('Error checking authentication:', error);
@@ -44,9 +50,10 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(credentials);
       
       if (response && response.user) {
-        authService.setUserSession(response.user, response.token, rememberMe);
-        setUser(response.user);
-        return response.user;
+        const normalizedUser = normalizeUser(response.user);
+        authService.setUserSession(normalizedUser, response.token, rememberMe);
+        setUser(normalizedUser);
+        return normalizedUser;
       } else {
         throw new Error('Invalid login response');
       }
@@ -109,7 +116,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = useCallback((updatedUserData) => {
     if (user && user.id) {
-      const updatedUser = { ...user, ...updatedUserData };
+      const updatedUser = normalizeUser({ ...user, ...updatedUserData });
       authService.setUserSession(updatedUser, authService.getToken());
       setUser(updatedUser);
       return updatedUser;

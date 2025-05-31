@@ -277,11 +277,6 @@ const ChatbotWidget = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Chỉ render component nếu user đã đăng nhập
-  if (!user) {
-    return null;
-  }
-
   return (
     <>
       {!isOpen && (
@@ -289,6 +284,7 @@ const ChatbotWidget = () => {
           className="chatbot-button" 
           ref={chatButtonRef}
           onMouseDown={handleButtonMouseDown}
+          style={{ right: '7px', left: 'auto' }}
         >
           <img src={chatIcon} alt="Chat" className="chatbot-icon" style={{ pointerEvents: 'none' }} />
           <div className="chatbot-tooltip">
@@ -345,7 +341,7 @@ const ChatbotWidget = () => {
                 </div>
                 {message.sender === 'user' && (
                   <div className="user-avatar message-avatar">
-                    {user.displayName ? user.displayName.charAt(0) : 'U'}
+                    {user?.displayName ? user.displayName.charAt(0) : 'G'}
                   </div>
                 )}
               </div>

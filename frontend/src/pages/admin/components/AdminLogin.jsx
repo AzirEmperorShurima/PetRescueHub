@@ -14,29 +14,22 @@ import {
 } from '@mui/material';
 import { LockOutlined, Email, Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
-import logo from '../../../assets/images/logo.svg'; // Đảm bảo đường dẫn đúng đến logo
-import { usersMock } from '../../../mocks';
+import logo from '../../../assets/images/logo.svg';
+import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,26 +37,28 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      // Trong thực tế, bạn sẽ gọi API thực sự
-      // const response = await axios.post('/api/admin/login', formData);
-      // localStorage.setItem('adminToken', response.data.token);
+      // Gọi API đăng nhập
+      const response = await axios.post('/api/admin/auth/login', formData, { withCredentials: true });
+      const { user } = response.data;
+      console.log('User login response:', user);
 
-      // Sử dụng dữ liệu giả từ mock
-      const adminUser = usersMock.find(
-        user => user.email === formData.email && 
-                user.password === formData.password && 
-                user.role === 'admin'
-      );
-      
-      if (adminUser) {
-        localStorage.setItem('adminToken', 'fake-jwt-token');
-        window.location.href = '/admin';
-      } else {
-        setError('Email hoặc mật khẩu không đúng');
+      // Kiểm tra quyền admin (dành cho cả mảng object và mảng string)
+      const isAdmin = Array.isArray(user.roles)
+        ? user.roles.some(r => (typeof r === 'string' ? (r === 'admin' || r === 'super_admin') : (r.name === 'admin' || r.name === 'super_admin')))
+        : false;
+
+      if (!isAdmin) {
+        setError('Tài khoản không có quyền quản trị.');
+        return;
       }
+
+      // Không cần lưu token, server đã set cookie
+      navigate('/admin');
     } catch (error) {
-      console.error('Login error:', error);
-      setError(error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+      setError(
+        error.response?.data?.message ||
+        'Đăng nhập thất bại. Vui lòng thử lại.'
+      );
     } finally {
       setLoading(false);
     }
