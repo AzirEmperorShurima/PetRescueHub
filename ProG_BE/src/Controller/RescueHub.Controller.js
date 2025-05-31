@@ -69,9 +69,14 @@ export const requestRescue = async (req, res) => {
 
 export const requestToRescue = async (req, res) => {
     try {
-        const { coordinates, radius, maxVolunteers = 5, autoAssign = true, timeoutMinutes = 30 } = req.body;
+        const { coordinates, radius,
+            maxVolunteers = 5, autoAssign = true,
+            timeoutMinutes = 30,
+            userfullName, userNote, userPhoneNumber,
+            petRescueDetails
+        } = req.body;
         const userId = req.user?._id;
-
+        const petImg = req.avatarUrl
         if (!userId) {
             return res.status(401).json({ error: 'Yêu cầu đăng nhập để sử dụng.' });
         }
@@ -125,7 +130,7 @@ export const requestToRescue = async (req, res) => {
             return res.json({ volunteers: [] });
         }
 
-        const volunteerIds = volunteers.map(item => item[0]); // Lấy các userId
+        const volunteerIds = volunteers.map(item => item[0]);
         const volunteerUsers = await user.find({
             _id: { $in: volunteerIds }
         }).select('fullname phonenumber email');
@@ -149,6 +154,9 @@ export const requestToRescue = async (req, res) => {
             await PetRescueMissionHistory.create({
                 missionId,
                 requester: userId,
+                requesterBaseInf: { username: userfullName, notes: userNote, phoneNumber: userPhoneNumber },
+                petRescueDetails: petRescueDetails,
+                petRescueImage: petImg,
                 location: { type: 'Point', coordinates },
                 radius,
                 selectedVolunteers: [],
@@ -165,14 +173,16 @@ export const requestToRescue = async (req, res) => {
 
         // Khi autoAssign là true, chọn tình nguyện viên gần nhất
         const selectedVolunteerIds = filteredVolunteers.map(v => v._id);
-        const requester = await user.findById(userId).select('fullname email phonenumber'); // Thêm phonenumber
+        const requester = await user.findById(userId).select('fullname email phonenumber');
 
-        // Lấy tình nguyện viên gần nhất (dựa trên thứ tự từ GEORADIUS)
-        const acceptedVolunteer = filteredVolunteers[0]; // Giả sử GEORADIUS trả về theo thứ tự gần -> xa
+        const acceptedVolunteer = filteredVolunteers[0];
 
         await PetRescueMissionHistory.create({
             missionId,
             requester: userId,
+            requesterBaseInf: { username: userfullName, notes: userNote, phoneNumber: userPhoneNumber },
+            petRescueDetails: petRescueDetails,
+            petRescueImage: petImg,
             location: { type: 'Point', coordinates },
             radius,
             selectedVolunteers: selectedVolunteerIds,
@@ -183,7 +193,7 @@ export const requestToRescue = async (req, res) => {
 
         // Gửi email cho tình nguyện viên được chọn
         if (acceptedVolunteer) {
-            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`; // Liên kết đến vị trí của requester
+            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
             const requesterPhone = requester.phonenumber && requester.phonenumber.length > 0 ? requester.phonenumber.join(', ') : 'Không có số điện thoại';
             try {
                 await sendMailNotification({

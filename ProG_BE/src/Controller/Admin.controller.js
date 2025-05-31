@@ -296,6 +296,8 @@ export const revokeVolunteerRole = async (req, res) => {
         }
 
         _user.roles = _user.roles.filter(role => role.toString() !== volunteerRole._id.toString());
+        _user.volunteerRequestStatus = "none";
+        _user.volunteerStatus = "none"
         await _user.save();
 
         return res.status(200).json({ message: "Quyền volunteer đã bị thu hồi!" });
