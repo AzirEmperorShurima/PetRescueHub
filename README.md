@@ -1,23 +1,29 @@
 # Pet Rescue Hub
 
-## Giới thiệu
+## Introduction
 
-Pet Rescue Hub là nền tảng trực tuyến kết nối những người yêu thú cưng, tình nguyện viên và các tổ chức cứu hộ động vật. Dự án này nhằm tạo ra một cộng đồng hỗ trợ việc cứu hộ, chăm sóc và nhận nuôi thú cưng.
+Pet Rescue Hub is an online platform connecting pet lovers, volunteers, and animal rescue organizations. This project aims to create a community to support pet rescue, care, and adoption.
 
-## Tính năng chính
+## Key Features
 
-- **Diễn đàn cộng đồng**: Chia sẻ kinh nghiệm, đặt câu hỏi và trao đổi thông tin
-- **Nhận nuôi thú cưng**: Tìm kiếm và đăng ký nhận nuôi thú cưng được cứu hộ
-- **Quyên góp**: Hỗ trợ hoạt động cứu hộ thông qua đóng góp tài chính
-- **Sự kiện**: Khám phá các sự kiện cứu hộ, triển lãm và hoạt động cộng đồng
-- **Chương trình tình nguyện viên**: Đăng ký trở thành tình nguyện viên cứu hộ
-- **Hướng dẫn chăm sóc**: Tài liệu giáo dục về chăm sóc thú cưng
+- **Create Emergency Rescue Requests**: Support urgent cases needing help for pets in distress.
+- **Community Forum**: Share experiences, ask questions, and exchange information.
+- **Create Pet Profiles**: Create pet profiles to post and find new homes for pets, helping them avoid abandonment.
+- **Pet Adoption**: Search and register to adopt rescued pets.
+- **Donations**: Support rescue operations through financial contributions.
+- **Events**: Discover pet-related events, exhibitions, and community activities.
+- **Volunteer Program**: Register to become a rescue volunteer.
+- **Care Guides**: Educational materials on pet care.
+- **Support Chatbot**: A virtual assistant to automatically answer frequently asked questions.
 
-## Công nghệ sử dụng
+## Project Structure
+
+The project is divided into 3 main parts:
 
 ### Frontend
 - React 18
 - Chakra UI
+- MUI
 - React Router v6
 - Axios
 - React Bootstrap
@@ -32,55 +38,76 @@ Pet Rescue Hub là nền tảng trực tuyến kết nối những người yêu
 - Socket.io
 - JWT Authentication
 
-## Phiên bản
+### Chatbot
+- Python
+- TensorFlow
+- Natural Language Processing (NLP)
+- Flask
 
-- Hiện tại: 1.0.0 - SNAPSHOT
+## System Requirements
 
-## Yêu cầu hệ thống
-
+### General
+- Git
 - Node.js (v14+)
 - npm (v6+)
 - MongoDB
+- Python (3.8+)
 
-## Hướng dẫn cài đặt
+## Setup Instructions
 
-### Frontend
-
-1. Clone repository:
+### 1. Clone repository
 ```bash
 git clone https://github.com/AzirEmperorShurima/PetRescueHub.git
+cd PetRescueHub
 ```
 
-2. Navigate to the frontend directory:
-   ```
-   cd pet-rescue-hub/frontend/react
-   ```
-
-3. Install the dependencies:
-   ```
-   npm install
-   ```
-
-### Running the Application
-
-To start the development server, run:
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
 ```
+The frontend will run at `http://localhost:3000`
+
+### 3. Backend Setup
+```bash
+cd backend
+npm install
 npm start
 ```
+The backend will run at `http://localhost:4000`
 
-The application will be available at `http://localhost:3000`.
-
-### Building for Production
-
-To create a production build, run:
+### 4. Chatbot Setup
+```bash
+cd chatbot
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/Mac
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
 ```
-npm run build
+The chatbot will run at `http://localhost:5000`
+
+## Environment Configuration
+
+### Backend (.env)
+```
+MONGODB_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+PORT=27017
 ```
 
-This will create an optimized build of the application in the `build` folder.
+### Frontend (.env)
+```
+VITE_API_URL=http://localhost:4000
+```
 
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or features.
 
 ## License
+
+MIT License
