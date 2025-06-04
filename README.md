@@ -40,9 +40,11 @@ The project is divided into 3 main parts:
 
 ### Chatbot
 - Python
-- TensorFlow
-- Natural Language Processing (NLP)
+- PyTorch (torch)
+- NLTK
+- Scikit-learn
 - Flask
+- Natural Language Processing (NLP)
 
 ## System Requirements
 
@@ -85,7 +87,9 @@ python -m venv .venv
 .venv\Scripts\activate
 # Linux/Mac
 source .venv/bin/activate
+
 pip install -r requirements.txt
+python train.py
 python app.py
 ```
 The chatbot will run at `http://localhost:5000`
