@@ -245,7 +245,7 @@ Table RESCUEMISSIONHISTORY {
 Ref: USER._id < ROLE._id
 Ref: MESSAGE._id < USER._id
 Ref: REPORT._id < USER._id
-Ref: PETPROFILE._id < USER._id
+Ref: PETPROFILE._id > USER._id
 Ref: FAVOURITELIST._id < USER._id
 Ref: FAVOURITELIST._id < POST._id
 Ref: TRANSACTIONHISTORY._id < USER._id
