@@ -34,3 +34,8 @@ yarn-debug.log*
 yarn-error.log*
 backend/petrescuehub-4a283c5f7180.json
 ProG_BE/petrescuehub-4a283c5f7180.json
+
+# Chatbot specific
+chatbot/.venv/
+chatbot/data.pth
+chatbot/.idea/
