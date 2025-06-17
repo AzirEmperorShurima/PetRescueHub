@@ -91,8 +91,5 @@ npm test
 
 ## 📝 License
 
-[Add your license here]
 
 ## 👥 Contributors
-
-[Add contributors here]
