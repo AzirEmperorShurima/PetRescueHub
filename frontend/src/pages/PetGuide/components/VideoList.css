@@ -1,0 +1,149 @@
+.video-list-container {
+  padding: 30px;
+}
+
+.video-filters {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  flex: 2;
+  min-width: 250px;
+}
+
+.category-filter {
+  flex: 1;
+  min-width: 200px;
+}
+
+.videos-grid {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.video-card {
+  height: 100%;
+  border-radius: 12px !important;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.video-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.video-thumbnail-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.video-thumbnail {
+  height: 180px;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.video-card:hover .video-thumbnail {
+  transform: scale(1.05);
+}
+
+.play-icon-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-card:hover .play-icon-overlay {
+  opacity: 1;
+}
+
+.play-icon {
+  font-size: 60px !important;
+  color: white;
+}
+
+.duration-chip {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  color: white !important;
+  font-weight: 500 !important;
+}
+
+.video-content {
+  padding: 16px !important;
+}
+
+.video-title {
+  font-weight: 600 !important;
+  margin-bottom: 10px !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 60px;
+}
+
+.video-category-chip {
+  background-color: #f5f5f5 !important;
+}
+
+.no-videos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  text-align: center;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .video-list-container {
+    padding: 20px 15px;
+  }
+  
+  .video-filters {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .search-field, .category-filter {
+    width: 100%;
+  }
+  
+  .video-title {
+    font-size: 1rem !important;
+  }
+}

@@ -1,0 +1,604 @@
+/* Base container styles */
+.donate-container {
+  padding: 40px 0;
+  background-color: #fff;
+  background-image: linear-gradient(135deg, rgba(252, 252, 252, 0.9), rgba(255, 255, 255, 1));
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Pattern overlay for texture */
+.donate-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z' fill='%23e91e63' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Header */
+.donate-header {
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 20px;
+  animation: fadeIn 0.8s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.donate-title {
+  font-weight: 700;
+  font-size: 3rem;
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, #ff6b8b 0%, #ff8e53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card styles */
+.donation-info-card {
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.98);
+  position: relative;
+  z-index: 1;
+}
+
+.donation-info-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  border-color: rgba(233, 30, 99, 0.15);
+}
+
+/* Add subtle paw print background to info card */
+.donation-info-card::before {
+  content: '';
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  width: 150px;
+  height: 150px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23e91e63' fill-opacity='0.03' d='M256 224c-79.5 0-144 64.5-144 144s64.5 144 144 144 144-64.5 144-144-64.5-144-144-144z'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.5;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.donation-text {
+  font-size: 1.18rem;
+  line-height: 1.85;
+  color: #444;
+  letter-spacing: 0.2px;
+}
+
+.donation-highlight {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #e91e63;
+  text-align: center;
+  padding: 15px;
+  border-left: 4px solid #e91e63;
+  background-color: rgba(233, 30, 99, 0.05);
+  border-radius: 0 8px 8px 0;
+  margin: 20px 0;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.donation-highlight:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.2);
+}
+
+.donation-tag {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #f8f8f8;
+  border-radius: 30px;
+  margin: 8px;
+  font-size: 1rem;
+  color: #555;
+  border: 1px solid #eee;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.donation-tag:hover {
+  background-color: #e91e63;
+  color: white;
+  border-color: #e91e63;
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 15px rgba(233, 30, 99, 0.3);
+}
+
+/* Animal showcase card */
+.animal-showcase-card {
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.animal-image-container {
+  position: relative;
+  height: 500px;
+  overflow: hidden;
+  border-radius: 20px;
+  margin-bottom: 0;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.animal-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1s ease, transform 8s ease;
+  transform: scale(1.1);
+}
+
+.animal-image.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.animal-image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 30px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.animal-image-caption {
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.donate-now-btn {
+  background: linear-gradient(135deg, #e91e63 0%, #ff9800 100%);
+  border-radius: 50px;
+  padding: 10px 35px;
+  font-weight: 600;
+  text-transform: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  min-width: 180px;
+}
+
+.donate-now-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+.image-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ddd;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.image-indicator.active {
+  background-color: #e91e63;
+  transform: scale(1.2);
+}
+
+.image-indicator:hover {
+  background-color: #ff9800;
+}
+
+/* Rescue stories section */
+.rescue-stories-section {
+  margin-top: 80px;
+  padding: 40px;
+  background-color: #f9f9f9;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.rescue-stories-container {
+  margin-top: 30px;
+}
+
+.rescue-story-card {
+  background-color: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.rescue-story-image {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.rescue-story-content {
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.rescue-story-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #e91e63;
+}
+
+.rescue-story-excerpt {
+  color: #666;
+  margin-bottom: 20px;
+  flex-grow: 1;
+  line-height: 1.6;
+}
+
+.read-more-btn {
+  align-self: flex-start;
+  color: #e91e63;
+  border-color: #e91e63;
+  border-radius: 30px;
+  padding: 5px 20px;
+  text-transform: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.read-more-btn:hover {
+  background-color: rgba(233, 30, 99, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.15);
+}
+
+/* Indicators for story slider */
+.story-indicators {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.story-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ddd;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.story-indicator.active {
+  background-color: #e91e63;
+  transform: scale(1.2);
+}
+
+.story-indicator:hover {
+  background-color: #ff9800;
+}
+
+/* Note container */
+.donation-note-container {
+  margin-top: 20px;
+  padding: 25px;
+  background-color: #fff9c4;
+  border-radius: 16px;
+  border-left: 5px solid #ffc107;
+  box-shadow: 0 8px 20px rgba(255, 193, 7, 0.15);
+}
+
+.donation-note {
+  font-style: italic;
+  color: #795548;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+/* Payment methods section */
+.payment-methods-section {
+  margin-top: 20px;
+  padding: 40px;
+  background-color: white;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.payment-section-title, .rescue-section-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+  text-align: center;
+  color: #333;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.payment-tabs {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.payment-tab {
+  min-width: 120px;
+  font-weight: 600;
+  text-transform: none;
+  transition: all 0.3s ease;
+  margin: 0 5px;
+  border-radius: 8px 8px 0 0;
+  padding: 12px 20px;
+}
+
+.payment-tab.active {
+  background-color: #f5f5f5;
+  color: #e91e63;
+  border-bottom: 3px solid #e91e63;
+}
+
+.payment-tab-icon {
+  width: 35px;
+  height: 35px;
+  margin-right: 10px;
+  background-color: white;
+  padding: 5px;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  object-fit: contain;
+}
+
+.payment-tab-content {
+  padding: 30px 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Bank details */
+.bank-details {
+  background-color: #f9f9f9;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  flex: 1;
+  margin-right: 30px;
+  min-width: 300px;
+}
+
+.instruction-title {
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+  position: relative;
+  padding-left: 15px;
+  border-left: 4px solid #e91e63;
+}
+
+.instruction-steps {
+  padding-left: 25px;
+  margin-bottom: 0;
+}
+
+.instruction-steps li {
+  margin-bottom: 12px;
+  padding: 10px 15px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.instruction-steps li:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.bank-detail-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.bank-detail-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* QR code container styling */
+.qr-code-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.qr-code-wrapper {
+  background: linear-gradient(135deg, rgba(255, 192, 203, 0.7) 0%, rgba(255, 105, 180, 0.3) 100%);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: 240px;
+  margin: 0 auto;
+}
+
+.qr-code-wrapper:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.qr-code {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.qr-code-caption {
+  margin-top: 15px;
+  text-align: center;
+  color: #555;
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.qr-code-caption::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, #ff69b4, #ffb6c1);
+  margin: 8px auto 0;
+  border-radius: 2px;
+}
+
+/* Donation quote styling */
+.donation-quote-wrapper {
+  margin-top: 10px;
+  padding: 15px 20px;
+  background-color: #fff;
+  border-radius: 12px;
+  border-left: 3px solid #e91e63;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.donation-quote {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: #555;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.highlight-text {
+  color: #e91e63;
+  font-weight: 600;
+}
+
+/* Media queries for better responsiveness */
+@media (max-width: 960px) {
+  .donate-title {
+    font-size: 2.5rem;
+  }
+  
+  .animal-image-container {
+    height: 400px;
+  }
+  
+  .payment-tab {
+    min-width: 100px;
+    padding: 10px 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .donate-title {
+    font-size: 2.2rem;
+  }
+  
+  .animal-image-container {
+    height: 350px;
+  }
+  
+  .qr-code-wrapper {
+    max-width: 200px;
+  }
+  
+  .donation-text {
+    font-size: 1.1rem;
+  }
+  
+  .payment-methods-section,
+  .rescue-stories-section {
+    padding: 30px 20px;
+  }
+  
+  .bank-details {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .donate-title {
+    font-size: 1.8rem;
+  }
+  
+  .animal-image-container {
+    height: 280px;
+  }
+  
+  .donation-text {
+    font-size: 1rem;
+  }
+  
+  .payment-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .payment-tab {
+    margin-bottom: 10px;
+    flex: 1 0 40%;
+  }
+}

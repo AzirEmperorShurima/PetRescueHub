@@ -46,19 +46,6 @@ npm install
 
 cd ../Gateway
 npm install
-```
-
-3. Set up environment variables:
-   - Create `.env` file in ProG_BE directory
-   - Add required environment variables:
-```env
-MONGO_URI_RAILWAY=your_mongodb_uri
-```
-
-4. Start the services:
-```bash
-# Start Backend
-cd ProG_BE
 npm start
 
 # Start Gateway

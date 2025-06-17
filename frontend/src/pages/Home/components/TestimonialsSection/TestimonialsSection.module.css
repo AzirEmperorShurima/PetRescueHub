@@ -1,0 +1,107 @@
+/* TestimonialsSection.module.css */
+/* Áp dụng quy ước đặt tên BEM */
+
+.testimonials {
+  padding: 80px 0;
+  background-color: var(--bg-light);
+}
+
+.testimonials__container {
+  text-align: center;
+}
+
+.testimonials__title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.testimonials__subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.testimonials__card {
+  height: 100%;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+
+.testimonials__card:hover {
+  transform: translateY(-10px);
+}
+
+.testimonials__cardContent {
+  padding: 30px !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonials__content {
+  flex-grow: 1;
+  font-style: italic;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.8;
+  position: relative;
+}
+
+.testimonials__content::before {
+  content: '\201C';
+  font-size: 4rem;
+  color: var(--primary-color);
+  opacity: 0.2;
+  position: absolute;
+  top: -20px;
+  left: -10px;
+}
+
+.testimonials__author {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+
+.testimonials__avatar {
+  width: 50px;
+  height: 50px;
+  margin-right: 15px;
+  border: 2px solid var(--primary-color);
+}
+
+.testimonials__info {
+  text-align: left;
+}
+
+.testimonials__name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.testimonials__rating {
+  color: var(--warning-color);
+}
+
+/* Responsive styles */
+@media (max-width: 960px) {
+  .testimonials__card {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .testimonials__title {
+    font-size: 2rem;
+  }
+  
+  .testimonials__subtitle {
+    font-size: 1rem;
+  }
+}
