@@ -194,5 +194,4 @@ MIT License
 
 ## 👥 Contributors
 
-- [Your Name/Team Name] - [Role/Contribution]
-- Add contributors here
+- [C1SE.03] - [Developments/Contribution]
