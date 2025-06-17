@@ -93,3 +93,62 @@ npm test
 
 
 ## 👥 Contributors
+
+## Project Details
+PetRescueHub Project Details
+- Project Overview
+   PetRescueHub - Node.js, Express.js, MongoDB, Mongoose, WebSocket, JWT Authentication
+
+   A comprehensive pet rescue management platform that connects animal shelters, volunteers, and potential adopters. The application streamlines the pet adoption process while building a supportive community for animal welfare.
+
+- Key Features Implementation
+   - 🔐 Authentication & Authorization
+   Multi-role user system (Super Admin, Admin, User, Volunteer)
+   JWT-based secure authentication
+   Role-based access control for different functionalities
+   Secure password hashing and validation
+   - 🐾 Pet Management System
+   Detailed pet profiles with medical history
+   Real-time updates on pet status
+   Advanced search and filtering capabilities
+   Adoption request tracking
+   Photo gallery management
+   - 📱 Community Features
+   Interactive forum for pet-related discussions
+   Real-time notifications using WebSocket
+   Comment system on pet profiles and posts
+   Volunteer opportunity postings
+   Event scheduling and management
+   - ⚡ Technical Highlights
+   Scalable MongoDB database architecture
+   Efficient data caching system
+   API Gateway for service orchestration
+   Automated database seeding
+   Robust error handling
+   Automated testing suite
+   Continuous Integration/Deployment ready
+
+- 🔧 Infrastructure
+   Load balancing capability
+   Automated backup systems
+   Monitoring and logging
+   Rate limiting and security measures
+   Technical Achievements
+   Performance: Implemented caching mechanisms reducing response time 
+   Scalability: Microservices architecture supporting horizontal scaling
+   Reliability: Automated reconnection handling 
+   Security: Multi-layer security implementation with role-based access
+
+- Development Practices
+   Clean code architecture
+   Comprehensive API documentation
+   Unit and integration testing
+   Code review processes
+   Continuous Integration workflow
+   Version control with Git
+   Future Enhancements
+   Mobile application integration
+   AI-powered pet matching system
+   International language support
+   Payment gateway integration
+   Advanced analytics dashboard
