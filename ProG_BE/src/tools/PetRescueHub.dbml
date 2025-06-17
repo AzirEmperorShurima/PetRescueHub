@@ -1,0 +1,253 @@
+Table USER {
+  id string
+  username string
+  fullname string
+  birthdate date
+  gender string
+  biography string
+  email string
+  avatar string
+  phonenumber json
+  address string
+  password string
+  secondaryPassword string
+  tokens json
+  roles json
+  isPrivate boolean
+  isActive boolean
+  isCompromised boolean
+  volunteerStatus string
+  volunteerRequestStatus string
+  isVIP boolean
+  premiumExpiresAt date
+  lastLoginAt date
+  _id uuid
+  createdAt date
+  updatedAt date
+}
+
+Table ROLE {
+  name string
+  _id uuid
+}
+
+Table MESSAGE {
+  sender uuid
+  receiver uuid
+  type string
+  content string
+  isRead boolean
+  createdAt date
+  _id uuid
+}
+
+Table REPORT {
+  reporter uuid
+  targetId uuid
+  reason string
+  status string
+  actionTaken string
+  adminNote string
+  _id uuid
+  createdAt date
+  updatedAt date
+}
+
+Table PETPROFILE {
+  name string
+  age int
+  petDob date
+  breed string
+  breedName string
+  petState string
+  isDeleted boolean
+  gender string
+  petDetails string
+  weight int
+  height int
+  reproductiveStatus string
+  vaccinationStatus json
+  ownerId uuid
+  avatar string
+  microchipId string
+  petAlbum json
+  _id uuid
+  createdAt date
+  updatedAt date
+}
+
+Table FAVOURITELIST {
+  name string
+  user uuid
+  items json
+  _id uuid
+  createdAt date
+  updatedAt date
+}
+
+Table TRANSACTIONHISTORY {
+  user_id uuid
+  package_id string
+  app_trans_id string
+  amount int
+  payment_method string
+  status string
+  description string
+  created_at date
+  updated_at date
+  _id uuid
+}
+
+Table PETGUIDESCHEMA {
+  petGuideDocs json
+  petGuideVideos json
+  _id uuid
+  createdAt date
+  updatedAt date
+}
+
+Table POSTMODEL {
+  title string
+  content string
+  author uuid
+  tags json
+  imgUrl json
+  commentCount int
+  favoriteCount int
+  reactions json
+  postStatus string
+  createdAt date
+  updatedAt date
+  _id uuid
+  postType string
+}
+
+Table COMMENTMODEL {
+  author uuid
+  post uuid
+  content string
+  imgUrl json
+  parentComment uuid
+  replies json
+  isDeleted boolean
+  createdAt date
+  updatedAt date
+  deletedAt date
+  reactions json
+  _id uuid
+}
+
+Table REACTION {
+  authReaction uuid
+  reactionType string
+  targetType string
+  targetId uuid
+  _id uuid
+  createdAt date
+  updatedAt date
+}
+
+Table FORUMPOST {
+  _id uuid
+  title string
+  content string
+  author uuid
+  tags json
+  imgUrl json
+  commentCount int
+  favoriteCount int
+  reactions json
+  postStatus string
+  createdAt date
+  updatedAt date
+  postType string
+}
+
+Table QUESTION {
+  questionDetails string
+  _id uuid
+  title string
+  content string
+  author uuid
+  tags json
+  imgUrl json
+  commentCount int
+  favoriteCount int
+  reactions json
+  postStatus string
+  createdAt date
+  updatedAt date
+  postType string
+}
+
+Table FINDLOSTPETPOST {
+  lostPetInfo string
+  contactInfo json
+  _id uuid
+  title string
+  content string
+  author uuid
+  tags json
+  imgUrl json
+  commentCount int
+  favoriteCount int
+  reactions json
+  postStatus string
+  createdAt date
+  updatedAt date
+  postType string
+}
+
+Table EVENTPOST {
+  eventStartDate date
+  eventEndDate date
+  eventLongitude string
+  eventLatitude string
+  eventLocation string
+  _id uuid
+  title string
+  content string
+  author uuid
+  tags json
+  imgUrl json
+  commentCount int
+  favoriteCount int
+  reactions json
+  postStatus string
+  createdAt date
+  updatedAt date
+  postType string
+}
+
+Table PETRESCUEMISSIONHISTORY {
+  missionId string
+  requester uuid
+  radius int
+  selectedVolunteers json
+  acceptedVolunteer uuid
+  startedAt date
+  endedAt date
+  status string
+  notes string
+  _id uuid
+  createdAt date
+  updatedAt date
+}
+
+Ref: USER._id < ROLE._id
+Ref: MESSAGE._id < USER._id
+Ref: REPORT._id < USER._id
+Ref: PETPROFILE._id < USER._id
+Ref: FAVOURITELIST._id < USER._id
+Ref: FAVOURITELIST._id < POSTMODEL._id
+Ref: TRANSACTIONHISTORY._id < USER._id
+Ref: POSTMODEL._id < USER._id
+Ref: COMMENTMODEL._id < USER._id
+Ref: COMMENTMODEL._id < POSTMODEL._id
+Ref: COMMENTMODEL.parentComment > COMMENTMODEL._id
+Ref: REACTION._id < USER._id
+Ref: FORUMPOST._id < USER._id
+Ref: QUESTION._id < USER._id
+Ref: FINDLOSTPETPOST._id < USER._id
+Ref: EVENTPOST._id < USER._id
+Ref: PETRESCUEMISSIONHISTORY._id < USER._id

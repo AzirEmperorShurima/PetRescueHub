@@ -1,0 +1,28 @@
+# Node modules
+node_modules/
+
+# File cấu hình môi trường
+.env
+
+# Thư mục biên dịch và build
+dist/
+build/
+
+# Thư mục và file log
+logs/
+*.log
+
+# Cấu hình IDE
+.vscode/
+.idea/
+
+# Các file tạm thời
+*.tmp
+
+# Docker files (nếu không cần theo dõi)
+docker-compose.yml
+Dockerfile
+*.tar
+.docker/
+bash.exe.stackdump
+ProG_BE/petrescuehub-4a283c5f7180.json

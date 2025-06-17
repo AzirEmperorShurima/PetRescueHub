@@ -1,0 +1,111 @@
+[
+    {
+        "username": "admin1",
+        "email": "admin1@example.com",
+        "password": "Admin@1234",
+        "secondaryPassword": "Sec@1234",
+        "role": "admin"
+    },
+    {
+        "username": "admin12",
+        "email": "admin12@example.com",
+        "password": "Admin@1234",
+        "secondaryPassword": "Sec@1234",
+        "role": "admin"
+    },
+    {
+        "username": "superadmin1",
+        "email": "superadmin1@example.com",
+        "password": "SuperAdmin@123",
+        "secondaryPassword": "Super@123",
+        "role": "super_admin"
+    },
+    {
+        "username": "baduser",
+        "email": "bad@example.com",
+        "password": "abc",
+        "secondaryPassword": "def",
+        "role": "admin"
+    },
+    {
+        "username": "nguyenvana",
+        "fullname": "Đỗ Nguyễn Minh Quân",
+        "birthday": "2003-01-01",
+        "gender": "male",
+        "phone": "0987654321",
+        "address": "123 Đường ABC, Thành phố XYZ",
+        "email": "tranvantri4@dtu.edu.vn",
+        "biography": "Ngoài ra, tôi còn rất thích chơi thể thao và tham gia các hoạt động thể thao như thể thao hình ảnh, thể thao nước ngoài, thể thao thể dục thể thao.",
+        "avatar": "https://newsmd2fr.keeng.vn/tiin/archive/imageslead/2022/03/29/90_3289e976177c1b19264383cf21b598bf.jpg",
+        "isActive": true,
+        "volunteerStatus": "not ready",
+        "volunteerRequestStatus": "approved",
+        "password": "Tri12345678@",
+        "role": [
+            "user",
+            "volunteer"
+        ],
+        "isVIP": true,
+        "premiumExpiresAt": "2029-12-31"
+    },
+    {
+        "username": "thienCodeGa",
+        "fullname": "Phạm Minh Thiện",
+        "birthday": "2003-11-20",
+        "gender": "male",
+        "phone": "0865874627",
+        "address": "K25/1 Dũng Sĩ Thanh Khê, Thành phố Đà Nẵng",
+        "email": "tranvantri352@gmail.com",
+        "biography": "Tôi Thích nằm ườn ra và không làm gì cả , thích ngủ nướng , đá gà , cá độ đá bóng , đánh bạc",
+        "avatar": "https://mcdn.coolmate.me/image/July2023/gigachad-la-ai-2138_928.jpg",
+        "isActive": true,
+        "password": "Tri12345678@",
+        "role": [
+            "user"
+        ],
+        "isVIP": true,
+        "premiumExpiresAt": "2029-12-31"
+    },
+    {
+        "username": "nguyenvanb",
+        "fullname": "Đỗ Nguyễn Minh Quân",
+        "birthday": "2003-01-01",
+        "gender": "male",
+        "phone": "0987654321",
+        "address": "123 Đường ABC, Thành phố XYZ",
+        "email": "donminhquan@dtu.edu.vn",
+        "biography": "Ngoài ra, tôi còn rất thích chơi thể thao và tham gia các hoạt động thể thao như thể thao hình ảnh, thể thao nước ngoài, thể thao thể dục thể thao.",
+        "avatar": "https://newsmd2fr.keeng.vn/tiin/archive/imageslead/2022/03/29/90_3289e976177c1b19264383cf21b598bf.jpg",
+        "isActive": true,
+        "volunteerStatus": "not ready",
+        "volunteerRequestStatus": "approved",
+        "password": "Tri12345678@",
+        "role": [
+            "user",
+            "volunteer"
+        ],
+        "isVIP": true,
+        "premiumExpiresAt": "2029-12-31"
+    },
+    {
+        "username": "nguyenvanc",
+        "fullname": "Đỗ Nguyễn Minh Quân",
+        "birthday": "2003-01-01",
+        "gender": "male",
+        "phone": "0987654321",
+        "address": "123 Đường ABC, Thành phố XYZ",
+        "email": "minhthienp50@gmail.com",
+        "biography": "Ngoài ra, tôi còn rất thích chơi thể thao và tham gia các hoạt động thể thao như thể thao hình ảnh, thể thao nước ngoài, thể thao thể dục thể thao.",
+        "avatar": "https://newsmd2fr.keeng.vn/tiin/archive/imageslead/2022/03/29/90_3289e976177c1b19264383cf21b598bf.jpg",
+        "isActive": true,
+        "volunteerStatus": "not ready",
+        "volunteerRequestStatus": "approved",
+        "password": "Tri12345678@",
+        "role": [
+            "user",
+            "volunteer"
+        ],
+        "isVIP": true,
+        "premiumExpiresAt": "2029-12-31"
+    }
+]
