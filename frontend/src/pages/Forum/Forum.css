@@ -1,0 +1,184 @@
+/* Cập nhật CSS cho Forum */
+.forum-page {
+  padding: 0 0;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.forum-header {
+  margin-bottom: 0.5rem;
+  position: relative;
+  padding-bottom: 0px;
+  animation: fadeIn 0.8s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.forum-title {
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  background: linear-gradient(90deg, #ff6b8b 0%, #ff8e53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.forum-sidebar {
+  height: 100%;
+  position: sticky;
+  top: 80px; /* Điều chỉnh khoảng cách từ top, phù hợp với chiều cao của navbar */
+  max-height: calc(100vh - 100px); /* Chiều cao tối đa của sidebar */
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung sidebar quá dài */
+}
+
+/* Thêm style cho container chứa sidebar và nội dung chính */
+.forum-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.forum-main {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  flex: 1; /* Cho phép phần nội dung chính mở rộng */
+  overflow-y: auto; /* Cho phép cuộn nội dung chính */
+}
+
+.forum-categories {
+  display: flex;
+  flex-direction: column;
+}
+
+.forum-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.forum-card:hover {
+  /* transform: translateY(-5px); */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.forum-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.forum-title {
+  margin-bottom: 8px;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.forum-title:hover {
+  color: #D34F81;
+}
+
+.forum-excerpt {
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.forum-image-container {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.forum-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.forum-image:hover {
+  transform: scale(1.05);
+}
+
+.forum-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.forum-category-chip {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.forum-tag-chip {
+  background-color: #f5f5f5;
+  color: #666;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+}
+
+.forum-card-actions {
+  padding: 8px 16px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+}
+
+.forum-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.forum-create-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.forum-main {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.forum-posts-list,
+.forum-questions-list,
+.forum-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Responsive styles */
+@media (max-width: 960px) {
+  .forum-sidebar {
+    position: static; /* Trên màn hình nhỏ, không cố định sidebar */
+    margin-bottom: 20px;
+    max-height: none;
+  }
+  
+  .forum-container {
+    flex-direction: column; /* Chuyển layout thành dạng cột trên màn hình nhỏ */
+  }
+}

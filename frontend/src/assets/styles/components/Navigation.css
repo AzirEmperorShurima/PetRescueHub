@@ -1,0 +1,392 @@
+/* ==================== CONTAINER STYLES ==================== */
+.navbar {
+  padding: 0;
+  background-color: white;
+  border-top: 2px solid #D34F81;
+  border-bottom: 1px solid #D3D3D3;
+  box-shadow: var(--box-shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  min-height: calc(10%-10px);
+  position: fixed;
+  top: 40px; /* Chiều cao mặc định của TopBar */
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  transition: top 0.3s ease;
+}
+
+.navbar > .container {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "left center right";
+  align-items: center;
+  padding: 0 1rem;
+  height: calc(13vh);
+  min-width: 100%;
+}
+
+/* ==================== LOGO STYLES ==================== */
+.navbar-brand {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  min-width: 240px; /* Tăng min-width để đủ chỗ cho logo + text */
+  flex-shrink: 0;
+  z-index: 10; /* Đảm bảo logo luôn ở trên */
+  left: 0;
+  grid-area: left;
+  justify-self: start;
+}
+
+.navbar-brand .logo {
+  height: 80px; /* Giảm kích thước logo để cân đối hơn */
+  width: auto;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out, transform 0.3s ease;
+  transform: translateY(-20px);
+  padding: 0.5rem;
+}
+
+.navbar-brand .logo.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.navbar-brand .logo:hover {
+  transform: scale(1.05);
+}
+
+.navbar-brand .logo-text {
+  font-family: 'Poiret One', cursive;
+  font-weight: 900;
+  font-size: 1.8rem;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+
+.navbar-brand .pet {
+  color: #000000;
+}
+
+.navbar-brand .rescuehub {
+  color: #D34F81;
+}
+
+/* ==================== NAVIGATION WRAPPER ==================== */
+.navbar-collapse {
+  grid-area: center;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+/* ==================== MENU STYLES ==================== */
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.nav-link {
+  color: #000000;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 8px 16px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+}
+
+/* Trang active sẽ có màu hồng */
+.nav-link.active {
+  color: #D34F81 !important;
+  font-weight: 700;
+  background-color: rgba(211, 79, 129, 0.1);
+}
+
+/* Hiệu ứng hover */
+.nav-link:hover {
+  color: #D34F81;
+  background-color: rgba(211, 79, 129, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ==================== USER MENU & BUTTONS STYLES ==================== */
+.nav-buttons,
+.user-menu-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 100px; /* Cân bằng với logo */
+  justify-content: flex-end;
+  flex-shrink: 0;
+  z-index: 10;
+  grid-area: right;
+  justify-self: end;
+}
+
+.btn-outline-primary,
+.btn-primary {
+  font-size: 0.9rem;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  width: 120px; /* đảm bảo đồng đều */
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 2px solid #D34F81;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.btn-outline-primary {
+  background: white;
+  color: #D34F81;
+}
+
+.btn-primary {
+  background: #D34F81;
+  color: white;
+}
+
+.btn-outline-primary:hover {
+  background: #D34F81;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(211, 79, 129, 0.3);
+}
+
+.btn-primary:hover {
+  background: #B8285A;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(211, 79, 129, 0.3);
+}
+
+/* ==================== DROPDOWN STYLES ==================== */
+.nav-item.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  min-width: 200px;
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  border: 1px solid rgba(211, 79, 129, 0.2);
+}
+
+.dropdown-menu.show {
+  display: block;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-item {
+  display: block;
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(211, 79, 129, 0.1);
+  color: #D34F81;
+}
+
+/* Mũi tên dropdown */
+.dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+  content: "";
+  border-top: 4px solid;
+  border-right: 4px solid transparent;
+  border-bottom: 0;
+  border-left: 4px solid transparent;
+  transition: transform 0.2s ease;
+}
+
+.nav-item.dropdown:hover .dropdown-toggle::after {
+  transform: rotate(180deg);
+}
+
+/* ==================== HAMBURGER TOGGLER ==================== */
+.navbar-toggler {
+  display: none;
+  border: none;
+  background: transparent;
+  padding: 0.5rem;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  z-index: 15;
+}
+
+.navbar-toggler-icon {
+  display: inline-block;
+  width: 1.5rem;
+  height: 2px;
+  background-color: #D34F81;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler-icon::before,
+.navbar-toggler-icon::after {
+  content: "";
+  position: absolute;
+  width: 1.5rem;
+  height: 2px;
+  background-color: #D34F81;
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler-icon::before {
+  top: -8px;
+}
+
+.navbar-toggler-icon::after {
+  top: 8px;
+}
+
+/* ==================== RESPONSIVE STYLES ==================== */
+@media (max-width: 1200px) {
+  .navbar-nav {
+    gap: 1.5rem;
+  }
+  
+  .nav-link {
+    font-size: 1rem;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 991px) {
+  .navbar > .container {
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+  
+  .navbar-brand {
+    min-width: auto;
+  }
+  
+  .navbar-brand .logo-text {
+    font-size: 1.5rem;
+  }
+  
+  .navbar-toggler {
+    display: block;
+    order: 3;
+  }
+  
+  .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    transform: none;
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  
+  .collapse.navbar-collapse {
+    display: none;
+  }
+  
+  .collapse.navbar-collapse.show {
+    display: block;
+  }
+  
+  .navbar-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .nav-link {
+    padding: 12px 16px;
+    width: 100%;
+    text-align: center;
+    border-radius: 8px;
+  }
+  
+  .nav-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+    min-width: auto;
+    justify-content: center;
+  }
+  
+  .btn-outline-primary,
+  .btn-primary {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  /* Dropdown responsive */
+  .dropdown-menu {
+    position: static;
+    transform: none;
+    box-shadow: none;
+    background-color: rgba(211, 79, 129, 0.05);
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-brand .logo-text {
+    font-size: 1.3rem;
+  }
+  
+  .navbar-brand .logo {
+    height: 60px;
+  }
+}
+
+/* ==================== LOADING INDICATOR ==================== */
+.loading-indicator {
+  color: #D34F81;
+  font-weight: 500;
+  padding: 10px 20px;
+}

@@ -1,0 +1,59 @@
+/* CSS cho trang tạo sự kiện */
+
+.event-image-uploader {
+  margin-top: 8px;
+}
+
+.event-image-uploader .image-uploader-container {
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #f9f9f9;
+}
+
+.event-image-uploader .image-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.event-image-uploader .image-preview-item {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.event-image-uploader .preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-image-uploader .remove-image-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 4px;
+}
+
+.event-image-uploader .upload-button {
+  height: 120px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.event-image-uploader .required-mark {
+  color: #f44336;
+  margin-left: 4px;
+}

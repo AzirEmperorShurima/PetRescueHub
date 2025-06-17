@@ -1,0 +1,49 @@
+.image-uploader-container {
+  margin-bottom: 20px;
+}
+
+.required-mark {
+  color: #f44336;
+  margin-left: 2px;
+}
+
+.image-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.image-preview-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-button {
+  position: absolute !important;
+  top: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  padding: 2px !important;
+}
+
+.remove-image-button:hover {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #f44336;
+}
+
+.upload-button {
+  height: 100px;
+  width: 100px;
+  border-style: dashed !important;
+}

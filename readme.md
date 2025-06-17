@@ -1,154 +1,161 @@
-# PetRescueHub
+PetRescueHub
+A full-stack web application designed to streamline pet rescue and adoption, connecting pet lovers, volunteers, and animal rescue organizations to build a supportive community for animal welfare.
+🌟 Features
 
-A full-stack web application for pet rescue and adoption management.
+Emergency Rescue Requests: Create and manage urgent rescue requests for pets in distress.
+Community Forum: Engage in discussions, share experiences, and exchange pet-related information.
+Pet Profiles: Build detailed profiles for pets to facilitate adoption and prevent abandonment.
+Pet Adoption: Search for and register to adopt rescued pets.
+Donations: Support rescue operations through secure financial contributions.
+Events: Discover and participate in pet-related events and community activities.
+Volunteer Program: Register as a volunteer to assist in rescue efforts.
+Care Guides: Access educational resources on pet care and well-being.
+Support Chatbot: Interact with a virtual assistant for quick answers to common questions.
+Real-time Updates: Stay informed with live updates via WebSocket.
+Multi-language Support: Access the platform in multiple languages.
+User Roles: Supports Super Admin, Admin, User, and Volunteer roles with tailored permissions.
+Performance Optimization: Utilizes caching for faster response times.
 
-## 🌟 Features
+🛠️ Tech Stack
+Frontend
 
-- Pet adoption management
-- Forum posts and discussions
-- User roles system (Super Admin, Admin, User, Volunteer)
-- Real-time updates using WebSocket
-- Multi-language support
-- Caching system for better performance
+React 18
+Chakra UI
+Material-UI (MUI)
+React Router v6
+Axios
+React Bootstrap
+React Icons
+Dayjs
+Framer Motion
 
-## 🛠️ Tech Stack
+Backend
 
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB with Mongoose
-- **Gateway**: API Gateway for service routing
-- **Caching**: In-memory user caching
-- **Real-time**: Socket.IO
-- **Authentication**: JWT
+Node.js
+Express.js
+MongoDB with Mongoose
+Socket.IO for real-time communication
+JWT Authentication
 
-## 📁 Project Structure
+Chatbot
 
-```
-.
-├── Gateway/           # API Gateway service
-├── ProG_BE/          # Backend service
-│   ├── src/
-│   │   ├── Cache/    # Caching mechanisms
-│   │   ├── Config/   # Configuration files
-│   │   ├── Controller/# Request handlers
-│   │   ├── Models/   # Database models
-│   │   ├── Services/ # Business logic
-│   │   └── Utils/    # Helper functions
-│   └── test/         # Test files
-```
+Python 3.8+
+PyTorch
+NLTK
+Scikit-learn
+Flask
+Natural Language Processing (NLP)
 
-## 🚀 Getting Started
+📁 Project Structure
+PetRescueHub/
+├── frontend/          # React-based frontend
+├── backend/           # Node.js/Express backend
+├── chatbot/           # Python-based chatbot
+└── gateway/           # API Gateway for service routing
 
-1. Clone the repository
-2. Install dependencies:
-```bash
-cd ProG_BE
+📋 System Requirements
+
+Git
+Node.js (v14+)
+npm (v6+)
+MongoDB
+Python (3.8+)
+
+🚀 Getting Started
+1. Clone the Repository
+git clone https://github.com/AzirEmperorShurima/PetRescueHub.git
+cd PetRescueHub
+
+2. Frontend Setup
+cd frontend
 npm install
+npm run dev
 
-cd ../Gateway
+The frontend will be available at http://localhost:3000.
+3. Backend Setup
+cd backend
 npm install
-```
-
-3. Set up environment variables:
-   - Create `.env` file in ProG_BE directory
-   - Add required environment variables:
-```env
-MONGO_URI_RAILWAY=your_mongodb_uri
-```
-
-4. Start the services:
-```bash
-# Start Backend
-cd ProG_BE
 npm start
 
-# Start Gateway
-cd Gateway
+The backend will run at http://localhost:4000.
+4. Chatbot Setup
+cd chatbot
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/Mac
+source .venv/bin/activate
+pip install -r requirements.txt
+python train.py
+python app.py
+
+The chatbot will be accessible at http://localhost:5000.
+5. Gateway Setup
+cd gateway
+npm install
 npm start
-```
 
-## 💾 Database Seeding
+6. Environment Variables
+Create a .env file in the backend directory with the following:
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
 
-The system automatically seeds initial data including:
-- User roles (super_admin, admin, user, volunteer)
-- Admin accounts
-- Sample pets
-- Sample forum posts
+💾 Database Seeding
+The system automatically seeds initial data, including:
 
-## 🔒 Security
+User roles (Super Admin, Admin, User, Volunteer)
+Admin accounts
+Sample pet profiles
+Sample forum posts
 
-- JWT-based authentication
-- Role-based access control
-- Secure MongoDB connection with retry mechanism
-- Safe database disconnection handling
+🔒 Security
 
-## 🧪 Testing
+JWT-based authentication
+Role-based access control
+Secure MongoDB connection with retry mechanism
+Safe database disconnection handling
+Rate limiting and security headers
 
-Run tests using:
-```bash
-cd ProG_BE
+🧪 Testing
+Run tests for the backend:
+cd backend
 npm test
-```
 
-## 📝 License
+📝 Project Details
+Overview
+PetRescueHub is a comprehensive platform built with Node.js, Express.js, MongoDB, and WebSocket, designed to streamline pet adoption and foster a community for animal welfare.
+Key Features
+
+Authentication & Authorization: Multi-role system with JWT-based secure authentication and role-based access control.
+Pet Management: Detailed pet profiles with medical history, adoption tracking, and photo galleries.
+Community Features: Interactive forum, real-time notifications, event scheduling, and volunteer opportunities.
+Technical Highlights:
+Scalable MongoDB architecture
+Efficient caching system
+API Gateway for service orchestration
+Automated testing and CI/CD readiness
 
 
-## 👥 Contributors
+Infrastructure:
+Load balancing
+Automated backups
+Monitoring and logging
+Robust error handling
 
-## Project Details
-PetRescueHub Project Details
-- Project Overview
-   PetRescueHub - Node.js, Express.js, MongoDB, Mongoose, WebSocket, JWT Authentication
 
-   A comprehensive pet rescue management platform that connects animal shelters, volunteers, and potential adopters. The application streamlines the pet adoption process while building a supportive community for animal welfare.
 
-- Key Features Implementation
-   - 🔐 Authentication & Authorization
-   Multi-role user system (Super Admin, Admin, User, Volunteer)
-   JWT-based secure authentication
-   Role-based access control for different functionalities
-   Secure password hashing and validation
-   - 🐾 Pet Management System
-   Detailed pet profiles with medical history
-   Real-time updates on pet status
-   Advanced search and filtering capabilities
-   Adoption request tracking
-   Photo gallery management
-   - 📱 Community Features
-   Interactive forum for pet-related discussions
-   Real-time notifications using WebSocket
-   Comment system on pet profiles and posts
-   Volunteer opportunity postings
-   Event scheduling and management
-   - ⚡ Technical Highlights
-   Scalable MongoDB database architecture
-   Efficient data caching system
-   API Gateway for service orchestration
-   Automated database seeding
-   Robust error handling
-   Automated testing suite
-   Continuous Integration/Deployment ready
+Future Enhancements
 
-- 🔧 Infrastructure
-   Load balancing capability
-   Automated backup systems
-   Monitoring and logging
-   Rate limiting and security measures
-   Technical Achievements
-   Performance: Implemented caching mechanisms reducing response time 
-   Scalability: Microservices architecture supporting horizontal scaling
-   Reliability: Automated reconnection handling 
-   Security: Multi-layer security implementation with role-based access
+Mobile app integration
+AI-powered pet matching
+Expanded multi-language support
+Payment gateway integration
+Advanced analytics dashboard
 
-- Development Practices
-   Clean code architecture
-   Comprehensive API documentation
-   Unit and integration testing
-   Code review processes
-   Continuous Integration workflow
-   Version control with Git
-   Future Enhancements
-   Mobile application integration
-   AI-powered pet matching system
-   International language support
-   Payment gateway integration
-   Advanced analytics dashboard
+📜 License
+This project is licensed under the MIT License.
+👥 Contributors
+
+[C1SE.03] - [Role/Contribution]
+
+
